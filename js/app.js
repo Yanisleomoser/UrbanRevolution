@@ -192,11 +192,8 @@
             document.querySelectorAll('.type-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.type === design.type);
             });
-            window.garmentScene.setType(design.type);
         }
-        window.garmentScene.setColor(design.color);
-        window.garmentScene.setMaterial(design.material);
-        window.garmentScene.setFit(design.fit);
+        window.garmentScene.applyDesign(design);
     }
 
     function initMeasurements() {
@@ -257,8 +254,19 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                const avatarKey = btn.dataset.avatar;
                 if (window.garmentScene) {
-                    window.garmentScene.setAvatar(btn.dataset.avatar);
+                    window.garmentScene.setAvatar(avatarKey);
+                }
+                // Maße aus dem Preset übernehmen (wenn Toggle aktiv)
+                const loadDefaults = document.getElementById('toggle-load-defaults');
+                if (loadDefaults?.checked && window.AVATAR_PRESETS) {
+                    const preset = window.AVATAR_PRESETS[avatarKey];
+                    if (preset?.defaults) {
+                        Measurements.write({ ...preset.defaults, weight: state.measurements?.weight || 70 });
+                        updateMeasurements();
+                        showToast(`Maße für ${preset.label} geladen`, 'success');
+                    }
                 }
             });
         });
