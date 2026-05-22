@@ -757,6 +757,126 @@ select:focus {
     transition: all 0.2s;
 }
 
+/* ====== Avatar Grid ====== */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.avatar-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 12px 6px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.avatar-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    transform: translateY(-1px);
+}
+
+.avatar-btn.active {
+    background: var(--gradient-dim);
+    border-color: var(--accent);
+    color: var(--text);
+    box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.3);
+}
+
+.avatar-figure {
+    width: 32px;
+    height: 48px;
+    display: block;
+    position: relative;
+    margin-bottom: 4px;
+}
+
+.avatar-figure::before,
+.avatar-figure::after {
+    content: '';
+    position: absolute;
+    background: currentColor;
+    border-radius: 50% / 35%;
+    opacity: 0.85;
+}
+
+/* head */
+.avatar-figure::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* body (will be customized per figure type below) */
+.avatar-figure::after {
+    width: 18px;
+    height: 30px;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 6px 6px 8px 8px;
+}
+
+.avatar-figure[data-figure="athletic"]::after {
+    width: 22px;
+    border-radius: 8px 8px 6px 6px;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+}
+
+.avatar-figure[data-figure="slim"]::after {
+    width: 14px;
+    border-radius: 5px 5px 6px 6px;
+}
+
+.avatar-figure[data-figure="average"]::after {
+    width: 18px;
+}
+
+.avatar-figure[data-figure="hourglass"]::after {
+    width: 20px;
+    clip-path: polygon(10% 0, 90% 0, 70% 45%, 100% 100%, 0 100%, 30% 45%);
+}
+
+.avatar-figure[data-figure="curvy"]::after {
+    width: 22px;
+    clip-path: polygon(15% 0, 85% 0, 65% 40%, 100% 100%, 0 100%, 35% 40%);
+}
+
+.avatar-figure[data-figure="mannequin"]::after {
+    background: linear-gradient(180deg, currentColor, transparent);
+    opacity: 0.5;
+}
+
+.avatar-name {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.avatar-sub {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.avatar-btn.active .avatar-sub {
+    color: var(--text-dim);
+}
+
 .view-btn:hover, .view-btn.active {
     background: var(--gradient-dim);
     border-color: var(--accent);

@@ -253,6 +253,23 @@
             });
         });
 
+        document.querySelectorAll('.avatar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if (window.garmentScene) {
+                    window.garmentScene.setAvatar(btn.dataset.avatar);
+                }
+            });
+        });
+
+        const toggleAvatar = document.getElementById('toggle-avatar');
+        toggleAvatar?.addEventListener('change', () => {
+            if (window.garmentScene) {
+                window.garmentScene.setShowAvatar(toggleAvatar.checked);
+            }
+        });
+
         const toggleMeasurements = document.getElementById('toggle-measurements');
         toggleMeasurements?.addEventListener('change', () => {
             if (window.garmentScene) {
