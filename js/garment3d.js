@@ -1,5 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* Externe, realistisch modellierte Menschen-Modelle (CDN, CC-Lizenz) */
+const HUMAN_MODELS = {
+    male:   'https://unpkg.com/three@0.160.0/examples/models/gltf/Soldier.glb',
+    female: 'https://unpkg.com/three@0.160.0/examples/models/gltf/Soldier.glb'
+};
 
 /* ============================================================
    AVATAR PRESETS — 4 männlich + 4 weiblich + 1 neutral
@@ -246,14 +253,45 @@ class GarmentScene {
         this.wireframe = false;
         this.measurements = null;
 
+        this.gltfLoader = new GLTFLoader();
+        this.humanModelCache = {};
+        this.modelsLoaded = false;
+
         this.initRenderer();
         this.initCamera();
         this.initLights();
         this.initControls();
         this.initFloor();
+        this.preloadHumanModels();
         this.animate();
 
         window.addEventListener('resize', () => this.onResize());
+    }
+
+    async preloadHumanModels() {
+        const uniqueUrls = [...new Set(Object.values(HUMAN_MODELS))];
+        try {
+            await Promise.all(uniqueUrls.map(url => this.loadHumanModel(url)));
+            this.modelsLoaded = true;
+            this.buildGarment();
+        } catch (err) {
+            console.warn('Could not preload human GLB models, falling back to mannequin', err);
+        }
+    }
+
+    loadHumanModel(url) {
+        if (this.humanModelCache[url]) return Promise.resolve(this.humanModelCache[url]);
+        return new Promise((resolve, reject) => {
+            this.gltfLoader.load(
+                url,
+                (gltf) => {
+                    this.humanModelCache[url] = gltf.scene;
+                    resolve(gltf.scene);
+                },
+                undefined,
+                reject
+            );
+        });
     }
 
     initRenderer() {
@@ -384,7 +422,11 @@ class GarmentScene {
 
         if (this.showAvatar) {
             this.avatarMesh = this.buildAvatar(dims);
-            this.avatarMesh.scale.y = dims.heightScale;
+            // GLB-Avatar skaliert sich selbst auf die Zielhöhe;
+            // beim prozeduralen Fallback muss die Y-Skalierung extern erfolgen.
+            if (!this.avatarMesh.userData.scaled) {
+                this.avatarMesh.scale.y = dims.heightScale;
+            }
             this.scene.add(this.avatarMesh);
         }
 
@@ -442,6 +484,74 @@ class GarmentScene {
        ============================================================ */
 
     buildAvatar(dims) {
+        const preset = dims.preset;
+        const modelUrl = HUMAN_MODELS[preset.gender] || HUMAN_MODELS.male;
+        const sourceModel = this.humanModelCache[modelUrl];
+
+        if (sourceModel) {
+            return this.buildGlbAvatar(sourceModel, dims);
+        }
+        return this.buildProceduralAvatar(dims);
+    }
+
+    buildGlbAvatar(sourceModel, dims) {
+        const group = new THREE.Group();
+        group.name = 'avatar';
+        group.userData.scaled = true;
+        const preset = dims.preset;
+
+        const model = sourceModel.clone(true);
+
+        // Originalgröße ermitteln und auf Zielhöhe skalieren
+        const bbox = new THREE.Box3().setFromObject(model);
+        const modelHeight = bbox.max.y - bbox.min.y;
+        const targetHeight = 1.72 * dims.heightScale;
+        const scale = targetHeight / modelHeight;
+
+        // Genderspezifische Proportionen: weibliche Presets schmaler, weniger Muskelmasse
+        const xzScale = preset.gender === 'female'
+            ? scale * 0.94 * (preset.muscleMod || 1.0)
+            : scale * (preset.muscleMod || 1.0);
+        model.scale.set(xzScale, scale, xzScale);
+
+        // Auf Boden positionieren
+        const newBbox = new THREE.Box3().setFromObject(model);
+        model.position.y = -newBbox.min.y;
+
+        // Front nach +Z drehen
+        model.rotation.y = Math.PI;
+
+        // Hautton + Haare einfärben — nur originale Materialien klonen, damit
+        // Modell-Cache nicht mutiert wird
+        model.traverse(o => {
+            if (o.isMesh && o.material) {
+                if (Array.isArray(o.material)) {
+                    o.material = o.material.map(m => m.clone());
+                } else {
+                    o.material = o.material.clone();
+                }
+                o.castShadow = true;
+                o.receiveShadow = true;
+            }
+        });
+
+        // Hautton subtil anpassen (nicht überschreiben damit Textur erhalten bleibt)
+        const skinTint = new THREE.Color(preset.skinTone);
+        model.traverse(o => {
+            if (o.isMesh && o.material && o.material.color) {
+                const mats = Array.isArray(o.material) ? o.material : [o.material];
+                mats.forEach(m => {
+                    // Subtile Einfärbung — preserve texture brightness
+                    m.color.lerp(skinTint, 0.35);
+                });
+            }
+        });
+
+        group.add(model);
+        return group;
+    }
+
+    buildProceduralAvatar(dims) {
         const group = new THREE.Group();
         group.name = 'avatar';
         const preset = dims.preset;
