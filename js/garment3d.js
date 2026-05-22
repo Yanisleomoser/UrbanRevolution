@@ -445,251 +445,249 @@ class GarmentScene {
         const group = new THREE.Group();
         group.name = 'avatar';
         const preset = dims.preset;
-        const m = this.getMeasurements();
 
         const skinMat = new THREE.MeshStandardMaterial({
-            color: preset.skinTone, roughness: 0.72, metalness: 0.02
+            color: preset.skinTone, roughness: 0.62, metalness: 0.02
         });
         const hairMat = new THREE.MeshStandardMaterial({
-            color: preset.hairColor, roughness: 0.55, metalness: 0.0
+            color: preset.hairColor, roughness: 0.5, metalness: 0.0
         });
 
-        this.buildHead(group, dims, skinMat, hairMat);
-        this.buildTorso(group, dims, skinMat);
-        this.buildArms(group, dims, skinMat);
-        this.buildLegs(group, dims, skinMat);
+        // === EIN-PIECE BODY: Kopf + Hals + Torso + Hüfte als eine glatte Lathe ===
+        const bodyPoints = [
+            // Scheitel
+            [0.003, dims.headY + dims.headR * 1.05],
+            [dims.headR * 0.35, dims.headY + dims.headR * 0.98],
+            [dims.headR * 0.75, dims.headY + dims.headR * 0.75],
+            [dims.headR * 0.95, dims.headY + dims.headR * 0.35],
+            // Schläfe (breitester Punkt)
+            [dims.headR, dims.headY + dims.headR * 0.05],
+            [dims.headR * 0.97, dims.headY - dims.headR * 0.30],
+            // Kiefer
+            [dims.headR * 0.78, dims.headY - dims.headR * 0.65],
+            [dims.headR * 0.52, dims.headY - dims.headR * 0.95],
+            // Hals (sanft)
+            [dims.neckR * 1.0, dims.neckY + 0.02],
+            [dims.neckR * 1.05, dims.neckY - 0.04],
+            [dims.neckR * 1.25, dims.shoulderY + 0.10],
+            // Trapezius — sanfter Hang zur Schulter
+            [dims.shoulderHalfWidth * 0.55, dims.shoulderY + 0.05],
+            [dims.shoulderHalfWidth * 0.78, dims.shoulderY + 0.005],
+            // Brustkorb-Übergang (Schulter zu Brust)
+            [dims.chestR * 1.04, dims.chestY + 0.10],
+            [dims.chestR * 1.0, dims.chestY - 0.02],
+            // Rippenbogen → Taille
+            [(dims.chestR + dims.waistR) / 2 + 0.005, (dims.chestY + dims.waistY) / 2],
+            [dims.waistR, dims.waistY],
+            // Taille → Hüfte
+            [(dims.waistR + dims.hipsR) / 2 + 0.008, (dims.waistY + dims.hipsY) / 2],
+            [dims.hipsR, dims.hipsY],
+            // Hüfte → Schritt
+            [dims.hipsR * 0.95, dims.crotchY + 0.06],
+            [dims.hipsR * 0.78, dims.crotchY + 0.01]
+        ];
+        const body = new THREE.Mesh(
+            new THREE.LatheGeometry(
+                bodyPoints.map(([x, y]) => new THREE.Vector2(x, y)),
+                48
+            ),
+            skinMat
+        );
+        body.scale.z = dims.depthScale;
+        group.add(body);
+
+        // Brust (subtle, für weibliche Presets)
+        if (dims.bust > 0.01) {
+            [-1, 1].forEach(side => {
+                const bust = new THREE.Mesh(
+                    new THREE.SphereGeometry(dims.bust + 0.022, 20, 16),
+                    skinMat
+                );
+                bust.position.set(
+                    side * dims.chestR * 0.40,
+                    dims.chestY + 0.04,
+                    dims.chestR * dims.depthScale * 0.6
+                );
+                bust.scale.set(1, 0.95, 0.65);
+                group.add(bust);
+            });
+        }
+
+        // === ARME: einteilig, sanft tapered, kein sichtbares Gelenk ===
+        const armLen = this.getMeasurements().arm / 100;
+        const armAngle = 0.14;
+
+        [-1, 1].forEach(side => {
+            const sx = side * dims.shoulderHalfWidth * 0.82;
+            const sy = dims.shoulderY - 0.02;
+
+            // Schulterkappe (Deltoid) — überlappt sowohl Körper als auch Arm
+            const delt = new THREE.Mesh(
+                new THREE.SphereGeometry(dims.armR * 1.8, 24, 18),
+                skinMat
+            );
+            delt.position.set(sx, sy + 0.03, 0);
+            delt.scale.set(1.0, 0.95, 1.0);
+            group.add(delt);
+
+            // Ein durchgehender, getaperter Arm (Oberarm → Hand in einem)
+            // Lathe-Geometrie mit subtilem Bizeps und Unterarm-Schwellung
+            const armPts = [
+                [dims.armR * 1.10, 0],
+                [dims.armR * 1.08, armLen * 0.18],   // Bizeps
+                [dims.armR * 0.95, armLen * 0.40],
+                [dims.armR * 0.92, armLen * 0.50],   // Ellenbogen (kaum sichtbar)
+                [dims.armR * 0.98, armLen * 0.62],   // Unterarm
+                [dims.armR * 0.85, armLen * 0.80],
+                [dims.armR * 0.62, armLen * 0.94],   // Handgelenk
+                [dims.armR * 0.55, armLen * 0.99]
+            ];
+            const arm = new THREE.Mesh(
+                new THREE.LatheGeometry(
+                    armPts.map(([x, y]) => new THREE.Vector2(x, y)),
+                    24
+                ),
+                skinMat
+            );
+            arm.position.set(sx, sy + 0.02, 0);
+            arm.rotation.z = side * (Math.PI - armAngle);
+            arm.rotation.y = Math.PI;
+            group.add(arm);
+
+            // Hand — flach abgerundet
+            const handX = sx + side * Math.sin(armAngle) * armLen;
+            const handY = sy + 0.02 - Math.cos(armAngle) * armLen;
+            const hand = new THREE.Mesh(
+                new THREE.SphereGeometry(dims.armR * 1.0, 20, 14),
+                skinMat
+            );
+            hand.position.set(handX, handY - 0.04, 0);
+            hand.scale.set(0.65, 1.5, 0.4);
+            hand.rotation.z = side * -armAngle;
+            group.add(hand);
+        });
+
+        // === BEINE: einteilig, getapert ===
+        const inseam = this.getMeasurements().inseam / 100;
+        const legSpacing = dims.hipsR * 0.42;
+
+        [-1, 1].forEach(side => {
+            const hx = side * legSpacing;
+
+            // Glatter Lathe-Bein (Oberschenkel → Knöchel ohne sichtbares Knie)
+            const legPts = [
+                [dims.legR * 1.20, dims.crotchY],
+                [dims.legR * 1.15, dims.crotchY - inseam * 0.18],
+                [dims.legR * 0.95, dims.crotchY - inseam * 0.35],
+                [dims.legR * 0.85, dims.crotchY - inseam * 0.48],   // Knie-Bereich
+                [dims.legR * 0.78, dims.crotchY - inseam * 0.60],
+                [dims.legR * 0.72, dims.crotchY - inseam * 0.78],   // Wade
+                [dims.legR * 0.50, dims.crotchY - inseam * 0.95],
+                [dims.legR * 0.45, dims.ankleY + 0.02]
+            ];
+            const leg = new THREE.Mesh(
+                new THREE.LatheGeometry(
+                    legPts.map(([x, y]) => new THREE.Vector2(x, y)),
+                    24
+                ),
+                skinMat
+            );
+            leg.position.set(hx, 0, 0);
+            group.add(leg);
+
+            // Fuß
+            const foot = new THREE.Mesh(
+                new THREE.BoxGeometry(dims.legR * 1.30, dims.legR * 0.70, dims.legR * 2.8),
+                skinMat
+            );
+            foot.position.set(hx, dims.ankleY + 0.005, dims.legR * 0.7);
+            group.add(foot);
+
+            // Fußspitze
+            const toe = new THREE.Mesh(
+                new THREE.SphereGeometry(dims.legR * 0.55, 16, 12),
+                skinMat
+            );
+            toe.position.set(hx, dims.ankleY + 0.005, dims.legR * 2.0);
+            toe.scale.set(1.3, 1.0, 1.4);
+            group.add(toe);
+        });
+
+        // === GESICHT (sehr dezent) + HAARE ===
+        this.buildFace(group, dims, skinMat, hairMat);
+        this.buildHair(group, dims, hairMat);
+
+        // Ohren
+        [-1, 1].forEach(side => {
+            const ear = new THREE.Mesh(
+                new THREE.SphereGeometry(dims.headR * 0.16, 14, 12),
+                skinMat
+            );
+            ear.scale.set(0.32, 1.0, 0.65);
+            ear.position.set(side * dims.headR * 0.93, dims.headY + 0.005, 0);
+            group.add(ear);
+        });
 
         group.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
         return group;
     }
 
     buildHead(group, dims, skinMat, hairMat) {
-        const headR = dims.headR;
-        const headY = dims.headY;
-        const preset = dims.preset;
-
-        // Skull — eiförmig
-        const skull = new THREE.Mesh(
-            new THREE.SphereGeometry(headR, 36, 28),
-            skinMat
-        );
-        skull.scale.set(0.92, 1.12, 0.95);
-        skull.position.set(0, headY, 0);
-        group.add(skull);
-
-        // Hals
-        const neckHeight = headY - 0.11 - dims.neckY + 0.02;
-        const neck = new THREE.Mesh(
-            new THREE.CylinderGeometry(dims.neckR * 0.85, dims.neckR * 1.1, neckHeight, 20),
-            skinMat
-        );
-        neck.position.y = (headY - 0.11 + dims.neckY) / 2;
-        group.add(neck);
-
-        // Trapezius / Schulter-Übergang
-        const trap = new THREE.Mesh(
-            new THREE.SphereGeometry(dims.shoulderHalfWidth * 0.7, 20, 12),
-            skinMat
-        );
-        trap.scale.set(1.0, 0.4, 0.7);
-        trap.position.set(0, dims.shoulderY + 0.02, 0);
-        group.add(trap);
-
-        // === Gesichtszüge ===
-        this.buildFace(group, dims, skinMat, hairMat);
-
-        // === Haare ===
-        this.buildHair(group, dims, hairMat);
-
-        // Ohren
-        [-1, 1].forEach(side => {
-            const ear = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.18, 14, 12),
-                skinMat
-            );
-            ear.scale.set(0.35, 1.0, 0.7);
-            ear.position.set(side * headR * 0.86, headY + 0.0, 0);
-            group.add(ear);
-            const earInner = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.07, 10, 8),
-                new THREE.MeshStandardMaterial({ color: preset.skinTone, roughness: 0.85 })
-            );
-            earInner.scale.set(0.25, 0.8, 0.5);
-            earInner.position.set(side * headR * 0.91, headY, 0);
-            group.add(earInner);
-        });
+        // Kept for compatibility — buildAvatar now handles head as part of one-piece body
     }
 
     buildFace(group, dims, skinMat, hairMat) {
         const headR = dims.headR;
         const headY = dims.headY;
         const preset = dims.preset;
-        const faceDepth = headR * 0.92;
+        const faceDepth = headR * dims.depthScale * 1.02;
         const isFemale = preset.gender === 'female';
 
-        // Augenpartie — schwach eingezogen für Realismus
-        const eyeWhiteMat = new THREE.MeshStandardMaterial({
-            color: 0xfaf5e8, roughness: 0.25, metalness: 0.05
+        // Gesicht im Mannequin-Stil: nur dezente Andeutungen.
+        // Subtile dunkle Augen — keine separate Sklera/Iris/Pupille, einfach 2 Punkte.
+        const eyeMat = new THREE.MeshStandardMaterial({
+            color: 0x16110a, roughness: 0.3, metalness: 0.1
         });
-        const irisColor = isFemale ? 0x4a6b3a : 0x3a2010;
-        const irisMat = new THREE.MeshStandardMaterial({
-            color: irisColor, roughness: 0.15, metalness: 0.2
-        });
-        const pupilMat = new THREE.MeshStandardMaterial({
-            color: 0x0a0a0a, roughness: 0.1
-        });
-
         [-1, 1].forEach(side => {
-            // Augenhöhle (leicht dunkler)
-            const socketMat = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(preset.skinTone).multiplyScalar(0.88),
-                roughness: 0.8
-            });
-            const socket = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.16, 16, 12),
-                socketMat
+            const eye = new THREE.Mesh(
+                new THREE.SphereGeometry(headR * 0.075, 14, 10),
+                eyeMat
             );
-            socket.position.set(side * headR * 0.38, headY + headR * 0.10, faceDepth * 0.88);
-            socket.scale.set(1.0, 0.6, 0.3);
-            group.add(socket);
+            eye.position.set(side * headR * 0.32, headY + headR * 0.05, faceDepth * 0.97);
+            eye.scale.set(1.0, 0.55, 0.4);
+            group.add(eye);
+        });
 
-            // Augapfel weiß
-            const eyeWhite = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.13, 18, 14),
-                eyeWhiteMat
-            );
-            eyeWhite.position.set(side * headR * 0.38, headY + headR * 0.10, faceDepth * 0.93);
-            eyeWhite.scale.set(1, 0.7, 0.6);
-            group.add(eyeWhite);
-
-            // Iris
-            const iris = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.06, 14, 10),
-                irisMat
-            );
-            iris.position.set(side * headR * 0.38, headY + headR * 0.10, faceDepth * 1.00);
-            iris.scale.z = 0.7;
-            group.add(iris);
-
-            // Pupille
-            const pupil = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.025, 10, 8),
-                pupilMat
-            );
-            pupil.position.set(side * headR * 0.38, headY + headR * 0.10, faceDepth * 1.02);
-            group.add(pupil);
-
-            // Oberes Augenlid (subtle)
-            const lid = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.14, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
-                skinMat
-            );
-            lid.position.set(side * headR * 0.38, headY + headR * 0.15, faceDepth * 0.92);
-            lid.scale.set(1, 0.45, 0.55);
-            lid.rotation.x = -0.05;
-            group.add(lid);
-
-            // Augenbraue
+        // Augenbrauen — feine Linien
+        [-1, 1].forEach(side => {
             const brow = new THREE.Mesh(
-                new THREE.BoxGeometry(headR * 0.32, headR * 0.04, headR * 0.06),
-                hairMat
+                new THREE.BoxGeometry(headR * 0.26, headR * 0.025, headR * 0.04),
+                new THREE.MeshStandardMaterial({
+                    color: preset.hairColor, roughness: 0.6
+                })
             );
-            brow.position.set(side * headR * 0.38, headY + headR * 0.30, faceDepth * 0.94);
+            brow.position.set(side * headR * 0.32, headY + headR * 0.20, faceDepth * 0.95);
             brow.rotation.z = side * -0.08;
-            brow.rotation.x = -0.2;
             group.add(brow);
         });
 
-        // Nase — drei Komponenten für mehr Tiefe
-        const noseTop = new THREE.Mesh(
-            new THREE.SphereGeometry(headR * 0.08, 14, 10),
+        // Nase — eine sanfte Erhebung als Andeutung
+        const nose = new THREE.Mesh(
+            new THREE.SphereGeometry(headR * 0.10, 14, 10),
             skinMat
         );
-        noseTop.position.set(0, headY + headR * 0.15, faceDepth * 0.95);
-        noseTop.scale.set(0.55, 1.3, 0.7);
-        group.add(noseTop);
+        nose.position.set(0, headY - headR * 0.10, faceDepth * 1.0);
+        nose.scale.set(0.55, 1.3, 0.85);
+        group.add(nose);
 
-        const noseBridge = new THREE.Mesh(
-            new THREE.SphereGeometry(headR * 0.07, 12, 10),
-            skinMat
+        // Mund — eine dünne Linie
+        const lipColor = isFemale ? 0xa05858 : 0x6b3f30;
+        const mouth = new THREE.Mesh(
+            new THREE.BoxGeometry(headR * 0.28, headR * 0.04, headR * 0.04),
+            new THREE.MeshStandardMaterial({ color: lipColor, roughness: 0.6 })
         );
-        noseBridge.position.set(0, headY - headR * 0.05, faceDepth * 1.02);
-        noseBridge.scale.set(0.7, 1.6, 1.0);
-        group.add(noseBridge);
-
-        const noseTip = new THREE.Mesh(
-            new THREE.SphereGeometry(headR * 0.075, 14, 10),
-            skinMat
-        );
-        noseTip.position.set(0, headY - headR * 0.20, faceDepth * 1.05);
-        noseTip.scale.set(1.0, 0.85, 0.95);
-        group.add(noseTip);
-
-        // Nasenflügel
-        [-1, 1].forEach(side => {
-            const nostril = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.04, 10, 8),
-                skinMat
-            );
-            nostril.position.set(side * headR * 0.07, headY - headR * 0.22, faceDepth * 1.00);
-            nostril.scale.set(0.9, 0.7, 0.8);
-            group.add(nostril);
-        });
-
-        // Mund — Oberlippe + Unterlippe
-        const lipColor = isFemale ? 0xc66b6b : 0x7a4838;
-        const lipMat = new THREE.MeshStandardMaterial({
-            color: lipColor, roughness: 0.55, metalness: 0.05
-        });
-
-        const upperLip = new THREE.Mesh(
-            new THREE.SphereGeometry(headR * 0.16, 18, 10),
-            lipMat
-        );
-        upperLip.position.set(0, headY - headR * 0.45, faceDepth * 0.88);
-        upperLip.scale.set(0.9, 0.20, 0.3);
-        group.add(upperLip);
-
-        const lowerLip = new THREE.Mesh(
-            new THREE.SphereGeometry(headR * 0.16, 18, 10),
-            lipMat
-        );
-        lowerLip.position.set(0, headY - headR * 0.52, faceDepth * 0.88);
-        lowerLip.scale.set(0.85, 0.25, 0.32);
-        group.add(lowerLip);
-
-        // Kinn — leichte Wölbung
-        const chin = new THREE.Mesh(
-            new THREE.SphereGeometry(headR * 0.3, 18, 14),
-            skinMat
-        );
-        chin.position.set(0, headY - headR * 0.78, faceDepth * 0.55);
-        chin.scale.set(0.95, 0.55, 0.7);
-        group.add(chin);
-
-        // Wangenknochen
-        [-1, 1].forEach(side => {
-            const cheek = new THREE.Mesh(
-                new THREE.SphereGeometry(headR * 0.16, 14, 12),
-                skinMat
-            );
-            cheek.position.set(side * headR * 0.55, headY - headR * 0.12, faceDepth * 0.65);
-            cheek.scale.set(0.7, 0.85, 0.55);
-            group.add(cheek);
-        });
-
-        // Wimpern (subtil, nur weiblich)
-        if (isFemale) {
-            [-1, 1].forEach(side => {
-                const lash = new THREE.Mesh(
-                    new THREE.BoxGeometry(headR * 0.20, headR * 0.012, headR * 0.02),
-                    new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.5 })
-                );
-                lash.position.set(side * headR * 0.38, headY + headR * 0.20, faceDepth * 1.02);
-                lash.rotation.z = side * -0.1;
-                group.add(lash);
-            });
-        }
+        mouth.position.set(0, headY - headR * 0.45, faceDepth * 0.95);
+        group.add(mouth);
     }
 
     buildHair(group, dims, hairMat) {
@@ -1023,11 +1021,11 @@ class GarmentScene {
     buildTshirt(group, material, dims) {
         const ease = this.getEase();
         const lengthScale = this.getLengthScale();
-        const topR = dims.shoulderHalfWidth * 1.02;
+        const topR = dims.shoulderHalfWidth * 1.04;
         const chestR = dims.chestR * ease;
-        const waistR = dims.waistR * (ease * 0.96);
-        const hemR = dims.hipsR * (ease * 0.92);
-        const hemY = dims.waistY - 0.20 * lengthScale;
+        const waistR = dims.waistR * (ease * 0.98);
+        const hemR = dims.hipsR * (ease * 0.96);
+        const hemY = dims.waistY - 0.06 * lengthScale;
 
         const torsoPts = [
             [topR * 0.78, dims.shoulderY + 0.055],
@@ -1062,13 +1060,13 @@ class GarmentScene {
     }
 
     buildHoodie(group, material, dims) {
-        const ease = this.getEase() * 1.16;
+        const ease = this.getEase() * 1.12;
         const lengthScale = this.getLengthScale();
-        const topR = dims.shoulderHalfWidth * 1.18;
+        const topR = dims.shoulderHalfWidth * 1.14;
         const chestR = dims.chestR * ease;
         const waistR = dims.waistR * ease;
-        const hemR = dims.hipsR * ease;
-        const hemY = dims.waistY - 0.26 * lengthScale;
+        const hemR = dims.hipsR * ease * 0.98;
+        const hemY = dims.waistY - 0.10 * lengthScale;
 
         const torsoPts = [
             [topR * 0.88, dims.shoulderY + 0.08],
@@ -1123,13 +1121,13 @@ class GarmentScene {
     }
 
     buildShirt(group, material, dims) {
-        const ease = this.getEase() * 0.96;
+        const ease = this.getEase() * 0.95;
         const lengthScale = this.getLengthScale();
         const topR = dims.shoulderHalfWidth * 1.04;
         const chestR = dims.chestR * ease;
         const waistR = dims.waistR * (ease * 0.95);
-        const hemR = dims.hipsR * (ease * 0.92);
-        const hemY = dims.waistY - 0.28 * lengthScale;
+        const hemR = dims.hipsR * (ease * 0.94);
+        const hemY = dims.waistY - 0.12 * lengthScale;
 
         const halfPts = [
             [topR * 0.8, dims.shoulderY + 0.045],
@@ -1253,13 +1251,13 @@ class GarmentScene {
     }
 
     buildJacket(group, material, dims) {
-        const ease = this.getEase() * 1.10;
+        const ease = this.getEase() * 1.08;
         const lengthScale = this.getLengthScale();
-        const topR = dims.shoulderHalfWidth * 1.16;
+        const topR = dims.shoulderHalfWidth * 1.14;
         const chestR = dims.chestR * ease;
         const waistR = dims.waistR * ease;
         const hemR = dims.hipsR * ease;
-        const hemY = dims.waistY - 0.22 * lengthScale;
+        const hemY = dims.waistY - 0.09 * lengthScale;
 
         const halfPts = [
             [topR * 0.9, dims.shoulderY + 0.07],
