@@ -192,11 +192,8 @@
             document.querySelectorAll('.type-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.type === design.type);
             });
-            window.garmentScene.setType(design.type);
         }
-        window.garmentScene.setColor(design.color);
-        window.garmentScene.setMaterial(design.material);
-        window.garmentScene.setFit(design.fit);
+        window.garmentScene.applyDesign(design);
     }
 
     function initMeasurements() {
@@ -257,8 +254,19 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                const avatarKey = btn.dataset.avatar;
                 if (window.garmentScene) {
-                    window.garmentScene.setAvatar(btn.dataset.avatar);
+                    window.garmentScene.setAvatar(avatarKey);
+                }
+                // Maße aus dem Preset übernehmen (wenn Toggle aktiv)
+                const loadDefaults = document.getElementById('toggle-load-defaults');
+                if (loadDefaults?.checked && window.AVATAR_PRESETS) {
+                    const preset = window.AVATAR_PRESETS[avatarKey];
+                    if (preset?.defaults) {
+                        Measurements.write({ ...preset.defaults, weight: state.measurements?.weight || 70 });
+                        updateMeasurements();
+                        showToast(`Maße für ${preset.label} geladen`, 'success');
+                    }
                 }
             });
         });
@@ -386,6 +394,17 @@
         window.addEventListener('garment-scene-ready', () => {
             if (state.measurements && window.garmentScene) {
                 window.garmentScene.setMeasurements(state.measurements);
+            }
+        });
+
+        window.addEventListener('avatar-load-result', (e) => {
+            const { loaded, failed, total } = e.detail;
+            if (loaded === total) {
+                showToast('Realistische Avatare geladen', 'success');
+            } else if (loaded > 0) {
+                showToast(`${loaded}/${total} Modelle geladen — Rest nutzt Fallback`, 'info');
+            } else {
+                showToast('Avatar-Modelle konnten nicht geladen werden — verwende Mannequin', 'error');
             }
         });
     }

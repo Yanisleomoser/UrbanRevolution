@@ -757,24 +757,25 @@ select:focus {
     transition: all 0.2s;
 }
 
-/* ====== Avatar Grid ====== */
+/* ====== Avatar Grid — 3 Spalten für 3 Body-Types ====== */
 .avatar-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 12px;
 }
 
 .avatar-btn {
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 12px 6px 8px;
+    padding: 8px 4px 6px;
     border-radius: var(--radius-sm);
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     transition: all 0.2s;
     font-family: inherit;
 }
@@ -793,70 +794,70 @@ select:focus {
 }
 
 .avatar-figure {
-    width: 32px;
-    height: 48px;
+    width: 28px;
+    height: 44px;
     display: block;
     position: relative;
-    margin-bottom: 4px;
-}
-
-.avatar-figure::before,
-.avatar-figure::after {
-    content: '';
-    position: absolute;
-    background: currentColor;
-    border-radius: 50% / 35%;
-    opacity: 0.85;
+    margin-bottom: 2px;
 }
 
 /* head */
 .avatar-figure::before {
-    width: 10px;
+    content: '';
+    position: absolute;
+    background: currentColor;
+    width: 9px;
     height: 10px;
-    border-radius: 50%;
+    border-radius: 50% 50% 45% 45%;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
+    opacity: 0.95;
 }
 
-/* body (will be customized per figure type below) */
+/* body torso */
 .avatar-figure::after {
-    width: 18px;
-    height: 30px;
-    top: 12px;
+    content: '';
+    position: absolute;
+    background: currentColor;
+    top: 11px;
     left: 50%;
     transform: translateX(-50%);
-    border-radius: 6px 6px 8px 8px;
+    opacity: 0.85;
 }
 
-.avatar-figure[data-figure="athletic"]::after {
-    width: 22px;
-    border-radius: 8px 8px 6px 6px;
-    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+/* Male body types — schmaler bis V-Form */
+.avatar-figure[data-gender="male"][data-type="slim"]::after {
+    width: 13px; height: 30px;
+    clip-path: polygon(15% 0, 85% 0, 78% 55%, 82% 100%, 18% 100%, 22% 55%);
+    border-radius: 3px 3px 4px 4px;
+}
+.avatar-figure[data-gender="male"][data-type="regular"]::after {
+    width: 17px; height: 30px;
+    clip-path: polygon(10% 0, 90% 0, 80% 55%, 82% 100%, 18% 100%, 20% 55%);
+    border-radius: 3px 3px 4px 4px;
+}
+.avatar-figure[data-gender="male"][data-type="athletic"]::after {
+    width: 22px; height: 30px;
+    clip-path: polygon(0 0, 100% 0, 75% 55%, 78% 100%, 22% 100%, 25% 55%);
+    border-radius: 4px 4px 4px 4px;
 }
 
-.avatar-figure[data-figure="slim"]::after {
-    width: 14px;
+/* Female body types — Sanduhr in 3 Stufen */
+.avatar-figure[data-gender="female"][data-type="slim"]::after {
+    width: 14px; height: 32px;
+    clip-path: polygon(15% 0, 85% 0, 70% 45%, 90% 100%, 10% 100%, 30% 45%);
+    border-radius: 3px 3px 4px 4px;
+}
+.avatar-figure[data-gender="female"][data-type="regular"]::after {
+    width: 18px; height: 32px;
+    clip-path: polygon(15% 0, 85% 0, 65% 45%, 100% 100%, 0 100%, 35% 45%);
+    border-radius: 3px 3px 5px 5px;
+}
+.avatar-figure[data-gender="female"][data-type="curvy"]::after {
+    width: 22px; height: 32px;
+    clip-path: polygon(20% 0, 80% 0, 55% 40%, 100% 100%, 0 100%, 45% 40%);
     border-radius: 5px 5px 6px 6px;
-}
-
-.avatar-figure[data-figure="average"]::after {
-    width: 18px;
-}
-
-.avatar-figure[data-figure="hourglass"]::after {
-    width: 20px;
-    clip-path: polygon(10% 0, 90% 0, 70% 45%, 100% 100%, 0 100%, 30% 45%);
-}
-
-.avatar-figure[data-figure="curvy"]::after {
-    width: 22px;
-    clip-path: polygon(15% 0, 85% 0, 65% 40%, 100% 100%, 0 100%, 35% 40%);
-}
-
-.avatar-figure[data-figure="mannequin"]::after {
-    background: linear-gradient(180deg, currentColor, transparent);
-    opacity: 0.5;
 }
 
 .avatar-name {
@@ -871,10 +872,16 @@ select:focus {
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: 600;
 }
 
 .avatar-btn.active .avatar-sub {
-    color: var(--text-dim);
+    color: var(--accent);
+}
+
+.avatar-load-toggle {
+    font-size: 11px !important;
+    color: var(--text-muted) !important;
 }
 
 .view-btn:hover, .view-btn.active {
