@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
-/* Lokale CC0-Modelle aus Khronos glTF-Sample-Models (in models/ commited) */
+/* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited) */
 const HUMAN_MODELS = {
-    male_slim:      'models/CesiumMan.glb',
-    male_regular:   'models/CesiumMan.glb',
-    male_athletic:  'models/CesiumMan.glb',
-    female_slim:    'models/BrainStem.glb',
-    female_regular: 'models/BrainStem.glb',
-    female_curvy:   'models/BrainStem.glb'
+    male_slim:      'models/Soldier.glb',
+    male_regular:   'models/Soldier.glb',
+    male_athletic:  'models/Soldier.glb',
+    female_slim:    'models/Michelle.glb',
+    female_regular: 'models/Michelle.glb',
+    female_curvy:   'models/Michelle.glb'
 };
 
 /* Mesh-Namen / Material-Tokens die als eingebaute Kleidung gelten */
@@ -505,7 +506,17 @@ class GarmentScene {
         group.userData.scaled = true;
         const preset = dims.preset;
 
-        const model = sourceModel.clone(true);
+        // SkeletonUtils.clone() statt scene.clone(true) — sonst teilen sich
+        // alle Klone dasselbe Skelett, und Pose/Scale wirken auf den Cache.
+        const model = cloneSkinned(sourceModel);
+
+        // Skelett auf Bind-Pose zurücksetzen, sonst kann das Modell in einem
+        // Animations-Frame eingefroren erscheinen (verrenkt).
+        model.traverse(o => {
+            if (o.isSkinnedMesh && o.skeleton) {
+                o.skeleton.pose();
+            }
+        });
 
         // Eingebaute Default-Kleidung verstecken anhand Mesh/Material-Namen.
         // Klont vorher die Materialien um den Cache nicht zu mutieren.
