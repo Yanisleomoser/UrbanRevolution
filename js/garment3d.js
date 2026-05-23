@@ -2,72 +2,74 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-/* Externe, realistisch modellierte Menschen-Modelle (CDN, CC-Lizenz) */
+/* Lokale CC0-Modelle aus Khronos glTF-Sample-Models (in models/ commited) */
 const HUMAN_MODELS = {
-    male:   'https://unpkg.com/three@0.160.0/examples/models/gltf/Soldier.glb',
-    female: 'https://unpkg.com/three@0.160.0/examples/models/gltf/Soldier.glb'
+    male_slim:      'models/CesiumMan.glb',
+    male_regular:   'models/CesiumMan.glb',
+    male_athletic:  'models/CesiumMan.glb',
+    female_slim:    'models/BrainStem.glb',
+    female_regular: 'models/BrainStem.glb',
+    female_curvy:   'models/BrainStem.glb'
 };
+
+/* Mesh-Namen / Material-Tokens die als eingebaute Kleidung gelten */
+const CLOTHING_NAME_HINTS = /shirt|pants|cloth|uniform|jeans|shoe|dress|jacket|skirt|hat/i;
 
 /* ============================================================
    AVATAR PRESETS — 4 männlich + 4 weiblich + 1 neutral
    ============================================================ */
 
+/* 6 Avatar-Presets: 3 Körperbauten × 2 Geschlechter.
+ * xzScale wirkt auf das geladene GLB-Modell, die Mods skalieren das prozedurale
+ * Fallback-Mannequin und die Maße-Berechnung für die parametrische Kleidung. */
 const AVATAR_PRESETS = {
-    male_s: {
-        label: 'Männlich · S', gender: 'male', size: 'S',
+    male_slim: {
+        label: 'Männlich · Schlank', gender: 'male',
         skinTone: 0xe6c4a1, hairColor: 0x3a2010, hair: 'short',
-        shoulderMod: 0.92, chestMod: 0.90, waistMod: 0.85, hipsMod: 0.92,
+        xzScale: 0.88,
+        shoulderMod: 0.92, chestMod: 0.90, waistMod: 0.82, hipsMod: 0.90,
         muscleMod: 0.82, bust: 0,
-        defaults: { height: 172, chest: 88, waist: 74, hips: 90, shoulder: 41, arm: 60, inseam: 80, neck: 36 }
+        defaults: { height: 178, chest: 90, waist: 74, hips: 90, shoulder: 42, arm: 62, inseam: 82, neck: 36 }
     },
-    male_m: {
-        label: 'Männlich · M', gender: 'male', size: 'M',
+    male_regular: {
+        label: 'Männlich · Durchschnitt', gender: 'male',
         skinTone: 0xd4a37a, hairColor: 0x1a1108, hair: 'short',
+        xzScale: 1.0,
         shoulderMod: 1.0, chestMod: 1.0, waistMod: 0.98, hipsMod: 0.95,
         muscleMod: 1.0, bust: 0,
-        defaults: { height: 178, chest: 98, waist: 84, hips: 98, shoulder: 45, arm: 63, inseam: 84, neck: 38 }
+        defaults: { height: 180, chest: 100, waist: 84, hips: 98, shoulder: 45, arm: 64, inseam: 84, neck: 38 }
     },
-    male_l: {
-        label: 'Männlich · L', gender: 'male', size: 'L',
+    male_athletic: {
+        label: 'Männlich · Athletisch', gender: 'male',
         skinTone: 0xc89878, hairColor: 0x2a1810, hair: 'fade',
-        shoulderMod: 1.10, chestMod: 1.08, waistMod: 0.96, hipsMod: 0.97,
-        muscleMod: 1.18, bust: 0,
-        defaults: { height: 184, chest: 106, waist: 90, hips: 104, shoulder: 48, arm: 66, inseam: 88, neck: 40 }
+        xzScale: 1.12,
+        shoulderMod: 1.18, chestMod: 1.12, waistMod: 0.94, hipsMod: 0.97,
+        muscleMod: 1.20, bust: 0,
+        defaults: { height: 184, chest: 108, waist: 86, hips: 102, shoulder: 50, arm: 66, inseam: 86, neck: 40 }
     },
-    male_xl: {
-        label: 'Männlich · XL', gender: 'male', size: 'XL',
-        skinTone: 0x8b5a3c, hairColor: 0x0d0805, hair: 'short',
-        shoulderMod: 1.15, chestMod: 1.18, waistMod: 1.15, hipsMod: 1.10,
-        muscleMod: 1.15, bust: 0,
-        defaults: { height: 186, chest: 116, waist: 102, hips: 112, shoulder: 50, arm: 68, inseam: 88, neck: 42 }
-    },
-    female_s: {
-        label: 'Weiblich · S', gender: 'female', size: 'S',
+    female_slim: {
+        label: 'Weiblich · Schlank', gender: 'female',
         skinTone: 0xf2d4b8, hairColor: 0x5a2c10, hair: 'long_wavy',
-        shoulderMod: 0.82, chestMod: 0.85, waistMod: 0.80, hipsMod: 0.95,
-        muscleMod: 0.80, bust: 0.030,
-        defaults: { height: 162, chest: 84, waist: 66, hips: 90, shoulder: 38, arm: 56, inseam: 76, neck: 33 }
+        xzScale: 0.86,
+        shoulderMod: 0.84, chestMod: 0.85, waistMod: 0.78, hipsMod: 0.92,
+        muscleMod: 0.80, bust: 0.028,
+        defaults: { height: 168, chest: 84, waist: 66, hips: 90, shoulder: 38, arm: 58, inseam: 78, neck: 33 }
     },
-    female_m: {
-        label: 'Weiblich · M', gender: 'female', size: 'M',
+    female_regular: {
+        label: 'Weiblich · Durchschnitt', gender: 'female',
         skinTone: 0xe6c4a1, hairColor: 0x3a2010, hair: 'bob',
-        shoulderMod: 0.88, chestMod: 0.92, waistMod: 0.85, hipsMod: 1.05,
-        muscleMod: 0.86, bust: 0.038,
-        defaults: { height: 168, chest: 92, waist: 72, hips: 98, shoulder: 40, arm: 58, inseam: 78, neck: 35 }
+        xzScale: 0.96,
+        shoulderMod: 0.90, chestMod: 0.94, waistMod: 0.86, hipsMod: 1.05,
+        muscleMod: 0.88, bust: 0.038,
+        defaults: { height: 170, chest: 92, waist: 72, hips: 98, shoulder: 41, arm: 60, inseam: 80, neck: 35 }
     },
-    female_l: {
-        label: 'Weiblich · L', gender: 'female', size: 'L',
+    female_curvy: {
+        label: 'Weiblich · Kurvig', gender: 'female',
         skinTone: 0xa07556, hairColor: 0x0d0805, hair: 'long_straight',
-        shoulderMod: 0.93, chestMod: 1.0, waistMod: 0.92, hipsMod: 1.12,
-        muscleMod: 0.92, bust: 0.045,
-        defaults: { height: 172, chest: 100, waist: 80, hips: 108, shoulder: 42, arm: 60, inseam: 80, neck: 36 }
-    },
-    female_xl: {
-        label: 'Weiblich · XL', gender: 'female', size: 'XL',
-        skinTone: 0xd4a37a, hairColor: 0x2a1810, hair: 'long_wavy',
-        shoulderMod: 0.98, chestMod: 1.10, waistMod: 1.05, hipsMod: 1.18,
-        muscleMod: 0.95, bust: 0.05,
-        defaults: { height: 174, chest: 110, waist: 92, hips: 118, shoulder: 43, arm: 61, inseam: 80, neck: 37 }
+        xzScale: 1.08,
+        shoulderMod: 0.95, chestMod: 1.05, waistMod: 0.95, hipsMod: 1.20,
+        muscleMod: 0.95, bust: 0.052,
+        defaults: { height: 170, chest: 102, waist: 80, hips: 112, shoulder: 42, arm: 60, inseam: 80, neck: 36 }
     }
 };
 
@@ -241,7 +243,7 @@ class GarmentScene {
         this.currentSecondary = 0xfafafa;
         this.currentMaterial = 'cotton';
         this.currentFit = 0.5;
-        this.currentAvatar = 'male_m';
+        this.currentAvatar = 'male_regular';
         this.currentPattern = 'solid';
         this.currentGraphic = null;
         this.currentSleeve = null;
@@ -270,13 +272,17 @@ class GarmentScene {
 
     async preloadHumanModels() {
         const uniqueUrls = [...new Set(Object.values(HUMAN_MODELS))];
-        try {
-            await Promise.all(uniqueUrls.map(url => this.loadHumanModel(url)));
-            this.modelsLoaded = true;
-            this.buildGarment();
-        } catch (err) {
-            console.warn('Could not preload human GLB models, falling back to mannequin', err);
+        const results = await Promise.allSettled(uniqueUrls.map(url => this.loadHumanModel(url)));
+        const loaded = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.length - loaded;
+        this.modelsLoaded = loaded > 0;
+        if (loaded > 0) this.buildGarment();
+        if (failed > 0) {
+            console.warn(`[avatar] ${failed}/${results.length} GLB models failed to load`);
         }
+        window.dispatchEvent(new CustomEvent('avatar-load-result', {
+            detail: { loaded, failed, total: results.length }
+        }));
     }
 
     loadHumanModel(url) {
@@ -484,9 +490,8 @@ class GarmentScene {
        ============================================================ */
 
     buildAvatar(dims) {
-        const preset = dims.preset;
-        const modelUrl = HUMAN_MODELS[preset.gender] || HUMAN_MODELS.male;
-        const sourceModel = this.humanModelCache[modelUrl];
+        const modelUrl = HUMAN_MODELS[this.currentAvatar];
+        const sourceModel = modelUrl ? this.humanModelCache[modelUrl] : null;
 
         if (sourceModel) {
             return this.buildGlbAvatar(sourceModel, dims);
@@ -502,48 +507,52 @@ class GarmentScene {
 
         const model = sourceModel.clone(true);
 
+        // Eingebaute Default-Kleidung verstecken anhand Mesh/Material-Namen.
+        // Klont vorher die Materialien um den Cache nicht zu mutieren.
+        let hiddenCount = 0;
+        model.traverse(o => {
+            if (!o.isMesh) return;
+            if (Array.isArray(o.material)) {
+                o.material = o.material.map(m => m.clone());
+            } else if (o.material) {
+                o.material = o.material.clone();
+            }
+            o.castShadow = true;
+            o.receiveShadow = true;
+
+            const meshName = (o.name || '').toLowerCase();
+            const matNames = (Array.isArray(o.material) ? o.material : [o.material])
+                .map(m => (m && m.name) ? m.name.toLowerCase() : '').join(' ');
+            if (CLOTHING_NAME_HINTS.test(meshName) || CLOTHING_NAME_HINTS.test(matNames)) {
+                o.visible = false;
+                hiddenCount++;
+            }
+        });
+        if (hiddenCount > 0) {
+            console.debug(`[avatar] hid ${hiddenCount} clothing meshes on ${this.currentAvatar}`);
+        }
+
         // Originalgröße ermitteln und auf Zielhöhe skalieren
         const bbox = new THREE.Box3().setFromObject(model);
         const modelHeight = bbox.max.y - bbox.min.y;
         const targetHeight = 1.72 * dims.heightScale;
-        const scale = targetHeight / modelHeight;
-
-        // Genderspezifische Proportionen: weibliche Presets schmaler, weniger Muskelmasse
-        const xzScale = preset.gender === 'female'
-            ? scale * 0.94 * (preset.muscleMod || 1.0)
-            : scale * (preset.muscleMod || 1.0);
-        model.scale.set(xzScale, scale, xzScale);
+        const yScale = targetHeight / modelHeight;
+        const xzScale = yScale * (preset.xzScale || 1.0);
+        model.scale.set(xzScale, yScale, xzScale);
 
         // Auf Boden positionieren
         const newBbox = new THREE.Box3().setFromObject(model);
         model.position.y = -newBbox.min.y;
 
-        // Front nach +Z drehen
+        // Front nach +Z drehen (Khronos-Modelle blicken oft in -Z)
         model.rotation.y = Math.PI;
 
-        // Hautton + Haare einfärben — nur originale Materialien klonen, damit
-        // Modell-Cache nicht mutiert wird
-        model.traverse(o => {
-            if (o.isMesh && o.material) {
-                if (Array.isArray(o.material)) {
-                    o.material = o.material.map(m => m.clone());
-                } else {
-                    o.material = o.material.clone();
-                }
-                o.castShadow = true;
-                o.receiveShadow = true;
-            }
-        });
-
-        // Hautton subtil anpassen (nicht überschreiben damit Textur erhalten bleibt)
+        // Subtile Hautton-Einfärbung — preserve texture brightness
         const skinTint = new THREE.Color(preset.skinTone);
         model.traverse(o => {
-            if (o.isMesh && o.material && o.material.color) {
+            if (o.isMesh && o.visible && o.material && o.material.color) {
                 const mats = Array.isArray(o.material) ? o.material : [o.material];
-                mats.forEach(m => {
-                    // Subtile Einfärbung — preserve texture brightness
-                    m.color.lerp(skinTint, 0.35);
-                });
+                mats.forEach(m => m.color.lerp(skinTint, 0.30));
             }
         });
 

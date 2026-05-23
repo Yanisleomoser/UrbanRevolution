@@ -396,6 +396,17 @@
                 window.garmentScene.setMeasurements(state.measurements);
             }
         });
+
+        window.addEventListener('avatar-load-result', (e) => {
+            const { loaded, failed, total } = e.detail;
+            if (loaded === total) {
+                showToast('Realistische Avatare geladen', 'success');
+            } else if (loaded > 0) {
+                showToast(`${loaded}/${total} Modelle geladen — Rest nutzt Fallback`, 'info');
+            } else {
+                showToast('Avatar-Modelle konnten nicht geladen werden — verwende Mannequin', 'error');
+            }
+        });
     }
 
     if (document.readyState === 'loading') {

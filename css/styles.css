@@ -757,10 +757,10 @@ select:focus {
     transition: all 0.2s;
 }
 
-/* ====== Avatar Grid ====== */
+/* ====== Avatar Grid — 3 Spalten für 3 Body-Types ====== */
 .avatar-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 6px;
     margin-bottom: 12px;
 }
@@ -826,53 +826,38 @@ select:focus {
     opacity: 0.85;
 }
 
-/* Male shapes - rectangular V */
-.avatar-figure[data-gender="male"][data-size="S"]::after {
-    width: 12px; height: 30px;
-    clip-path: polygon(15% 0, 85% 0, 75% 60%, 80% 100%, 20% 100%, 25% 60%);
+/* Male body types — schmaler bis V-Form */
+.avatar-figure[data-gender="male"][data-type="slim"]::after {
+    width: 13px; height: 30px;
+    clip-path: polygon(15% 0, 85% 0, 78% 55%, 82% 100%, 18% 100%, 22% 55%);
     border-radius: 3px 3px 4px 4px;
 }
-.avatar-figure[data-gender="male"][data-size="M"]::after {
-    width: 16px; height: 30px;
+.avatar-figure[data-gender="male"][data-type="regular"]::after {
+    width: 17px; height: 30px;
     clip-path: polygon(10% 0, 90% 0, 80% 55%, 82% 100%, 18% 100%, 20% 55%);
     border-radius: 3px 3px 4px 4px;
 }
-.avatar-figure[data-gender="male"][data-size="L"]::after {
-    width: 20px; height: 30px;
-    clip-path: polygon(5% 0, 95% 0, 80% 55%, 82% 100%, 18% 100%, 20% 55%);
+.avatar-figure[data-gender="male"][data-type="athletic"]::after {
+    width: 22px; height: 30px;
+    clip-path: polygon(0 0, 100% 0, 75% 55%, 78% 100%, 22% 100%, 25% 55%);
     border-radius: 4px 4px 4px 4px;
 }
-.avatar-figure[data-gender="male"][data-size="XL"]::after {
-    width: 22px; height: 30px;
-    clip-path: polygon(5% 0, 95% 0, 90% 50%, 88% 100%, 12% 100%, 10% 50%);
-    border-radius: 4px 4px 5px 5px;
-}
 
-/* Female shapes - hourglass */
-.avatar-figure[data-gender="female"][data-size="S"]::after {
+/* Female body types — Sanduhr in 3 Stufen */
+.avatar-figure[data-gender="female"][data-type="slim"]::after {
     width: 14px; height: 32px;
-    clip-path: polygon(15% 0, 85% 0, 70% 45%, 95% 100%, 5% 100%, 30% 45%);
+    clip-path: polygon(15% 0, 85% 0, 70% 45%, 90% 100%, 10% 100%, 30% 45%);
     border-radius: 3px 3px 4px 4px;
 }
-.avatar-figure[data-gender="female"][data-size="M"]::after {
-    width: 17px; height: 32px;
+.avatar-figure[data-gender="female"][data-type="regular"]::after {
+    width: 18px; height: 32px;
     clip-path: polygon(15% 0, 85% 0, 65% 45%, 100% 100%, 0 100%, 35% 45%);
     border-radius: 3px 3px 5px 5px;
 }
-.avatar-figure[data-gender="female"][data-size="L"]::after {
-    width: 20px; height: 32px;
-    clip-path: polygon(18% 0, 82% 0, 60% 45%, 100% 100%, 0 100%, 40% 45%);
-    border-radius: 4px 4px 5px 5px;
-}
-.avatar-figure[data-gender="female"][data-size="XL"]::after {
-    width: 23px; height: 32px;
-    clip-path: polygon(20% 0, 80% 0, 58% 45%, 100% 100%, 0 100%, 42% 45%);
+.avatar-figure[data-gender="female"][data-type="curvy"]::after {
+    width: 22px; height: 32px;
+    clip-path: polygon(20% 0, 80% 0, 55% 40%, 100% 100%, 0 100%, 45% 40%);
     border-radius: 5px 5px 6px 6px;
-}
-
-/* Size badge */
-.avatar-figure[data-size]::after {
-    position: absolute;
 }
 
 .avatar-name {
