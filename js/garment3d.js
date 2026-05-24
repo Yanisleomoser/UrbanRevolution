@@ -5,9 +5,9 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
 /* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited) */
 const HUMAN_MODELS = {
-    male_slim:      'models/Soldier.glb',
-    male_regular:   'models/Soldier.glb',
-    male_athletic:  'models/Soldier.glb',
+    male_slim:      'models/CesiumMan.glb',
+    male_regular:   'models/CesiumMan.glb',
+    male_athletic:  'models/CesiumMan.glb',
     female_slim:    'models/Michelle.glb',
     female_regular: 'models/Michelle.glb',
     female_curvy:   'models/Michelle.glb'
