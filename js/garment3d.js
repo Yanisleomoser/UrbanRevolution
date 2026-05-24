@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-/* Lokale CC0-Modelle aus Khronos glTF-Sample-Models (in models/ commited) */
+/* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited) */
 const HUMAN_MODELS = {
-    male_slim:      'models/CesiumMan.glb',
-    male_regular:   'models/CesiumMan.glb',
-    male_athletic:  'models/CesiumMan.glb',
-    female_slim:    'models/BrainStem.glb',
-    female_regular: 'models/BrainStem.glb',
-    female_curvy:   'models/BrainStem.glb'
+    male_slim:      'models/Soldier.glb',
+    male_regular:   'models/Soldier.glb',
+    male_athletic:  'models/Soldier.glb',
+    female_slim:    'models/Michelle.glb',
+    female_regular: 'models/Michelle.glb',
+    female_curvy:   'models/Michelle.glb'
 };
 
 /* Mesh-Namen / Material-Tokens die als eingebaute Kleidung gelten */
@@ -287,15 +287,25 @@ class GarmentScene {
 
     loadHumanModel(url) {
         if (this.humanModelCache[url]) return Promise.resolve(this.humanModelCache[url]);
+        console.info(`[avatar] loading ${url}`);
         return new Promise((resolve, reject) => {
             this.gltfLoader.load(
                 url,
                 (gltf) => {
+                    console.info(`[avatar] ✓ loaded ${url} — ${gltf.scene.children.length} root children`);
                     this.humanModelCache[url] = gltf.scene;
                     resolve(gltf.scene);
                 },
-                undefined,
-                reject
+                (progress) => {
+                    if (progress.total) {
+                        const pct = Math.round((progress.loaded / progress.total) * 100);
+                        if (pct % 25 === 0) console.info(`[avatar] ${url}: ${pct}%`);
+                    }
+                },
+                (err) => {
+                    console.error(`[avatar] ✗ failed ${url}:`, err);
+                    reject(err);
+                }
             );
         });
     }
@@ -505,11 +515,10 @@ class GarmentScene {
         group.userData.scaled = true;
         const preset = dims.preset;
 
+        // Plain clone — schlanker, weniger Fehlerpotential als SkeletonUtils
         const model = sourceModel.clone(true);
 
-        // Eingebaute Default-Kleidung verstecken anhand Mesh/Material-Namen.
-        // Klont vorher die Materialien um den Cache nicht zu mutieren.
-        let hiddenCount = 0;
+        // Materialien klonen damit Tints nicht den Cache modifizieren
         model.traverse(o => {
             if (!o.isMesh) return;
             if (Array.isArray(o.material)) {
@@ -519,42 +528,33 @@ class GarmentScene {
             }
             o.castShadow = true;
             o.receiveShadow = true;
-
-            const meshName = (o.name || '').toLowerCase();
-            const matNames = (Array.isArray(o.material) ? o.material : [o.material])
-                .map(m => (m && m.name) ? m.name.toLowerCase() : '').join(' ');
-            if (CLOTHING_NAME_HINTS.test(meshName) || CLOTHING_NAME_HINTS.test(matNames)) {
-                o.visible = false;
-                hiddenCount++;
-            }
         });
-        if (hiddenCount > 0) {
-            console.debug(`[avatar] hid ${hiddenCount} clothing meshes on ${this.currentAvatar}`);
-        }
 
-        // Originalgröße ermitteln und auf Zielhöhe skalieren
+        // Bbox VOR dem Skalieren ermitteln
+        model.updateMatrixWorld(true);
         const bbox = new THREE.Box3().setFromObject(model);
         const modelHeight = bbox.max.y - bbox.min.y;
-        const targetHeight = 1.72 * dims.heightScale;
-        const yScale = targetHeight / modelHeight;
-        const xzScale = yScale * (preset.xzScale || 1.0);
-        model.scale.set(xzScale, yScale, xzScale);
+        const modelWidth = bbox.max.x - bbox.min.x;
 
-        // Auf Boden positionieren
-        const newBbox = new THREE.Box3().setFromObject(model);
-        model.position.y = -newBbox.min.y;
+        console.info(`[avatar] ${this.currentAvatar} loaded — bbox: ${modelHeight.toFixed(2)}m × ${modelWidth.toFixed(2)}m`);
 
-        // Front nach +Z drehen (Khronos-Modelle blicken oft in -Z)
+        if (modelHeight < 0.1) {
+            console.warn(`[avatar] ${this.currentAvatar} has near-zero bbox, using fallback scale`);
+            model.scale.setScalar(dims.heightScale);
+        } else {
+            const targetHeight = 1.72 * dims.heightScale;
+            const yScale = targetHeight / modelHeight;
+            const xzScale = yScale * (preset.xzScale || 1.0);
+            model.scale.set(xzScale, yScale, xzScale);
+        }
+
+        // Auf Boden positionieren — Bbox nach Skalierung neu berechnen
+        model.updateMatrixWorld(true);
+        const finalBbox = new THREE.Box3().setFromObject(model);
+        model.position.y = -finalBbox.min.y;
+
+        // Modelle sind oft in -Z orientiert; auf +Z drehen (zum Betrachter)
         model.rotation.y = Math.PI;
-
-        // Subtile Hautton-Einfärbung — preserve texture brightness
-        const skinTint = new THREE.Color(preset.skinTone);
-        model.traverse(o => {
-            if (o.isMesh && o.visible && o.material && o.material.color) {
-                const mats = Array.isArray(o.material) ? o.material : [o.material];
-                mats.forEach(m => m.color.lerp(skinTint, 0.30));
-            }
-        });
 
         group.add(model);
         return group;
