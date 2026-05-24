@@ -1,4 +1,4 @@
-# Urban Revolution
+username.github.io
 
 AI-gestütztes Mode-Atelier: Kunden beschreiben ihr Wunschkleidungsstück per
 Text-Prompt, die KI generiert ein Designkonzept, ein parametrisches
