@@ -1,24 +1,17 @@
 {
-  "name": "primary",
+  "name": "urban-revolution",
   "version": "1.0.0",
-  "description": "username.github.io",
-  "main": "index.js",
+  "description": "AI Fashion Atelier - Urban Revolution",
+  "private": true,
   "scripts": {
-    "dev": "npx http-server -p 3000",
-    "test": "echo \"No tests specified\" && exit 0"
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build needed'",
+    "lint": "echo 'No linter configured'"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yanismoser-spec/UrbanRevolution.git"
-  },
-  "keywords": [],
+  "keywords": ["fashion", "ai", "3d"],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/yanismoser-spec/UrbanRevolution/issues"
-  },
-  "homepage": "https://github.com/yanismoser-spec/UrbanRevolution#readme",
   "dependencies": {
-    "@vercel/analytics": "^2.0.1"
+    "@vercel/speed-insights": "^1.0.0"
   }
 }
