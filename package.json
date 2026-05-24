@@ -1,0 +1,24 @@
+{
+  "name": "primary",
+  "version": "1.0.0",
+  "description": "username.github.io",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx http-server -p 3000",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanismoser-spec/UrbanRevolution.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yanismoser-spec/UrbanRevolution/issues"
+  },
+  "homepage": "https://github.com/yanismoser-spec/UrbanRevolution#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
