@@ -436,13 +436,17 @@ class GarmentScene {
         if (this.graphicMesh) { this.scene.remove(this.graphicMesh); this.disposeGroup(this.graphicMesh); }
 
         const dims = this.getBodyDimensions();
+        const usingGlbAvatar = this.showAvatar && this.isGlbAvatarAvailable();
 
         if (this.showAvatar) {
             this.avatarMesh = this.buildAvatar(dims);
-            // GLB-Avatar skaliert sich selbst auf die Zielhöhe;
-            // beim prozeduralen Fallback muss die Y-Skalierung extern erfolgen.
             if (!this.avatarMesh.userData.scaled) {
                 this.avatarMesh.scale.y = dims.heightScale;
+            }
+            // Wenn GLB-Avatar: User-Designfarbe auf die eingebaute Kleidung
+            // des Modells anwenden, damit "Try-On" Feeling entsteht
+            if (this.avatarMesh.userData.scaled) {
+                this.applyDesignToGlbClothing(this.avatarMesh);
             }
             this.scene.add(this.avatarMesh);
         }
@@ -466,6 +470,9 @@ class GarmentScene {
 
         const group = new THREE.Group();
         group.name = 'garment';
+        // Bei GLB-Avatar parametrische Kleidung ausblenden — sie sitzt nicht
+        // auf dem Körper, und der Avatar trägt jetzt unsere Designfarbe.
+        group.visible = !usingGlbAvatar;
 
         const builder = {
             tshirt: this.buildTshirt, hoodie: this.buildHoodie, shirt: this.buildShirt,
@@ -510,24 +517,68 @@ class GarmentScene {
         return this.buildProceduralAvatar(dims);
     }
 
+    isGlbAvatarAvailable() {
+        const url = HUMAN_MODELS[this.currentAvatar];
+        return !!(url && this.humanModelCache[url]);
+    }
+
+    /**
+     * Wendet die vom User gewählte Designfarbe + Muster auf die größte
+     * Mesh-Komponente des GLB-Avatars an (Heuristik: das größte Mesh ist
+     * Body+Outfit, kleinere sind Details wie Augen/Haare).
+     */
+    applyDesignToGlbClothing(avatarGroup) {
+        const designColor = new THREE.Color(this.currentColor);
+        const matProps = this.getMaterialProps(this.currentMaterial);
+
+        const meshes = [];
+        avatarGroup.traverse(o => {
+            if (o.isMesh && o.geometry && o.geometry.attributes.position) {
+                meshes.push({ mesh: o, verts: o.geometry.attributes.position.count });
+            }
+        });
+        if (meshes.length === 0) return;
+
+        // Größtes Mesh = Outfit, wird umgefärbt
+        meshes.sort((a, b) => b.verts - a.verts);
+        const target = meshes[0].mesh;
+
+        const mats = Array.isArray(target.material) ? target.material : [target.material];
+        mats.forEach(m => {
+            if (!m || !m.color) return;
+            m.color.copy(designColor);
+            m.roughness = matProps.roughness;
+            m.metalness = matProps.metalness;
+            if (this.currentPattern && this.currentPattern !== 'solid') {
+                const primaryHex = '#' + this.currentColor.toString(16).padStart(6, '0');
+                const secondaryHex = '#' + this.currentSecondary.toString(16).padStart(6, '0');
+                if (m.map) m.map.dispose();
+                m.map = generatePatternTexture(
+                    this.currentPattern, primaryHex, secondaryHex, this.currentMaterial
+                );
+            } else if (m.map) {
+                m.map = null;
+            }
+            m.needsUpdate = true;
+        });
+    }
+
     buildGlbAvatar(sourceModel, dims) {
         const group = new THREE.Group();
         group.name = 'avatar';
         group.userData.scaled = true;
         const preset = dims.preset;
 
-        // KRITISCH: SkeletonUtils.clone() für gerigte Meshes — plain
-        // scene.clone() lässt die SkinnedMesh-Bones auf das Original
-        // zeigen, was beim Rendern oft zum Kollaps des Meshes führt.
+        // SkeletonUtils.clone für gerigte Meshes
         let model;
         try {
             model = cloneSkinned(sourceModel);
         } catch (err) {
-            console.warn('[avatar] SkeletonUtils.clone failed, falling back to plain clone:', err);
+            console.warn('[avatar] SkeletonUtils.clone failed:', err);
             model = sourceModel.clone(true);
         }
 
-        // Materialien klonen damit Tints nicht den Cache modifizieren
+        // Materialien klonen + Frustum-Culling für SkinnedMesh ausschalten
         model.traverse(o => {
             if (!o.isMesh) return;
             if (Array.isArray(o.material)) {
@@ -535,45 +586,38 @@ class GarmentScene {
             } else if (o.material) {
                 o.material = o.material.clone();
             }
-            // Frustum-Culling für SkinnedMesh deaktivieren — Three.js berechnet
-            // sonst die Sichtbarkeit aus der statischen Geometrie, die durch
-            // Bones woanders sein kann → Mesh wird fälschlich weggeculled.
             if (o.isSkinnedMesh) o.frustumCulled = false;
             o.castShadow = true;
             o.receiveShadow = true;
         });
 
-        // Bbox manuell aus SkinnedMesh-Geometrie ableiten (zuverlässiger als
-        // setFromObject das Bones ignoriert)
-        const bbox = new THREE.Box3();
-        model.traverse(o => {
-            if (o.isMesh && o.geometry) {
-                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-                const b = o.geometry.boundingBox.clone();
-                bbox.union(b);
-            }
-        });
-        const modelHeight = bbox.max.y - bbox.min.y;
-        const modelWidth  = bbox.max.x - bbox.min.x;
+        // Bbox aus tatsächlichem Welt-Mesh ableiten (mit Bone-Transform)
+        model.updateMatrixWorld(true);
+        const bbox = new THREE.Box3().setFromObject(model);
+        let modelHeight = bbox.max.y - bbox.min.y;
 
-        console.info(`[avatar] ${this.currentAvatar} bbox raw: ${modelHeight.toFixed(2)}m × ${modelWidth.toFixed(2)}m`);
+        // Fallback wenn Bbox kaputt
+        if (!isFinite(modelHeight) || modelHeight < 0.05) {
+            console.warn(`[avatar] degenerate bbox (${modelHeight}), assuming meter scale`);
+            modelHeight = 1.72;
+        }
 
-        // Defensive: wenn Bbox kaputt, fester Fallback-Scale damit das Modell
-        // sicher sichtbar wird.
+        console.info(`[avatar] ${this.currentAvatar} native: ${modelHeight.toFixed(2)}m`);
+
+        // Auf Ziel-Höhe skalieren (User-Größe in m)
         const targetHeight = 1.72 * dims.heightScale;
-        const yScale = modelHeight > 0.1
-            ? targetHeight / modelHeight
-            : targetHeight;          // assume model is 1 unit tall
+        const yScale = targetHeight / modelHeight;
         const xzScale = yScale * (preset.xzScale || 1.0);
         model.scale.set(xzScale, yScale, xzScale);
 
-        // Modell auf Boden setzen (Bbox-min × scale)
-        const groundY = bbox.min.y * yScale;
-        model.position.y = -groundY;
+        // Füße auf Boden (y=0) bringen
+        model.updateMatrixWorld(true);
+        const scaledBbox = new THREE.Box3().setFromObject(model);
+        model.position.y = -scaledBbox.min.y;
 
-        // Mixamo-Charaktere blicken in -Z → auf +Z drehen damit der User
-        // sie von vorne sieht.
-        model.rotation.y = Math.PI;
+        // KEINE Rotation! Mixamo/glTF-Modelle blicken bereits in +Z Richtung
+        // (= zum Kamera-Position der bei z=+4.2 steht). Die vorherige
+        // Math.PI-Rotation drehte sie weg von der Kamera (User sah Rücken).
 
         group.add(model);
         return group;
