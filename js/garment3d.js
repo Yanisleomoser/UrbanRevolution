@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
 /* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited) */
 const HUMAN_MODELS = {
@@ -515,8 +516,16 @@ class GarmentScene {
         group.userData.scaled = true;
         const preset = dims.preset;
 
-        // Plain clone — schlanker, weniger Fehlerpotential als SkeletonUtils
-        const model = sourceModel.clone(true);
+        // KRITISCH: SkeletonUtils.clone() für gerigte Meshes — plain
+        // scene.clone() lässt die SkinnedMesh-Bones auf das Original
+        // zeigen, was beim Rendern oft zum Kollaps des Meshes führt.
+        let model;
+        try {
+            model = cloneSkinned(sourceModel);
+        } catch (err) {
+            console.warn('[avatar] SkeletonUtils.clone failed, falling back to plain clone:', err);
+            model = sourceModel.clone(true);
+        }
 
         // Materialien klonen damit Tints nicht den Cache modifizieren
         model.traverse(o => {
@@ -526,34 +535,44 @@ class GarmentScene {
             } else if (o.material) {
                 o.material = o.material.clone();
             }
+            // Frustum-Culling für SkinnedMesh deaktivieren — Three.js berechnet
+            // sonst die Sichtbarkeit aus der statischen Geometrie, die durch
+            // Bones woanders sein kann → Mesh wird fälschlich weggeculled.
+            if (o.isSkinnedMesh) o.frustumCulled = false;
             o.castShadow = true;
             o.receiveShadow = true;
         });
 
-        // Bbox VOR dem Skalieren ermitteln
-        model.updateMatrixWorld(true);
-        const bbox = new THREE.Box3().setFromObject(model);
+        // Bbox manuell aus SkinnedMesh-Geometrie ableiten (zuverlässiger als
+        // setFromObject das Bones ignoriert)
+        const bbox = new THREE.Box3();
+        model.traverse(o => {
+            if (o.isMesh && o.geometry) {
+                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+                const b = o.geometry.boundingBox.clone();
+                bbox.union(b);
+            }
+        });
         const modelHeight = bbox.max.y - bbox.min.y;
-        const modelWidth = bbox.max.x - bbox.min.x;
+        const modelWidth  = bbox.max.x - bbox.min.x;
 
-        console.info(`[avatar] ${this.currentAvatar} loaded — bbox: ${modelHeight.toFixed(2)}m × ${modelWidth.toFixed(2)}m`);
+        console.info(`[avatar] ${this.currentAvatar} bbox raw: ${modelHeight.toFixed(2)}m × ${modelWidth.toFixed(2)}m`);
 
-        if (modelHeight < 0.1) {
-            console.warn(`[avatar] ${this.currentAvatar} has near-zero bbox, using fallback scale`);
-            model.scale.setScalar(dims.heightScale);
-        } else {
-            const targetHeight = 1.72 * dims.heightScale;
-            const yScale = targetHeight / modelHeight;
-            const xzScale = yScale * (preset.xzScale || 1.0);
-            model.scale.set(xzScale, yScale, xzScale);
-        }
+        // Defensive: wenn Bbox kaputt, fester Fallback-Scale damit das Modell
+        // sicher sichtbar wird.
+        const targetHeight = 1.72 * dims.heightScale;
+        const yScale = modelHeight > 0.1
+            ? targetHeight / modelHeight
+            : targetHeight;          // assume model is 1 unit tall
+        const xzScale = yScale * (preset.xzScale || 1.0);
+        model.scale.set(xzScale, yScale, xzScale);
 
-        // Auf Boden positionieren — Bbox nach Skalierung neu berechnen
-        model.updateMatrixWorld(true);
-        const finalBbox = new THREE.Box3().setFromObject(model);
-        model.position.y = -finalBbox.min.y;
+        // Modell auf Boden setzen (Bbox-min × scale)
+        const groundY = bbox.min.y * yScale;
+        model.position.y = -groundY;
 
-        // Modelle sind oft in -Z orientiert; auf +Z drehen (zum Betrachter)
+        // Mixamo-Charaktere blicken in -Z → auf +Z drehen damit der User
+        // sie von vorne sieht.
         model.rotation.y = Math.PI;
 
         group.add(model);
