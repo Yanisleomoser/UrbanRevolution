@@ -48,8 +48,10 @@ controller-only `app.js` (no export).
 import map. It loads with `<script type="module">`, exposes
 `window.GarmentScene` (the class) and `window.garmentScene` (the live
 instance), and fires a `garment-scene-ready` event on `window` once
-constructed. `app.js` listens for that event before pushing initial
-measurements into the scene.
+constructed. Both `app.js` and `garment3d.js` register their own
+`DOMContentLoaded` listeners; the custom event is what keeps them
+ordered — `app.js` waits for `garment-scene-ready` before pushing the
+initial measurements into the scene.
 
 Cross-module communication is via these window globals. When adding code,
 follow the existing pattern instead of introducing a bundler or new module
@@ -105,6 +107,23 @@ Six types flow through every layer: `tshirt`, `hoodie`, `shirt`, `pants`,
 Missing any one of these causes silent fallbacks (`'tshirt'` default,
 default fabric factor of `1.5`, default seam length `200`).
 
+## Materials and measurements
+
+Seven materials flow through the app: `cotton`, `linen`, `denim`, `wool`,
+`fleece`, `silk`, `polyester`. They must stay in lock-step across three
+places — the `<select id="material-select">` in `index.html`, the
+`MATERIAL_DICT` aliases in `js/ai.js`, and `getMaterialProps` (roughness /
+metalness for the PBR material) in `js/garment3d.js`. Unknown materials
+fall back to cotton in the 3D scene.
+
+Nine body measurements are tracked: `height`, `weight`, `chest`, `waist`,
+`hips`, `shoulder`, `arm`, `inseam`, `neck`. The canonical list is
+`Measurements.FIELDS`; the display strings are in `Measurements.LABELS`
+(German). Adding a field means: a numeric `<input>` in `index.html`, the
+key in `FIELDS` + `LABELS` + every `PRESETS` entry (`S` / `M` / `L` /
+`XL`), and — if the value should affect geometry — a `*Scale` in
+`buildGarment` of `js/garment3d.js`.
+
 ## State flow
 
 `app.js` owns a single `state` object: `{ currentDesign, currentType,
@@ -124,6 +143,11 @@ of hardcoding hex values. The pink→purple→cyan gradient (`--gradient`) is a
 core brand element used on hero text, primary buttons, and accents in the
 3D lights (`initLights` in `garment3d.js` mirrors it with pink fill and
 purple rim lights).
+
+The `@media print` block at the bottom of `styles.css` hides everything
+except `.spec-sheet` — `Export.print()` (which calls `window.print()`)
+relies on that. If you wrap the spec sheet in a new container, update the
+print selector accordingly.
 
 ## Conventions worth keeping
 
