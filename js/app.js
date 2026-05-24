@@ -212,7 +212,64 @@
             });
         });
 
+        initPoseUpload();
         updateMeasurements();
+    }
+
+    function initPoseUpload() {
+        const fileInput = document.getElementById('pose-photo');
+        const uploadBtn = document.getElementById('pose-upload-btn');
+        const statusEl = document.getElementById('pose-status');
+        const previewWrap = document.getElementById('pose-preview');
+        const canvas = document.getElementById('pose-canvas');
+
+        if (!fileInput || !uploadBtn || !canvas) return;
+
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileInput.value = '';
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Lade Modell...';
+            statusEl.textContent = '';
+
+            try {
+                await window.Pose.init();
+                uploadBtn.textContent = 'Analysiere...';
+                statusEl.textContent = 'Erkenne Pose...';
+
+                const { result, img } = await window.Pose.detect(file);
+
+                if (!result.landmarks || !result.landmarks[0]) {
+                    showToast('Keine Person im Foto erkannt — bitte Ganzkörper-Aufnahme', 'error');
+                    statusEl.textContent = 'Keine Pose erkannt.';
+                    return;
+                }
+
+                const landmarks = result.landmarks[0];
+                const heightInput = document.getElementById('height');
+                const userHeight = parseInt(heightInput?.value, 10) || 175;
+                const measurements = window.Pose.estimateMeasurements(landmarks, userHeight);
+
+                Measurements.write(measurements);
+                updateMeasurements();
+
+                previewWrap.hidden = false;
+                window.Pose.drawPoseOverlay(canvas, img, landmarks);
+                statusEl.textContent = `${measurements.chest}cm Brust · ${measurements.waist}cm Taille · ${measurements.hips}cm Hüfte`;
+                showToast('Maße aus Foto übernommen — überprüfe & feinjustiere bei Bedarf', 'success');
+            } catch (err) {
+                console.error('[pose] failed:', err);
+                showToast('Foto-Analyse fehlgeschlagen: ' + (err.message || err), 'error');
+                statusEl.textContent = 'Fehler — bitte erneut versuchen.';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Anderes Foto auswählen';
+            }
+        });
     }
 
     function updateMeasurements() {
