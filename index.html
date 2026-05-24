@@ -171,6 +171,22 @@
 
             <div class="measure-grid">
                 <div class="measure-form">
+                    <div class="photo-upload-card">
+                        <div class="photo-upload-text">
+                            <h4>Maße aus Foto</h4>
+                            <p>Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Maße automatisch.</p>
+                            <p class="photo-privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
+                        </div>
+                        <div class="photo-upload-action">
+                            <input type="file" id="pose-photo" accept="image/*" hidden>
+                            <button id="pose-upload-btn" class="upload-btn">Foto auswählen</button>
+                            <span id="pose-status" class="pose-status"></span>
+                        </div>
+                        <div id="pose-preview" class="pose-preview" hidden>
+                            <canvas id="pose-canvas"></canvas>
+                        </div>
+                    </div>
+
                     <div class="preset-buttons">
                         <button class="preset-btn" data-preset="S">Voreinstellung S</button>
                         <button class="preset-btn" data-preset="M">Voreinstellung M</button>
@@ -430,6 +446,7 @@
     <script type="module" src="js/garment3d.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/measurements.js"></script>
+    <script src="js/pose.js"></script>
     <script src="js/export.js"></script>
     <script src="js/app.js"></script>
 </body>
