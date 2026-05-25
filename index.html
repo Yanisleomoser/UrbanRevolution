@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Revolution — AI Fashion Atelier</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Vercel Speed Insights -->
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-mark">UR</span>
+                <span class="logo-text">Urban Revolution</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#design">Design</a></li>
+                <li><a href="#measure">Maße</a></li>
+                <li><a href="#preview">3D Vorschau</a></li>
+                <li><a href="#production">Produktion</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <p class="hero-eyebrow">AI · 3D · COUTURE</p>
+            <h1 class="hero-title">Deine Vision.<br>Deine Maße.<br><span class="gradient-text">Deine Kleidung.</span></h1>
+            <p class="hero-subtitle">Beschreibe dein Wunschkleidungsstück. Unsere KI gestaltet es. Ein 3D-Modell zeigt dir deine perfekte Passform. Schneider und Produktion bekommen alles, was sie brauchen.</p>
+            <a href="#design" class="cta-button">Jetzt designen →</a>
+        </div>
+        <div class="hero-visual">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+    </header>
+
+    <section class="workflow">
+        <div class="container">
+            <div class="step-tracker">
+                <div class="step active" data-step="1"><span>1</span> Design</div>
+                <div class="step" data-step="2"><span>2</span> Maße</div>
+                <div class="step" data-step="3"><span>3</span> 3D Vorschau</div>
+                <div class="step" data-step="4"><span>4</span> Produktion</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="design" class="section design-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2>Beschreibe dein Design</h2>
+                <p>Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.</p>
+            </div>
+
+            <div class="design-grid">
+                <div class="prompt-panel">
+                    <label for="ai-prompt">Dein Prompt für die KI</label>
+                    <textarea id="ai-prompt" rows="6" placeholder="z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze..."></textarea>
+
+                    <div class="prompt-suggestions">
+                        <p class="suggestions-label">Inspiration:</p>
+                        <button class="suggestion" data-prompt="Minimalistisches schwarzes Slim-Fit T-Shirt aus Pima-Baumwolle mit Rundhalsausschnitt, leicht tailliert">Minimal Tee</button>
+                        <button class="suggestion" data-prompt="Oversized Cyberpunk-Hoodie in Neon-Lila mit reflektierenden Streifen, Cropped-Schnitt, Kapuze mit Kordel">Cyber Hoodie</button>
+                        <button class="suggestion" data-prompt="Klassisches weißes Oxford-Hemd mit Button-Down-Kragen, lange Ärmel, leicht tailliert, aus 100% ägyptischer Baumwolle">Oxford Hemd</button>
+                        <button class="suggestion" data-prompt="Hochgeschnittene Wide-Leg Jeans aus Indigo Selvedge Denim, Vintage-Waschung, fünf Taschen, Knopfleiste">Wide-Leg Denim</button>
+                    </div>
+
+                    <div class="garment-type-selector">
+                        <label>Kleidungstyp</label>
+                        <div class="type-grid">
+                            <button class="type-btn active" data-type="tshirt">
+                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 16 L24 8 L40 8 L48 16 L56 22 L48 30 L48 56 L16 56 L16 30 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                T-Shirt
+                            </button>
+                            <button class="type-btn" data-type="hoodie">
+                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M20 14 Q32 4 44 14 L52 22 L58 28 L50 34 L50 58 L14 58 L14 34 L6 28 L12 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                Hoodie
+                            </button>
+                            <button class="type-btn" data-type="shirt">
+                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M18 14 L28 8 L36 8 L46 14 L54 22 L48 28 L48 56 L16 56 L16 28 L10 22 Z M28 8 L32 16 L36 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                Hemd
+                            </button>
+                            <button class="type-btn" data-type="pants">
+                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 8 L48 8 L46 32 L44 58 L34 58 L32 34 L30 58 L20 58 L18 32 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                Hose
+                            </button>
+                            <button class="type-btn" data-type="jacket">
+                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 14 L24 8 L40 8 L48 14 L56 22 L50 28 L50 58 L32 58 L32 8 L32 58 L14 58 L14 28 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                Jacke
+                            </button>
+                            <button class="type-btn" data-type="dress">
+                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                Kleid
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="generate-btn" class="primary-btn">
+                        <span class="btn-text">Design generieren</span>
+                        <span class="btn-spinner"></span>
+                    </button>
+                </div>
+
+                <div class="result-panel">
+                    <div id="ai-output" class="ai-output">
+                        <div class="output-placeholder">
+                            <div class="pulse-icon">✦</div>
+                            <p>Dein KI-generiertes Design erscheint hier</p>
+                        </div>
+                    </div>
+
+                    <div class="customize-controls" id="customize-controls" style="display:none;">
+                        <h3>Anpassungen</h3>
+                        <div class="control-group">
+                            <label>Primärfarbe</label>
+                            <div class="color-palette">
+                                <button class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a"></button>
+                                <button class="color-swatch" data-color="#ffffff" style="background:#ffffff"></button>
+                                <button class="color-swatch" data-color="#7c2d12" style="background:#7c2d12"></button>
+                                <button class="color-swatch" data-color="#1e3a8a" style="background:#1e3a8a"></button>
+                                <button class="color-swatch" data-color="#365314" style="background:#365314"></button>
+                                <button class="color-swatch" data-color="#a16207" style="background:#a16207"></button>
+                                <button class="color-swatch" data-color="#831843" style="background:#831843"></button>
+                                <button class="color-swatch" data-color="#6b21a8" style="background:#6b21a8"></button>
+                                <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b"></button>
+                                <button class="color-swatch" data-color="#dc2626" style="background:#dc2626"></button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>Material</label>
+                            <select id="material-select">
+                                <option value="cotton">Bio-Baumwolle</option>
+                                <option value="linen">Leinen</option>
+                                <option value="denim">Denim</option>
+                                <option value="wool">Wolle</option>
+                                <option value="fleece">Fleece</option>
+                                <option value="silk">Seide</option>
+                                <option value="polyester">Recycled Polyester</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Passform</label>
+                            <div class="fit-slider">
+                                <input type="range" id="fit-slider" min="0" max="100" value="50">
+                                <div class="fit-labels">
+                                    <span>Slim</span>
+                                    <span>Regular</span>
+                                    <span>Oversized</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="measure" class="section measure-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2>Deine Körpermaße</h2>
+                <p>Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Maße.</p>
+            </div>
+
+            <div class="measure-grid">
+                <div class="measure-form">
+                    <div class="photo-upload-card">
+                        <div class="photo-upload-text">
+                            <h4>Maße aus Foto</h4>
+                            <p>Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Maße automatisch.</p>
+                            <p class="photo-privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
+                        </div>
+                        <div class="photo-upload-action">
+                            <input type="file" id="pose-photo" accept="image/*" hidden>
+                            <button id="pose-upload-btn" class="upload-btn">Foto auswählen</button>
+                            <span id="pose-status" class="pose-status"></span>
+                        </div>
+                        <div id="pose-preview" class="pose-preview" hidden>
+                            <canvas id="pose-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-preset="S">Voreinstellung S</button>
+                        <button class="preset-btn" data-preset="M">Voreinstellung M</button>
+                        <button class="preset-btn" data-preset="L">Voreinstellung L</button>
+                        <button class="preset-btn" data-preset="XL">Voreinstellung XL</button>
+                    </div>
+
+                    <div class="measure-inputs">
+                        <div class="measure-field">
+                            <label for="height">Körpergröße <span class="unit">cm</span></label>
+                            <input type="number" id="height" value="175" min="140" max="220">
+                        </div>
+                        <div class="measure-field">
+                            <label for="weight">Gewicht <span class="unit">kg</span></label>
+                            <input type="number" id="weight" value="70" min="40" max="150">
+                        </div>
+                        <div class="measure-field">
+                            <label for="chest">Brustumfang <span class="unit">cm</span></label>
+                            <input type="number" id="chest" value="96" min="60" max="160">
+                        </div>
+                        <div class="measure-field">
+                            <label for="waist">Taillenumfang <span class="unit">cm</span></label>
+                            <input type="number" id="waist" value="82" min="50" max="150">
+                        </div>
+                        <div class="measure-field">
+                            <label for="hips">Hüftumfang <span class="unit">cm</span></label>
+                            <input type="number" id="hips" value="98" min="60" max="160">
+                        </div>
+                        <div class="measure-field">
+                            <label for="shoulder">Schulterbreite <span class="unit">cm</span></label>
+                            <input type="number" id="shoulder" value="44" min="30" max="70">
+                        </div>
+                        <div class="measure-field">
+                            <label for="arm">Armlänge <span class="unit">cm</span></label>
+                            <input type="number" id="arm" value="62" min="40" max="90">
+                        </div>
+                        <div class="measure-field">
+                            <label for="inseam">Schrittlänge <span class="unit">cm</span></label>
+                            <input type="number" id="inseam" value="82" min="50" max="100">
+                        </div>
+                        <div class="measure-field">
+                            <label for="neck">Halsumfang <span class="unit">cm</span></label>
+                            <input type="number" id="neck" value="38" min="28" max="55">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="body-diagram">
+                    <svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="40" r="22" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <line x1="100" y1="62" x2="100" y2="78" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M55 90 Q100 78 145 90 L150 130 Q150 145 145 160 L130 250 L115 260 L100 260 L85 260 L70 250 L55 160 Q50 145 50 130 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M55 90 L30 200 L25 220" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M145 90 L170 200 L175 220" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M85 260 L78 380 L92 380 L100 260" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M115 260 L122 380 L108 380 L100 260" fill="none" stroke="currentColor" stroke-width="1.5"/>
+
+                        <line x1="55" y1="120" x2="145" y2="120" stroke="#ec4899" stroke-width="0.8" stroke-dasharray="2,2"/>
+                        <text x="155" y="123" font-size="8" fill="#ec4899">Brust</text>
+
+                        <line x1="62" y1="170" x2="138" y2="170" stroke="#ec4899" stroke-width="0.8" stroke-dasharray="2,2"/>
+                        <text x="155" y="173" font-size="8" fill="#ec4899">Taille</text>
+
+                        <line x1="55" y1="230" x2="145" y2="230" stroke="#ec4899" stroke-width="0.8" stroke-dasharray="2,2"/>
+                        <text x="155" y="233" font-size="8" fill="#ec4899">Hüfte</text>
+
+                        <line x1="55" y1="90" x2="145" y2="90" stroke="#ec4899" stroke-width="0.8" stroke-dasharray="2,2"/>
+                        <text x="155" y="93" font-size="8" fill="#ec4899">Schulter</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="preview" class="section preview-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2>3D Vorschau</h2>
+                <p>So sieht dein Kleidungsstück mit deinen Maßen aus. Drehen, zoomen, prüfen.</p>
+            </div>
+
+            <div class="preview-container">
+                <div id="three-canvas" class="three-canvas"></div>
+                <div class="preview-controls">
+                    <div class="control-section">
+                        <h4>Avatar</h4>
+                        <div class="avatar-grid" id="avatar-grid">
+                            <button class="avatar-btn" data-avatar="male_slim">
+                                <span class="avatar-figure" data-gender="male" data-type="slim"></span>
+                                <span class="avatar-name">Männlich</span>
+                                <span class="avatar-sub">Schlank</span>
+                            </button>
+                            <button class="avatar-btn active" data-avatar="male_regular">
+                                <span class="avatar-figure" data-gender="male" data-type="regular"></span>
+                                <span class="avatar-name">Männlich</span>
+                                <span class="avatar-sub">Durchschnitt</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="male_athletic">
+                                <span class="avatar-figure" data-gender="male" data-type="athletic"></span>
+                                <span class="avatar-name">Männlich</span>
+                                <span class="avatar-sub">Athletisch</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="female_slim">
+                                <span class="avatar-figure" data-gender="female" data-type="slim"></span>
+                                <span class="avatar-name">Weiblich</span>
+                                <span class="avatar-sub">Schlank</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="female_regular">
+                                <span class="avatar-figure" data-gender="female" data-type="regular"></span>
+                                <span class="avatar-name">Weiblich</span>
+                                <span class="avatar-sub">Durchschnitt</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="female_curvy">
+                                <span class="avatar-figure" data-gender="female" data-type="curvy"></span>
+                                <span class="avatar-name">Weiblich</span>
+                                <span class="avatar-sub">Kurvig</span>
+                            </button>
+                        </div>
+                        <label class="toggle avatar-load-toggle">
+                            <input type="checkbox" id="toggle-load-defaults" checked>
+                            <span class="toggle-slider"></span>
+                            Standardmaße laden
+                        </label>
+                    </div>
+                    <div class="control-section">
+                        <h4>Ansicht</h4>
+                        <button class="view-btn" data-view="front">Vorne</button>
+                        <button class="view-btn" data-view="back">Hinten</button>
+                        <button class="view-btn" data-view="side">Seite</button>
+                        <button class="view-btn" data-view="rotate">Rotieren</button>
+                    </div>
+                    <div class="control-section">
+                        <h4>Darstellung</h4>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-avatar" checked>
+                            <span class="toggle-slider"></span>
+                            Avatar anzeigen
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-measurements">
+                            <span class="toggle-slider"></span>
+                            Maße einblenden
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-wireframe">
+                            <span class="toggle-slider"></span>
+                            Wireframe Modus
+                        </label>
+                    </div>
+                    <div class="control-section">
+                        <h4>Modell-Info</h4>
+                        <div id="model-info" class="model-info">
+                            <div><span>Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
+                            <div><span>Nähte:</span> <span id="info-seams">12 cm</span></div>
+                            <div><span>Größe:</span> <span id="info-size">M</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="production" class="section production-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2>Produktions-Vorlage</h2>
+                <p>Alle Daten, die der Schneider und die Produktion benötigen, in einem Dokument.</p>
+            </div>
+
+            <div class="production-grid">
+                <div class="spec-sheet" id="spec-sheet">
+                    <div class="spec-header">
+                        <div>
+                            <h3 id="spec-title">URBAN REVOLUTION SPEC SHEET</h3>
+                            <p id="spec-id">Design ID: UR-––––––</p>
+                        </div>
+                        <div class="spec-date" id="spec-date"></div>
+                    </div>
+
+                    <div class="spec-body">
+                        <div class="spec-section">
+                            <h4>Design Brief</h4>
+                            <p id="spec-brief">––</p>
+                        </div>
+
+                        <div class="spec-section">
+                            <h4>Spezifikationen</h4>
+                            <table class="spec-table" id="spec-table">
+                                <tr><td>Kleidungstyp</td><td id="spec-type">––</td></tr>
+                                <tr><td>Material</td><td id="spec-material">––</td></tr>
+                                <tr><td>Primärfarbe</td><td id="spec-color">––</td></tr>
+                                <tr><td>Passform</td><td id="spec-fit">––</td></tr>
+                                <tr><td>Konfektionsgröße</td><td id="spec-size">––</td></tr>
+                            </table>
+                        </div>
+
+                        <div class="spec-section">
+                            <h4>Maße (cm)</h4>
+                            <table class="spec-table" id="spec-measures"></table>
+                        </div>
+
+                        <div class="spec-section">
+                            <h4>Schnitt-Notizen für den Schneider</h4>
+                            <ul id="spec-notes"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="export-panel">
+                    <h3>Bereit für die Produktion?</h3>
+                    <p>Lade die Vorlage herunter oder sende sie direkt an die Schneiderei.</p>
+                    <button id="download-json" class="export-btn">
+                        <span>JSON Daten herunterladen</span>
+                    </button>
+                    <button id="download-html" class="export-btn">
+                        <span>Druckbare Vorlage (HTML)</span>
+                    </button>
+                    <button id="print-spec" class="export-btn primary">
+                        <span>Direkt drucken</span>
+                    </button>
+                    <button id="send-order" class="export-btn dark">
+                        <span>Auftrag an Produktion senden</span>
+                    </button>
+                    <div class="estimate">
+                        <div class="estimate-line"><span>Geschätzte Produktion:</span><span id="est-time">14 Tage</span></div>
+                        <div class="estimate-line"><span>Preisspanne:</span><span id="est-price">CHF 145 – 220</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-mark">UR</span>
+                    <p>Urban Revolution — Atelier für maßgeschneiderte AI-Mode</p>
+                </div>
+                <p class="footer-meta">© 2026 Urban Revolution · Designed in Zürich · Hergestellt mit ♥ und KI</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- Vercel Web Analytics -->
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="js/analytics.js"></script>
+    <script type="module" src="js/garment3d.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/measurements.js"></script>
+    <script src="js/pose.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
