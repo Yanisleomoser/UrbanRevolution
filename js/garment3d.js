@@ -3,14 +3,22 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
-/* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited) */
+/* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited)
+ * Primär realistische Erwachsene; bei Lade-/Render-Fehler greift Fallback. */
 const HUMAN_MODELS = {
-    male_slim:      'models/CesiumMan.glb',
-    male_regular:   'models/CesiumMan.glb',
-    male_athletic:  'models/CesiumMan.glb',
+    male_slim:      'models/Soldier.glb',
+    male_regular:   'models/Soldier.glb',
+    male_athletic:  'models/Soldier.glb',
     female_slim:    'models/Michelle.glb',
     female_regular: 'models/Michelle.glb',
     female_curvy:   'models/Michelle.glb'
+};
+
+/* Falls Primärmodell fehlt: nächstes versuchen */
+const MODEL_FALLBACKS = {
+    'models/Soldier.glb':  'models/CesiumMan.glb',
+    'models/Michelle.glb': 'models/RiggedFigure.glb',
+    'models/CesiumMan.glb': 'models/RiggedFigure.glb'
 };
 
 /* Mesh-Namen / Material-Tokens die als eingebaute Kleidung gelten */
@@ -272,7 +280,12 @@ class GarmentScene {
     }
 
     async preloadHumanModels() {
-        const uniqueUrls = [...new Set(Object.values(HUMAN_MODELS))];
+        // Alle primären + alle Fallbacks vorladen damit Kette greifen kann
+        const primary = [...new Set(Object.values(HUMAN_MODELS))];
+        const fallbacks = primary
+            .map(u => MODEL_FALLBACKS[u])
+            .filter(Boolean);
+        const uniqueUrls = [...new Set([...primary, ...fallbacks])];
         const results = await Promise.allSettled(uniqueUrls.map(url => this.loadHumanModel(url)));
         const loaded = results.filter(r => r.status === 'fulfilled').length;
         const failed = results.length - loaded;
@@ -436,15 +449,31 @@ class GarmentScene {
         if (this.graphicMesh) { this.scene.remove(this.graphicMesh); this.disposeGroup(this.graphicMesh); }
 
         const dims = this.getBodyDimensions();
+        const usingGlbAvatar = this.showAvatar && this.isGlbAvatarAvailable();
 
         if (this.showAvatar) {
             this.avatarMesh = this.buildAvatar(dims);
-            // GLB-Avatar skaliert sich selbst auf die Zielhöhe;
-            // beim prozeduralen Fallback muss die Y-Skalierung extern erfolgen.
             if (!this.avatarMesh.userData.scaled) {
                 this.avatarMesh.scale.y = dims.heightScale;
             }
+            // Wireframe-Toggle auch auf den Avatar anwenden
+            if (this.wireframe) {
+                this.avatarMesh.traverse(o => {
+                    if (o.isMesh && o.material) {
+                        const mats = Array.isArray(o.material) ? o.material : [o.material];
+                        mats.forEach(m => { if (m) m.wireframe = true; });
+                    }
+                });
+            }
             this.scene.add(this.avatarMesh);
+
+            // Bone-Positionen extrahieren und an dims überschreiben, damit
+            // die parametrische Kleidung an Schulter/Brust/Hüfte des
+            // echten Avatars hängt statt an generischen Koordinaten.
+            if (usingGlbAvatar) {
+                this.avatarMesh.updateMatrixWorld(true);
+                this.applyBoneOverrides(dims, this.avatarMesh);
+            }
         }
 
         const matProps = this.getMaterialProps(this.currentMaterial);
@@ -466,6 +495,10 @@ class GarmentScene {
 
         const group = new THREE.Group();
         group.name = 'garment';
+        // Parametrische Kleidung wird IMMER gezeigt — auch über dem GLB-Avatar.
+        // Sie sitzt jetzt auf dem Körper statt frei zu schweben weil Avatar
+        // und Kleidung dasselbe Koordinatensystem (Füße bei y=0, Kopf bei
+        // ~1.72m) teilen.
 
         const builder = {
             tshirt: this.buildTshirt, hoodie: this.buildHoodie, shirt: this.buildShirt,
@@ -500,14 +533,136 @@ class GarmentScene {
        AVATAR — anatomisch korrekt, mit Gesicht und Haaren
        ============================================================ */
 
+    /** Resolved den effektiv geladenen URL für ein Preset (mit Fallback-Kette) */
+    resolveModelUrl(presetKey) {
+        let url = HUMAN_MODELS[presetKey];
+        // Hop durch die Fallback-Kette bis ein geladenes Modell gefunden wird
+        const seen = new Set();
+        while (url && !seen.has(url)) {
+            if (this.humanModelCache[url]) return url;
+            seen.add(url);
+            url = MODEL_FALLBACKS[url];
+        }
+        return null;
+    }
+
     buildAvatar(dims) {
-        const modelUrl = HUMAN_MODELS[this.currentAvatar];
-        const sourceModel = modelUrl ? this.humanModelCache[modelUrl] : null;
+        const url = this.resolveModelUrl(this.currentAvatar);
+        const sourceModel = url ? this.humanModelCache[url] : null;
 
         if (sourceModel) {
+            const primary = HUMAN_MODELS[this.currentAvatar];
+            if (url !== primary) {
+                console.info(`[avatar] ${this.currentAvatar} using fallback ${url} (primary ${primary} unavailable)`);
+            }
             return this.buildGlbAvatar(sourceModel, dims);
         }
         return this.buildProceduralAvatar(dims);
+    }
+
+    isGlbAvatarAvailable() {
+        return !!this.resolveModelUrl(this.currentAvatar);
+    }
+
+    /**
+     * Sammelt die wichtigsten Mixamo/glTF-Bones aus dem geladenen Modell
+     * und liefert deren Welt-Positionen für die Kleidungs-Platzierung.
+     */
+    extractBoneLandmarks(group) {
+        const lm = {};
+        group.traverse(o => {
+            if (!o.isBone) return;
+            const name = o.name.toLowerCase();
+            const p = new THREE.Vector3();
+            o.getWorldPosition(p);
+            // Match against Mixamo (mixamorig:Hips), three.js (Hips), Cesium (Skeleton_*) conventions
+            if (/(\b|:|_)hips?$/.test(name) || /pelvis$/.test(name))                 lm.hips = p;
+            else if (/(\b|:|_)spine2$/.test(name))                                    lm.chest = p;
+            else if (/(\b|:|_)spine1$/.test(name) && !lm.chest)                       lm.chest = p;
+            else if (/(\b|:|_)spine$/.test(name) && !lm.chest)                        lm.chest = p;
+            else if (/(\b|:|_)neck$/.test(name))                                      lm.neck = p;
+            else if (/(\b|:|_)head$/.test(name))                                      lm.head = p;
+            else if (/(\b|:|_)leftshoulder$/.test(name) || /(\b|:|_)l_?shoulder$/.test(name))  lm.leftShoulder = p;
+            else if (/(\b|:|_)rightshoulder$/.test(name) || /(\b|:|_)r_?shoulder$/.test(name)) lm.rightShoulder = p;
+            else if (/(\b|:|_)leftupleg$/.test(name) || /(\b|:|_)leftthigh$/.test(name)
+                  || /(\b|:|_)l_?thigh$/.test(name))                                 lm.leftThigh = p;
+            else if (/(\b|:|_)rightupleg$/.test(name) || /(\b|:|_)rightthigh$/.test(name)
+                  || /(\b|:|_)r_?thigh$/.test(name))                                 lm.rightThigh = p;
+        });
+        return lm;
+    }
+
+    /**
+     * Überschreibt die Y-Position und Schulter-Spannweite der parametrischen
+     * Kleidung mit den echten Bone-Daten des Avatars. So sitzt das T-Shirt
+     * auf der tatsächlichen Brust des geladenen Modells, nicht auf einer
+     * generischen Standard-Brusthöhe.
+     */
+    applyBoneOverrides(dims, group) {
+        const b = this.extractBoneLandmarks(group);
+        const required = ['hips', 'chest', 'leftShoulder', 'rightShoulder'];
+        if (!required.every(k => b[k])) {
+            console.info(`[avatar] bone overrides skipped — only found: ${Object.keys(b).join(', ')}`);
+            return;
+        }
+        const hs = dims.heightScale || 1.0;
+
+        // Welt-Positionen → lokale dims-Koordinaten (geteilt durch heightScale
+        // weil die Garment-Group später nochmal mit heightScale skaliert wird)
+        dims.hipsY = b.hips.y / hs;
+        dims.chestY = b.chest.y / hs;
+        dims.shoulderY = (b.leftShoulder.y + b.rightShoulder.y) / 2 / hs;
+        dims.waistY = (dims.chestY + dims.hipsY) / 2;
+        if (b.leftThigh && b.rightThigh) {
+            dims.crotchY = (b.leftThigh.y + b.rightThigh.y) / 2 / hs;
+        } else {
+            dims.crotchY = dims.hipsY - 0.05;
+        }
+        // Schulter-Spanne aus echten Bone-Positionen (statt aus User-Maß)
+        dims.shoulderHalfWidth = Math.abs(b.leftShoulder.x - b.rightShoulder.x) / 2 / hs;
+
+        console.info(`[avatar] bone-aligned: shoulderY=${dims.shoulderY.toFixed(2)}, chestY=${dims.chestY.toFixed(2)}, hipsY=${dims.hipsY.toFixed(2)}, shoulderWidth=${(dims.shoulderHalfWidth*2).toFixed(2)}m`);
+    }
+
+    /**
+     * Wendet die vom User gewählte Designfarbe + Muster auf die größte
+     * Mesh-Komponente des GLB-Avatars an (Heuristik: das größte Mesh ist
+     * Body+Outfit, kleinere sind Details wie Augen/Haare).
+     */
+    applyDesignToGlbClothing(avatarGroup) {
+        const designColor = new THREE.Color(this.currentColor);
+        const matProps = this.getMaterialProps(this.currentMaterial);
+
+        const meshes = [];
+        avatarGroup.traverse(o => {
+            if (o.isMesh && o.geometry && o.geometry.attributes.position) {
+                meshes.push({ mesh: o, verts: o.geometry.attributes.position.count });
+            }
+        });
+        if (meshes.length === 0) return;
+
+        // Größtes Mesh = Outfit, wird umgefärbt
+        meshes.sort((a, b) => b.verts - a.verts);
+        const target = meshes[0].mesh;
+
+        const mats = Array.isArray(target.material) ? target.material : [target.material];
+        mats.forEach(m => {
+            if (!m || !m.color) return;
+            m.color.copy(designColor);
+            m.roughness = matProps.roughness;
+            m.metalness = matProps.metalness;
+            if (this.currentPattern && this.currentPattern !== 'solid') {
+                const primaryHex = '#' + this.currentColor.toString(16).padStart(6, '0');
+                const secondaryHex = '#' + this.currentSecondary.toString(16).padStart(6, '0');
+                if (m.map) m.map.dispose();
+                m.map = generatePatternTexture(
+                    this.currentPattern, primaryHex, secondaryHex, this.currentMaterial
+                );
+            } else if (m.map) {
+                m.map = null;
+            }
+            m.needsUpdate = true;
+        });
     }
 
     buildGlbAvatar(sourceModel, dims) {
@@ -516,18 +671,16 @@ class GarmentScene {
         group.userData.scaled = true;
         const preset = dims.preset;
 
-        // KRITISCH: SkeletonUtils.clone() für gerigte Meshes — plain
-        // scene.clone() lässt die SkinnedMesh-Bones auf das Original
-        // zeigen, was beim Rendern oft zum Kollaps des Meshes führt.
+        // SkeletonUtils.clone für gerigte Meshes
         let model;
         try {
             model = cloneSkinned(sourceModel);
         } catch (err) {
-            console.warn('[avatar] SkeletonUtils.clone failed, falling back to plain clone:', err);
+            console.warn('[avatar] SkeletonUtils.clone failed:', err);
             model = sourceModel.clone(true);
         }
 
-        // Materialien klonen damit Tints nicht den Cache modifizieren
+        // Materialien klonen + Frustum-Culling für SkinnedMesh ausschalten
         model.traverse(o => {
             if (!o.isMesh) return;
             if (Array.isArray(o.material)) {
@@ -535,45 +688,38 @@ class GarmentScene {
             } else if (o.material) {
                 o.material = o.material.clone();
             }
-            // Frustum-Culling für SkinnedMesh deaktivieren — Three.js berechnet
-            // sonst die Sichtbarkeit aus der statischen Geometrie, die durch
-            // Bones woanders sein kann → Mesh wird fälschlich weggeculled.
             if (o.isSkinnedMesh) o.frustumCulled = false;
             o.castShadow = true;
             o.receiveShadow = true;
         });
 
-        // Bbox manuell aus SkinnedMesh-Geometrie ableiten (zuverlässiger als
-        // setFromObject das Bones ignoriert)
-        const bbox = new THREE.Box3();
-        model.traverse(o => {
-            if (o.isMesh && o.geometry) {
-                if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
-                const b = o.geometry.boundingBox.clone();
-                bbox.union(b);
-            }
-        });
-        const modelHeight = bbox.max.y - bbox.min.y;
-        const modelWidth  = bbox.max.x - bbox.min.x;
+        // Bbox aus tatsächlichem Welt-Mesh ableiten (mit Bone-Transform)
+        model.updateMatrixWorld(true);
+        const bbox = new THREE.Box3().setFromObject(model);
+        let modelHeight = bbox.max.y - bbox.min.y;
 
-        console.info(`[avatar] ${this.currentAvatar} bbox raw: ${modelHeight.toFixed(2)}m × ${modelWidth.toFixed(2)}m`);
+        // Fallback wenn Bbox kaputt
+        if (!isFinite(modelHeight) || modelHeight < 0.05) {
+            console.warn(`[avatar] degenerate bbox (${modelHeight}), assuming meter scale`);
+            modelHeight = 1.72;
+        }
 
-        // Defensive: wenn Bbox kaputt, fester Fallback-Scale damit das Modell
-        // sicher sichtbar wird.
+        console.info(`[avatar] ${this.currentAvatar} native: ${modelHeight.toFixed(2)}m`);
+
+        // Auf Ziel-Höhe skalieren (User-Größe in m)
         const targetHeight = 1.72 * dims.heightScale;
-        const yScale = modelHeight > 0.1
-            ? targetHeight / modelHeight
-            : targetHeight;          // assume model is 1 unit tall
+        const yScale = targetHeight / modelHeight;
         const xzScale = yScale * (preset.xzScale || 1.0);
         model.scale.set(xzScale, yScale, xzScale);
 
-        // Modell auf Boden setzen (Bbox-min × scale)
-        const groundY = bbox.min.y * yScale;
-        model.position.y = -groundY;
+        // Füße auf Boden (y=0) bringen
+        model.updateMatrixWorld(true);
+        const scaledBbox = new THREE.Box3().setFromObject(model);
+        model.position.y = -scaledBbox.min.y;
 
-        // Mixamo-Charaktere blicken in -Z → auf +Z drehen damit der User
-        // sie von vorne sieht.
-        model.rotation.y = Math.PI;
+        // KEINE Rotation! Mixamo/glTF-Modelle blicken bereits in +Z Richtung
+        // (= zum Kamera-Position der bei z=+4.2 steht). Die vorherige
+        // Math.PI-Rotation drehte sie weg von der Kamera (User sah Rücken).
 
         group.add(model);
         return group;
