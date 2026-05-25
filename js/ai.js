@@ -4,188 +4,265 @@
  */
 
 const AI = (() => {
-    // Use centralized config
-    const COLOR_DICT = Object.entries(CONFIG.COLORS).reduce((acc, [name, hex]) => {
-        acc[name.toLowerCase()] = hex;
-        acc[name.replace('_', '').toLowerCase()] = hex;
-        return acc;
-    }, {});
+  // Use centralized config
+  const COLOR_DICT = Object.entries(CONFIG.COLORS).reduce((acc, [name, hex]) => {
+    acc[name.toLowerCase()] = hex;
+    acc[name.replace("_", "").toLowerCase()] = hex;
+    return acc;
+  }, {});
 
-    const MATERIAL_DICT = {
-        baumwolle: 'cotton', cotton: 'cotton', pima: 'cotton', jersey: 'cotton',
-        leinen: 'linen', linen: 'linen', leinenmix: 'linen',
-        denim: 'denim', jeans: 'denim', selvedge: 'denim',
-        wolle: 'wool', wool: 'wool', kaschmir: 'wool', merino: 'wool', tweed: 'wool',
-        fleece: 'fleece', sweat: 'fleece', frottee: 'fleece',
-        seide: 'silk', silk: 'silk', satin: 'silk', viskose: 'silk',
-        polyester: 'polyester', recycelt: 'polyester', recycled: 'polyester', nylon: 'polyester', techwear: 'polyester'
-    };
+  const MATERIAL_DICT = {
+    baumwolle: "cotton",
+    cotton: "cotton",
+    pima: "cotton",
+    jersey: "cotton",
+    leinen: "linen",
+    linen: "linen",
+    leinenmix: "linen",
+    denim: "denim",
+    jeans: "denim",
+    selvedge: "denim",
+    wolle: "wool",
+    wool: "wool",
+    kaschmir: "wool",
+    merino: "wool",
+    tweed: "wool",
+    fleece: "fleece",
+    sweat: "fleece",
+    frottee: "fleece",
+    seide: "silk",
+    silk: "silk",
+    satin: "silk",
+    viskose: "silk",
+    polyester: "polyester",
+    recycelt: "polyester",
+    recycled: "polyester",
+    nylon: "polyester",
+    techwear: "polyester",
+  };
 
-    const TYPE_DICT = {
-        hoodie: 'hoodie', kapuze: 'hoodie', sweater: 'hoodie', sweatshirt: 'hoodie',
-        hemd: 'shirt', shirt: 'shirt', oxford: 'shirt', bluse: 'shirt', polo: 'shirt',
-        't-shirt': 'tshirt', tshirt: 'tshirt', 'tee': 'tshirt', shirt_short: 'tshirt',
-        hose: 'pants', jeans: 'pants', pants: 'pants', chino: 'pants', cargo: 'pants', trouser: 'pants',
-        jacke: 'jacket', jacket: 'jacket', blazer: 'jacket', mantel: 'jacket', parka: 'jacket', bomber: 'jacket',
-        kleid: 'dress', dress: 'dress', robe: 'dress'
-    };
+  const TYPE_DICT = {
+    hoodie: "hoodie",
+    kapuze: "hoodie",
+    sweater: "hoodie",
+    sweatshirt: "hoodie",
+    hemd: "shirt",
+    shirt: "shirt",
+    oxford: "shirt",
+    bluse: "shirt",
+    polo: "shirt",
+    "t-shirt": "tshirt",
+    tshirt: "tshirt",
+    tee: "tshirt",
+    shirt_short: "tshirt",
+    hose: "pants",
+    jeans: "pants",
+    pants: "pants",
+    chino: "pants",
+    cargo: "pants",
+    trouser: "pants",
+    jacke: "jacket",
+    jacket: "jacket",
+    blazer: "jacket",
+    mantel: "jacket",
+    parka: "jacket",
+    bomber: "jacket",
+    kleid: "dress",
+    dress: "dress",
+    robe: "dress",
+  };
 
-    const FIT_DICT = {
-        skinny: 0.05, ultraslim: 0.05,
-        slim: 0.18, tailliert: 0.22, schmal: 0.18, eng: 0.12, fitted: 0.2,
-        regular: 0.5, klassisch: 0.5, standard: 0.5,
-        relaxed: 0.65, loose: 0.75, weit: 0.78, locker: 0.7,
-        oversized: 0.93, übergross: 0.93, uebergross: 0.93, baggy: 0.92
-    };
+  const FIT_DICT = {
+    skinny: 0.05,
+    ultraslim: 0.05,
+    slim: 0.18,
+    tailliert: 0.22,
+    schmal: 0.18,
+    eng: 0.12,
+    fitted: 0.2,
+    regular: 0.5,
+    klassisch: 0.5,
+    standard: 0.5,
+    relaxed: 0.65,
+    loose: 0.75,
+    weit: 0.78,
+    locker: 0.7,
+    oversized: 0.93,
+    übergross: 0.93,
+    uebergross: 0.93,
+    baggy: 0.92,
+  };
 
-    const PATTERN_KEYWORDS = {
-        gestreift: 'stripes_h', streifen: 'stripes_h', striped: 'stripes_h',
-        längssteifen: 'stripes_v', laengsstreifen: 'stripes_v', vertical: 'stripes_v',
-        gepunktet: 'dots', punkte: 'dots', polka: 'dots', dots: 'dots',
-        kariert: 'plaid', karo: 'plaid', plaid: 'plaid', check: 'plaid',
-        camo: 'camo', tarnmuster: 'camo', camouflage: 'camo',
-        gradient: 'gradient', verlauf: 'gradient', ombre: 'gradient',
-        floral: 'floral', blumen: 'floral', blümchen: 'floral',
-        meliert: 'heather', heather: 'heather'
-    };
+  const PATTERN_KEYWORDS = {
+    gestreift: "stripes_h",
+    streifen: "stripes_h",
+    striped: "stripes_h",
+    längssteifen: "stripes_v",
+    laengsstreifen: "stripes_v",
+    vertical: "stripes_v",
+    gepunktet: "dots",
+    punkte: "dots",
+    polka: "dots",
+    dots: "dots",
+    kariert: "plaid",
+    karo: "plaid",
+    plaid: "plaid",
+    check: "plaid",
+    camo: "camo",
+    tarnmuster: "camo",
+    camouflage: "camo",
+    gradient: "gradient",
+    verlauf: "gradient",
+    ombre: "gradient",
+    floral: "floral",
+    blumen: "floral",
+    blümchen: "floral",
+    meliert: "heather",
+    heather: "heather",
+  };
 
-    function extractFromPrompt(prompt, dict) {
-        const lower = prompt.toLowerCase();
-        let bestMatch = null;
-        let bestLength = 0;
-        for (const [keyword, value] of Object.entries(dict)) {
-            if (lower.includes(keyword) && keyword.length > bestLength) {
-                bestMatch = value;
-                bestLength = keyword.length;
+  function extractFromPrompt(prompt, dict) {
+    const lower = prompt.toLowerCase();
+    let bestMatch = null;
+    let bestLength = 0;
+    for (const [keyword, value] of Object.entries(dict)) {
+      if (lower.includes(keyword) && keyword.length > bestLength) {
+        bestMatch = value;
+        bestLength = keyword.length;
+      }
+    }
+    return bestMatch;
+  }
+
+  function detectColor(prompt) {
+    return extractFromPrompt(prompt, COLOR_DICT) || "#1a1a1a";
+  }
+
+  function detectMaterial(prompt) {
+    return extractFromPrompt(prompt, MATERIAL_DICT) || "cotton";
+  }
+
+  function detectType(prompt) {
+    return extractFromPrompt(prompt, TYPE_DICT);
+  }
+
+  function detectFit(prompt) {
+    const fit = extractFromPrompt(prompt, FIT_DICT);
+    return fit !== null ? fit : 0.5;
+  }
+
+  function detectPattern(prompt) {
+    return extractFromPrompt(prompt, PATTERN_KEYWORDS) || "solid";
+  }
+
+  function detectSecondaryColor(prompt, primaryColor) {
+    const lower = prompt.toLowerCase();
+    const phrases = [
+      /mit\s+(\w+en)\s+(streifen|akzenten|stickerei|details|kontrast)/i,
+      /(\w+)\s+(streifen|akzent|kontrast)/i,
+      /und\s+(\w+)/i,
+    ];
+    for (const re of phrases) {
+      const match = prompt.match(re);
+      if (match) {
+        for (const word of match.slice(1)) {
+          const norm = word.toLowerCase().replace(/(en|er|es|e)$/, "");
+          for (const [key, val] of Object.entries(COLOR_DICT)) {
+            if (norm.includes(key) || key.includes(norm)) {
+              if (val !== primaryColor) return val;
             }
+          }
         }
-        return bestMatch;
+      }
     }
+    return primaryColor === "#fafafa" ? "#1a1a1a" : "#fafafa";
+  }
 
-    function detectColor(prompt) {
-        return extractFromPrompt(prompt, COLOR_DICT) || '#1a1a1a';
-    }
+  function generateName(type) {
+    const adjectives = {
+      tshirt: ["Essential", "Signature", "Classic", "Urban", "Studio"],
+      hoodie: ["Atelier", "Heritage", "Urban", "Street", "Cult"],
+      shirt: ["Manhattan", "Riviera", "Atelier", "Heritage", "Sartorial"],
+      pants: ["Modular", "Tokyo", "Heritage", "Workwear", "Studio"],
+      jacket: ["Bauhaus", "Brutalist", "Atelier", "Heritage", "Modular"],
+      dress: ["Soirée", "Atelier", "Riviera", "Modern", "Sculptural"],
+    };
+    const typeNames = {
+      tshirt: "Tee",
+      hoodie: "Hoodie",
+      shirt: "Hemd",
+      pants: "Pants",
+      jacket: "Jacket",
+      dress: "Kleid",
+    };
+    const adj = adjectives[type] || adjectives.tshirt;
+    const chosen = adj[Math.floor(Math.random() * adj.length)];
+    return `${chosen} ${typeNames[type] || "Piece"}`;
+  }
 
-    function detectMaterial(prompt) {
-        return extractFromPrompt(prompt, MATERIAL_DICT) || 'cotton';
-    }
+  function generateConstructionNotes(type) {
+    const notes = {
+      tshirt: [
+        "Rundhalsausschnitt mit gerippter Halsblende, 2cm breit",
+        "Seitennähte mit doppelter Steppung für Strapazierfähigkeit",
+        "Saum 2.5cm umgeschlagen und gesteppt",
+        "Schulternaht mit Kontrastband verstärkt",
+      ],
+      hoodie: [
+        "Kapuze doppellagig mit gefütterten Innenseiten",
+        "Känguru-Tasche mit zwei Seiteneingriffen",
+        "Bündchen aus Rib-Strick an Saum und Ärmeln, 6cm",
+        "Tunnelzug mit Metallösen und 1cm Flachkordel",
+      ],
+      shirt: [
+        "Button-Down Kragen mit Einlage",
+        "Knopfleiste 3cm breit, 7 Knöpfe à 11mm Perlmutt",
+        "Doppelte Manschette mit zwei Knöpfen",
+        "Rückenpasse mit Mittelfalte 4cm",
+        "Französische Nähte an Seiten und Ärmeleinsatz",
+      ],
+      pants: [
+        "Fünf-Taschen-Konstruktion klassisch",
+        "Reißverschluss YKK Metall, Knopfverschluss am Bund",
+        "Bundhöhe vorne 22cm, hinten 28cm (Mid-Rise)",
+        "Saum mit Kettenstich gesäumt für authentischen Look",
+      ],
+      jacket: [
+        "Vollfutter mit Innentaschen (links, rechts)",
+        "Schulterpolster 8mm dezent",
+        "Reverskragen mit Knopflochstickerei",
+        "Zwei Eingrifftaschen mit Klappe",
+        "Ärmel-Knopfleiste mit 3 Knöpfen",
+      ],
+      dress: [
+        "Verdeckter Reißverschluss am Rücken, YKK 50cm",
+        "Brustabnäher und Taillen-Princessnähte",
+        "Saum 5cm doppelt umgeschlagen, blind gesteppt",
+      ],
+    };
+    return notes[type] || notes.tshirt;
+  }
 
-    function detectType(prompt) {
-        return extractFromPrompt(prompt, TYPE_DICT);
-    }
+  async function generateWithClaude(prompt, type) {
+    const apiKey = window.URBAN_REVOLUTION_API_KEY;
+    if (!apiKey) return null;
 
-    function detectFit(prompt) {
-        const fit = extractFromPrompt(prompt, FIT_DICT);
-        return fit !== null ? fit : 0.5;
-    }
-
-    function detectPattern(prompt) {
-        return extractFromPrompt(prompt, PATTERN_KEYWORDS) || 'solid';
-    }
-
-    function detectSecondaryColor(prompt, primaryColor) {
-        const lower = prompt.toLowerCase();
-        const phrases = [
-            /mit\s+(\w+en)\s+(streifen|akzenten|stickerei|details|kontrast)/i,
-            /(\w+)\s+(streifen|akzent|kontrast)/i,
-            /und\s+(\w+)/i
-        ];
-        for (const re of phrases) {
-            const match = prompt.match(re);
-            if (match) {
-                for (const word of match.slice(1)) {
-                    const norm = word.toLowerCase().replace(/(en|er|es|e)$/, '');
-                    for (const [key, val] of Object.entries(COLOR_DICT)) {
-                        if (norm.includes(key) || key.includes(norm)) {
-                            if (val !== primaryColor) return val;
-                        }
-                    }
-                }
-            }
-        }
-        return primaryColor === '#fafafa' ? '#1a1a1a' : '#fafafa';
-    }
-
-    function generateName(type) {
-        const adjectives = {
-            tshirt: ['Essential', 'Signature', 'Classic', 'Urban', 'Studio'],
-            hoodie: ['Atelier', 'Heritage', 'Urban', 'Street', 'Cult'],
-            shirt: ['Manhattan', 'Riviera', 'Atelier', 'Heritage', 'Sartorial'],
-            pants: ['Modular', 'Tokyo', 'Heritage', 'Workwear', 'Studio'],
-            jacket: ['Bauhaus', 'Brutalist', 'Atelier', 'Heritage', 'Modular'],
-            dress: ['Soirée', 'Atelier', 'Riviera', 'Modern', 'Sculptural']
-        };
-        const typeNames = {
-            tshirt: 'Tee', hoodie: 'Hoodie', shirt: 'Hemd',
-            pants: 'Pants', jacket: 'Jacket', dress: 'Kleid'
-        };
-        const adj = adjectives[type] || adjectives.tshirt;
-        const chosen = adj[Math.floor(Math.random() * adj.length)];
-        return `${chosen} ${typeNames[type] || 'Piece'}`;
-    }
-
-    function generateConstructionNotes(type) {
-        const notes = {
-            tshirt: [
-                'Rundhalsausschnitt mit gerippter Halsblende, 2cm breit',
-                'Seitennähte mit doppelter Steppung für Strapazierfähigkeit',
-                'Saum 2.5cm umgeschlagen und gesteppt',
-                'Schulternaht mit Kontrastband verstärkt'
-            ],
-            hoodie: [
-                'Kapuze doppellagig mit gefütterten Innenseiten',
-                'Känguru-Tasche mit zwei Seiteneingriffen',
-                'Bündchen aus Rib-Strick an Saum und Ärmeln, 6cm',
-                'Tunnelzug mit Metallösen und 1cm Flachkordel'
-            ],
-            shirt: [
-                'Button-Down Kragen mit Einlage',
-                'Knopfleiste 3cm breit, 7 Knöpfe à 11mm Perlmutt',
-                'Doppelte Manschette mit zwei Knöpfen',
-                'Rückenpasse mit Mittelfalte 4cm',
-                'Französische Nähte an Seiten und Ärmeleinsatz'
-            ],
-            pants: [
-                'Fünf-Taschen-Konstruktion klassisch',
-                'Reißverschluss YKK Metall, Knopfverschluss am Bund',
-                'Bundhöhe vorne 22cm, hinten 28cm (Mid-Rise)',
-                'Saum mit Kettenstich gesäumt für authentischen Look'
-            ],
-            jacket: [
-                'Vollfutter mit Innentaschen (links, rechts)',
-                'Schulterpolster 8mm dezent',
-                'Reverskragen mit Knopflochstickerei',
-                'Zwei Eingrifftaschen mit Klappe',
-                'Ärmel-Knopfleiste mit 3 Knöpfen'
-            ],
-            dress: [
-                'Verdeckter Reißverschluss am Rücken, YKK 50cm',
-                'Brustabnäher und Taillen-Princessnähte',
-                'Saum 5cm doppelt umgeschlagen, blind gesteppt'
-            ]
-        };
-        return notes[type] || notes.tshirt;
-    }
-
-    async function generateWithClaude(prompt, type) {
-        const apiKey = window.URBAN_REVOLUTION_API_KEY;
-        if (!apiKey) return null;
-
-        try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
-                    'anthropic-dangerous-direct-browser-access': 'true'
-                },
-                body: JSON.stringify({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 1024,
-                    messages: [{
-                        role: 'user',
-                        content: `Du bist Designer für Urban Revolution. Erstelle ein JSON-Design-Konzept für: "${prompt}". Kleidungstyp: ${type}.
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1024,
+          messages: [
+            {
+              role: "user",
+              content: `Du bist Designer für Urban Revolution. Erstelle ein JSON-Design-Konzept für: "${prompt}". Kleidungstyp: ${type}.
 
 Antworte NUR mit JSON:
 {
@@ -196,115 +273,137 @@ Antworte NUR mit JSON:
   "fit": 0.0 bis 1.0,
   "tags": ["tag1","tag2","tag3"],
   "constructionNotes": ["Note 1","Note 2","Note 3"]
-}`
-                    }]
-                })
-            });
+}`,
+            },
+          ],
+        }),
+      });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const errorMsg = errorData.error?.message || `API error: ${response.status}`;
-                throw new Error(`Claude API failed: ${errorMsg}`);
-            }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg =
+          errorData.error?.message || `API error: ${response.status}`;
+        throw new Error(`Claude API failed: ${errorMsg}`);
+      }
 
-            const data = await response.json();
-            const text = data.content[0].text;
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            
-            if (!jsonMatch) {
-                throw new Error('Claude returned invalid JSON format');
-            }
+      const data = await response.json();
+      const text = data.content[0].text;
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
 
-            return JSON.parse(jsonMatch[0]);
+      if (!jsonMatch) {
+        throw new Error("Claude returned invalid JSON format");
+      }
 
-        } catch (error) {
-            console.error('[AI] Claude generation failed:', error.message);
-            return null;
-        }
+      return JSON.parse(jsonMatch[0]);
+    } catch (error) {
+      console.error("[AI] Claude generation failed:", error.message);
+      return null;
+    }
+  }
+
+  async function generateDesign(prompt, garmentType) {
+    if (!prompt || typeof prompt !== "string") {
+      throw new Error("Prompt must be a non-empty string");
     }
 
-    async function generateDesign(prompt, garmentType) {
-        if (!prompt || typeof prompt !== 'string') {
-            throw new Error('Prompt must be a non-empty string');
-        }
+    await new Promise((r) => setTimeout(r, 500 + Math.random() * 700));
 
-        await new Promise(r => setTimeout(r, 500 + Math.random() * 700));
+    try {
+      const type = garmentType || detectType(prompt) || "tshirt";
+      CONFIG.validateGarmentType(type);
 
-        try {
-            const type = garmentType || detectType(prompt) || 'tshirt';
-            CONFIG.validateGarmentType(type);
+      const claudeResult = await generateWithClaude(prompt, type);
 
-            const claudeResult = await generateWithClaude(prompt, type);
+      if (claudeResult) {
+        return {
+          ...claudeResult,
+          type,
+          originalPrompt: prompt,
+          generatedAt: new Date().toISOString(),
+          designId: generateDesignId(),
+        };
+      }
 
-            if (claudeResult) {
-                return {
-                    ...claudeResult,
-                    type,
-                    originalPrompt: prompt,
-                    generatedAt: new Date().toISOString(),
-                    designId: generateDesignId()
-                };
-            }
+      // Fallback to local generation
+      const color = detectColor(prompt);
+      const material = detectMaterial(prompt);
+      const fit = detectFit(prompt);
+      const pattern = detectPattern(prompt);
+      const secondaryColor =
+        pattern !== "solid" ? detectSecondaryColor(prompt, color) : color;
+      const tags = extractTags(prompt);
+      const name = generateName(type);
+      const constructionNotes = generateConstructionNotes(type);
 
-            // Fallback to local generation
-            const color = detectColor(prompt);
-            const material = detectMaterial(prompt);
-            const fit = detectFit(prompt);
-            const pattern = detectPattern(prompt);
-            const secondaryColor = pattern !== 'solid' ? detectSecondaryColor(prompt, color) : color;
-            const tags = extractTags(prompt);
-            const name = generateName(type);
-            const constructionNotes = generateConstructionNotes(type);
-
-            return {
-                name,
-                description: 'Lokal generiertes Design basierend auf Prompt-Keywords',
-                type,
-                color,
-                secondaryColor,
-                material,
-                fit,
-                pattern,
-                tags,
-                constructionNotes,
-                originalPrompt: prompt,
-                generatedAt: new Date().toISOString(),
-                designId: generateDesignId()
-            };
-
-        } catch (error) {
-            console.error('[AI] Design generation failed:', error);
-            throw new Error(`Design generation failed: ${error.message}`);
-        }
+      return {
+        name,
+        description:
+          "Lokal generiertes Design basierend auf Prompt-Keywords",
+        type,
+        color,
+        secondaryColor,
+        material,
+        fit,
+        pattern,
+        tags,
+        constructionNotes,
+        originalPrompt: prompt,
+        generatedAt: new Date().toISOString(),
+        designId: generateDesignId(),
+      };
+    } catch (error) {
+      console.error("[AI] Design generation failed:", error);
+      throw new Error(`Design generation failed: ${error.message}`);
     }
+  }
 
-    function generateDesignId() {
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-        return `UR-${timestamp}-${random}`;
-    }
+  function generateDesignId() {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `UR-${timestamp}-${random}`;
+  }
 
-    function extractTags(prompt) {
-        const tags = new Set();
-        const keywords = [
-            'minimalistisch', 'streetwear', 'casual', 'elegant', 'vintage', 'modern',
-            'sportlich', 'business', 'cyberpunk', 'gothic', 'sommerlich', 'winter',
-            'gestickt', 'bedruckt', 'reflektierend', 'wasserdicht', 'gefüttert',
-            'organic', 'bio', 'nachhaltig', 'fairtrade', 'handgefertigt'
-        ];
-        const lower = prompt.toLowerCase();
-        keywords.forEach(kw => { if (lower.includes(kw)) tags.add(kw); });
-        return Array.from(tags);
-    }
+  function extractTags(prompt) {
+    const tags = new Set();
+    const keywords = [
+      "minimalistisch",
+      "streetwear",
+      "casual",
+      "elegant",
+      "vintage",
+      "modern",
+      "sportlich",
+      "business",
+      "cyberpunk",
+      "gothic",
+      "sommerlich",
+      "winter",
+      "gestickt",
+      "bedruckt",
+      "reflektierend",
+      "wasserdicht",
+      "gefüttert",
+      "organic",
+      "bio",
+      "nachhaltig",
+      "fairtrade",
+      "handgefertigt",
+    ];
+    const lower = prompt.toLowerCase();
+    keywords.forEach((kw) => {
+      if (lower.includes(kw)) tags.add(kw);
+    });
+    return Array.from(tags);
+  }
 
-    return {
-        generateDesign,
-        detectType,
-        detectColor,
-        detectMaterial,
-        detectFit,
-        detectPattern
-    };
+  return {
+    generateDesign,
+    detectType,
+    detectColor,
+    detectMaterial,
+    detectFit,
+    detectPattern,
+  };
 })();
 
 window.AI = AI;
