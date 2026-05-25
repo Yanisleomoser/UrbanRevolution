@@ -4,85 +4,90 @@
  */
 
 const Export = (() => {
-    function buildSpecData(design, measurements, garmentType) {
-        const size = Measurements.calculateSize(measurements);
-        const fabric = Measurements.estimateFabric(measurements, garmentType);
-        const seams = Measurements.estimateSeams(measurements, garmentType);
+  function buildSpecData(design, measurements, garmentType) {
+    const size = Measurements.calculateSize(measurements);
+    const fabric = Measurements.estimateFabric(measurements, garmentType);
+    const seams = Measurements.estimateSeams(measurements, garmentType);
 
-        return {
-            metadata: {
-                brand: 'Urban Revolution',
-                designId: design.designId,
-                generatedAt: design.generatedAt,
-                version: '1.0.0'
-            },
-            design: {
-                name: design.name,
-                description: design.description,
-                originalPrompt: design.originalPrompt,
-                tags: design.tags
-            },
-            specifications: {
-                garmentType,
-                color: design.color,
-                material: design.material,
-                fit: design.fit < 0.33 ? 'Slim' : design.fit > 0.66 ? 'Oversized' : 'Regular',
-                size
-            },
-            measurements: {
-                ...measurements,
-                unit: 'cm'
-            },
-            production: {
-                estimatedFabric: `${fabric} m²`,
-                estimatedSeamLength: `${seams} cm`,
-                constructionNotes: design.constructionNotes,
-                estimatedProductionDays: 14,
-                estimatedPriceRange: { min: 145, max: 220, currency: 'CHF' }
-            }
-        };
-    }
+    return {
+      metadata: {
+        brand: "Urban Revolution",
+        designId: design.designId,
+        generatedAt: design.generatedAt,
+        version: "1.0.0",
+      },
+      design: {
+        name: design.name,
+        description: design.description,
+        originalPrompt: design.originalPrompt,
+        tags: design.tags,
+      },
+      specifications: {
+        garmentType,
+        color: design.color,
+        material: design.material,
+        fit: design.fit < 0.33 ? "Slim" : design.fit > 0.66 ? "Oversized" : "Regular",
+        size,
+      },
+      measurements: {
+        ...measurements,
+        unit: "cm",
+      },
+      production: {
+        estimatedFabric: `${fabric} m²`,
+        estimatedSeamLength: `${seams} cm`,
+        constructionNotes: design.constructionNotes,
+        estimatedProductionDays: 14,
+        estimatedPriceRange: { min: 145, max: 220, currency: "CHF" },
+      },
+    };
+  }
 
-    function downloadJSON(specData) {
-        const blob = new Blob([JSON.stringify(specData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${specData.metadata.designId}_spec.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+  function downloadJSON(specData) {
+    const blob = new Blob([JSON.stringify(specData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${specData.metadata.designId}_spec.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
-    function downloadHTML(specData) {
-        const html = renderPrintableHTML(specData);
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${specData.metadata.designId}_spec.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
+  function downloadHTML(specData) {
+    const html = renderPrintableHTML(specData);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${specData.metadata.designId}_spec.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
-    function renderPrintableHTML(spec) {
-        const measurementsHTML = Object.entries(spec.measurements)
-            .filter(([k]) => k !== 'unit')
-            .map(([k, v]) => `<tr><td>${Measurements.LABELS[k] || k}</td><td>${v} cm</td></tr>`)
-            .join('');
+  function renderPrintableHTML(spec) {
+    const measurementsHTML = Object.entries(spec.measurements)
+      .filter(([k]) => k !== "unit")
+      .map(
+        ([k, v]) =>
+          `<tr><td>${Measurements.LABELS[k] || k}</td><td>${v} cm</td></tr>`
+      )
+      .join("");
 
-        const notesHTML = spec.production.constructionNotes
-            .map(n => `<li>${n}</li>`)
-            .join('');
+    const notesHTML = spec.production.constructionNotes
+      .map((n) => `<li>${n}</li>`)
+      .join("");
 
-        const tagsHTML = spec.design.tags
-            .map(t => `<span class="tag">${t}</span>`)
-            .join(' ');
+    const tagsHTML = spec.design.tags
+      .map((t) => `<span class="tag">${t}</span>`)
+      .join(" ");
 
-        return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -114,7 +119,7 @@ const Export = (() => {
         </div>
         <div class="id">
             ${spec.metadata.designId}<br>
-            ${new Date(spec.metadata.generatedAt).toLocaleDateString('de-DE')}
+            ${new Date(spec.metadata.generatedAt).toLocaleDateString("de-DE")}
         </div>
     </div>
 
@@ -150,38 +155,40 @@ const Export = (() => {
     <ul>${notesHTML}</ul>
 
     <div class="footer">
-        Generiert von Urban Revolution AI Atelier · ${new Date().toLocaleString('de-DE')}
+        Generiert von Urban Revolution AI Atelier · ${new Date().toLocaleString("de-DE")}
     </div>
 </body>
 </html>`;
-    }
+  }
 
-    function print() {
-        window.print();
-    }
+  function print() {
+    window.print();
+  }
 
-    function simulateOrderSubmission(specData) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const orderId = 'ORD-' + Date.now().toString(36).toUpperCase();
-                resolve({
-                    success: true,
-                    orderId,
-                    estimatedDelivery: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE'),
-                    confirmation: `Auftrag ${orderId} wurde an die Produktion gesendet`
-                });
-            }, 1200);
+  function simulateOrderSubmission(specData) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const orderId = "ORD-" + Date.now().toString(36).toUpperCase();
+        resolve({
+          success: true,
+          orderId,
+          estimatedDelivery: new Date(
+            Date.now() + 14 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString("de-DE"),
+          confirmation: `Auftrag ${orderId} wurde an die Produktion gesendet`,
         });
-    }
+      }, 1200);
+    });
+  }
 
-    return {
-        buildSpecData,
-        downloadJSON,
-        downloadHTML,
-        print,
-        simulateOrderSubmission,
-        renderPrintableHTML
-    };
+  return {
+    buildSpecData,
+    downloadJSON,
+    downloadHTML,
+    print,
+    simulateOrderSubmission,
+    renderPrintableHTML,
+  };
 })();
 
 window.Export = Export;
