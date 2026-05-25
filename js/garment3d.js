@@ -443,10 +443,15 @@ class GarmentScene {
             if (!this.avatarMesh.userData.scaled) {
                 this.avatarMesh.scale.y = dims.heightScale;
             }
-            // Wenn GLB-Avatar: User-Designfarbe auf die eingebaute Kleidung
-            // des Modells anwenden, damit "Try-On" Feeling entsteht
-            if (this.avatarMesh.userData.scaled) {
-                this.applyDesignToGlbClothing(this.avatarMesh);
+            // Wireframe-Toggle auch auf den Avatar anwenden (sonst sieht User
+            // nur die Kleidung als Wireframe, der Avatar bleibt solid)
+            if (this.wireframe) {
+                this.avatarMesh.traverse(o => {
+                    if (o.isMesh && o.material) {
+                        const mats = Array.isArray(o.material) ? o.material : [o.material];
+                        mats.forEach(m => { if (m) m.wireframe = true; });
+                    }
+                });
             }
             this.scene.add(this.avatarMesh);
         }
@@ -470,9 +475,10 @@ class GarmentScene {
 
         const group = new THREE.Group();
         group.name = 'garment';
-        // Bei GLB-Avatar parametrische Kleidung ausblenden — sie sitzt nicht
-        // auf dem Körper, und der Avatar trägt jetzt unsere Designfarbe.
-        group.visible = !usingGlbAvatar;
+        // Parametrische Kleidung wird IMMER gezeigt — auch über dem GLB-Avatar.
+        // Sie sitzt jetzt auf dem Körper statt frei zu schweben weil Avatar
+        // und Kleidung dasselbe Koordinatensystem (Füße bei y=0, Kopf bei
+        // ~1.72m) teilen.
 
         const builder = {
             tshirt: this.buildTshirt, hoodie: this.buildHoodie, shirt: this.buildShirt,
