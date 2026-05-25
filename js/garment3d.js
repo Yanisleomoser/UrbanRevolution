@@ -689,6 +689,10 @@ class GarmentScene {
             o.receiveShadow = true;
         });
 
+        // Preset-spezifische Körperform vor der Höhenberechnung anwenden,
+        // damit die Bbox die modifizierte Form widerspiegelt.
+        this.applyBodyShape(model, preset);
+
         // Bbox aus tatsächlichem Welt-Mesh ableiten (mit Bone-Transform)
         model.updateMatrixWorld(true);
         const bbox = new THREE.Box3().setFromObject(model);
@@ -719,6 +723,44 @@ class GarmentScene {
 
         group.add(model);
         return group;
+    }
+
+    /**
+     * Wendet preset-spezifische Körperform-Modifier auf das GLB-Skelett an,
+     * damit slim/regular/athletic (und slim/regular/curvy) sich tatsächlich
+     * unterscheiden. Skaliert Spine-Knochen für die Brustpartie und den
+     * Hips-Knochen für die Hüfte. Wenn keine passenden Knochen gefunden
+     * werden, bleibt das Modell unverändert (kein Crash).
+     */
+    applyBodyShape(model, preset) {
+        const chestMod = preset.chestMod || 1.0;
+        const hipsMod = preset.hipsMod || 1.0;
+        const muscleMod = preset.muscleMod || 1.0;
+        // Modifier dämpfen, sonst werden die Differenzen extrem
+        const damp = (mod) => 1 + (mod - 1) * 0.7;
+
+        let matched = 0;
+        model.traverse(o => {
+            if (!o.isBone) return;
+            const name = o.name.toLowerCase();
+            // Brust: Spine1/Spine2 — wirkt sich auf Brustkorb + Schultern aus
+            if (/(\b|:|_)spine[12]$/.test(name)) {
+                o.scale.x = damp(chestMod);
+                o.scale.z = damp(muscleMod);
+                matched++;
+            }
+            // Hüfte: nur X-Achse skalieren, damit Beine nicht vor/zurück wandern
+            else if (/(\b|:|_)hips?$/.test(name) || /pelvis$/.test(name)) {
+                o.scale.x = damp(hipsMod);
+                matched++;
+            }
+        });
+
+        if (matched === 0) {
+            console.warn(`[avatar] ${this.currentAvatar}: no shape-modifier bones matched`);
+        } else {
+            console.info(`[avatar] ${this.currentAvatar} shape: ${matched} bone(s) modified (chest×${damp(chestMod).toFixed(2)}, hips×${damp(hipsMod).toFixed(2)})`);
+        }
     }
 
     buildProceduralAvatar(dims) {
