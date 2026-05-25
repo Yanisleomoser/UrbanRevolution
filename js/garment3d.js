@@ -3,14 +3,22 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
-/* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited) */
+/* Lokale GLB-Modelle aus Three.js Examples (CC0/Apache 2.0, in models/ commited)
+ * Primär realistische Erwachsene; bei Lade-/Render-Fehler greift Fallback. */
 const HUMAN_MODELS = {
-    male_slim:      'models/CesiumMan.glb',
-    male_regular:   'models/CesiumMan.glb',
-    male_athletic:  'models/CesiumMan.glb',
+    male_slim:      'models/Soldier.glb',
+    male_regular:   'models/Soldier.glb',
+    male_athletic:  'models/Soldier.glb',
     female_slim:    'models/Michelle.glb',
     female_regular: 'models/Michelle.glb',
     female_curvy:   'models/Michelle.glb'
+};
+
+/* Falls Primärmodell fehlt: nächstes versuchen */
+const MODEL_FALLBACKS = {
+    'models/Soldier.glb':  'models/CesiumMan.glb',
+    'models/Michelle.glb': 'models/RiggedFigure.glb',
+    'models/CesiumMan.glb': 'models/RiggedFigure.glb'
 };
 
 /* Mesh-Namen / Material-Tokens die als eingebaute Kleidung gelten */
@@ -272,7 +280,12 @@ class GarmentScene {
     }
 
     async preloadHumanModels() {
-        const uniqueUrls = [...new Set(Object.values(HUMAN_MODELS))];
+        // Alle primären + alle Fallbacks vorladen damit Kette greifen kann
+        const primary = [...new Set(Object.values(HUMAN_MODELS))];
+        const fallbacks = primary
+            .map(u => MODEL_FALLBACKS[u])
+            .filter(Boolean);
+        const uniqueUrls = [...new Set([...primary, ...fallbacks])];
         const results = await Promise.allSettled(uniqueUrls.map(url => this.loadHumanModel(url)));
         const loaded = results.filter(r => r.status === 'fulfilled').length;
         const failed = results.length - loaded;
@@ -443,8 +456,7 @@ class GarmentScene {
             if (!this.avatarMesh.userData.scaled) {
                 this.avatarMesh.scale.y = dims.heightScale;
             }
-            // Wireframe-Toggle auch auf den Avatar anwenden (sonst sieht User
-            // nur die Kleidung als Wireframe, der Avatar bleibt solid)
+            // Wireframe-Toggle auch auf den Avatar anwenden
             if (this.wireframe) {
                 this.avatarMesh.traverse(o => {
                     if (o.isMesh && o.material) {
@@ -454,6 +466,14 @@ class GarmentScene {
                 });
             }
             this.scene.add(this.avatarMesh);
+
+            // Bone-Positionen extrahieren und an dims überschreiben, damit
+            // die parametrische Kleidung an Schulter/Brust/Hüfte des
+            // echten Avatars hängt statt an generischen Koordinaten.
+            if (usingGlbAvatar) {
+                this.avatarMesh.updateMatrixWorld(true);
+                this.applyBoneOverrides(dims, this.avatarMesh);
+            }
         }
 
         const matProps = this.getMaterialProps(this.currentMaterial);
@@ -513,19 +533,95 @@ class GarmentScene {
        AVATAR — anatomisch korrekt, mit Gesicht und Haaren
        ============================================================ */
 
+    /** Resolved den effektiv geladenen URL für ein Preset (mit Fallback-Kette) */
+    resolveModelUrl(presetKey) {
+        let url = HUMAN_MODELS[presetKey];
+        // Hop durch die Fallback-Kette bis ein geladenes Modell gefunden wird
+        const seen = new Set();
+        while (url && !seen.has(url)) {
+            if (this.humanModelCache[url]) return url;
+            seen.add(url);
+            url = MODEL_FALLBACKS[url];
+        }
+        return null;
+    }
+
     buildAvatar(dims) {
-        const modelUrl = HUMAN_MODELS[this.currentAvatar];
-        const sourceModel = modelUrl ? this.humanModelCache[modelUrl] : null;
+        const url = this.resolveModelUrl(this.currentAvatar);
+        const sourceModel = url ? this.humanModelCache[url] : null;
 
         if (sourceModel) {
+            const primary = HUMAN_MODELS[this.currentAvatar];
+            if (url !== primary) {
+                console.info(`[avatar] ${this.currentAvatar} using fallback ${url} (primary ${primary} unavailable)`);
+            }
             return this.buildGlbAvatar(sourceModel, dims);
         }
         return this.buildProceduralAvatar(dims);
     }
 
     isGlbAvatarAvailable() {
-        const url = HUMAN_MODELS[this.currentAvatar];
-        return !!(url && this.humanModelCache[url]);
+        return !!this.resolveModelUrl(this.currentAvatar);
+    }
+
+    /**
+     * Sammelt die wichtigsten Mixamo/glTF-Bones aus dem geladenen Modell
+     * und liefert deren Welt-Positionen für die Kleidungs-Platzierung.
+     */
+    extractBoneLandmarks(group) {
+        const lm = {};
+        group.traverse(o => {
+            if (!o.isBone) return;
+            const name = o.name.toLowerCase();
+            const p = new THREE.Vector3();
+            o.getWorldPosition(p);
+            // Match against Mixamo (mixamorig:Hips), three.js (Hips), Cesium (Skeleton_*) conventions
+            if (/(\b|:|_)hips?$/.test(name) || /pelvis$/.test(name))                 lm.hips = p;
+            else if (/(\b|:|_)spine2$/.test(name))                                    lm.chest = p;
+            else if (/(\b|:|_)spine1$/.test(name) && !lm.chest)                       lm.chest = p;
+            else if (/(\b|:|_)spine$/.test(name) && !lm.chest)                        lm.chest = p;
+            else if (/(\b|:|_)neck$/.test(name))                                      lm.neck = p;
+            else if (/(\b|:|_)head$/.test(name))                                      lm.head = p;
+            else if (/(\b|:|_)leftshoulder$/.test(name) || /(\b|:|_)l_?shoulder$/.test(name))  lm.leftShoulder = p;
+            else if (/(\b|:|_)rightshoulder$/.test(name) || /(\b|:|_)r_?shoulder$/.test(name)) lm.rightShoulder = p;
+            else if (/(\b|:|_)leftupleg$/.test(name) || /(\b|:|_)leftthigh$/.test(name)
+                  || /(\b|:|_)l_?thigh$/.test(name))                                 lm.leftThigh = p;
+            else if (/(\b|:|_)rightupleg$/.test(name) || /(\b|:|_)rightthigh$/.test(name)
+                  || /(\b|:|_)r_?thigh$/.test(name))                                 lm.rightThigh = p;
+        });
+        return lm;
+    }
+
+    /**
+     * Überschreibt die Y-Position und Schulter-Spannweite der parametrischen
+     * Kleidung mit den echten Bone-Daten des Avatars. So sitzt das T-Shirt
+     * auf der tatsächlichen Brust des geladenen Modells, nicht auf einer
+     * generischen Standard-Brusthöhe.
+     */
+    applyBoneOverrides(dims, group) {
+        const b = this.extractBoneLandmarks(group);
+        const required = ['hips', 'chest', 'leftShoulder', 'rightShoulder'];
+        if (!required.every(k => b[k])) {
+            console.info(`[avatar] bone overrides skipped — only found: ${Object.keys(b).join(', ')}`);
+            return;
+        }
+        const hs = dims.heightScale || 1.0;
+
+        // Welt-Positionen → lokale dims-Koordinaten (geteilt durch heightScale
+        // weil die Garment-Group später nochmal mit heightScale skaliert wird)
+        dims.hipsY = b.hips.y / hs;
+        dims.chestY = b.chest.y / hs;
+        dims.shoulderY = (b.leftShoulder.y + b.rightShoulder.y) / 2 / hs;
+        dims.waistY = (dims.chestY + dims.hipsY) / 2;
+        if (b.leftThigh && b.rightThigh) {
+            dims.crotchY = (b.leftThigh.y + b.rightThigh.y) / 2 / hs;
+        } else {
+            dims.crotchY = dims.hipsY - 0.05;
+        }
+        // Schulter-Spanne aus echten Bone-Positionen (statt aus User-Maß)
+        dims.shoulderHalfWidth = Math.abs(b.leftShoulder.x - b.rightShoulder.x) / 2 / hs;
+
+        console.info(`[avatar] bone-aligned: shoulderY=${dims.shoulderY.toFixed(2)}, chestY=${dims.chestY.toFixed(2)}, hipsY=${dims.hipsY.toFixed(2)}, shoulderWidth=${(dims.shoulderHalfWidth*2).toFixed(2)}m`);
     }
 
     /**
