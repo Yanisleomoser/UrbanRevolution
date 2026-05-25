@@ -523,6 +523,13 @@
       }
     });
 
+    window.addEventListener("ai-fallback", (e) => {
+      showToast(
+        `Claude-API nicht erreichbar (${e.detail.reason}) — lokaler Generator wird verwendet`,
+        "info"
+      );
+    });
+
     window.addEventListener("avatar-load-result", (e) => {
       const { loaded, _failed, total } = e.detail;
       if (loaded === total) {

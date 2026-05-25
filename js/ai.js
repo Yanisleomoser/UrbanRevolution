@@ -312,6 +312,9 @@ Antworte NUR mit JSON:
       return JSON.parse(jsonMatch[0]);
     } catch (error) {
       console.error("[AI] Claude generation failed:", error.message);
+      window.dispatchEvent(new CustomEvent("ai-fallback", {
+        detail: { reason: error.message },
+      }));
       return null;
     }
   }
