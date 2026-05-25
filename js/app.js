@@ -192,11 +192,8 @@
             document.querySelectorAll('.type-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.type === design.type);
             });
-            window.garmentScene.setType(design.type);
         }
-        window.garmentScene.setColor(design.color);
-        window.garmentScene.setMaterial(design.material);
-        window.garmentScene.setFit(design.fit);
+        window.garmentScene.applyDesign(design);
     }
 
     function initMeasurements() {
@@ -215,7 +212,64 @@
             });
         });
 
+        initPoseUpload();
         updateMeasurements();
+    }
+
+    function initPoseUpload() {
+        const fileInput = document.getElementById('pose-photo');
+        const uploadBtn = document.getElementById('pose-upload-btn');
+        const statusEl = document.getElementById('pose-status');
+        const previewWrap = document.getElementById('pose-preview');
+        const canvas = document.getElementById('pose-canvas');
+
+        if (!fileInput || !uploadBtn || !canvas) return;
+
+        uploadBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileInput.value = '';
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Lade Modell...';
+            statusEl.textContent = '';
+
+            try {
+                await window.Pose.init();
+                uploadBtn.textContent = 'Analysiere...';
+                statusEl.textContent = 'Erkenne Pose...';
+
+                const { result, img } = await window.Pose.detect(file);
+
+                if (!result.landmarks || !result.landmarks[0]) {
+                    showToast('Keine Person im Foto erkannt — bitte Ganzkörper-Aufnahme', 'error');
+                    statusEl.textContent = 'Keine Pose erkannt.';
+                    return;
+                }
+
+                const landmarks = result.landmarks[0];
+                const heightInput = document.getElementById('height');
+                const userHeight = parseInt(heightInput?.value, 10) || 175;
+                const measurements = window.Pose.estimateMeasurements(landmarks, userHeight);
+
+                Measurements.write(measurements);
+                updateMeasurements();
+
+                previewWrap.hidden = false;
+                window.Pose.drawPoseOverlay(canvas, img, landmarks);
+                statusEl.textContent = `${measurements.chest}cm Brust · ${measurements.waist}cm Taille · ${measurements.hips}cm Hüfte`;
+                showToast('Maße aus Foto übernommen — überprüfe & feinjustiere bei Bedarf', 'success');
+            } catch (err) {
+                console.error('[pose] failed:', err);
+                showToast('Foto-Analyse fehlgeschlagen: ' + (err.message || err), 'error');
+                statusEl.textContent = 'Fehler — bitte erneut versuchen.';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Anderes Foto auswählen';
+            }
+        });
     }
 
     function updateMeasurements() {
@@ -257,8 +311,19 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                const avatarKey = btn.dataset.avatar;
                 if (window.garmentScene) {
-                    window.garmentScene.setAvatar(btn.dataset.avatar);
+                    window.garmentScene.setAvatar(avatarKey);
+                }
+                // Maße aus dem Preset übernehmen (wenn Toggle aktiv)
+                const loadDefaults = document.getElementById('toggle-load-defaults');
+                if (loadDefaults?.checked && window.AVATAR_PRESETS) {
+                    const preset = window.AVATAR_PRESETS[avatarKey];
+                    if (preset?.defaults) {
+                        Measurements.write({ ...preset.defaults, weight: state.measurements?.weight || 70 });
+                        updateMeasurements();
+                        showToast(`Maße für ${preset.label} geladen`, 'success');
+                    }
                 }
             });
         });
@@ -386,6 +451,17 @@
         window.addEventListener('garment-scene-ready', () => {
             if (state.measurements && window.garmentScene) {
                 window.garmentScene.setMeasurements(state.measurements);
+            }
+        });
+
+        window.addEventListener('avatar-load-result', (e) => {
+            const { loaded, failed, total } = e.detail;
+            if (loaded === total) {
+                showToast('Realistische Avatare geladen', 'success');
+            } else if (loaded > 0) {
+                showToast(`${loaded}/${total} Modelle geladen — Rest nutzt Fallback`, 'info');
+            } else {
+                showToast('Avatar-Modelle konnten nicht geladen werden — verwende Mannequin', 'error');
             }
         });
     }
