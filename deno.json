@@ -1,0 +1,9 @@
+{
+  "lint": {
+    "include": ["js/"],
+    "exclude": ["node_modules/", "models/"],
+    "rules": {
+      "exclude": ["no-window", "no-window-prefix", "no-import-prefix"]
+    }
+  }
+}

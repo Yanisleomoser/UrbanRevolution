@@ -156,7 +156,6 @@ const AI = (() => {
   }
 
   function detectSecondaryColor(prompt, primaryColor) {
-    const lower = prompt.toLowerCase();
     const phrases = [
       /mit\s+(\w+en)\s+(streifen|akzenten|stickerei|details|kontrast)/i,
       /(\w+)\s+(streifen|akzent|kontrast)/i,

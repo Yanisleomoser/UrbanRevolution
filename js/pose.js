@@ -23,8 +23,8 @@ const Pose = (() => {
         L_ANKLE: 27, R_ANKLE: 28
     };
 
-    async function init() {
-        if (landmarker) return landmarker;
+    function init() {
+        if (landmarker) return Promise.resolve(landmarker);
         if (loadingPromise) return loadingPromise;
         loadingPromise = (async () => {
             const mod = await import(
@@ -47,7 +47,7 @@ const Pose = (() => {
         return loadingPromise;
     }
 
-    async function loadImageElement(fileOrUrl) {
+    function loadImageElement(fileOrUrl) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -177,7 +177,7 @@ const Pose = (() => {
 
         // Landmark-Punkte
         ctx.fillStyle = '#06b6d4';
-        landmarks.forEach((lm, i) => {
+        landmarks.forEach((lm) => {
             if ((lm.visibility || 1) < 0.4) return;
             ctx.beginPath();
             ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 3, 0, Math.PI * 2);

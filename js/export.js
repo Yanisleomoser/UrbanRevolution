@@ -165,7 +165,7 @@ const Export = (() => {
     window.print();
   }
 
-  function simulateOrderSubmission(specData) {
+  function simulateOrderSubmission(_specData) {
     return new Promise((resolve) => {
       setTimeout(() => {
         const orderId = "ORD-" + Date.now().toString(36).toUpperCase();
