@@ -376,7 +376,7 @@
         document.getElementById('spec-material').textContent = state.currentMaterial;
 
         const colorCell = document.getElementById('spec-color');
-        colorCell.innerHTML = `<span style="display:inline-block;width:14px;height:14px;background:${state.currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px"></span>${state.currentColor}`;
+        colorCell.innerHTML = `<span style="display:inline-block;width:14px;height:14px;background:${state.currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${state.currentColor}`;
 
         document.getElementById('spec-fit').textContent = specData.specifications.fit;
         document.getElementById('spec-size').textContent = specData.specifications.size;
@@ -455,7 +455,7 @@
         });
 
         window.addEventListener('avatar-load-result', (e) => {
-            const { loaded, failed, total } = e.detail;
+            const { loaded, _failed, total } = e.detail;
             if (loaded === total) {
                 showToast('Realistische Avatare geladen', 'success');
             } else if (loaded > 0) {
