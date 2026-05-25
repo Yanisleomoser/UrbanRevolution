@@ -21,9 +21,6 @@ const MODEL_FALLBACKS = {
     'models/CesiumMan.glb': 'models/RiggedFigure.glb'
 };
 
-/* Mesh-Namen / Material-Tokens die als eingebaute Kleidung gelten */
-const CLOTHING_NAME_HINTS = /shirt|pants|cloth|uniform|jeans|shoe|dress|jacket|skirt|hat/i;
-
 /* ============================================================
    AVATAR PRESETS — 4 männlich + 4 weiblich + 1 neutral
    ============================================================ */
@@ -152,7 +149,6 @@ function generatePatternTexture(pattern, primary, secondary, materialType) {
             break;
         }
         case 'heather': {
-            const baseColor = primary;
             for (let i = 0; i < 4000; i++) {
                 ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.18})`;
                 ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
@@ -916,11 +912,11 @@ class GarmentScene {
         return group;
     }
 
-    buildHead(group, dims, skinMat, hairMat) {
+    buildHead(_group, _dims, _skinMat, _hairMat) {
         // Kept for compatibility — buildAvatar now handles head as part of one-piece body
     }
 
-    buildFace(group, dims, skinMat, hairMat) {
+    buildFace(group, dims, skinMat, _hairMat) {
         const headR = dims.headR;
         const headY = dims.headY;
         const preset = dims.preset;
