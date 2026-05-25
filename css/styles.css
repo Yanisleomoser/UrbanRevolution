@@ -624,6 +624,106 @@ select:focus {
     padding: 32px;
 }
 
+.photo-upload-card {
+    background: linear-gradient(135deg,
+        rgba(236, 72, 153, 0.06),
+        rgba(139, 92, 246, 0.06),
+        rgba(6, 182, 212, 0.06));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+}
+
+.photo-upload-text h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.photo-upload-text p {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
+.photo-privacy {
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    font-style: italic;
+}
+
+.photo-upload-action {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 160px;
+}
+
+.upload-btn {
+    background: var(--gradient);
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 12px rgba(236, 72, 153, 0.25);
+    white-space: nowrap;
+}
+
+.upload-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 18px rgba(236, 72, 153, 0.45);
+}
+
+.upload-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.pose-status {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    min-height: 14px;
+}
+
+.pose-preview {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.pose-preview canvas {
+    border-radius: var(--radius-sm);
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 600px) {
+    .photo-upload-card {
+        grid-template-columns: 1fr;
+    }
+    .photo-upload-action {
+        min-width: 0;
+    }
+}
+
 .preset-buttons {
     display: flex;
     gap: 8px;

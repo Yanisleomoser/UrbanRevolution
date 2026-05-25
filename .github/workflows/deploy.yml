@@ -16,6 +16,11 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Forciere Node.js 24 für alle JavaScript-Actions damit die Node 20
+# Deprecation-Warnings verschwinden (gilt ab Juni 2026 sowieso default).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy:
     environment:
