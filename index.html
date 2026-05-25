@@ -8,6 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Vercel Speed Insights -->
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -171,6 +176,22 @@
 
             <div class="measure-grid">
                 <div class="measure-form">
+                    <div class="photo-upload-card">
+                        <div class="photo-upload-text">
+                            <h4>Maße aus Foto</h4>
+                            <p>Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Maße automatisch.</p>
+                            <p class="photo-privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
+                        </div>
+                        <div class="photo-upload-action">
+                            <input type="file" id="pose-photo" accept="image/*" hidden>
+                            <button id="pose-upload-btn" class="upload-btn">Foto auswählen</button>
+                            <span id="pose-status" class="pose-status"></span>
+                        </div>
+                        <div id="pose-preview" class="pose-preview" hidden>
+                            <canvas id="pose-canvas"></canvas>
+                        </div>
+                    </div>
+
                     <div class="preset-buttons">
                         <button class="preset-btn" data-preset="S">Voreinstellung S</button>
                         <button class="preset-btn" data-preset="M">Voreinstellung M</button>
@@ -257,6 +278,46 @@
                 <div id="three-canvas" class="three-canvas"></div>
                 <div class="preview-controls">
                     <div class="control-section">
+                        <h4>Avatar</h4>
+                        <div class="avatar-grid" id="avatar-grid">
+                            <button class="avatar-btn" data-avatar="male_slim">
+                                <span class="avatar-figure" data-gender="male" data-type="slim"></span>
+                                <span class="avatar-name">Männlich</span>
+                                <span class="avatar-sub">Schlank</span>
+                            </button>
+                            <button class="avatar-btn active" data-avatar="male_regular">
+                                <span class="avatar-figure" data-gender="male" data-type="regular"></span>
+                                <span class="avatar-name">Männlich</span>
+                                <span class="avatar-sub">Durchschnitt</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="male_athletic">
+                                <span class="avatar-figure" data-gender="male" data-type="athletic"></span>
+                                <span class="avatar-name">Männlich</span>
+                                <span class="avatar-sub">Athletisch</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="female_slim">
+                                <span class="avatar-figure" data-gender="female" data-type="slim"></span>
+                                <span class="avatar-name">Weiblich</span>
+                                <span class="avatar-sub">Schlank</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="female_regular">
+                                <span class="avatar-figure" data-gender="female" data-type="regular"></span>
+                                <span class="avatar-name">Weiblich</span>
+                                <span class="avatar-sub">Durchschnitt</span>
+                            </button>
+                            <button class="avatar-btn" data-avatar="female_curvy">
+                                <span class="avatar-figure" data-gender="female" data-type="curvy"></span>
+                                <span class="avatar-name">Weiblich</span>
+                                <span class="avatar-sub">Kurvig</span>
+                            </button>
+                        </div>
+                        <label class="toggle avatar-load-toggle">
+                            <input type="checkbox" id="toggle-load-defaults" checked>
+                            <span class="toggle-slider"></span>
+                            Standardmaße laden
+                        </label>
+                    </div>
+                    <div class="control-section">
                         <h4>Ansicht</h4>
                         <button class="view-btn" data-view="front">Vorne</button>
                         <button class="view-btn" data-view="back">Hinten</button>
@@ -264,7 +325,12 @@
                         <button class="view-btn" data-view="rotate">Rotieren</button>
                     </div>
                     <div class="control-section">
-                        <h4>Maße sichtbar</h4>
+                        <h4>Darstellung</h4>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-avatar" checked>
+                            <span class="toggle-slider"></span>
+                            Avatar anzeigen
+                        </label>
                         <label class="toggle">
                             <input type="checkbox" id="toggle-measurements">
                             <span class="toggle-slider"></span>
@@ -374,6 +440,15 @@
 
     <div id="toast" class="toast"></div>
 
+    <!-- Vercel Web Analytics -->
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
     <script type="importmap">
     {
         "imports": {
@@ -382,9 +457,11 @@
         }
     }
     </script>
+    <script type="module" src="js/analytics.js"></script>
     <script type="module" src="js/garment3d.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/measurements.js"></script>
+    <script src="js/pose.js"></script>
     <script src="js/export.js"></script>
     <script src="js/app.js"></script>
 </body>

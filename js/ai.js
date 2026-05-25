@@ -1,66 +1,69 @@
 /**
- * Urban Revolution — AI Design Generator
- *
- * Generiert ein strukturiertes Designkonzept aus einem freien Text-Prompt.
- * Integriert mit der Anthropic Claude API wenn ein Key vorhanden ist
- * (window.URBAN_REVOLUTION_API_KEY). Andernfalls fällt das Modul auf einen
- * lokalen, semantischen Generator zurück, sodass die Demo immer funktioniert.
+ * Urban Revolution — AI Design Generator (REFACTORED)
+ * Improved error handling and validation
  */
 
 const AI = (() => {
-    const COLOR_DICT = {
-        schwarz: '#1a1a1a', black: '#1a1a1a',
-        weiss: '#ffffff', weiß: '#ffffff', white: '#ffffff',
-        rot: '#dc2626', red: '#dc2626',
-        blau: '#1e3a8a', blue: '#1e3a8a',
-        marine: '#1e3a8a', navy: '#1e3a8a',
-        grün: '#365314', gruen: '#365314', green: '#365314', oliv: '#365314', olive: '#365314',
-        gelb: '#f59e0b', yellow: '#f59e0b',
-        beige: '#a16207', braun: '#7c2d12', brown: '#7c2d12',
-        violett: '#6b21a8', purple: '#6b21a8', lila: '#6b21a8',
-        pink: '#831843', rosa: '#831843',
-        grau: '#6b7280', gray: '#6b7280',
-        neon: '#a3e635', cyber: '#6b21a8',
-        indigo: '#1e3a8a', cyan: '#06b6d4'
-    };
+    // Use centralized config
+    const COLOR_DICT = Object.entries(CONFIG.COLORS).reduce((acc, [name, hex]) => {
+        acc[name.toLowerCase()] = hex;
+        acc[name.replace('_', '').toLowerCase()] = hex;
+        return acc;
+    }, {});
 
     const MATERIAL_DICT = {
-        baumwolle: 'cotton', cotton: 'cotton', pima: 'cotton',
-        leinen: 'linen', linen: 'linen',
-        denim: 'denim', jeans: 'denim',
-        wolle: 'wool', wool: 'wool', kaschmir: 'wool',
-        fleece: 'fleece', sweat: 'fleece',
-        seide: 'silk', silk: 'silk', satin: 'silk',
-        polyester: 'polyester', recycelt: 'polyester', recycled: 'polyester'
+        baumwolle: 'cotton', cotton: 'cotton', pima: 'cotton', jersey: 'cotton',
+        leinen: 'linen', linen: 'linen', leinenmix: 'linen',
+        denim: 'denim', jeans: 'denim', selvedge: 'denim',
+        wolle: 'wool', wool: 'wool', kaschmir: 'wool', merino: 'wool', tweed: 'wool',
+        fleece: 'fleece', sweat: 'fleece', frottee: 'fleece',
+        seide: 'silk', silk: 'silk', satin: 'silk', viskose: 'silk',
+        polyester: 'polyester', recycelt: 'polyester', recycled: 'polyester', nylon: 'polyester', techwear: 'polyester'
     };
 
     const TYPE_DICT = {
-        hoodie: 'hoodie', kapuze: 'hoodie', sweater: 'hoodie',
-        hemd: 'shirt', shirt: 'shirt', oxford: 'shirt', bluse: 'shirt',
-        't-shirt': 'tshirt', tshirt: 'tshirt', tee: 'tshirt',
-        hose: 'pants', jeans: 'pants', pants: 'pants', chino: 'pants', cargo: 'pants',
-        jacke: 'jacket', jacket: 'jacket', blazer: 'jacket', mantel: 'jacket',
+        hoodie: 'hoodie', kapuze: 'hoodie', sweater: 'hoodie', sweatshirt: 'hoodie',
+        hemd: 'shirt', shirt: 'shirt', oxford: 'shirt', bluse: 'shirt', polo: 'shirt',
+        't-shirt': 'tshirt', tshirt: 'tshirt', 'tee': 'tshirt', shirt_short: 'tshirt',
+        hose: 'pants', jeans: 'pants', pants: 'pants', chino: 'pants', cargo: 'pants', trouser: 'pants',
+        jacke: 'jacket', jacket: 'jacket', blazer: 'jacket', mantel: 'jacket', parka: 'jacket', bomber: 'jacket',
         kleid: 'dress', dress: 'dress', robe: 'dress'
     };
 
     const FIT_DICT = {
-        slim: 0.15, tailliert: 0.2, schmal: 0.15, eng: 0.1,
-        regular: 0.5, klassisch: 0.5,
-        loose: 0.75, weit: 0.75, locker: 0.7,
-        oversized: 0.95, übergross: 0.95, baggy: 0.9
+        skinny: 0.05, ultraslim: 0.05,
+        slim: 0.18, tailliert: 0.22, schmal: 0.18, eng: 0.12, fitted: 0.2,
+        regular: 0.5, klassisch: 0.5, standard: 0.5,
+        relaxed: 0.65, loose: 0.75, weit: 0.78, locker: 0.7,
+        oversized: 0.93, übergross: 0.93, uebergross: 0.93, baggy: 0.92
+    };
+
+    const PATTERN_KEYWORDS = {
+        gestreift: 'stripes_h', streifen: 'stripes_h', striped: 'stripes_h',
+        längssteifen: 'stripes_v', laengsstreifen: 'stripes_v', vertical: 'stripes_v',
+        gepunktet: 'dots', punkte: 'dots', polka: 'dots', dots: 'dots',
+        kariert: 'plaid', karo: 'plaid', plaid: 'plaid', check: 'plaid',
+        camo: 'camo', tarnmuster: 'camo', camouflage: 'camo',
+        gradient: 'gradient', verlauf: 'gradient', ombre: 'gradient',
+        floral: 'floral', blumen: 'floral', blümchen: 'floral',
+        meliert: 'heather', heather: 'heather'
     };
 
     function extractFromPrompt(prompt, dict) {
         const lower = prompt.toLowerCase();
+        let bestMatch = null;
+        let bestLength = 0;
         for (const [keyword, value] of Object.entries(dict)) {
-            if (lower.includes(keyword)) return value;
+            if (lower.includes(keyword) && keyword.length > bestLength) {
+                bestMatch = value;
+                bestLength = keyword.length;
+            }
         }
-        return null;
+        return bestMatch;
     }
 
     function detectColor(prompt) {
-        const color = extractFromPrompt(prompt, COLOR_DICT);
-        return color || '#1a1a1a';
+        return extractFromPrompt(prompt, COLOR_DICT) || '#1a1a1a';
     }
 
     function detectMaterial(prompt) {
@@ -76,21 +79,34 @@ const AI = (() => {
         return fit !== null ? fit : 0.5;
     }
 
-    function extractTags(prompt) {
-        const tags = new Set();
-        const keywords = [
-            'minimalistisch', 'streetwear', 'casual', 'elegant', 'vintage', 'modern',
-            'sportlich', 'business', 'cyberpunk', 'gothic', 'sommerlich', 'winter',
-            'gestickt', 'bedruckt', 'reflektierend', 'wasserdicht', 'gefüttert',
-            'taschen', 'kapuze', 'kragen', 'knopfleiste', 'reissverschluss',
-            'organic', 'bio', 'nachhaltig', 'fairtrade', 'handgefertigt'
-        ];
-        const lower = prompt.toLowerCase();
-        keywords.forEach(kw => { if (lower.includes(kw)) tags.add(kw); });
-        return Array.from(tags);
+    function detectPattern(prompt) {
+        return extractFromPrompt(prompt, PATTERN_KEYWORDS) || 'solid';
     }
 
-    function generateName(type, color, prompt) {
+    function detectSecondaryColor(prompt, primaryColor) {
+        const lower = prompt.toLowerCase();
+        const phrases = [
+            /mit\s+(\w+en)\s+(streifen|akzenten|stickerei|details|kontrast)/i,
+            /(\w+)\s+(streifen|akzent|kontrast)/i,
+            /und\s+(\w+)/i
+        ];
+        for (const re of phrases) {
+            const match = prompt.match(re);
+            if (match) {
+                for (const word of match.slice(1)) {
+                    const norm = word.toLowerCase().replace(/(en|er|es|e)$/, '');
+                    for (const [key, val] of Object.entries(COLOR_DICT)) {
+                        if (norm.includes(key) || key.includes(norm)) {
+                            if (val !== primaryColor) return val;
+                        }
+                    }
+                }
+            }
+        }
+        return primaryColor === '#fafafa' ? '#1a1a1a' : '#fafafa';
+    }
+
+    function generateName(type) {
         const adjectives = {
             tshirt: ['Essential', 'Signature', 'Classic', 'Urban', 'Studio'],
             hoodie: ['Atelier', 'Heritage', 'Urban', 'Street', 'Cult'],
@@ -108,7 +124,7 @@ const AI = (() => {
         return `${chosen} ${typeNames[type] || 'Piece'}`;
     }
 
-    function generateConstructionNotes(type, prompt) {
+    function generateConstructionNotes(type) {
         const notes = {
             tshirt: [
                 'Rundhalsausschnitt mit gerippter Halsblende, 2cm breit',
@@ -120,7 +136,6 @@ const AI = (() => {
                 'Kapuze doppellagig mit gefütterten Innenseiten',
                 'Känguru-Tasche mit zwei Seiteneingriffen',
                 'Bündchen aus Rib-Strick an Saum und Ärmeln, 6cm',
-                'Reißverschluss YKK Metall #5 (falls Zipper-Hoodie)',
                 'Tunnelzug mit Metallösen und 1cm Flachkordel'
             ],
             shirt: [
@@ -134,8 +149,7 @@ const AI = (() => {
                 'Fünf-Taschen-Konstruktion klassisch',
                 'Reißverschluss YKK Metall, Knopfverschluss am Bund',
                 'Bundhöhe vorne 22cm, hinten 28cm (Mid-Rise)',
-                'Saum mit Kettenstich gesäumt für authentischen Look',
-                'Verstärkte Belastungspunkte mit Riegeln'
+                'Saum mit Kettenstich gesäumt für authentischen Look'
             ],
             jacket: [
                 'Vollfutter mit Innentaschen (links, rechts)',
@@ -147,39 +161,10 @@ const AI = (() => {
             dress: [
                 'Verdeckter Reißverschluss am Rücken, YKK 50cm',
                 'Brustabnäher und Taillen-Princessnähte',
-                'Saum 5cm doppelt umgeschlagen, blind gesteppt',
-                'Optional: Unterkleid aus Viskose'
+                'Saum 5cm doppelt umgeschlagen, blind gesteppt'
             ]
         };
         return notes[type] || notes.tshirt;
-    }
-
-    function generateDescription(prompt, type, color, material) {
-        const colorWord = Object.entries(COLOR_DICT).find(([_, v]) => v === color)?.[0] || 'individuell';
-        const materialWord = Object.entries(MATERIAL_DICT).find(([_, v]) => v === material)?.[0] || 'hochwertig';
-
-        const intros = [
-            `Ein Statement-Piece, das urbane Eleganz neu definiert.`,
-            `Zeitgenössisches Design trifft auf handwerkliche Präzision.`,
-            `Eine Hommage an minimalistische Ästhetik und Tragekomfort.`,
-            `Reduzierte Linien, präzise Schnittführung, kompromisslose Qualität.`
-        ];
-        const middles = [
-            `Gefertigt aus ${materialWord} in einem ${colorWord}-Ton, der je nach Lichteinfall changiert.`,
-            `Das ${materialWord}-Material in ${colorWord} sorgt für angenehmes Tragegefühl bei jedem Anlass.`,
-            `${materialWord.charAt(0).toUpperCase() + materialWord.slice(1)} in tiefem ${colorWord} bildet die Basis dieses Stücks.`
-        ];
-        const closers = [
-            `Jedes Detail wurde nach deinen exakten Maßen gefertigt — eine perfekte Symbiose aus Vision und Passform.`,
-            `Ein Unikat, gefertigt für dich und nur für dich.`,
-            `Maßgeschneidert nach deinen Körpermaßen für eine zweite Haut.`
-        ];
-
-        return [
-            intros[Math.floor(Math.random() * intros.length)],
-            middles[Math.floor(Math.random() * middles.length)],
-            closers[Math.floor(Math.random() * closers.length)]
-        ].join(' ');
     }
 
     async function generateWithClaude(prompt, type) {
@@ -200,70 +185,116 @@ const AI = (() => {
                     max_tokens: 1024,
                     messages: [{
                         role: 'user',
-                        content: `Du bist ein Designer für Urban Revolution, ein AI-Couture-Atelier. Erstelle ein JSON-Design-Konzept für folgenden Wunsch: "${prompt}". Der Kleidungstyp ist ${type}.
+                        content: `Du bist Designer für Urban Revolution. Erstelle ein JSON-Design-Konzept für: "${prompt}". Kleidungstyp: ${type}.
 
-Antworte NUR mit JSON in genau diesem Format:
+Antworte NUR mit JSON:
 {
-  "name": "Designname (maximal 4 Wörter)",
-  "description": "2-3 Sätze, die das Design beschreiben (auf Deutsch)",
+  "name": "Designname (max 4 Wörter)",
+  "description": "2-3 Sätze, Deutsch",
   "color": "#hexcode",
   "material": "cotton|linen|denim|wool|fleece|silk|polyester",
-  "fit": 0.0 bis 1.0 (0=slim, 1=oversized),
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "constructionNotes": ["Note 1", "Note 2", "Note 3", "Note 4"]
+  "fit": 0.0 bis 1.0,
+  "tags": ["tag1","tag2","tag3"],
+  "constructionNotes": ["Note 1","Note 2","Note 3"]
 }`
                     }]
                 })
             });
 
-            if (!response.ok) return null;
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.error?.message || `API error: ${response.status}`;
+                throw new Error(`Claude API failed: ${errorMsg}`);
+            }
+
             const data = await response.json();
             const text = data.content[0].text;
             const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) return JSON.parse(jsonMatch[0]);
-        } catch (e) {
-            console.warn('Claude API fallback:', e);
+            
+            if (!jsonMatch) {
+                throw new Error('Claude returned invalid JSON format');
+            }
+
+            return JSON.parse(jsonMatch[0]);
+
+        } catch (error) {
+            console.error('[AI] Claude generation failed:', error.message);
+            return null;
         }
-        return null;
     }
 
     async function generateDesign(prompt, garmentType) {
-        await new Promise(r => setTimeout(r, 600 + Math.random() * 800));
-
-        const type = garmentType || detectType(prompt) || 'tshirt';
-
-        const claudeResult = await generateWithClaude(prompt, type);
-        if (claudeResult) {
-            return {
-                ...claudeResult,
-                type,
-                originalPrompt: prompt,
-                generatedAt: new Date().toISOString(),
-                designId: 'UR-' + Math.random().toString(36).substring(2, 8).toUpperCase()
-            };
+        if (!prompt || typeof prompt !== 'string') {
+            throw new Error('Prompt must be a non-empty string');
         }
 
-        const color = detectColor(prompt);
-        const material = detectMaterial(prompt);
-        const fit = detectFit(prompt);
-        const tags = extractTags(prompt);
-        const name = generateName(type, color, prompt);
-        const description = generateDescription(prompt, type, color, material);
-        const constructionNotes = generateConstructionNotes(type, prompt);
+        await new Promise(r => setTimeout(r, 500 + Math.random() * 700));
 
-        return {
-            name,
-            description,
-            type,
-            color,
-            material,
-            fit,
-            tags,
-            constructionNotes,
-            originalPrompt: prompt,
-            generatedAt: new Date().toISOString(),
-            designId: 'UR-' + Math.random().toString(36).substring(2, 8).toUpperCase()
-        };
+        try {
+            const type = garmentType || detectType(prompt) || 'tshirt';
+            CONFIG.validateGarmentType(type);
+
+            const claudeResult = await generateWithClaude(prompt, type);
+
+            if (claudeResult) {
+                return {
+                    ...claudeResult,
+                    type,
+                    originalPrompt: prompt,
+                    generatedAt: new Date().toISOString(),
+                    designId: generateDesignId()
+                };
+            }
+
+            // Fallback to local generation
+            const color = detectColor(prompt);
+            const material = detectMaterial(prompt);
+            const fit = detectFit(prompt);
+            const pattern = detectPattern(prompt);
+            const secondaryColor = pattern !== 'solid' ? detectSecondaryColor(prompt, color) : color;
+            const tags = extractTags(prompt);
+            const name = generateName(type);
+            const constructionNotes = generateConstructionNotes(type);
+
+            return {
+                name,
+                description: 'Lokal generiertes Design basierend auf Prompt-Keywords',
+                type,
+                color,
+                secondaryColor,
+                material,
+                fit,
+                pattern,
+                tags,
+                constructionNotes,
+                originalPrompt: prompt,
+                generatedAt: new Date().toISOString(),
+                designId: generateDesignId()
+            };
+
+        } catch (error) {
+            console.error('[AI] Design generation failed:', error);
+            throw new Error(`Design generation failed: ${error.message}`);
+        }
+    }
+
+    function generateDesignId() {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+        return `UR-${timestamp}-${random}`;
+    }
+
+    function extractTags(prompt) {
+        const tags = new Set();
+        const keywords = [
+            'minimalistisch', 'streetwear', 'casual', 'elegant', 'vintage', 'modern',
+            'sportlich', 'business', 'cyberpunk', 'gothic', 'sommerlich', 'winter',
+            'gestickt', 'bedruckt', 'reflektierend', 'wasserdicht', 'gefüttert',
+            'organic', 'bio', 'nachhaltig', 'fairtrade', 'handgefertigt'
+        ];
+        const lower = prompt.toLowerCase();
+        keywords.forEach(kw => { if (lower.includes(kw)) tags.add(kw); });
+        return Array.from(tags);
     }
 
     return {
@@ -271,7 +302,8 @@ Antworte NUR mit JSON in genau diesem Format:
         detectType,
         detectColor,
         detectMaterial,
-        detectFit
+        detectFit,
+        detectPattern
     };
 })();
 
