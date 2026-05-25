@@ -1,0 +1,17 @@
+{
+  "name": "urban-revolution",
+  "version": "1.0.0",
+  "description": "AI Fashion Atelier - Urban Revolution",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build needed'",
+    "lint": "echo 'No linter configured'"
+  },
+  "keywords": ["fashion", "ai", "3d"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/speed-insights": "^1.0.0"
+  }
+}
