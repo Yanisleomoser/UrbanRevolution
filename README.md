@@ -10,15 +10,14 @@ werden.
 
 - **AI Design-Generator** — Freie Text-Prompts werden zu strukturierten
   Designkonzepten (Name, Farbe, Material, Passform, Tags, Schneider-Notizen).
-- **6 parametrische 3D-Modelle** — T-Shirt, Hoodie, Hemd, Hose, Jacke, Kleid.
-  Passen sich live an die eingegebenen Körpermaße an (Brust, Taille, Hüfte,
-  Schulter, Arme, Schritt).
-- **Material-Realismus** — Roughness/Metalness pro Materialtyp (Baumwolle,
-  Leinen, Denim, Wolle, Fleece, Seide, Polyester).
-- **Live-3D-Vorschau** — Three.js Szene mit Orbit-Controls, Wireframe-Modus,
-  einblendbare Maßlabels, mehrere Kameraperspektiven.
+- **Maßerfassung** — manuell eingebbar oder per MediaPipe-Pose aus einem
+  Ganzkörperfoto (100% client-seitig, DSGVO-konform).
 - **Produktions-Spec-Sheet** — Automatisch berechnete Konfektionsgröße,
   Stoffmenge, Nahtlänge, Preisspanne. Export als JSON oder druckbares HTML.
+
+> **3D-Vorschau:** wird derzeit von Grund auf neu aufgebaut. Die alte
+> Implementierung wurde entfernt, da sie strukturelle Probleme hatte
+> (Monolith, Rebuild-everything, doppelte GLBs für unterschiedliche Avatare).
 
 ## Architektur
 
@@ -26,43 +25,17 @@ werden.
 /
 ├── index.html              # Single-Page-Webapp
 ├── css/styles.css          # Komplettes Styling (Dark Theme, Gradient Accents)
-├── models/                 # CC-BY 4.0 GLB-Avatare (siehe unten)
-│   ├── CesiumMan.glb       # ~480 KB · männliche Avatare
-│   ├── BrainStem.glb       # ~3.0 MB · weibliche Avatare
-│   └── RiggedFigure.glb    # ~49 KB · Backup-Mannequin
 └── js/
     ├── app.js              # Haupt-Controller, verbindet alle Module
     ├── ai.js               # Prompt-Analyse + optional Claude API
-    ├── garment3d.js        # Three.js Szene + GLB-Avatar-Loader + parametrische
-    │                       # Garment Builder
+    ├── config.js           # Single source of truth — Konstanten, Validatoren
     ├── measurements.js     # Maße-Management + Presets + Berechnungen
-    └── export.js           # JSON/HTML/Print/Order-Export
+    ├── pose.js             # MediaPipe Pose Landmarker — Maße aus Foto
+    ├── export.js           # JSON/HTML/Print/Order-Export
+    └── state-manager.js    # Generischer event-basierter Store (für Neuaufbau)
 ```
 
-## 3D Avatar Models
-
-Die 3D-Vorschau verwendet vorgerigte, realistische Menschen-Modelle aus
-dem **Khronos glTF-Sample-Models** Repository:
-<https://github.com/KhronosGroup/glTF-Sample-Models>
-
-| Datei              | Lizenz       | Verwendung                  |
-|--------------------|--------------|------------------------------|
-| `CesiumMan.glb`    | CC-BY 4.0    | Männliche Avatar-Presets    |
-| `BrainStem.glb`    | CC-BY 4.0    | Weibliche Avatar-Presets    |
-| `RiggedFigure.glb` | Apache 2.0   | Fallback wenn andere fehlen |
-
-Pro Geschlecht gibt es 3 Körperbau-Varianten (Schlank/Durchschnitt/Athletisch
-bzw. Schlank/Durchschnitt/Kurvig). Die Variation entsteht durch unterschiedliche
-xz-Skalierung des gleichen Basis-Modells. Die eingebaute Default-Kleidung der
-Modelle (T-Shirt, Hose) wird zur Laufzeit anhand der Mesh-Namen ausgeblendet,
-damit das parametrische Design ohne Überlagerung sichtbar wird.
-
-Falls die GLB-Dateien fehlen oder das Laden fehlschlägt, fällt die App auf
-ein prozedurales Schaufensterpuppen-Modell zurück (Toast benachrichtigt
-darüber).
-
-Keine Build-Schritte — alles läuft als statische Site mit ES-Modulen über
-Import Map (Three.js via CDN).
+Keine Build-Schritte — alles läuft als statische Site.
 
 ## Lokal ausführen
 
