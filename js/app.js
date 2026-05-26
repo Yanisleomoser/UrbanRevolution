@@ -284,6 +284,9 @@
 
   function updateMeasurements() {
     state.measurements = Measurements.read();
+    if (window.StateManager) {
+      window.StateManager.set("measurements", state.measurements);
+    }
     updateModelInfo();
     updateProductionPreview();
   }
