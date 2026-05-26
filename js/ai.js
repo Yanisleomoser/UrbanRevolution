@@ -11,6 +11,22 @@ const AI = (() => {
     return acc;
   }, {});
 
+  const GERMAN_COLOR_ALIASES = {
+    schwarz: "black",
+    weiss: "white", "weiß": "white",
+    rot: "red",
+    blau: "blue",
+    gruen: "green", "grün": "green",
+    braun: "brown",
+    gold: "gold", golden: "gold",
+    bordeaux: "burgundy", weinrot: "burgundy",
+    lila: "purple", violett: "purple",
+    bernstein: "amber",
+  };
+  for (const [german, english] of Object.entries(GERMAN_COLOR_ALIASES)) {
+    if (CONFIG.COLORS[english]) COLOR_DICT[german] = CONFIG.COLORS[english];
+  }
+
   const MATERIAL_DICT = {
     baumwolle: "cotton",
     cotton: "cotton",
@@ -296,6 +312,9 @@ Antworte NUR mit JSON:
       return JSON.parse(jsonMatch[0]);
     } catch (error) {
       console.error("[AI] Claude generation failed:", error.message);
+      window.dispatchEvent(new CustomEvent("ai-fallback", {
+        detail: { reason: error.message },
+      }));
       return null;
     }
   }
