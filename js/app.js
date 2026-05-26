@@ -67,9 +67,6 @@
         );
         btn.classList.add("active");
         state.currentType = btn.dataset.type;
-        if (window.garmentScene) {
-          window.garmentScene.setType(state.currentType);
-        }
         updateProductionPreview();
       });
     });
@@ -83,9 +80,6 @@
         );
         swatch.classList.add("active");
         state.currentColor = swatch.dataset.color;
-        if (window.garmentScene) {
-          window.garmentScene.setColor(state.currentColor);
-        }
         if (state.currentDesign) {
           state.currentDesign.color = state.currentColor;
           updateProductionPreview();
@@ -99,9 +93,6 @@
     if (select) {
       select.addEventListener("change", () => {
         state.currentMaterial = select.value;
-        if (window.garmentScene) {
-          window.garmentScene.setMaterial(state.currentMaterial);
-        }
         if (state.currentDesign) {
           state.currentDesign.material = state.currentMaterial;
           updateProductionPreview();
@@ -115,9 +106,6 @@
     if (slider) {
       slider.addEventListener("input", () => {
         state.currentFit = slider.value / 100;
-        if (window.garmentScene) {
-          window.garmentScene.setFit(state.currentFit);
-        }
         if (state.currentDesign) {
           state.currentDesign.fit = state.currentFit;
           updateProductionPreview();
@@ -144,7 +132,7 @@
         const design = await AI.generateDesign(prompt, state.currentType);
         state.currentDesign = design;
         renderDesignResult(design);
-        applyDesignToScene(design);
+        applyDesignToState(design);
         updateProductionPreview();
         showToast(`Design "${design.name}" generiert!`, "success");
       } catch (error) {
@@ -191,8 +179,7 @@
     }
   }
 
-  function applyDesignToScene(design) {
-    if (!window.garmentScene) return;
+  function applyDesignToState(design) {
     state.currentColor = design.color;
     state.currentMaterial = design.material;
     state.currentFit = design.fit;
@@ -202,7 +189,6 @@
         b.classList.toggle("active", b.dataset.type === design.type);
       });
     }
-    window.garmentScene.applyDesign(design);
   }
 
   function initMeasurements() {
@@ -298,8 +284,8 @@
 
   function updateMeasurements() {
     state.measurements = Measurements.read();
-    if (window.garmentScene) {
-      window.garmentScene.setMeasurements(state.measurements);
+    if (window.StateManager) {
+      window.StateManager.set("measurements", state.measurements);
     }
     updateModelInfo();
     updateProductionPreview();
@@ -324,69 +310,6 @@
     if (fabricEl) fabricEl.textContent = `~ ${fabric} m²`;
     if (seamsEl) seamsEl.textContent = `${seams} cm`;
     if (sizeEl) sizeEl.textContent = size;
-  }
-
-  function initPreviewControls() {
-    document.querySelectorAll(".view-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".view-btn").forEach((b) =>
-          b.classList.remove("active")
-        );
-        btn.classList.add("active");
-        if (window.garmentScene) {
-          window.garmentScene.setView(btn.dataset.view);
-        }
-      });
-    });
-
-    document.querySelectorAll(".avatar-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".avatar-btn").forEach((b) =>
-          b.classList.remove("active")
-        );
-        btn.classList.add("active");
-        const avatarKey = btn.dataset.avatar;
-        if (window.garmentScene) {
-          window.garmentScene.setAvatar(avatarKey);
-        }
-        // Maße aus dem Preset übernehmen (wenn Toggle aktiv)
-        const loadDefaults = document.getElementById("toggle-load-defaults");
-        if (loadDefaults?.checked && window.AVATAR_PRESETS) {
-          const preset = window.AVATAR_PRESETS[avatarKey];
-          if (preset?.defaults) {
-            Measurements.write({
-              ...preset.defaults,
-              weight: state.measurements?.weight || 70,
-            });
-            updateMeasurements();
-            showToast(`Maße für ${preset.label} geladen`, "success");
-          }
-        }
-      });
-    });
-
-    const toggleAvatar = document.getElementById("toggle-avatar");
-    toggleAvatar?.addEventListener("change", () => {
-      if (window.garmentScene) {
-        window.garmentScene.setShowAvatar(toggleAvatar.checked);
-      }
-    });
-
-    const toggleMeasurements = document.getElementById(
-      "toggle-measurements"
-    );
-    toggleMeasurements?.addEventListener("change", () => {
-      if (window.garmentScene) {
-        window.garmentScene.setShowMeasurements(toggleMeasurements.checked);
-      }
-    });
-
-    const toggleWireframe = document.getElementById("toggle-wireframe");
-    toggleWireframe?.addEventListener("change", () => {
-      if (window.garmentScene) {
-        window.garmentScene.setWireframe(toggleWireframe.checked);
-      }
-    });
   }
 
   function updateProductionPreview() {
@@ -508,43 +431,14 @@
     initFitSlider();
     initGenerateButton();
     initMeasurements();
-    initPreviewControls();
     initExportButtons();
     trackScrollSteps();
-
-    const defaultViewBtn = document.querySelector(
-      '.view-btn[data-view="front"]'
-    );
-    if (defaultViewBtn) defaultViewBtn.classList.add("active");
-
-    window.addEventListener("garment-scene-ready", () => {
-      if (state.measurements && window.garmentScene) {
-        window.garmentScene.setMeasurements(state.measurements);
-      }
-    });
 
     window.addEventListener("ai-fallback", (e) => {
       showToast(
         `Claude-API nicht erreichbar (${e.detail.reason}) — lokaler Generator wird verwendet`,
         "info"
       );
-    });
-
-    window.addEventListener("avatar-load-result", (e) => {
-      const { loaded, _failed, total } = e.detail;
-      if (loaded === total) {
-        showToast("Realistische Avatare geladen", "success");
-      } else if (loaded > 0) {
-        showToast(
-          `${loaded}/${total} Modelle geladen — Rest nutzt Fallback`,
-          "info"
-        );
-      } else {
-        showToast(
-          "Avatar-Modelle konnten nicht geladen werden — verwende Mannequin",
-          "error"
-        );
-      }
     });
   }
 

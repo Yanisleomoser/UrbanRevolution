@@ -3,15 +3,5 @@
   "framework": null,
   "buildCommand": "echo 'Static site — no build step'",
   "outputDirectory": ".",
-  "installCommand": "npm install",
-  "headers": [
-    {
-      "source": "/models/(.*).glb",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
-        { "key": "Content-Type", "value": "model/gltf-binary" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
-      ]
-    }
-  ]
+  "installCommand": "npm install"
 }

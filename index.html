@@ -275,73 +275,13 @@
             </div>
 
             <div class="preview-container">
-                <div id="three-canvas" class="three-canvas"></div>
+                <div id="three-canvas" class="three-canvas preview-placeholder">
+                    <div class="placeholder-content">
+                        <h3>3D-Vorschau wird neu aufgebaut</h3>
+                        <p>Die 3D-Avatar-Funktion wird derzeit von Grund auf neu entwickelt für eine bessere Performance und Visualisierung. Design-Generierung, Maße und Produktions-Spec funktionieren weiterhin.</p>
+                    </div>
+                </div>
                 <div class="preview-controls">
-                    <div class="control-section">
-                        <h4>Avatar</h4>
-                        <div class="avatar-grid" id="avatar-grid">
-                            <button class="avatar-btn" data-avatar="male_slim">
-                                <span class="avatar-figure" data-gender="male" data-type="slim"></span>
-                                <span class="avatar-name">Männlich</span>
-                                <span class="avatar-sub">Schlank</span>
-                            </button>
-                            <button class="avatar-btn active" data-avatar="male_regular">
-                                <span class="avatar-figure" data-gender="male" data-type="regular"></span>
-                                <span class="avatar-name">Männlich</span>
-                                <span class="avatar-sub">Durchschnitt</span>
-                            </button>
-                            <button class="avatar-btn" data-avatar="male_athletic">
-                                <span class="avatar-figure" data-gender="male" data-type="athletic"></span>
-                                <span class="avatar-name">Männlich</span>
-                                <span class="avatar-sub">Athletisch</span>
-                            </button>
-                            <button class="avatar-btn" data-avatar="female_slim">
-                                <span class="avatar-figure" data-gender="female" data-type="slim"></span>
-                                <span class="avatar-name">Weiblich</span>
-                                <span class="avatar-sub">Schlank</span>
-                            </button>
-                            <button class="avatar-btn" data-avatar="female_regular">
-                                <span class="avatar-figure" data-gender="female" data-type="regular"></span>
-                                <span class="avatar-name">Weiblich</span>
-                                <span class="avatar-sub">Durchschnitt</span>
-                            </button>
-                            <button class="avatar-btn" data-avatar="female_curvy">
-                                <span class="avatar-figure" data-gender="female" data-type="curvy"></span>
-                                <span class="avatar-name">Weiblich</span>
-                                <span class="avatar-sub">Kurvig</span>
-                            </button>
-                        </div>
-                        <label class="toggle avatar-load-toggle">
-                            <input type="checkbox" id="toggle-load-defaults" checked>
-                            <span class="toggle-slider"></span>
-                            Standardmaße laden
-                        </label>
-                    </div>
-                    <div class="control-section">
-                        <h4>Ansicht</h4>
-                        <button class="view-btn" data-view="front">Vorne</button>
-                        <button class="view-btn" data-view="back">Hinten</button>
-                        <button class="view-btn" data-view="side">Seite</button>
-                        <button class="view-btn" data-view="rotate">Rotieren</button>
-                    </div>
-                    <div class="control-section">
-                        <h4>Darstellung</h4>
-                        <label class="toggle">
-                            <input type="checkbox" id="toggle-avatar" checked>
-                            <span class="toggle-slider"></span>
-                            Avatar anzeigen
-                        </label>
-                        <label class="toggle">
-                            <input type="checkbox" id="toggle-measurements">
-                            <span class="toggle-slider"></span>
-                            Maße einblenden
-                        </label>
-                        <label class="toggle">
-                            <input type="checkbox" id="toggle-wireframe">
-                            <span class="toggle-slider"></span>
-                            Wireframe Modus
-                        </label>
-                    </div>
                     <div class="control-section">
                         <h4>Modell-Info</h4>
                         <div id="model-info" class="model-info">
@@ -458,11 +398,13 @@
     }
     </script>
     <script type="module" src="js/analytics.js"></script>
-    <script type="module" src="js/garment3d.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/state-manager.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/measurements.js"></script>
     <script src="js/pose.js"></script>
     <script src="js/export.js"></script>
     <script src="js/app.js"></script>
+    <script type="module" src="js/3d/controller.js"></script>
 </body>
 </html>

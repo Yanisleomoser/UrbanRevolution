@@ -817,6 +817,32 @@ select:focus {
     height: 100% !important;
 }
 
+.preview-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.preview-placeholder .placeholder-content {
+    max-width: 480px;
+}
+
+.preview-placeholder h3 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.preview-placeholder p {
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
 .preview-controls {
     background: var(--bg-elevated);
     border-left: 1px solid var(--border);
