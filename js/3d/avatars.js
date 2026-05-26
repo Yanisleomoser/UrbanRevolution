@@ -29,7 +29,18 @@ const DEFAULT_MEASUREMENTS = {
     neck: 38,
 };
 
-const MANNEQUIN_TONE = 0xe6d2bf;
+const MANNEQUIN_TONE = 0xd8d4cf;
+// Torso depth (front-to-back) is ~75% of lateral width — real torsi are
+// elliptical, not circular. Same factor applies at chest/waist/hips.
+const TORSO_DEPTH_SCALE = 0.72;
+
+// Convert a body-part circumference (cm) to an equivalent radius (m).
+// Lathe geometry rotates around Y so its cross-section is circular; we
+// later flatten the Z axis via TORSO_DEPTH_SCALE to approximate the
+// real elliptical torso.
+function circToRadius(circumference_cm) {
+    return circumference_cm / 100 / (2 * Math.PI);
+}
 
 function buildMannequin(measurements) {
     const m = { ...DEFAULT_MEASUREMENTS, ...(measurements || {}) };
@@ -39,23 +50,26 @@ function buildMannequin(measurements) {
 
     const skinMat = new THREE.MeshStandardMaterial({
         color: MANNEQUIN_TONE,
-        roughness: 0.78,
-        metalness: 0.04,
+        roughness: 0.82,
+        metalness: 0.02,
     });
 
     const totalH = m.height / 100;
+    const inseam = m.inseam / 100;
     const headR = totalH * 0.067;
-    const neckH = totalH * 0.045;
-    const legH = m.inseam / 100;
-    const torsoTopY = legH + (totalH - legH - neckH - headR * 2);
-    const torsoBottomY = legH;
+    const neckH = totalH * 0.05;
+    const headH = headR * 2 * 1.12;
+
+    const legH = inseam;
+    const torsoBottomY = legH * 0.95;
+    const torsoTopY = totalH - headH - neckH;
     const torsoH = torsoTopY - torsoBottomY;
 
-    const chestR = m.chest / 2 / 100;
-    const waistR = m.waist / 2 / 100;
-    const hipsR = m.hips / 2 / 100;
+    const chestR = circToRadius(m.chest);
+    const waistR = circToRadius(m.waist);
+    const hipsR = circToRadius(m.hips);
+    const neckR = circToRadius(m.neck);
     const shoulderHalfW = m.shoulder / 2 / 100;
-    const neckR = m.neck / 2 / 100;
 
     group.add(buildTorso(skinMat, {
         torsoBottomY, torsoTopY, torsoH,
@@ -63,8 +77,8 @@ function buildMannequin(measurements) {
     }));
     group.add(buildNeck(skinMat, torsoTopY, neckR, neckH));
     group.add(buildHead(skinMat, torsoTopY + neckH, headR));
-    group.add(...buildArms(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH));
-    group.add(...buildLegs(skinMat, legH, hipsR, totalH));
+    buildArms(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(a => group.add(a));
+    buildLegs(skinMat, legH, hipsR, totalH).forEach(l => group.add(l));
 
     group.traverse((o) => {
         if (o.isMesh) {
@@ -77,24 +91,32 @@ function buildMannequin(measurements) {
 }
 
 function buildTorso(mat, d) {
+    // Smooth profile from hips up through waist/chest to shoulders.
+    // The shoulder point is wider than chest to give silhouette some
+    // structure; lathe rotates so this becomes a circular shoulder cap.
     const profile = [
-        new THREE.Vector2(d.hipsR * 0.95, d.torsoBottomY),
-        new THREE.Vector2(d.hipsR, d.torsoBottomY + d.torsoH * 0.08),
-        new THREE.Vector2(d.waistR, d.torsoBottomY + d.torsoH * 0.42),
-        new THREE.Vector2(d.chestR * 0.97, d.torsoBottomY + d.torsoH * 0.72),
-        new THREE.Vector2(d.shoulderHalfW * 0.92, d.torsoTopY - d.torsoH * 0.05),
-        new THREE.Vector2(d.neckR * 1.1, d.torsoTopY),
+        new THREE.Vector2(d.hipsR * 0.78, d.torsoBottomY - 0.02),
+        new THREE.Vector2(d.hipsR, d.torsoBottomY + d.torsoH * 0.06),
+        new THREE.Vector2(d.waistR * 1.02, d.torsoBottomY + d.torsoH * 0.40),
+        new THREE.Vector2(d.chestR * 1.04, d.torsoBottomY + d.torsoH * 0.72),
+        new THREE.Vector2(d.shoulderHalfW * 0.86, d.torsoTopY - d.torsoH * 0.04),
+        new THREE.Vector2(d.shoulderHalfW * 0.62, d.torsoTopY),
+        new THREE.Vector2(d.neckR * 1.15, d.torsoTopY + 0.005),
     ];
     const geom = new THREE.LatheGeometry(profile, 48);
-    return new THREE.Mesh(geom, mat);
+    const torso = new THREE.Mesh(geom, mat);
+    // Flatten depth so cross-section is elliptical, not circular
+    torso.scale.z = TORSO_DEPTH_SCALE;
+    return torso;
 }
 
 function buildNeck(mat, baseY, r, h) {
     const neck = new THREE.Mesh(
-        new THREE.CylinderGeometry(r * 0.95, r * 1.05, h, 24),
+        new THREE.CylinderGeometry(r * 0.95, r * 1.1, h, 24),
         mat
     );
     neck.position.y = baseY + h / 2;
+    neck.scale.z = TORSO_DEPTH_SCALE;
     return neck;
 }
 
@@ -104,35 +126,37 @@ function buildHead(mat, baseY, r) {
         mat
     );
     head.position.y = baseY + r;
-    head.scale.set(0.88, 1.18, 0.95);
+    head.scale.set(0.85, 1.15, 0.92);
     return head;
 }
 
 function buildArms(mat, shoulderY, shoulderHalfW, armLen, totalH) {
-    const armR = totalH * 0.027;
+    const armR = totalH * 0.028;
     return [-1, 1].map((side) => {
         const arm = new THREE.Mesh(
-            new THREE.CapsuleGeometry(armR, armLen * 0.92, 8, 16),
+            new THREE.CapsuleGeometry(armR, armLen * 0.88, 8, 16),
             mat
         );
-        arm.position.set(
-            side * (shoulderHalfW + armR * 0.4),
-            shoulderY - armR * 0.5 - armLen * 0.46,
-            0
-        );
+        // Lay the capsule along the X axis (T-pose)
+        arm.rotation.z = side * Math.PI / 2;
+        // Anchor at shoulder, extend outward
+        const armCenter = shoulderHalfW + (armLen * 0.88) / 2;
+        arm.position.set(side * armCenter, shoulderY - armR * 0.4, 0);
         return arm;
     });
 }
 
 function buildLegs(mat, legH, hipsR, totalH) {
-    const thighR = totalH * 0.052;
-    const ankleR = totalH * 0.026;
+    const thighR = totalH * 0.055;
+    const ankleR = totalH * 0.028;
     return [-1, 1].map((side) => {
+        // CylinderGeometry(radiusTop, radiusBottom, …) — thigh at top, ankle at bottom
         const leg = new THREE.Mesh(
-            new THREE.CylinderGeometry(ankleR, thighR, legH, 24),
+            new THREE.CylinderGeometry(thighR, ankleR, legH, 24),
             mat
         );
-        leg.position.set(side * hipsR * 0.45, legH / 2, 0);
+        leg.position.set(side * hipsR * 0.42, legH / 2, 0);
+        leg.scale.z = 0.9;
         return leg;
     });
 }
