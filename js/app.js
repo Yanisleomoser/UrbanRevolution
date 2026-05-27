@@ -266,17 +266,24 @@
 
         const landmarks = result.landmarks[0];
         // Die Maß-Kalibrierung braucht Nase→Knöchel als Referenz. Wenn
-        // die Füße nicht im Bild sind, extrapoliert MediaPipe stille
-        // Knöchel-Positionen und der px2cm-Faktor explodiert um Faktor
-        // ~2 — Brust/Taille/Hüfte werden alle absurd groß.
-        const lAnkleVis = landmarks[27]?.visibility ?? 0;
-        const rAnkleVis = landmarks[28]?.visibility ?? 0;
-        if (lAnkleVis < 0.3 && rAnkleVis < 0.3) {
+        // beide Füße nicht im Bild sind, extrapoliert MediaPipe stille
+        // Knöchel-Positionen unter den Bildrand und der px2cm-Faktor
+        // wird sinnlos. Das Lite-Modell liefert nicht immer Visibility-
+        // Scores, deshalb prüfen wir zusätzlich die Y-Koordinaten:
+        // normalisierte Werte liegen normal bei 0..1 im Bild, > 1.05
+        // bedeutet extrapoliert unter den unteren Bildrand.
+        const ankleUsable = (lm) => {
+          if (!lm) return false;
+          const vis = lm.visibility ?? 1;
+          const y = lm.y ?? 0.5;
+          return vis >= 0.3 && y <= 1.05;
+        };
+        if (!ankleUsable(landmarks[27]) && !ankleUsable(landmarks[28])) {
           showToast(
             "Foto braucht den ganzen Körper (inkl. Füße) für korrekte Maße",
             "error"
           );
-          statusEl.textContent = "Füße nicht erkennbar — neues Foto bitte";
+          statusEl.textContent = "Füße nicht im Bild — neues Foto bitte";
           return;
         }
         const heightInput = document.getElementById("height");
