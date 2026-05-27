@@ -265,6 +265,20 @@
         }
 
         const landmarks = result.landmarks[0];
+        // Die Maß-Kalibrierung braucht Nase→Knöchel als Referenz. Wenn
+        // die Füße nicht im Bild sind, extrapoliert MediaPipe stille
+        // Knöchel-Positionen und der px2cm-Faktor explodiert um Faktor
+        // ~2 — Brust/Taille/Hüfte werden alle absurd groß.
+        const lAnkleVis = landmarks[27]?.visibility ?? 0;
+        const rAnkleVis = landmarks[28]?.visibility ?? 0;
+        if (lAnkleVis < 0.3 && rAnkleVis < 0.3) {
+          showToast(
+            "Foto braucht den ganzen Körper (inkl. Füße) für korrekte Maße",
+            "error"
+          );
+          statusEl.textContent = "Füße nicht erkennbar — neues Foto bitte";
+          return;
+        }
         const heightInput = document.getElementById("height");
         const userHeight = parseInt(heightInput?.value, 10) || 175;
         const measurements = window.Pose.estimateMeasurements(

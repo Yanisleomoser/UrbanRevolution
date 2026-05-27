@@ -120,9 +120,9 @@ const Pose = (() => {
         const waistWidthEst = shoulderWidth * 0.72;
         const hipWidthEst = hipWidth;
 
-        const chestCirc = ellipseCirc(chestWidthEst / 2, chestWidthEst * torsoDepthRatio / 2) * 2;
-        const waistCirc = ellipseCirc(waistWidthEst / 2, waistWidthEst * torsoDepthRatio / 2) * 2;
-        const hipsCirc = ellipseCirc(hipWidthEst / 2, hipWidthEst * 0.72 / 2) * 2;
+        const chestCirc = ellipseCirc(chestWidthEst / 2, chestWidthEst * torsoDepthRatio / 2);
+        const waistCirc = ellipseCirc(waistWidthEst / 2, waistWidthEst * torsoDepthRatio / 2);
+        const hipsCirc = ellipseCirc(hipWidthEst / 2, hipWidthEst * 0.72 / 2);
 
         // Hals: empirisch ~38% der Schulterbreite (typisch beim Erwachsenen)
         const neckCirc = shoulderWidth * 0.95;
@@ -195,19 +195,40 @@ const Pose = (() => {
             samplePatch(ctx, eyeX + 0.04, hairY + 0.01, canvas, 5),
         ].filter(Boolean);
 
-        const skinAvg = averageRGB(skinSamples);
+        const skinAvgRaw = averageRGB(skinSamples);
         const hairAvg = averageRGB(hairSamples);
+
+        // Skin-Tone-Sättigung kappen: warmes Innenraumlicht erzeugt sonst
+        // übersättigtes Orange/Rot. Reale Hautfarben haben max ~40% Saturation.
+        const skinAvg = skinAvgRaw ? clampSaturation(skinAvgRaw, 0.42) : null;
 
         // Wenn Haar-Sample fast wie Haut aussieht → wahrscheinlich kein Haar
         // sichtbar (Glatze, abgeschnittenes Foto). null signalisiert "keine
         // Haare rendern".
-        const hairColor = hairAvg && skinAvg && colorDistance(hairAvg, skinAvg) > 30
+        const hairColor = hairAvg && skinAvg && colorDistance(hairAvg, skinAvgRaw) > 30
             ? rgbToHex(hairAvg)
             : null;
 
         return {
             skinTone: skinAvg ? rgbToHex(skinAvg) : null,
             hairColor,
+        };
+    }
+
+    function clampSaturation(rgb, maxS) {
+        const avg = (rgb.r + rgb.g + rgb.b) / 3;
+        const maxDev = Math.max(
+            Math.abs(rgb.r - avg),
+            Math.abs(rgb.g - avg),
+            Math.abs(rgb.b - avg),
+        );
+        const currentS = maxDev / Math.max(avg, 1);
+        if (currentS <= maxS) return rgb;
+        const factor = maxS / currentS;
+        return {
+            r: avg + (rgb.r - avg) * factor,
+            g: avg + (rgb.g - avg) * factor,
+            b: avg + (rgb.b - avg) * factor,
         };
     }
 
