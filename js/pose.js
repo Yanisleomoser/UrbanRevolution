@@ -145,6 +145,110 @@ const Pose = (() => {
     }
 
     /**
+     * Samplet Hautfarbe und Haarfarbe aus dem Foto über Face-Landmarks.
+     * Verarbeitung weiterhin 100% clientseitig (Canvas im DOM, kein Upload).
+     * Liefert null-Werte wenn Landmarks zu schwach sichtbar oder Sample-Punkte
+     * außerhalb des Bildes liegen — Caller fällt dann auf Defaults zurück.
+     *
+     * @param {HTMLImageElement} img - Originalbild
+     * @param {Array} landmarks - MediaPipe NormalizedLandmark[]
+     * @returns {{skinTone: string|null, hairColor: string|null}}
+     */
+    function samplePersonalization(img, landmarks) {
+        if (!landmarks || landmarks.length < 9) {
+            return { skinTone: null, hairColor: null };
+        }
+        const nose = landmarks[IDX.NOSE];
+        const lEye = landmarks[2];
+        const rEye = landmarks[5];
+        const lEar = landmarks[7];
+        const rEar = landmarks[8];
+
+        const required = [nose, lEye, rEye, lEar, rEar];
+        if (required.some(l => !l || (l.visibility !== undefined && l.visibility < 0.5))) {
+            return { skinTone: null, hairColor: null };
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+
+        // Skin: Nasen-Mitte + beide Wangen (zwischen Nase und Ohr auf Nasen-Höhe)
+        const skinSamples = [
+            samplePatch(ctx, nose.x, nose.y, canvas, 6),
+            samplePatch(ctx, (nose.x + lEar.x) / 2, nose.y, canvas, 5),
+            samplePatch(ctx, (nose.x + rEar.x) / 2, nose.y, canvas, 5),
+        ].filter(Boolean);
+
+        // Haar: über der Augenlinie. Kopf reicht ca. 2× Nase-Auge-Abstand
+        // über die Augen hinaus (anatomische Faustregel)
+        const eyeY = (lEye.y + rEye.y) / 2;
+        const eyeX = (lEye.x + rEye.x) / 2;
+        const hairOffset = Math.max(0.02, (nose.y - eyeY) * 2.2);
+        const hairY = Math.max(0.005, eyeY - hairOffset);
+
+        const hairSamples = [
+            samplePatch(ctx, eyeX, hairY, canvas, 6),
+            samplePatch(ctx, eyeX - 0.04, hairY + 0.01, canvas, 5),
+            samplePatch(ctx, eyeX + 0.04, hairY + 0.01, canvas, 5),
+        ].filter(Boolean);
+
+        const skinAvg = averageRGB(skinSamples);
+        const hairAvg = averageRGB(hairSamples);
+
+        // Wenn Haar-Sample fast wie Haut aussieht → wahrscheinlich kein Haar
+        // sichtbar (Glatze, abgeschnittenes Foto). null signalisiert "keine
+        // Haare rendern".
+        const hairColor = hairAvg && skinAvg && colorDistance(hairAvg, skinAvg) > 30
+            ? rgbToHex(hairAvg)
+            : null;
+
+        return {
+            skinTone: skinAvg ? rgbToHex(skinAvg) : null,
+            hairColor,
+        };
+    }
+
+    function samplePatch(ctx, normX, normY, canvas, radius = 6) {
+        const x = Math.round(normX * canvas.width);
+        const y = Math.round(normY * canvas.height);
+        if (x < radius || x > canvas.width - radius ||
+            y < radius || y > canvas.height - radius) {
+            return null;
+        }
+        const data = ctx.getImageData(x - radius, y - radius, radius * 2, radius * 2).data;
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+        }
+        return { r: r / n, g: g / n, b: b / n };
+    }
+
+    function averageRGB(samples) {
+        if (!samples.length) return null;
+        const sum = samples.reduce((acc, s) => ({
+            r: acc.r + s.r, g: acc.g + s.g, b: acc.b + s.b,
+        }), { r: 0, g: 0, b: 0 });
+        return {
+            r: sum.r / samples.length,
+            g: sum.g / samples.length,
+            b: sum.b / samples.length,
+        };
+    }
+
+    function colorDistance(a, b) {
+        const dr = a.r - b.r, dg = a.g - b.g, db = a.b - b.b;
+        return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
+    function rgbToHex(rgb) {
+        const c = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0');
+        return `#${c(rgb.r)}${c(rgb.g)}${c(rgb.b)}`;
+    }
+
+    /**
      * Zeichnet die erkannten Landmarks auf ein Canvas (Skelett-Overlay).
      */
     function drawPoseOverlay(canvas, img, landmarks) {
@@ -185,7 +289,7 @@ const Pose = (() => {
         });
     }
 
-    return { init, detect, estimateMeasurements, drawPoseOverlay };
+    return { init, detect, estimateMeasurements, samplePersonalization, drawPoseOverlay };
 })();
 
 window.Pose = Pose;

@@ -3,13 +3,15 @@
  *
  * Builds an abstract fashion mannequin from Three.js primitives, scaled
  * from the user's measurements. No external GLB dependency = no load
- * failure path = graceful by default. PR A renders a single 'regular'
- * preset; multiple presets land in PR B.
+ * failure path = graceful by default.
  *
  * Public API:
- *   buildMannequin(measurements) → THREE.Group
+ *   buildMannequin(measurements, appearance) → THREE.Group
  *     measurements: { height, chest, waist, hips, shoulder, arm, inseam, neck }
  *     all in cm; missing fields fall back to size-M defaults.
+ *     appearance: { skinTone?: hex, hairColor?: hex | null }
+ *     skinTone overrides the default mannequin material color.
+ *     hairColor null = no hair geometry rendered (bald / no photo).
  *
  * The returned group is positioned with feet at y=0 and faces +Z (toward
  * the default camera at z=+4.2). Caller owns the group's lifecycle and
@@ -29,10 +31,19 @@ const DEFAULT_MEASUREMENTS = {
     neck: 38,
 };
 
-const MANNEQUIN_TONE = 0xd8d4cf;
+const DEFAULT_SKIN_TONE = 0xd8d4cf;
+const DEFAULT_HAIR_COLOR = 0x3a2010;
 // Torso depth (front-to-back) is ~75% of lateral width — real torsi are
 // elliptical, not circular. Same factor applies at chest/waist/hips.
 const TORSO_DEPTH_SCALE = 0.72;
+
+function hexToInt(hex) {
+    if (typeof hex !== "string") return null;
+    const clean = hex.replace("#", "");
+    if (clean.length !== 6) return null;
+    const n = parseInt(clean, 16);
+    return Number.isFinite(n) ? n : null;
+}
 
 // Convert a body-part circumference (cm) to an equivalent radius (m).
 // Lathe geometry rotates around Y so its cross-section is circular; we
@@ -42,14 +53,16 @@ function circToRadius(circumference_cm) {
     return circumference_cm / 100 / (2 * Math.PI);
 }
 
-function buildMannequin(measurements) {
+function buildMannequin(measurements, appearance) {
     const m = { ...DEFAULT_MEASUREMENTS, ...(measurements || {}) };
+    const a = appearance || {};
 
     const group = new THREE.Group();
     group.name = "mannequin";
 
+    const skinColor = hexToInt(a.skinTone) ?? DEFAULT_SKIN_TONE;
     const skinMat = new THREE.MeshStandardMaterial({
-        color: MANNEQUIN_TONE,
+        color: skinColor,
         roughness: 0.82,
         metalness: 0.02,
     });
@@ -77,8 +90,16 @@ function buildMannequin(measurements) {
     }));
     group.add(buildNeck(skinMat, torsoTopY, neckR, neckH));
     group.add(buildHead(skinMat, torsoTopY + neckH, headR));
-    buildArms(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(a => group.add(a));
-    buildLegs(skinMat, legH, hipsR, totalH).forEach(l => group.add(l));
+    buildArms(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(arm => group.add(arm));
+    buildLegs(skinMat, legH, hipsR, totalH).forEach(leg => group.add(leg));
+
+    // Haar nur wenn explizit gewollt (User-Foto-Sampling oder Default-Wert).
+    // appearance.hairColor === null bedeutet "keine Haare rendern" (Glatze /
+    // kein Foto hochgeladen wenn appearance.skinTone auch null ist).
+    if (a.hairColor !== null) {
+        const hairColor = hexToInt(a.hairColor) ?? DEFAULT_HAIR_COLOR;
+        group.add(buildHair(hairColor, torsoTopY + neckH, headR));
+    }
 
     group.traverse((o) => {
         if (o.isMesh) {
@@ -144,6 +165,25 @@ function buildArms(mat, shoulderY, shoulderHalfW, armLen, totalH) {
         arm.position.set(side * armCenter, shoulderY - armR * 0.4, 0);
         return arm;
     });
+}
+
+function buildHair(colorInt, headBaseY, headR) {
+    const mat = new THREE.MeshStandardMaterial({
+        color: colorInt,
+        roughness: 0.85,
+        metalness: 0.03,
+    });
+    // Eine leicht abgeflachte Halbkugel als Kappe oben auf dem Kopf —
+    // bewusst stilisiert (keine Haarsträhnen), damit es zum abstrakten
+    // Mannequin-Look passt.
+    const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(headR * 1.05, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.62),
+        mat
+    );
+    const headCenterY = headBaseY + headR;
+    hair.position.y = headCenterY + headR * 0.05;
+    hair.scale.set(0.92, 1.1, 0.98);
+    return hair;
 }
 
 function buildLegs(mat, legH, hipsR, totalH) {
