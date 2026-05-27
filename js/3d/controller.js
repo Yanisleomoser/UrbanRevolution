@@ -51,15 +51,19 @@ function rebuildMannequin() {
         Scene.remove(currentMannequin);
         currentMannequin = null;
     }
-    const measurements = readMeasurements();
-    currentMannequin = Avatars.buildMannequin(measurements);
+    const measurements = readState("measurements");
+    const appearance = {
+        skinTone: readState("skinTone"),
+        hairColor: readState("hairColor"),
+    };
+    currentMannequin = Avatars.buildMannequin(measurements, appearance);
     Scene.add(currentMannequin);
 }
 
-function readMeasurements() {
+function readState(key) {
     if (typeof window.StateManager === "undefined") return null;
     try {
-        return window.StateManager.get("measurements");
+        return window.StateManager.get(key);
     } catch (_err) {
         return null;
     }
@@ -67,14 +71,17 @@ function readMeasurements() {
 
 function subscribeToMeasurements() {
     if (typeof window.StateManager === "undefined") return;
-    window.StateManager.subscribe("measurements:change", () => {
+    const rebuildOnChange = () => {
         if (!mounted) return;
         try {
             rebuildMannequin();
         } catch (err) {
             console.error("[3d] rebuild failed:", err);
         }
-    });
+    };
+    window.StateManager.subscribe("measurements:change", rebuildOnChange);
+    window.StateManager.subscribe("skinTone:change", rebuildOnChange);
+    window.StateManager.subscribe("hairColor:change", rebuildOnChange);
 }
 
 function isWebGLAvailable() {

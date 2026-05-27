@@ -261,11 +261,34 @@
         Measurements.write(measurements);
         updateMeasurements();
 
+        // Personalisierung: Haut- und Haarfarbe aus dem Foto sampeln und in
+        // StateManager pushen — der 3D-Controller subscribt und rebuildet
+        // den Mannequin mit den neuen Werten.
+        const personalization = window.Pose.samplePersonalization(img, landmarks);
+        let personalized = false;
+        if (personalization.skinTone && window.StateManager) {
+          try {
+            window.StateManager.set("skinTone", personalization.skinTone);
+            personalized = true;
+          } catch (e) {
+            console.warn("[pose] skinTone validation failed:", e.message);
+          }
+        }
+        if (personalization.hairColor && window.StateManager) {
+          try {
+            window.StateManager.set("hairColor", personalization.hairColor);
+          } catch (e) {
+            console.warn("[pose] hairColor validation failed:", e.message);
+          }
+        }
+
         previewWrap.hidden = false;
         window.Pose.drawPoseOverlay(canvas, img, landmarks);
         statusEl.textContent = `${measurements.chest}cm Brust · ${measurements.waist}cm Taille · ${measurements.hips}cm Hüfte`;
         showToast(
-          "Maße aus Foto übernommen — überprüfe & feinjustiere bei Bedarf",
+          personalized
+            ? "Maße + Hautton aus Foto übernommen"
+            : "Maße aus Foto übernommen — überprüfe & feinjustiere bei Bedarf",
           "success"
         );
       } catch (err) {

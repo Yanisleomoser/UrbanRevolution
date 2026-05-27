@@ -11,7 +11,9 @@ const StateManager = (() => {
         currentMaterial: 'cotton',
         currentFit: 0.5,
         measurements: null,
-        avatar: 'male_regular'
+        avatar: 'male_regular',
+        skinTone: '#d8d4cf',
+        hairColor: '#3a2010'
     };
 
     const listeners = new Map(); // eventType -> Set of callbacks
@@ -57,7 +59,7 @@ const StateManager = (() => {
                 validatedValue = CONFIG.validateGarmentType(value);
             } else if (key === 'currentMaterial') {
                 validatedValue = CONFIG.validateMaterial(value);
-            } else if (key === 'currentColor') {
+            } else if (key === 'currentColor' || key === 'skinTone' || key === 'hairColor') {
                 validatedValue = CONFIG.validateColor(value);
             } else if (key === 'currentFit') {
                 const fit = parseFloat(value);
@@ -112,7 +114,9 @@ const StateManager = (() => {
                 currentFit: 0.5,
                 currentDesign: null,
                 measurements: null,
-                avatar: 'male_regular'
+                avatar: 'male_regular',
+                skinTone: '#d8d4cf',
+                hairColor: '#3a2010'
             }[key];
             
             if (defaultValue !== undefined) {
