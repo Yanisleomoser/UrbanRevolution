@@ -1,23 +1,27 @@
 /**
  * Urban Revolution — 3D Controller
  *
- * Orchestrates scene + avatars + (later) garments. Subscribes to
- * StateManager for measurement changes and rebuilds the mannequin
- * in-place.
+ * Orchestrates scene + avatars + garments. Subscribes to StateManager
+ * for measurement / appearance / garment-state changes.
  *
- * Graceful degradation: any failure during mount (no WebGL, scene
- * exception, missing container) is caught here, logged, and the
- * placeholder content is left in place. The rest of the app keeps
- * working — design generation, measurements, and spec export do not
- * depend on the 3D module.
+ * Lifecycle rules:
+ *   - Mannequin rebuilds on measurements / skinTone / hairColor changes
+ *   - Garment rebuilds on type / fit / measurements changes
+ *   - Garment color and material props update in-place (no rebuild)
+ *
+ * Graceful degradation: any failure during mount is caught here. The
+ * rest of the app (design generation, measurements, spec export) keeps
+ * working — none of it depends on the 3D module.
  */
 
 import { Scene } from "./scene.js";
 import { Avatars } from "./avatars.js";
+import { Garments } from "./garments.js";
 
 const CONTAINER_ID = "three-canvas";
 
 let currentMannequin = null;
+let currentGarment = null;
 let mounted = false;
 
 function mount() {
@@ -37,7 +41,8 @@ function mount() {
 
         Scene.mount(container);
         rebuildMannequin();
-        subscribeToMeasurements();
+        rebuildGarment();
+        subscribeToState();
         mounted = true;
         console.info("[3d] mounted");
     } catch (err) {
@@ -60,6 +65,34 @@ function rebuildMannequin() {
     Scene.add(currentMannequin);
 }
 
+function rebuildGarment() {
+    if (currentGarment) {
+        Scene.remove(currentGarment);
+        currentGarment = null;
+    }
+    const type = readState("currentType");
+    if (!type) return;
+    currentGarment = Garments.buildGarment(type, {
+        color: readState("currentColor"),
+        material: readState("currentMaterial"),
+        measurements: readState("measurements"),
+        fit: readState("currentFit"),
+    });
+    Scene.add(currentGarment);
+}
+
+function patchGarmentColor() {
+    if (!currentGarment) return;
+    Garments.setColor(currentGarment, readState("currentColor"));
+    Scene.requestRender();
+}
+
+function patchGarmentMaterial() {
+    if (!currentGarment) return;
+    Garments.setMaterialProps(currentGarment, readState("currentMaterial"));
+    Scene.requestRender();
+}
+
 function readState(key) {
     if (typeof window.StateManager === "undefined") return null;
     try {
@@ -69,19 +102,35 @@ function readState(key) {
     }
 }
 
-function subscribeToMeasurements() {
-    if (typeof window.StateManager === "undefined") return;
-    const rebuildOnChange = () => {
-        if (!mounted) return;
-        try {
-            rebuildMannequin();
-        } catch (err) {
-            console.error("[3d] rebuild failed:", err);
-        }
+function subscribeToState() {
+    const sm = window.StateManager;
+    if (typeof sm === "undefined") return;
+
+    const onMannequinChange = () => safeRun(rebuildMannequin, "mannequin rebuild");
+    const onGarmentRebuild = () => safeRun(rebuildGarment, "garment rebuild");
+    const onColor = () => safeRun(patchGarmentColor, "garment color");
+    const onMaterial = () => safeRun(patchGarmentMaterial, "garment material");
+    const onMeasurements = () => {
+        safeRun(rebuildMannequin, "mannequin rebuild");
+        safeRun(rebuildGarment, "garment rebuild");
     };
-    window.StateManager.subscribe("measurements:change", rebuildOnChange);
-    window.StateManager.subscribe("skinTone:change", rebuildOnChange);
-    window.StateManager.subscribe("hairColor:change", rebuildOnChange);
+
+    sm.subscribe("measurements:change", onMeasurements);
+    sm.subscribe("skinTone:change", onMannequinChange);
+    sm.subscribe("hairColor:change", onMannequinChange);
+    sm.subscribe("currentType:change", onGarmentRebuild);
+    sm.subscribe("currentFit:change", onGarmentRebuild);
+    sm.subscribe("currentColor:change", onColor);
+    sm.subscribe("currentMaterial:change", onMaterial);
+}
+
+function safeRun(fn, label) {
+    if (!mounted) return;
+    try {
+        fn();
+    } catch (err) {
+        console.error(`[3d] ${label} failed:`, err);
+    }
 }
 
 function isWebGLAvailable() {
