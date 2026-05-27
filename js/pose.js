@@ -72,11 +72,6 @@ const Pose = (() => {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function ellipseCirc(a, b) {
-        // Ramanujan's approximation
-        return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
-    }
-
     /**
      * Schätzt Körpermaße aus 33 Pose-Landmarks.
      * @param {Array} landmarks - MediaPipe NormalizedLandmark[] (x,y in [0,1])
@@ -112,20 +107,18 @@ const Pose = (() => {
             dist2D(get(IDX.L_KNEE), get(IDX.L_ANKLE))
         ) * px2cm;
 
-        // Umfänge aus Breiten approximieren (elliptischer Querschnitt,
-        // Tiefe ~70% der Breite). Brust/Taille als anatomische Anteile der
-        // Schulterbreite.
-        const torsoDepthRatio = 0.62;
-        const chestWidthEst = shoulderWidth * 0.88;
-        const waistWidthEst = shoulderWidth * 0.72;
-        const hipWidthEst = hipWidth;
+        // Umfänge aus anthropometrischen Verhältnissen ableiten — Schulter-
+        // breite (biakromiale Spannweite) als Anker, Brust × 2.45, Taille
+        // 85% der Brust, Hüfte aus dem max von MediaPipe-Hüft-Distanz × 3.4
+        // (deckt weiblich-kurvige Silhouetten ab) und 97% der Brust (deckt
+        // männliche Silhouetten ab, wo MediaPipes schmale Hüftgelenk-
+        // Distanz den eigentlichen Hüftumfang unterschätzt).
+        const chestCirc = shoulderWidth * 2.45;
+        const waistCirc = chestCirc * 0.85;
+        const hipsCirc = Math.max(hipWidth * 3.4, chestCirc * 0.97);
 
-        const chestCirc = ellipseCirc(chestWidthEst / 2, chestWidthEst * torsoDepthRatio / 2);
-        const waistCirc = ellipseCirc(waistWidthEst / 2, waistWidthEst * torsoDepthRatio / 2);
-        const hipsCirc = ellipseCirc(hipWidthEst / 2, hipWidthEst * 0.72 / 2);
-
-        // Hals: empirisch ~38% der Schulterbreite (typisch beim Erwachsenen)
-        const neckCirc = shoulderWidth * 0.95;
+        // Hals: empirisch ~38cm bei einer 44cm Schulterbreite → Verhältnis 0.86
+        const neckCirc = shoulderWidth * 0.86;
 
         // Gewichts-Schätzung über BMI=22 (durchschnittlich gesund) als Default
         const heightM = refHeightCm / 100;
