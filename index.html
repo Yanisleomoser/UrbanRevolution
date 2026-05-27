@@ -160,11 +160,33 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="vto-section">
+                            <button id="vto-btn" class="vto-btn" disabled>
+                                <span class="vto-btn-text">Fotorealistische Vorschau</span>
+                                <span class="vto-btn-hint" id="vto-btn-hint">Lade zuerst ein Foto unter "Maße" hoch</span>
+                            </button>
+                            <p class="vto-disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <div id="vto-modal" class="vto-modal" hidden>
+        <div class="vto-modal-backdrop"></div>
+        <div class="vto-modal-content">
+            <button id="vto-modal-close" class="vto-modal-close" aria-label="Schließen">&times;</button>
+            <div id="vto-modal-body">
+                <div class="vto-loading">
+                    <div class="vto-spinner"></div>
+                    <p id="vto-status">Generiere fotorealistische Vorschau...</p>
+                </div>
+                <img id="vto-result-img" class="vto-result-img" alt="Fotorealistische Vorschau" hidden>
+            </div>
+        </div>
+    </div>
 
     <section id="measure" class="section measure-section">
         <div class="container">

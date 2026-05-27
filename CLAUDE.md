@@ -11,30 +11,33 @@ produces a printable production spec sheet for a tailor.
 
 **Stack:** vanilla HTML / CSS / JS. No bundler, no transpiler. The
 `package.json` only exists so Vercel runs `npm install` to pull
-`@vercel/speed-insights`; the app itself has no build step. MediaPipe
-and Vercel analytics load from CDNs at runtime. UI copy is German
-(`lang="de"`, `toLocaleDateString('de-DE')`).
-
-> **3D preview status:** the previous `garment3d.js` implementation was
-> removed (monolith, full rebuild on every state change, duplicate GLBs
-> across presets, three sources of truth). A new architecture is being
-> planned. Until then the preview section shows a placeholder card.
+`@vercel/speed-insights`; the app itself has no build step. Three.js
+(via import map), MediaPipe and Vercel analytics load from CDNs at
+runtime. One Vercel Edge Function for the photorealistic-try-on
+proxy. UI copy is German (`lang="de"`, `toLocaleDateString('de-DE')`).
 
 ## Layout
 
 ```
-index.html              # Single page; sections + script tags
+index.html              # Single page; sections + import map + script tags
 css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
+api/
+  try-on.js             # Vercel Edge Function — Replicate proxy for VTO
 js/
   config.js             # Source of truth — constants, presets, validators (window.CONFIG)
   ai.js                 # Prompt → design JSON. Local fallback + optional Claude API
   measurements.js       # Body measurement state, presets, size/fabric/seam math
-  pose.js               # MediaPipe Pose Landmarker — measure from a photo
-  state-manager.js      # Generic event-driven store (window.StateManager) — unused, kept for 3D rebuild
+  pose.js               # MediaPipe Pose Landmarker + skin/hair sampling
+  state-manager.js      # Event-driven store (window.StateManager) — single source of truth
   export.js             # Builds spec data, downloads JSON/HTML, simulates orders
   analytics.js          # Vercel Web Analytics inject (ES module, npm dep)
-  app.js                # Main controller — wires DOM events to other modules
-vercel.json             # Hosting config — no build
+  app.js                # Main controller — wires DOM events to StateManager
+  3d/
+    scene.js            # Three.js renderer, lights, orbit controls (ES module)
+    avatars.js          # Procedural mannequin from measurements + skin/hair
+    garments.js         # 6 parametric garment builders + PBR material factory
+    controller.js       # Mounts the 3D scene, subscribes to StateManager
+vercel.json             # Hosting config — no build, /api/ runs as edge functions
 .github/workflows/      # deno.yml (lint), deploy.yml (Pages); the others are stubs
 ```
 
@@ -61,18 +64,44 @@ window.Foo = Foo;
 | `export.js`       | `window.Export`         | classic         |
 | `app.js`          | (none — controller)     | classic         |
 | `analytics.js`    | (none — side effect)    | `type="module"` |
+| `3d/controller.js`| (self-mounts)           | `type="module"` |
 
 **Load order in `index.html` matters** — every module except
 `analytics.js` reads `window.CONFIG` at IIFE evaluation time, so
-`config.js` must load first. Verify the order if you add new dependents.
+`config.js` must load first. The 3D module is a deferred ES module
+and mounts after DOMContentLoaded; it depends on StateManager being
+ready (so `state-manager.js` must be in the classic-script block
+ahead of it).
 
-`state-manager.js` exposes `window.StateManager` (validation,
-subscribe/emit, history) but `app.js` does **not** use it — `app.js`
-still owns a local `state` object. The 3D rewrite is expected to wire
-StateManager in as the single source of truth.
+`app.js` no longer owns local state — every read/write goes through
+`window.StateManager` via a small `S.get`/`S.set` helper. The 3D
+controller subscribes to the relevant `${key}:change` events.
 
 Follow the IIFE-with-global pattern for new code; don't introduce a
 bundler or new module system without surfacing it as a question first.
+
+## Photorealistic Try-On (`api/try-on.js`)
+
+Optional feature: after the user generates a design and uploads a
+pose photo, they can click "Fotorealistische Vorschau" which calls
+the `/api/try-on` Vercel Edge Function. The function forwards
+`{ userPhoto, designPrompt }` to Replicate's `flux-kontext-pro`
+model (instruction-following image editor) and returns the
+generated image URL.
+
+**Setup:** set `REPLICATE_API_TOKEN` in Vercel → Project Settings →
+Environment Variables. Without it, the function returns a 500 with
+a clear setup message; the rest of the app continues to work
+(button is enabled but generation fails with a toast).
+
+**Privacy:** unlike measurement extraction (100 % client-side), VTO
+sends the photo to Replicate's US servers. The disclaimer below the
+button states this; user opts in by clicking. The photo is held
+only in memory (`StateManager.userPhoto`) and not persisted.
+
+**Cost:** ~$0.04 per generation on Replicate's FLUX-Kontext-Pro.
+Cached per session by the browser; not invoked unless the user
+clicks the button.
 
 ## Running locally
 
