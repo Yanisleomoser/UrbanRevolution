@@ -1,16 +1,23 @@
 /**
  * Urban Revolution — Main Application Controller
- * Orchestriert AI, 3D-Modul, Maße und Export.
+ * Orchestriert AI, Maße, Export und treibt den StateManager als
+ * single source of truth. Das 3D-Modul lauscht ausschließlich auf
+ * StateManager-Events — app.js ruft es nicht direkt auf.
  */
 
 (function() {
-  const state = {
-    currentDesign: null,
-    currentType: "tshirt",
-    currentColor: "#1a1a1a",
-    currentMaterial: "cotton",
-    currentFit: 0.5,
-    measurements: null,
+  const S = {
+    get: (key) => window.StateManager ? window.StateManager.get(key) : null,
+    set: (key, value) => {
+      if (!window.StateManager) return false;
+      try {
+        window.StateManager.set(key, value);
+        return true;
+      } catch (err) {
+        console.warn(`[state] ${key}: ${err.message}`);
+        return false;
+      }
+    },
   };
 
   function showToast(message, type = "info") {
@@ -66,7 +73,7 @@
           b.classList.remove("active")
         );
         btn.classList.add("active");
-        state.currentType = btn.dataset.type;
+        S.set("currentType", btn.dataset.type);
         updateProductionPreview();
       });
     });
@@ -79,9 +86,11 @@
           s.classList.remove("active")
         );
         swatch.classList.add("active");
-        state.currentColor = swatch.dataset.color;
-        if (state.currentDesign) {
-          state.currentDesign.color = state.currentColor;
+        const newColor = swatch.dataset.color;
+        if (!S.set("currentColor", newColor)) return;
+        const design = S.get("currentDesign");
+        if (design) {
+          design.color = newColor;
           updateProductionPreview();
         }
       });
@@ -90,28 +99,29 @@
 
   function initMaterialSelector() {
     const select = document.getElementById("material-select");
-    if (select) {
-      select.addEventListener("change", () => {
-        state.currentMaterial = select.value;
-        if (state.currentDesign) {
-          state.currentDesign.material = state.currentMaterial;
-          updateProductionPreview();
-        }
-      });
-    }
+    if (!select) return;
+    select.addEventListener("change", () => {
+      if (!S.set("currentMaterial", select.value)) return;
+      const design = S.get("currentDesign");
+      if (design) {
+        design.material = select.value;
+        updateProductionPreview();
+      }
+    });
   }
 
   function initFitSlider() {
     const slider = document.getElementById("fit-slider");
-    if (slider) {
-      slider.addEventListener("input", () => {
-        state.currentFit = slider.value / 100;
-        if (state.currentDesign) {
-          state.currentDesign.fit = state.currentFit;
-          updateProductionPreview();
-        }
-      });
-    }
+    if (!slider) return;
+    slider.addEventListener("input", () => {
+      const fit = slider.value / 100;
+      if (!S.set("currentFit", fit)) return;
+      const design = S.get("currentDesign");
+      if (design) {
+        design.fit = fit;
+        updateProductionPreview();
+      }
+    });
   }
 
   function initGenerateButton() {
@@ -129,8 +139,8 @@
       btn.querySelector(".btn-text").textContent = "KI generiert...";
 
       try {
-        const design = await AI.generateDesign(prompt, state.currentType);
-        state.currentDesign = design;
+        const design = await AI.generateDesign(prompt, S.get("currentType"));
+        S.set("currentDesign", design);
         renderDesignResult(design);
         applyDesignToState(design);
         updateProductionPreview();
@@ -180,14 +190,18 @@
   }
 
   function applyDesignToState(design) {
-    state.currentColor = design.color;
-    state.currentMaterial = design.material;
-    state.currentFit = design.fit;
-    if (design.type && design.type !== state.currentType) {
-      state.currentType = design.type;
-      document.querySelectorAll(".type-btn").forEach((b) => {
-        b.classList.toggle("active", b.dataset.type === design.type);
-      });
+    // Push design fields through StateManager so the 3D module's
+    // subscriptions fire. Validation failures (e.g. Claude returned a
+    // non-palette color) are caught in S.set and don't break the flow.
+    if (design.color) S.set("currentColor", design.color);
+    if (design.material) S.set("currentMaterial", design.material);
+    if (design.fit !== undefined) S.set("currentFit", design.fit);
+    if (design.type && design.type !== S.get("currentType")) {
+      if (S.set("currentType", design.type)) {
+        document.querySelectorAll(".type-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.type === design.type);
+        });
+      }
     }
   }
 
@@ -261,25 +275,13 @@
         Measurements.write(measurements);
         updateMeasurements();
 
-        // Personalisierung: Haut- und Haarfarbe aus dem Foto sampeln und in
-        // StateManager pushen — der 3D-Controller subscribt und rebuildet
-        // den Mannequin mit den neuen Werten.
         const personalization = window.Pose.samplePersonalization(img, landmarks);
         let personalized = false;
-        if (personalization.skinTone && window.StateManager) {
-          try {
-            window.StateManager.set("skinTone", personalization.skinTone);
-            personalized = true;
-          } catch (e) {
-            console.warn("[pose] skinTone validation failed:", e.message);
-          }
+        if (personalization.skinTone) {
+          personalized = S.set("skinTone", personalization.skinTone);
         }
-        if (personalization.hairColor && window.StateManager) {
-          try {
-            window.StateManager.set("hairColor", personalization.hairColor);
-          } catch (e) {
-            console.warn("[pose] hairColor validation failed:", e.message);
-          }
+        if (personalization.hairColor) {
+          S.set("hairColor", personalization.hairColor);
         }
 
         previewWrap.hidden = false;
@@ -306,25 +308,18 @@
   }
 
   function updateMeasurements() {
-    state.measurements = Measurements.read();
-    if (window.StateManager) {
-      window.StateManager.set("measurements", state.measurements);
-    }
+    S.set("measurements", Measurements.read());
     updateModelInfo();
     updateProductionPreview();
   }
 
   function updateModelInfo() {
-    if (!state.measurements) return;
-    const fabric = Measurements.estimateFabric(
-      state.measurements,
-      state.currentType
-    );
-    const seams = Measurements.estimateSeams(
-      state.measurements,
-      state.currentType
-    );
-    const size = Measurements.calculateSize(state.measurements);
+    const measurements = S.get("measurements");
+    if (!measurements) return;
+    const type = S.get("currentType");
+    const fabric = Measurements.estimateFabric(measurements, type);
+    const seams = Measurements.estimateSeams(measurements, type);
+    const size = Measurements.calculateSize(measurements);
 
     const fabricEl = document.getElementById("info-fabric");
     const seamsEl = document.getElementById("info-seams");
@@ -336,17 +331,23 @@
   }
 
   function updateProductionPreview() {
-    if (!state.measurements) return;
+    const measurements = S.get("measurements");
+    if (!measurements) return;
 
-    const design = state.currentDesign || {
+    const currentColor = S.get("currentColor");
+    const currentMaterial = S.get("currentMaterial");
+    const currentFit = S.get("currentFit");
+    const currentType = S.get("currentType");
+
+    const design = S.get("currentDesign") || {
       name: "Untitled Design",
       description:
         "Noch kein Design generiert. Beschreibe oben dein Wunsch-Outfit.",
       designId: "UR-XXXXXX",
       originalPrompt: "–",
-      color: state.currentColor,
-      material: state.currentMaterial,
-      fit: state.currentFit,
+      color: currentColor,
+      material: currentMaterial,
+      fit: currentFit,
       tags: [],
       constructionNotes: [
         "Generiere zuerst ein Design, um Schneider-Notizen zu erhalten.",
@@ -354,11 +355,7 @@
       generatedAt: new Date().toISOString(),
     };
 
-    const specData = Export.buildSpecData(
-      design,
-      state.measurements,
-      state.currentType
-    );
+    const specData = Export.buildSpecData(design, measurements, currentType);
 
     document.getElementById("spec-title").textContent =
       design.name.toUpperCase();
@@ -367,13 +364,12 @@
       new Date().toLocaleDateString("de-DE");
     document.getElementById("spec-brief").textContent =
       `"${design.originalPrompt}" — ${design.description}`;
-    document.getElementById("spec-type").textContent = state.currentType;
-    document.getElementById("spec-material").textContent =
-      state.currentMaterial;
+    document.getElementById("spec-type").textContent = currentType;
+    document.getElementById("spec-material").textContent = currentMaterial;
 
     const colorCell = document.getElementById("spec-color");
     colorCell.innerHTML =
-      `<span style="display:inline-block;width:14px;height:14px;background:${state.currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${state.currentColor}`;
+      `<span style="display:inline-block;width:14px;height:14px;background:${currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${currentColor}`;
 
     document.getElementById("spec-fit").textContent =
       specData.specifications.fit;
@@ -381,7 +377,7 @@
       specData.specifications.size;
 
     const measuresTable = document.getElementById("spec-measures");
-    measuresTable.innerHTML = Object.entries(state.measurements)
+    measuresTable.innerHTML = Object.entries(measurements)
       .map(
         ([k, v]) =>
           `<tr><td>${Measurements.LABELS[k] || k}</td><td>${v} cm</td></tr>`
@@ -400,14 +396,14 @@
   }
 
   function getCurrentSpecData() {
-    if (!state.currentDesign) {
+    if (!S.get("currentDesign")) {
       showToast("Bitte zuerst ein Design generieren", "error");
       return null;
     }
     return Export.buildSpecData(
-      state.currentDesign,
-      state.measurements,
-      state.currentType
+      S.get("currentDesign"),
+      S.get("measurements"),
+      S.get("currentType"),
     );
   }
 
