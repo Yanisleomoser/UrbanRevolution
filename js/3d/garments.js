@@ -178,11 +178,15 @@ function buildTshirt(mat, lm, fit) {
     const sleeveLen = lm.armLen * 0.22;
     const armR = lm.totalH * 0.028;
     const sleeveR = armR * 1.55 * fitFactor(fit, 0.0, 0.25);
+    // Match torso lathe top radius (shoulderHalfW * 0.94 in profile) so
+    // the sleeve cap sits flush with the torso edge instead of leaving
+    // bare shoulder visible between them.
+    const sleeveAnchorX = shoulderHalfW * 0.94;
     [-1, 1].forEach((side) => {
         group.add(buildSleeve(
             mat, side,
             topY - armR * 0.4,
-            shoulderHalfW,
+            sleeveAnchorX,
             sleeveLen,
             sleeveR * 1.05,
             sleeveR * 0.95
@@ -224,11 +228,12 @@ function buildHoodie(mat, lm, fit) {
     // Lange Ärmel — bis zum Handgelenk
     const armR = lm.totalH * 0.028;
     const sleeveR = armR * 1.7 * fitFactor(fit, 0.0, 0.25);
+    const sleeveAnchorX = shoulderHalfW * 0.98;
     [-1, 1].forEach((side) => {
         group.add(buildSleeve(
             mat, side,
             topY - armR * 0.4,
-            shoulderHalfW,
+            sleeveAnchorX,
             lm.armLen * 0.92,
             sleeveR * 1.05,
             sleeveR * 0.78
@@ -280,11 +285,12 @@ function buildShirt(mat, lm, fit) {
 
     const armR = lm.totalH * 0.028;
     const sleeveR = armR * 1.5 * fitFactor(fit, 0.0, 0.18);
+    const sleeveAnchorX = shoulderHalfW * 0.92;
     [-1, 1].forEach((side) => {
         group.add(buildSleeve(
             mat, side,
             topY - armR * 0.4,
-            shoulderHalfW,
+            sleeveAnchorX,
             lm.armLen * 0.94,
             sleeveR * 1.0,
             sleeveR * 0.7
@@ -374,11 +380,12 @@ function buildJacket(mat, lm, fit) {
 
     const armR = lm.totalH * 0.028;
     const sleeveR = armR * 1.85 * fitFactor(fit, 0.0, 0.2);
+    const sleeveAnchorX = shoulderHalfW * 1.02;
     [-1, 1].forEach((side) => {
         group.add(buildSleeve(
             mat, side,
             topY - armR * 0.5,
-            shoulderHalfW,
+            sleeveAnchorX,
             lm.armLen * 0.95,
             sleeveR,
             sleeveR * 0.78
