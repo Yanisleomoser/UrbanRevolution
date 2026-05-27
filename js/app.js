@@ -248,6 +248,17 @@
       uploadBtn.textContent = "Lade Modell...";
       statusEl.textContent = "";
 
+      // Hold the photo as a data-URL in memory so the VTO feature can
+      // forward it to Replicate later. Lives in StateManager so the
+      // VTO button can read it cleanly.
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        S.set("userPhoto", dataUrl);
+        updateVtoButtonState();
+      } catch (_err) {
+        // Non-fatal — measurements still work without retaining the photo
+      }
+
       try {
         await window.Pose.init();
         uploadBtn.textContent = "Analysiere...";
@@ -463,6 +474,148 @@
     });
   }
 
+  // Downscale to max 1024 px on the longest edge and encode as JPEG. The
+  // Vercel Edge Function caps request bodies at 4.5 MB; a raw 4-8 MB
+  // phone photo + base64 overhead blows past that. JPEG @ 0.85 keeps a
+  // typical full-body shot under ~300 KB while preserving enough detail
+  // for FLUX-Kontext to recognize the person.
+  function fileToDataUrl(file, maxDim = 1024) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const longest = Math.max(img.naturalWidth, img.naturalHeight);
+        const scale = Math.min(1, maxDim / longest);
+        const w = Math.round(img.naturalWidth * scale);
+        const h = Math.round(img.naturalHeight * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(img.src);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = (e) => {
+        URL.revokeObjectURL(img.src);
+        reject(e);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  function updateVtoButtonState() {
+    const btn = document.getElementById("vto-btn");
+    const hint = document.getElementById("vto-btn-hint");
+    if (!btn) return;
+    const hasPhoto = !!S.get("userPhoto");
+    const hasDesign = !!S.get("currentDesign");
+    if (!hasPhoto) {
+      btn.disabled = true;
+      hint.textContent = "Lade zuerst ein Foto unter \"Maße\" hoch";
+    } else if (!hasDesign) {
+      btn.disabled = true;
+      hint.textContent = "Generiere zuerst ein Design";
+    } else {
+      btn.disabled = false;
+      hint.textContent = "Klick generiert deine fotorealistische Vorschau";
+    }
+  }
+
+  function initVtoButton() {
+    const btn = document.getElementById("vto-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async () => {
+      const userPhoto = S.get("userPhoto");
+      const design = S.get("currentDesign");
+      if (!userPhoto || !design) return;
+
+      openVtoModal();
+      setVtoStatus("Sende Anfrage an Replicate...");
+
+      const designPrompt = buildVtoPrompt(design);
+
+      try {
+        const res = await fetch("/api/try-on", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userPhoto, designPrompt }),
+        });
+        const body = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          setVtoStatus(`Fehler: ${body.error || res.statusText}`);
+          return;
+        }
+
+        if (body.pending) {
+          setVtoStatus(
+            "Generierung läuft länger als erwartet (>20 s) — Server-Limit erreicht. " +
+            "Bitte erneut versuchen oder andere Uhrzeit probieren.",
+          );
+          return;
+        }
+
+        if (body.imageUrl) {
+          showVtoResult(body.imageUrl);
+        } else {
+          setVtoStatus("Unerwartete Antwort vom Server.");
+        }
+      } catch (err) {
+        setVtoStatus(`Netzwerkfehler: ${err.message}`);
+      }
+    });
+
+    document.getElementById("vto-modal-close")?.addEventListener("click", closeVtoModal);
+    document.querySelector(".vto-modal-backdrop")?.addEventListener("click", closeVtoModal);
+  }
+
+  function buildVtoPrompt(design) {
+    const parts = [];
+    if (design.name) parts.push(design.name);
+    if (design.description) parts.push(design.description);
+    if (design.originalPrompt) parts.push(design.originalPrompt);
+    // Garment type + material + color as a fallback for terse designs
+    const type = S.get("currentType");
+    const material = S.get("currentMaterial");
+    const color = S.get("currentColor");
+    parts.push(`${type} in ${color} (${material})`);
+    return parts.filter(Boolean).join(". ");
+  }
+
+  function openVtoModal() {
+    const modal = document.getElementById("vto-modal");
+    const loading = modal?.querySelector(".vto-loading");
+    const img = document.getElementById("vto-result-img");
+    if (!modal) return;
+    modal.hidden = false;
+    if (loading) loading.style.display = "flex";
+    if (img) {
+      img.hidden = true;
+      img.removeAttribute("src");
+    }
+  }
+
+  function closeVtoModal() {
+    const modal = document.getElementById("vto-modal");
+    if (modal) modal.hidden = true;
+  }
+
+  function setVtoStatus(text) {
+    const status = document.getElementById("vto-status");
+    if (status) status.textContent = text;
+  }
+
+  function showVtoResult(url) {
+    const loading = document.querySelector(".vto-loading");
+    const img = document.getElementById("vto-result-img");
+    if (loading) loading.style.display = "none";
+    if (img) {
+      img.src = url;
+      img.hidden = false;
+    }
+  }
+
   function init() {
     initSuggestions();
     initTypeSelector();
@@ -472,7 +625,14 @@
     initGenerateButton();
     initMeasurements();
     initExportButtons();
+    initVtoButton();
     trackScrollSteps();
+
+    if (window.StateManager) {
+      window.StateManager.subscribe("currentDesign:change", updateVtoButtonState);
+      window.StateManager.subscribe("userPhoto:change", updateVtoButtonState);
+    }
+    updateVtoButtonState();
 
     window.addEventListener("ai-fallback", (e) => {
       showToast(

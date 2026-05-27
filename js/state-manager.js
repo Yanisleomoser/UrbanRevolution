@@ -13,7 +13,8 @@ const StateManager = (() => {
         measurements: null,
         avatar: 'male_regular',
         skinTone: '#d8d4cf',
-        hairColor: '#3a2010'
+        hairColor: '#3a2010',
+        userPhoto: null
     };
 
     const listeners = new Map(); // eventType -> Set of callbacks
@@ -116,7 +117,8 @@ const StateManager = (() => {
                 measurements: null,
                 avatar: 'male_regular',
                 skinTone: '#d8d4cf',
-                hairColor: '#3a2010'
+                hairColor: '#3a2010',
+                userPhoto: null
             }[key];
             
             if (defaultValue !== undefined) {
