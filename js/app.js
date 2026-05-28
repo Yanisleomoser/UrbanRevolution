@@ -530,7 +530,7 @@
   function updateVtoButtonState() {
     const btn = document.getElementById("vto-btn");
     const hint = document.getElementById("vto-btn-hint");
-    if (!btn) return;
+    if (!btn || !hint) return;
     const hasPhoto = !!S.get("userPhoto");
     const hasDesign = !!S.get("currentDesign");
     const used = getVtoCount();
