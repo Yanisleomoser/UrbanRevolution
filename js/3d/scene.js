@@ -9,16 +9,30 @@
  * Rendering is on-demand: requestRender() schedules a single frame on
  * the next animation tick. There is no continuous 60 fps loop. Camera
  * movement triggers re-render via the orbit-controls 'change' event.
+ *
+ * Pipeline:
+ *   - PMREM-generated RoomEnvironment for free PBR-quality IBL (no
+ *     external HDR download — runs procedurally on init).
+ *   - EffectComposer with RenderPass → UnrealBloomPass → OutputPass.
+ *   - ACES Filmic tone mapping + sRGB output for cinematic, accurate
+ *     color reproduction.
  */
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 let renderer = null;
 let scene = null;
 let camera = null;
 let controls = null;
+let composer = null;
 let container = null;
+let pmrem = null;
 let renderScheduled = false;
 
 function mount(targetContainer) {
@@ -40,10 +54,21 @@ function mount(targetContainer) {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // ACES Filmic — cinematic tone curve, the de facto Pixar/Hollywood standard
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
     container.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
     scene.background = null;
+
+    // Procedural environment map for image-based lighting (IBL).
+    // RoomEnvironment ist ein Studio-Setup mit subtilen Highlights —
+    // sehr smeichelhaft für Stoffe, kostet ~1-2ms beim Init.
+    pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    const envScene = new RoomEnvironment();
+    scene.environment = pmrem.fromScene(envScene, 0.04).texture;
 
     camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 50);
     camera.position.set(0, 1.1, 4.2);
@@ -51,6 +76,7 @@ function mount(targetContainer) {
 
     initLights();
     initGround();
+    initComposer(width, height);
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -68,36 +94,65 @@ function mount(targetContainer) {
 }
 
 function initLights() {
-    const key = new THREE.DirectionalLight(0xfff5e6, 1.6);
+    // Key light — warm tungsten, primary illumination
+    const key = new THREE.DirectionalLight(0xfff5e6, 1.4);
     key.position.set(2.5, 3.5, 2.0);
     key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.mapSize.set(2048, 2048);
     key.shadow.camera.left = -2;
     key.shadow.camera.right = 2;
     key.shadow.camera.top = 3;
     key.shadow.camera.bottom = -0.5;
+    key.shadow.bias = -0.0001;
+    key.shadow.normalBias = 0.02;
+    key.shadow.radius = 6;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xff6ab8, 0.45);
+    // Fill light — magenta from camera-left, brand color hint
+    const fill = new THREE.DirectionalLight(0xff6ab8, 0.35);
     fill.position.set(-2.0, 1.8, 1.5);
     scene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0x8b5cf6, 0.55);
+    // Rim light — cyan/purple from behind, separates subject from background
+    const rim = new THREE.DirectionalLight(0x8b5cf6, 0.65);
     rim.position.set(0.5, 2.0, -2.5);
     scene.add(rim);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    // Subtle bottom bounce — softens shadow undersides
+    const bounce = new THREE.HemisphereLight(0xffffff, 0x1a0a2e, 0.25);
+    scene.add(bounce);
 }
 
 function initGround() {
     const ground = new THREE.Mesh(
         new THREE.CircleGeometry(2.4, 48),
-        new THREE.ShadowMaterial({ opacity: 0.35 })
+        new THREE.ShadowMaterial({ opacity: 0.45 })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = 0;
     ground.receiveShadow = true;
     scene.add(ground);
+}
+
+function initComposer(width, height) {
+    composer = new EffectComposer(renderer);
+    composer.setSize(width, height);
+    composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    composer.addPass(new RenderPass(scene, camera));
+
+    // Bloom — soft glow on hot highlights (Stoff-Glanz, Schmuck, Pattern)
+    // strength, radius, threshold
+    const bloom = new UnrealBloomPass(
+        new THREE.Vector2(width, height),
+        0.45,   // strength — subtle, fashion-grade not anime-grade
+        0.85,   // radius
+        0.82    // threshold — only the brightest pixels get bloomed
+    );
+    composer.addPass(bloom);
+
+    // OutputPass handles final tone mapping + colorspace conversion
+    composer.addPass(new OutputPass());
 }
 
 function handleResize() {
@@ -106,6 +161,7 @@ function handleResize() {
     const height = container.clientHeight;
     if (width === 0 || height === 0) return;
     renderer.setSize(width, height);
+    if (composer) composer.setSize(width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     requestRender();
@@ -118,7 +174,11 @@ function requestRender() {
         renderScheduled = false;
         if (!renderer) return;
         controls.update();
-        renderer.render(scene, camera);
+        if (composer) {
+            composer.render();
+        } else {
+            renderer.render(scene, camera);
+        }
     });
 }
 
@@ -159,6 +219,18 @@ function unmount() {
             mats.forEach((m) => m.dispose());
         }
     });
+    if (composer) {
+        composer.dispose?.();
+        composer = null;
+    }
+    if (pmrem) {
+        pmrem.dispose();
+        pmrem = null;
+    }
+    if (scene.environment) {
+        scene.environment.dispose();
+        scene.environment = null;
+    }
     renderer.dispose();
     if (renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
