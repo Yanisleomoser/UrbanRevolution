@@ -349,7 +349,7 @@
 
   function fitLabel(fit) {
     if (fit === undefined || fit === null) return "Regular";
-    if (fit < 0.34) return "Slim";
+    if (fit < 0.33) return "Slim";
     if (fit > 0.66) return "Oversized";
     return "Regular";
   }
