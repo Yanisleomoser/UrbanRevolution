@@ -362,31 +362,106 @@ select:focus {
 }
 
 .prompt-suggestions {
-    margin-top: 16px;
+    margin-top: 20px;
+}
+
+.suggestions-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .suggestions-label {
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.suggestions-stats {
+    font-size: 11px;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    letter-spacing: 0.4px;
+}
+
+.suggestions-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .suggestion {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 6px 14px;
+    padding: 8px 16px 8px 10px;
     border-radius: 100px;
     font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    margin: 4px 4px 4px 0;
+    transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+    margin: 0;
+    font-family: inherit;
 }
 
 .suggestion:hover {
     border-color: var(--accent);
     color: var(--text);
     background: var(--gradient-dim);
+    transform: translateY(-1px);
+}
+
+.suggestion-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--text);
+    flex-shrink: 0;
+}
+
+.suggestion-icon svg { display: block; }
+
+.suggestion.personalized {
+    border-color: rgba(236, 72, 153, 0.4);
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(139, 92, 246, 0.08));
+    color: var(--text);
+}
+
+.suggestion.personalized .suggestion-icon {
+    background: var(--gradient);
+    color: white;
+}
+
+.suggestion.personalized:hover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.18), rgba(139, 92, 246, 0.18));
+}
+
+.suggestion.discovery {
+    border-color: rgba(6, 182, 212, 0.4);
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(139, 92, 246, 0.08));
+    color: var(--text);
+}
+
+.suggestion.discovery .suggestion-icon {
+    background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
+    color: white;
+}
+
+.suggestion.discovery:hover {
+    border-color: var(--accent-3);
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.18), rgba(139, 92, 246, 0.18));
 }
 
 .garment-type-selector {
