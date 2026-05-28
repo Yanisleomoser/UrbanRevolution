@@ -1,7 +1,7 @@
 {
   "lint": {
-    "include": ["js/", "api/"],
-    "exclude": ["node_modules/", "models/"],
+    "include": ["js/"],
+    "exclude": ["node_modules/", "models/", "api/"],
     "rules": {
       "exclude": ["no-window", "no-window-prefix", "no-import-prefix"]
     }
