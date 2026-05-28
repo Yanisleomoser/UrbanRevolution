@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for AI assistants working on the Urban Revolution repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project
 
@@ -198,14 +198,25 @@ load-bearing; preserve it if you modify the flow.
 
 ## State flow
 
-`app.js` owns a single `state`: `{ currentDesign, currentType,
-currentColor, currentMaterial, currentFit, measurements }`. Every user
-interaction mutates `state` and re-renders the spec sheet via
-`updateProductionPreview` (the single funnel for spec-sheet DOM writes,
-rebuilds from scratch each time, no diffing).
+`window.StateManager` (in `js/state-manager.js`) is the single source of
+truth. It owns these keys: `currentDesign`, `currentType`, `currentColor`,
+`currentMaterial`, `currentFit`, `measurements`, `avatar`, `skinTone`,
+`hairColor`, `userPhoto`. `set(key, value)` validates via `CONFIG.validate*`
+(throws on invalid), tracks a 50-entry history, and emits both
+`${key}:change` and `state:change` events.
 
-`window.StateManager` exists as a richer alternative but is not currently
-wired in — see **Module conventions**.
+`app.js` is a thin controller — it reads/writes only through the
+`S.get`/`S.set` helper (which wraps `StateManager` and swallows
+validation errors with a console warning). DOM events mutate state;
+`updateProductionPreview` is the single funnel that rebuilds the spec
+sheet from scratch on every change (no diffing).
+
+The 3D controller (`js/3d/controller.js`) subscribes to specific
+`${key}:change` events and never reads from `app.js`. Rebuild policy:
+mannequin rebuilds on `measurements` / `skinTone` / `hairColor`; garment
+rebuilds on `currentType` / `currentFit` / `measurements`; color and
+material are patched in place (no rebuild). All 3D operations are guarded
+by `safeRun` so a failure can't take down the rest of the app.
 
 ## Styling
 
