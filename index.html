@@ -2,17 +2,65 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Revolution — AI Fashion Atelier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0b">
+    <meta name="color-scheme" content="dark">
+
+    <title>Urban Revolution — Maßgeschneiderte AI-Couture aus Zürich</title>
+    <meta name="description" content="Beschreibe dein Wunschkleidungsstück. Unsere KI gestaltet es, ein 3D-Modell zeigt die Passform mit deinen 9 Körpermaßen, Schneider in der Schweiz fertigen es in unter 14 Tagen.">
+    <meta name="keywords" content="AI Fashion, Maßgeschneidert, KI Design, Couture, Zürich, Schweizer Atelier, Custom Clothing, 3D Try-on">
+    <meta name="author" content="Urban Revolution">
+
+    <!-- Open Graph — beim Teilen auf Facebook, LinkedIn, iMessage, Slack -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Urban Revolution">
+    <meta property="og:title" content="Urban Revolution — AI Couture Atelier">
+    <meta property="og:description" content="KI entwirft dein Wunschkleidungsstück. 3D-Modell prüft die Passform. Schweizer Schneider fertigen es. Maßgeschneidert, transparent, in unter 14 Tagen.">
+    <meta property="og:url" content="https://revolveurban.com">
+    <meta property="og:locale" content="de_DE">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Urban Revolution — AI Couture Atelier">
+    <meta name="twitter:description" content="KI entwirft. 3D prüft. Schneider fertigen. Maßgeschneidert aus Zürich.">
+
+    <!-- Favicons as inline SVG using the brand mark gradient -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ec4899'/%3E%3Cstop offset='50%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Inter,sans-serif' font-size='24' font-weight='800' text-anchor='middle' fill='white'%3EUR%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ec4899'/%3E%3Cstop offset='50%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='40' fill='url(%23g)'/%3E%3Ctext x='90' y='118' font-family='Inter,sans-serif' font-size='68' font-weight='800' text-anchor='middle' fill='white'%3EUR%3C/text%3E%3C/svg%3E">
+
     <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Pre-warm connections to CDNs we know we'll hit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://replicate.delivery">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+
     <!-- Vercel Speed Insights -->
     <script>
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
+
+    <!-- JSON-LD structured data so search engines understand the brand -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Urban Revolution",
+      "url": "https://revolveurban.com",
+      "description": "AI Couture Atelier — KI-gestaltete, maßgeschneiderte Mode aus Zürich",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Zürich",
+        "addressCountry": "CH"
+      },
+      "areaServed": "CH"
+    }
+    </script>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
@@ -541,6 +589,42 @@
             </div>
         </div>
     </section>
+
+    <section id="faq" class="section faq-section">
+        <div class="container">
+            <div class="section-header" data-reveal>
+                <span class="section-number">FAQ</span>
+                <h2>Häufige Fragen</h2>
+                <p>Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
+            </div>
+            <div class="faq-list" data-reveal-stagger>
+                <details class="faq-item" data-reveal>
+                    <summary>Wie lange dauert die Produktion?</summary>
+                    <p>In der Regel 7 bis 14 Werktage zwischen Bestellung und Versand. Komplexere Stücke (mehrlagige Jacken, aufwändige Stickerei) können bis zu 21 Tage benötigen — die geschätzte Lieferzeit zeigen wir dir nach der Generierung.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary>Was passiert mit meinem Foto?</summary>
+                    <p>Für die Maßerkennung läuft alles direkt in deinem Browser über MediaPipe — das Foto verlässt nie dein Gerät und wird nicht gespeichert. Nur wenn du explizit die fotorealistische Vorschau anforderst, wird das Foto einmalig an Replicate (US-Server) gesendet und nach der Generierung sofort wieder verworfen.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary>Was kostet ein maßgeschneidertes Stück?</summary>
+                    <p>Der Preis hängt von Stofftyp, Schnittkomplexität und gewählten Maßen ab. Eine Spanne in CHF zeigen wir dir live in der Spec-Sheet-Vorschau — typisch CHF 145–220 für T-Shirts und Hemden, CHF 220–450 für Hosen und Jacken, CHF 380–680 für Mäntel und Kleider.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary>Was, wenn ich nicht gemessen wurde?</summary>
+                    <p>Drei Wege zu deinen Maßen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder eine Größenpresets (S/M/L/XL) als Startpunkt, die du danach anpassen kannst. Schneider erhalten alle Werte in der Produktions-Spec.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary>Wo wird gefertigt?</summary>
+                    <p>Aktuell arbeiten wir mit Schneider-Ateliers in der Schweiz und Norditalien zusammen — fair entlohnt, traceable Lieferketten, nachhaltige Materialien wo möglich. Für jede Bestellung sehen wir genau, wer welches Stück nach welcher Spec fertigt.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary>Kann ich gespeicherte Designs später nochmal bestellen?</summary>
+                    <p>Ja — alle Designs landen in deiner Bibliothek (lokal in deinem Browser), du kannst sie jederzeit wieder laden, anpassen und neu bestellen. Die fotorealistische Vorschau wird auf Wunsch automatisch ans Design angehängt.</p>
+                </details>
+            </div>
+        </div>
+    </section>
     </main>
 
     <footer class="footer">
@@ -560,6 +644,7 @@
                         <li><a href="#measure">Körpermaße</a></li>
                         <li><a href="#preview">3D Vorschau</a></li>
                         <li><a href="#production">Produktion</a></li>
+                        <li><a href="#faq">FAQ</a></li>
                     </ul>
                 </nav>
                 <nav class="footer-col" aria-label="Mehr">
