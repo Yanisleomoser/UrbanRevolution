@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Urban Revolution — Join the waitlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0c;--card:#121214;--elev:#16161a;--border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
+  --t:#fff;--tm:rgba(255,255,255,0.62);--ts:rgba(255,255,255,0.40);
+  --pink:#ec4899;--purple:#a855f7;--blue:#3b82f6;--grad:linear-gradient(115deg,var(--pink),var(--purple) 52%,var(--blue));}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--t);font-family:"Poppins",sans-serif;font-weight:300;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  radial-gradient(ellipse 700px 500px at 85% 0%,rgba(168,85,247,0.22),transparent 60%),
+  radial-gradient(ellipse 600px 600px at 5% 100%,rgba(236,72,153,0.14),transparent 55%);}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.card{position:relative;z-index:1;width:100%;max-width:560px;text-align:center;}
+.mono{width:60px;height:60px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:24px;margin:0 auto 32px;box-shadow:0 10px 40px rgba(168,85,247,0.45);}
+.eyebrow{font-size:12px;letter-spacing:0.34em;text-transform:uppercase;color:var(--ts);font-weight:500;}
+h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:clamp(44px,8vw,72px);line-height:0.98;letter-spacing:-0.01em;margin:18px 0 0;}
+h1 em{font-style:italic;}
+p.lead{color:var(--tm);font-size:17px;line-height:1.55;margin:24px auto 0;max-width:420px;}
+form{margin-top:36px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+input[type=email]{flex:1;min-width:240px;background:var(--card);border:1px solid var(--border2);border-radius:100px;padding:17px 24px;color:var(--t);font-family:"Poppins";font-size:15px;font-weight:300;}
+input[type=email]:focus{outline:none;border-color:var(--purple);}
+button{font-family:"Poppins";font-weight:500;font-size:15px;padding:17px 32px;border-radius:100px;background:var(--grad);color:#fff;border:none;cursor:pointer;box-shadow:0 10px 36px rgba(168,85,247,0.4);transition:transform .2s;white-space:nowrap;}
+button:hover{transform:translateY(-2px);}
+.micro{font-size:12px;color:var(--ts);margin-top:16px;letter-spacing:0.04em;}
+.count{margin-top:40px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;color:var(--tm);letter-spacing:0.08em;}
+.count b{font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:600;font-size:22px;}
+.count .dot{width:8px;height:8px;border-radius:50%;background:#7dd3a8;box-shadow:0 0 10px #7dd3a8;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.success{display:none;}
+.success.show{display:block;animation:fade .5s ease;}
+.form-wrap.hide{display:none;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.check{width:64px;height:64px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:30px;}
+.tags{margin-top:46px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ts);}
+.tags span{display:flex;align-items:center;gap:8px;}.tags i{width:5px;height:5px;border-radius:50%;background:var(--grad);}
+.foot{margin-top:48px;font-size:12px;color:var(--ts);letter-spacing:0.08em;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="mono">UR</div>
+  <div class="form-wrap" id="formWrap">
+    <div class="eyebrow">Pre-launch · Building in public</div>
+    <h1>The waitlist<br>for <em class="grad-text">one of one.</em></h1>
+    <p class="lead">Made-to-measure fashion, designed by you, spun from recycled PET. First drops go to the list. No spam — just the build, and your invite.</p>
+    <form id="form">
+      <input type="email" id="email" placeholder="you@email.com" required />
+      <button type="submit">Join the list →</button>
+    </form>
+    <div class="micro">Be early. Early supporters get the first made-to-measure orders.</div>
+    <div class="count"><span class="dot"></span><b id="num">2,847</b> already on the list</div>
+    <div class="tags">
+      <span><i></i>AI · 3D · Couture</span>
+      <span><i></i>Recycled rPET</span>
+      <span><i></i>Bern, CH</span>
+    </div>
+  </div>
+
+  <div class="success" id="success">
+    <div class="check">✓</div>
+    <h1 style="font-size:clamp(38px,7vw,60px);">You're <em class="grad-text">in.</em></h1>
+    <p class="lead" id="succMsg">Welcome to the revolution. Watch your inbox — the first build update lands soon.</p>
+    <div class="count"><span class="dot"></span>You're <b id="rank" style="margin:0 4px;">#2,848</b>on the list</div>
+    <div class="micro" style="margin-top:24px;">Want to move up? Share <b style="color:var(--tm);">revolveurban.com</b> — every friend who joins moves you up the queue.</div>
+  </div>
+
+  <div class="foot">revolveurban.com · @urbanrevolution</div>
+</div>
+
+<script>
+const form=document.getElementById('form');
+const formWrap=document.getElementById('formWrap');
+const success=document.getElementById('success');
+const numEl=document.getElementById('num');
+const rankEl=document.getElementById('rank');
+const succMsg=document.getElementById('succMsg');
+
+// In-memory list (demo). In production, POST to your email provider / backend.
+let count=2847;
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  const email=document.getElementById('email').value.trim();
+  if(!email) return;
+  count++;
+  rankEl.textContent="#"+count.toLocaleString();
+  formWrap.classList.add('hide');
+  success.classList.add('show');
+  // Where to wire it up:
+  // fetch('/api/waitlist',{method:'POST',body:JSON.stringify({email})})
+});
+</script>
+</body>
+</html>
