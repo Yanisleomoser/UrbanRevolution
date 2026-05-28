@@ -1758,12 +1758,119 @@ select:focus {
 }
 
 @media (max-width: 600px) {
-    .measure-inputs {
-        grid-template-columns: 1fr;
-    }
+    .measure-inputs { grid-template-columns: 1fr; }
+
     .hero {
-        padding: 100px 24px 40px;
+        padding: var(--space-11) var(--space-5) var(--space-8);
+        min-height: auto;
     }
+
+    .hero-eyebrow { letter-spacing: var(--tracking-wide); }
+
+    .hero-subtitle {
+        font-size: var(--text-base);
+        margin-bottom: var(--space-7);
+    }
+
+    .cta-button {
+        padding: var(--space-4) var(--space-7);
+        font-size: var(--text-sm);
+    }
+
+    .section { padding: var(--space-11) 0; }
+
+    .section-header { margin-bottom: var(--space-8); }
+
+    .section-header h2 { font-size: clamp(28px, 8vw, 40px); }
+
+    .section-header p { font-size: var(--text-base); }
+
+    /* Step tracker — scrollable horizontally so it doesn't crunch */
+    .workflow { padding: var(--space-5) 0; top: 60px; }
+    .step-tracker {
+        gap: var(--space-3);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0 var(--space-1);
+    }
+    .step-tracker::-webkit-scrollbar { display: none; }
+    .step { flex: 0 0 auto; min-width: max-content; font-size: 11px; }
+
+    /* Panels: tighter padding */
+    .prompt-panel,
+    .result-panel { padding: var(--space-6); }
+
+    /* Design card on mobile — save-btn goes below subtitle */
+    .design-card-head {
+        grid-template-columns: 56px 1fr;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+    }
+    .design-card-icon { width: 56px; height: 56px; }
+    .design-card-icon svg { width: 44px; height: 44px; }
+    .design-card-titles h3 { font-size: 22px; }
+    .design-save-btn {
+        grid-column: 1 / -1;
+        margin-left: 0;
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* Customize controls */
+    .customize-controls { padding: var(--space-5) 0; }
+    .color-palette { gap: 8px; }
+
+    /* VTO modal on mobile — less padding, bigger touch targets */
+    .vto-modal { padding: var(--space-4); }
+    .vto-modal-content { padding: var(--space-6) var(--space-5); }
+    .vto-modal-close { top: 6px; right: 8px; }
+
+    /* Library modal on mobile */
+    .library-modal { padding: var(--space-3); }
+    .library-modal-content {
+        padding: var(--space-6) var(--space-5);
+        border-radius: var(--radius);
+    }
+    .library-modal-head h3 { font-size: 22px; }
+    .library-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3);
+    }
+    .library-tile-body { padding: var(--space-3); }
+    .library-tile-body h4 { font-size: 14px; }
+    .library-tile-meta,
+    .library-tile-date { font-size: 10px; }
+    .library-tile-load { padding: var(--space-2) var(--space-3); font-size: 12px; }
+
+    /* Body diagram doesn't need to be huge on mobile */
+    .body-diagram { padding: var(--space-5); }
+    .body-diagram svg { max-height: 380px; }
+
+    /* Spec sheet readability */
+    .spec-sheet { padding: var(--space-5) !important; }
+
+    /* Footer */
+    .footer { padding: var(--space-7) 0; }
+
+    /* Toast: center bottom instead of corner so it doesn't get cut */
+    .toast {
+        left: var(--space-4);
+        right: var(--space-4);
+        bottom: var(--space-4);
+        max-width: none;
+    }
+}
+
+@media (max-width: 400px) {
+    .hero { padding-top: var(--space-10); }
+    .nav-container { padding: var(--space-3) var(--space-4); }
+    .logo-text { display: none; }
+    .step-tracker { font-size: 10px; }
+    .type-grid { grid-template-columns: repeat(3, 1fr); }
+    .type-btn { padding: var(--space-3); }
+    .type-btn svg { width: 28px; height: 28px; }
 }
 
 /* ============================================================
