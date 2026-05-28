@@ -159,20 +159,107 @@
     });
   }
 
+  // Inline outline paths for the 6 garment types, mirrored from the
+  // .type-btn SVGs in index.html. Used inside the design-result card so
+  // the user sees a visual cue for the garment type they generated.
+  const TYPE_ICON_PATHS = {
+    tshirt: "M16 16 L24 8 L40 8 L48 16 L56 22 L48 30 L48 56 L16 56 L16 30 L8 22 Z",
+    hoodie: "M20 14 Q32 4 44 14 L52 22 L58 28 L50 34 L50 58 L14 58 L14 34 L6 28 L12 22 Z",
+    shirt: "M18 14 L28 8 L36 8 L46 14 L54 22 L48 28 L48 56 L16 56 L16 28 L10 22 Z M28 8 L32 16 L36 8",
+    pants: "M16 8 L48 8 L46 32 L44 58 L34 58 L32 34 L30 58 L20 58 L18 32 Z",
+    jacket: "M16 14 L24 8 L40 8 L48 14 L56 22 L50 28 L50 58 L32 58 L32 8 L32 58 L14 58 L14 28 L8 22 Z",
+    dress: "M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z",
+  };
+
+  const TYPE_LABELS = {
+    tshirt: "T-Shirt",
+    hoodie: "Hoodie",
+    shirt: "Hemd",
+    pants: "Hose",
+    jacket: "Jacke",
+    dress: "Kleid",
+  };
+
+  function typeIconSvg(type, size = 56) {
+    const d = TYPE_ICON_PATHS[type] || TYPE_ICON_PATHS.tshirt;
+    return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>`;
+  }
+
+  function fitLabel(fit) {
+    if (fit === undefined || fit === null) return "Regular";
+    if (fit < 0.34) return "Slim";
+    if (fit > 0.66) return "Oversized";
+    return "Regular";
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(
+      /[&<>"']/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
+    );
+  }
+
   function renderDesignResult(design) {
     const output = document.getElementById("ai-output");
-    const tags = design.tags && design.tags.length
-      ? design.tags.map((t) => `<span class="design-tag">${t}</span>`).join("")
-      : "<span class=\"design-tag\">custom</span>";
+
+    const type = design.type || S.get("currentType");
+    const color = design.color || S.get("currentColor");
+    const material = design.material || S.get("currentMaterial");
+    const fit = design.fit !== undefined ? design.fit : S.get("currentFit");
+
+    const typeLabelText = TYPE_LABELS[type] || type;
+    const materialLabel = (window.CONFIG && window.CONFIG.MATERIALS && window.CONFIG.MATERIALS[material]) || material;
+    const fitText = fitLabel(fit);
+    const patternKey = design.pattern && design.pattern !== "solid" ? design.pattern : null;
+    const patternLabel = patternKey && window.CONFIG && window.CONFIG.PATTERNS
+      ? (window.CONFIG.PATTERNS[patternKey] || patternKey)
+      : patternKey;
+
+    const tagsHtml = (design.tags && design.tags.length
+      ? design.tags
+      : ["custom"]
+    )
+      .slice(0, 6)
+      .map((t) => `<span class="design-tag">${escapeHtml(t)}</span>`)
+      .join("");
+
+    const notes = (design.constructionNotes || []).slice(0, 3);
+    const notesHtml = notes.length
+      ? `<details class="design-card-notes"><summary>Schneider-Notizen (${notes.length})</summary><ul>${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul></details>`
+      : "";
+
+    const promptHtml = design.originalPrompt
+      ? `<blockquote class="design-card-prompt"><span class="design-card-prompt-label">Dein Wunsch</span><p>“${escapeHtml(design.originalPrompt)}”</p></blockquote>`
+      : "";
 
     output.innerHTML = `
-            <div class="design-result">
-                <h4>KI-DESIGN · ${design.designId}</h4>
-                <h3>${design.name}</h3>
-                <p>${design.description}</p>
-                <div class="design-tags">${tags}</div>
-            </div>
-        `;
+      <article class="design-card">
+        <header class="design-card-head">
+          <div class="design-card-icon" style="color:${escapeHtml(color)}">${typeIconSvg(type, 56)}</div>
+          <div class="design-card-titles">
+            <span class="design-card-eyebrow">KI-DESIGN · ${escapeHtml(design.designId || "––––––")}</span>
+            <h3>${escapeHtml(design.name || "Untitled")}</h3>
+            <p class="design-card-subtitle">${escapeHtml(typeLabelText)} · ${escapeHtml(materialLabel)} · ${escapeHtml(fitText)} Fit</p>
+          </div>
+        </header>
+
+        ${promptHtml}
+
+        <div class="design-card-specs">
+          <div class="spec-pill spec-pill-color">
+            <span class="spec-swatch" style="background:${escapeHtml(color)}"></span>
+            <span>${escapeHtml(color)}</span>
+          </div>
+          <div class="spec-pill">${escapeHtml(materialLabel)}</div>
+          <div class="spec-pill">${escapeHtml(fitText)} Fit</div>
+          ${patternLabel ? `<div class="spec-pill">${escapeHtml(patternLabel)}</div>` : ""}
+        </div>
+
+        ${tagsHtml ? `<div class="design-tags">${tagsHtml}</div>` : ""}
+
+        ${notesHtml}
+      </article>
+    `;
 
     document.getElementById("customize-controls").style.display = "block";
 
