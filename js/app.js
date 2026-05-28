@@ -829,12 +829,12 @@
         const body = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          setVtoStatus(`Fehler: ${body.error || res.statusText}`);
+          setVtoError(`Fehler: ${body.error || res.statusText}`);
           return;
         }
 
         if (body.pending) {
-          setVtoStatus(
+          setVtoError(
             "Generierung läuft länger als erwartet (>20 s) — Server-Limit erreicht. " +
             "Bitte erneut versuchen oder andere Uhrzeit probieren.",
           );
@@ -849,12 +849,14 @@
           incrementVtoCount();
           updateVtoButtonState();
         } else {
-          setVtoStatus("Unerwartete Antwort vom Server.");
+          setVtoError("Unerwartete Antwort vom Server.");
         }
       } catch (err) {
-        setVtoStatus(`Netzwerkfehler: ${err.message}`);
+        setVtoError(`Netzwerkfehler: ${err.message}`);
       }
     });
+
+    document.getElementById("vto-download")?.addEventListener("click", downloadVtoImage);
 
     document.getElementById("vto-modal-close")?.addEventListener("click", closeVtoModal);
     document.querySelector(".vto-modal-backdrop")?.addEventListener("click", closeVtoModal);
@@ -873,22 +875,50 @@
     return parts.filter(Boolean).join(". ");
   }
 
+  // ESC handler — bound only while the modal is open. Stored at module
+  // scope so close can detach it; otherwise repeated opens leak listeners.
+  let vtoEscHandler = null;
+  // Element to restore focus to on close — the trigger that opened the modal.
+  let vtoFocusReturnEl = null;
+  // Last successful generation URL, kept so the download button can fetch it.
+  let vtoLastImageUrl = null;
+
   function openVtoModal() {
     const modal = document.getElementById("vto-modal");
     const loading = modal?.querySelector(".vto-loading");
+    const spinner = modal?.querySelector(".vto-spinner");
     const img = document.getElementById("vto-result-img");
+    const actions = document.getElementById("vto-result-actions");
     if (!modal) return;
     modal.hidden = false;
     if (loading) loading.style.display = "flex";
+    if (spinner) spinner.style.display = "";
     if (img) {
       img.hidden = true;
       img.removeAttribute("src");
     }
+    if (actions) actions.hidden = true;
+
+    vtoFocusReturnEl = document.activeElement;
+    document.getElementById("vto-modal-close")?.focus();
+
+    vtoEscHandler = (e) => {
+      if (e.key === "Escape") closeVtoModal();
+    };
+    document.addEventListener("keydown", vtoEscHandler);
   }
 
   function closeVtoModal() {
     const modal = document.getElementById("vto-modal");
     if (modal) modal.hidden = true;
+    if (vtoEscHandler) {
+      document.removeEventListener("keydown", vtoEscHandler);
+      vtoEscHandler = null;
+    }
+    if (vtoFocusReturnEl && typeof vtoFocusReturnEl.focus === "function") {
+      vtoFocusReturnEl.focus();
+    }
+    vtoFocusReturnEl = null;
   }
 
   function setVtoStatus(text) {
@@ -896,13 +926,49 @@
     if (status) status.textContent = text;
   }
 
+  function setVtoError(text) {
+    setVtoStatus(text);
+    // Stop the spinner so the user sees the error as a final state, not
+    // a still-loading impression. Loading container stays visible so the
+    // error text is positioned where the user already looked.
+    const spinner = document.querySelector(".vto-spinner");
+    if (spinner) spinner.style.display = "none";
+  }
+
   function showVtoResult(url) {
     const loading = document.querySelector(".vto-loading");
     const img = document.getElementById("vto-result-img");
+    const actions = document.getElementById("vto-result-actions");
     if (loading) loading.style.display = "none";
     if (img) {
       img.src = url;
       img.hidden = false;
+    }
+    if (actions) actions.hidden = false;
+    vtoLastImageUrl = url;
+  }
+
+  async function downloadVtoImage() {
+    if (!vtoLastImageUrl) return;
+    const filename = `urban-revolution-${Date.now()}.jpg`;
+    try {
+      // Replicate's CDN sets CORS allow-origin: *, so this normally
+      // works. If it ever doesn't, fall through to opening in a new
+      // tab where the user can long-press / right-click to save.
+      const res = await fetch(vtoLastImageUrl, { mode: "cors" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Defer revoke so the browser has time to start the download.
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (_err) {
+      window.open(vtoLastImageUrl, "_blank", "noopener");
     }
   }
 

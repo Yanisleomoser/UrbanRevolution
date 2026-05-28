@@ -184,6 +184,9 @@
                     <p id="vto-status">Generiere fotorealistische Vorschau...</p>
                 </div>
                 <img id="vto-result-img" class="vto-result-img" alt="Fotorealistische Vorschau" hidden>
+                <div class="vto-result-actions" id="vto-result-actions" hidden>
+                    <button id="vto-download" class="vto-download-btn">Bild speichern</button>
+                </div>
             </div>
         </div>
     </div>
@@ -385,8 +388,9 @@
             <div class="preview-container">
                 <div id="three-canvas" class="three-canvas preview-placeholder">
                     <div class="placeholder-content">
-                        <h3>3D-Vorschau wird neu aufgebaut</h3>
-                        <p>Die 3D-Avatar-Funktion wird derzeit von Grund auf neu entwickelt für eine bessere Performance und Visualisierung. Design-Generierung, Maße und Produktions-Spec funktionieren weiterhin.</p>
+                        <div class="placeholder-spinner" aria-hidden="true"></div>
+                        <h3>3D-Vorschau wird geladen</h3>
+                        <p>Three.js initialisiert das interaktive Modell mit deinen Maßen. Falls dein Browser kein WebGL unterstützt, zeigen wir hier einen Hinweis.</p>
                     </div>
                 </div>
                 <div class="preview-controls">
