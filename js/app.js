@@ -394,6 +394,8 @@
       ? `<blockquote class="design-card-prompt"><span class="design-card-prompt-label">Dein Wunsch</span><p>“${escapeHtml(design.originalPrompt)}”</p></blockquote>`
       : "";
 
+    const inLibrary = window.Library && window.Library.get(design.designId);
+
     output.innerHTML = `
       <article class="design-card">
         <header class="design-card-head">
@@ -403,6 +405,10 @@
             <h3>${escapeHtml(design.name || "Untitled")}</h3>
             <p class="design-card-subtitle">${escapeHtml(typeLabelText)} · ${escapeHtml(materialLabel)} · ${escapeHtml(fitText)} Fit</p>
           </div>
+          <button id="design-save-btn" class="design-save-btn ${inLibrary ? "is-saved" : ""}" type="button" aria-label="Design speichern">
+            <span class="design-save-icon" aria-hidden="true">${inLibrary ? "✓" : "+"}</span>
+            <span class="design-save-text">${inLibrary ? "Gespeichert" : "Speichern"}</span>
+          </button>
         </header>
 
         ${promptHtml}
@@ -422,6 +428,11 @@
         ${notesHtml}
       </article>
     `;
+
+    const saveBtn = document.getElementById("design-save-btn");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", () => saveCurrentDesign());
+    }
 
     document.getElementById("customize-controls").style.display = "block";
 
@@ -946,6 +957,12 @@
     }
     if (actions) actions.hidden = false;
     vtoLastImageUrl = url;
+    // If the current design is in the library, attach this VTO image so
+    // the library tile gets a real preview thumbnail next time it renders.
+    const current = S.get("currentDesign");
+    if (current && window.Library && window.Library.get(current.designId)) {
+      window.Library.setVtoImage(current.designId, url);
+    }
   }
 
   async function downloadVtoImage() {
@@ -972,6 +989,192 @@
     }
   }
 
+  // ───── Saved Designs Library ─────
+
+  let libraryEscHandler = null;
+  let libraryFocusReturnEl = null;
+
+  function saveCurrentDesign() {
+    if (!window.Library) return;
+    const design = S.get("currentDesign");
+    if (!design) {
+      showToast("Bitte zuerst ein Design generieren", "error");
+      return;
+    }
+    const entry = window.Library.add(design, {
+      type: S.get("currentType"),
+      color: S.get("currentColor"),
+      material: S.get("currentMaterial"),
+      fit: S.get("currentFit"),
+      vtoImageUrl: vtoLastImageUrl,
+    });
+    if (!entry) {
+      showToast("Speichern fehlgeschlagen", "error");
+      return;
+    }
+    // Update save button to "Gespeichert" state
+    const btn = document.getElementById("design-save-btn");
+    if (btn) {
+      btn.classList.add("is-saved");
+      btn.querySelector(".design-save-icon").textContent = "✓";
+      btn.querySelector(".design-save-text").textContent = "Gespeichert";
+    }
+    showToast(`"${entry.name}" in deiner Bibliothek gespeichert`, "success");
+    updateLibraryCount();
+  }
+
+  function updateLibraryCount() {
+    if (!window.Library) return;
+    const count = window.Library.count();
+    const trigger = document.getElementById("library-open");
+    const countEl = document.getElementById("library-count");
+    if (!trigger || !countEl) return;
+    countEl.textContent = String(count);
+    trigger.hidden = count === 0;
+  }
+
+  function renderLibraryGrid() {
+    const grid = document.getElementById("library-grid");
+    const hint = document.getElementById("library-modal-hint");
+    if (!grid || !window.Library) return;
+    const designs = window.Library.list();
+
+    if (designs.length === 0) {
+      hint.textContent = "Noch keine gespeicherten Designs. Erstelle eines und drücke „Speichern“ in der Design-Karte.";
+      grid.innerHTML = "";
+      return;
+    }
+
+    const max = window.Library.MAX_ENTRIES || 20;
+    hint.textContent = `${designs.length} von ${max} Designs gespeichert`;
+
+    grid.innerHTML = designs.map((d) => {
+      const typeLabel = TYPE_LABELS[d.type] || d.type;
+      const matLabel = (window.CONFIG && window.CONFIG.MATERIALS && window.CONFIG.MATERIALS[d.material]) || d.material;
+      const dateStr = (() => {
+        try { return new Date(d.savedAt).toLocaleDateString("de-DE"); }
+        catch { return ""; }
+      })();
+      const visual = d.vtoImageUrl
+        ? `<img class="library-tile-photo" src="${escapeHtml(d.vtoImageUrl)}" alt="" loading="lazy">`
+        : `<div class="library-tile-icon" style="color:${escapeHtml(d.color)}">${typeIconSvg(d.type, 56)}</div>`;
+      return `
+        <article class="library-tile" data-id="${escapeHtml(d.id)}">
+          <div class="library-tile-visual">
+            ${visual}
+            <span class="library-tile-swatch" style="background:${escapeHtml(d.color)}" aria-hidden="true"></span>
+          </div>
+          <div class="library-tile-body">
+            <h4>${escapeHtml(d.name)}</h4>
+            <p class="library-tile-meta">${escapeHtml(typeLabel)} · ${escapeHtml(matLabel)}</p>
+            ${dateStr ? `<p class="library-tile-date">${dateStr}</p>` : ""}
+            <div class="library-tile-actions">
+              <button class="library-tile-load" data-action="load" data-id="${escapeHtml(d.id)}" type="button">Laden</button>
+              <button class="library-tile-delete" data-action="delete" data-id="${escapeHtml(d.id)}" type="button" aria-label="Löschen">×</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function loadDesignFromLibrary(id) {
+    if (!window.Library) return;
+    const entry = window.Library.get(id);
+    if (!entry) {
+      showToast("Design nicht gefunden", "error");
+      return;
+    }
+    const design = {
+      designId: entry.id,
+      name: entry.name,
+      type: entry.type,
+      color: entry.color,
+      material: entry.material,
+      fit: entry.fit,
+      tags: entry.tags || [],
+      pattern: entry.pattern || "solid",
+      originalPrompt: entry.originalPrompt || "",
+      constructionNotes: entry.constructionNotes || [],
+      description: "Aus deiner Bibliothek geladen",
+      generatedAt: entry.savedAt,
+    };
+    S.set("currentDesign", design);
+    document.getElementById("ai-prompt").value = entry.originalPrompt || "";
+    document.querySelectorAll(".type-btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.type === entry.type);
+    });
+    renderDesignResult(design);
+    applyDesignToState(design);
+    updateProductionPreview();
+    closeLibraryModal();
+    showToast(`„${entry.name}" geladen`, "success");
+    document.getElementById("ai-output")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function deleteDesignFromLibrary(id) {
+    if (!window.Library) return;
+    const entry = window.Library.get(id);
+    window.Library.remove(id);
+    renderLibraryGrid();
+    updateLibraryCount();
+    if (entry) showToast(`„${entry.name}" gelöscht`, "info");
+    // If current design was the deleted one, refresh save button state
+    const current = S.get("currentDesign");
+    if (current && current.designId === id) {
+      const btn = document.getElementById("design-save-btn");
+      if (btn) {
+        btn.classList.remove("is-saved");
+        btn.querySelector(".design-save-icon").textContent = "+";
+        btn.querySelector(".design-save-text").textContent = "Speichern";
+      }
+    }
+  }
+
+  function openLibraryModal() {
+    const modal = document.getElementById("library-modal");
+    if (!modal) return;
+    renderLibraryGrid();
+    modal.hidden = false;
+    libraryFocusReturnEl = document.activeElement;
+    document.getElementById("library-modal-close")?.focus();
+    libraryEscHandler = (e) => {
+      if (e.key === "Escape") closeLibraryModal();
+    };
+    document.addEventListener("keydown", libraryEscHandler);
+  }
+
+  function closeLibraryModal() {
+    const modal = document.getElementById("library-modal");
+    if (modal) modal.hidden = true;
+    if (libraryEscHandler) {
+      document.removeEventListener("keydown", libraryEscHandler);
+      libraryEscHandler = null;
+    }
+    if (libraryFocusReturnEl && typeof libraryFocusReturnEl.focus === "function") {
+      libraryFocusReturnEl.focus();
+    }
+    libraryFocusReturnEl = null;
+  }
+
+  function initLibrary() {
+    if (!window.Library) return;
+    updateLibraryCount();
+
+    document.getElementById("library-open")?.addEventListener("click", openLibraryModal);
+    document.getElementById("library-modal-close")?.addEventListener("click", closeLibraryModal);
+    document.querySelector(".library-modal-backdrop")?.addEventListener("click", closeLibraryModal);
+
+    // Event-delegation for tile actions — tiles get re-rendered each open
+    document.getElementById("library-grid")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.action === "load") loadDesignFromLibrary(id);
+      else if (btn.dataset.action === "delete") deleteDesignFromLibrary(id);
+    });
+  }
+
   function init() {
     initSuggestions();
     initTypeSelector();
@@ -982,6 +1185,7 @@
     initMeasurements();
     initExportButtons();
     initVtoButton();
+    initLibrary();
     trackScrollSteps();
 
     if (window.StateManager) {
