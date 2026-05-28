@@ -1635,33 +1635,83 @@ select:focus {
 
 /* ============ FOOTER ============ */
 .footer {
-    padding: 48px 0;
+    padding: var(--space-10) 0 var(--space-7);
     border-top: 1px solid var(--border);
     background: var(--bg);
 }
 
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: var(--space-9);
+    padding-bottom: var(--space-7);
+    border-bottom: 1px solid var(--border);
 }
 
-.footer-brand {
+.footer-brand-col { max-width: 360px; }
+
+.footer-logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
 }
 
-.footer-brand p {
+.footer-tagline {
     color: var(--text-dim);
-    font-size: 14px;
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    text-wrap: pretty;
 }
+
+.footer-col h5 {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin: 0 0 var(--space-4);
+}
+
+.footer-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.footer-col a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+.footer-col a:hover { color: var(--text); }
 
 .footer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-top: var(--space-6);
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: var(--text-xs);
+    text-align: center;
+}
+
+.footer-meta-fine { color: var(--text-muted); opacity: 0.7; }
+
+/* Older `.footer-content` rule retained for legacy compatibility — the
+   new layout uses `.footer-grid`. */
+.footer-content { display: none; }
+
+@media (max-width: 700px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-7);
+    }
 }
 
 /* ============ TOAST ============ */
@@ -2754,3 +2804,68 @@ body::before {
 }
 
 main { display: block; }
+
+/* ============================================================
+   Trust Strip — brand values band between hero and workflow
+   ============================================================ */
+
+.trust-strip {
+    padding: var(--space-9) 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.015) 50%, transparent 100%);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+}
+
+.trust-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
+}
+
+.trust-item {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.trust-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-dim);
+    border: 1px solid var(--border);
+    color: var(--text);
+    flex-shrink: 0;
+}
+
+.trust-item h4 {
+    font-size: var(--text-base);
+    font-weight: 600;
+    margin: 0 0 var(--space-1);
+    letter-spacing: -0.005em;
+}
+
+.trust-item p {
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    line-height: var(--leading-snug);
+    margin: 0;
+    text-wrap: pretty;
+}
+
+@media (max-width: 900px) {
+    .trust-list { grid-template-columns: repeat(2, 1fr); gap: var(--space-7); }
+}
+
+@media (max-width: 480px) {
+    .trust-strip { padding: var(--space-7) 0; }
+    .trust-list { grid-template-columns: 1fr; gap: var(--space-5); }
+}

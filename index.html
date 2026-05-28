@@ -46,6 +46,49 @@
         </div>
     </header>
 
+    <section class="trust-strip" aria-label="Markenmerkmale">
+        <div class="container">
+            <ul class="trust-list" data-reveal-stagger>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L4 6 L4 12 C4 17 8 21 12 22 C16 21 20 17 20 12 L20 6 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12 L11 14 L15 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <h4>Maßgefertigt</h4>
+                        <p>Jedes Stück nach deinen 9 Körpermaßen — keine Standardgrößen, kein Kompromiss</p>
+                    </div>
+                </li>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3 C15 6 15 18 12 21 M12 3 C9 6 9 18 12 21 M3 12 L21 12" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                    </span>
+                    <div>
+                        <h4>Designed in Zürich</h4>
+                        <p>Schweizer Atelier, transparente Produktion in CHF, faire Lieferzeit unter 14 Tagen</p>
+                    </div>
+                </li>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L14 8 L20 9 L15.5 13 L17 19 L12 16 L7 19 L8.5 13 L4 9 L10 8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <h4>KI + Handwerk</h4>
+                        <p>Generative Designs treffen auf echte Schneider — kein Print-on-Demand, kein Fast-Fashion</p>
+                    </div>
+                </li>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10 L21 10 M8 14 L11 14 M8 17 L13 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </span>
+                    <div>
+                        <h4>100 % Privatsphäre</h4>
+                        <p>Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+
     <section class="workflow">
         <div class="container">
             <div class="step-tracker">
@@ -502,12 +545,35 @@
 
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <span class="logo-mark">UR</span>
-                    <p>Urban Revolution — Atelier für maßgeschneiderte AI-Mode</p>
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <div class="footer-logo">
+                        <span class="logo-mark">UR</span>
+                        <span class="logo-text">Urban Revolution</span>
+                    </div>
+                    <p class="footer-tagline">Maßgeschneiderte AI-Couture aus Zürich. KI entwirft, Schneider fertigen, du trägst.</p>
                 </div>
-                <p class="footer-meta">© 2026 Urban Revolution · Designed in Zürich · Hergestellt mit ♥ und KI</p>
+                <nav class="footer-col" aria-label="Atelier">
+                    <h5>Atelier</h5>
+                    <ul>
+                        <li><a href="#design">Design starten</a></li>
+                        <li><a href="#measure">Körpermaße</a></li>
+                        <li><a href="#preview">3D Vorschau</a></li>
+                        <li><a href="#production">Produktion</a></li>
+                    </ul>
+                </nav>
+                <nav class="footer-col" aria-label="Mehr">
+                    <h5>Mehr</h5>
+                    <ul>
+                        <li><a href="https://github.com/Yanisleomoser/UrbanRevolution" target="_blank" rel="noopener">Code (Open Source)</a></li>
+                        <li><a href="mailto:hello@revolveurban.com">Kontakt</a></li>
+                        <li><a href="#main-content">Zum Seitenanfang</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="footer-meta">
+                <p>© 2026 Urban Revolution · Designed in Zürich · Hergestellt mit <span aria-label="Liebe">♥</span> und KI</p>
+                <p class="footer-meta-fine">Preise in CHF · Produktion 7–14 Tage · DSGVO-konform · Foto-Auswertung 100 % clientseitig</p>
             </div>
         </div>
     </footer>
