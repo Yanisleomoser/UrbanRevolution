@@ -503,21 +503,52 @@
     });
   }
 
+  // Client-side rate limit. localStorage persists across sessions so
+  // refreshing the page doesn't reset the count. A motivated user can
+  // still bypass via incognito / devtools, but for honest visitors this
+  // caps the per-browser Replicate spend at VTO_LIMIT × ~$0.04.
+  const VTO_LIMIT = 3;
+  const VTO_STORAGE_KEY = "urev_vto_count";
+
+  function getVtoCount() {
+    try {
+      const n = parseInt(localStorage.getItem(VTO_STORAGE_KEY) || "0", 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function incrementVtoCount() {
+    try {
+      localStorage.setItem(VTO_STORAGE_KEY, String(getVtoCount() + 1));
+    } catch {
+      // localStorage blocked (Safari private mode, storage full) — silently skip
+    }
+  }
+
   function updateVtoButtonState() {
     const btn = document.getElementById("vto-btn");
     const hint = document.getElementById("vto-btn-hint");
-    if (!btn) return;
+    if (!btn || !hint) return;
     const hasPhoto = !!S.get("userPhoto");
     const hasDesign = !!S.get("currentDesign");
+    const used = getVtoCount();
+    const remaining = Math.max(0, VTO_LIMIT - used);
     if (!hasPhoto) {
       btn.disabled = true;
       hint.textContent = "Lade zuerst ein Foto unter \"Maße\" hoch";
     } else if (!hasDesign) {
       btn.disabled = true;
       hint.textContent = "Generiere zuerst ein Design";
+    } else if (remaining === 0) {
+      btn.disabled = true;
+      hint.textContent = `Demo-Limit erreicht (${VTO_LIMIT}/${VTO_LIMIT}) — kontaktiere uns für mehr`;
     } else {
       btn.disabled = false;
-      hint.textContent = "Klick generiert deine fotorealistische Vorschau";
+      hint.textContent = used === 0
+        ? `Klick generiert deine fotorealistische Vorschau (${VTO_LIMIT} pro Browser)`
+        : `Klick generiert deine fotorealistische Vorschau (${remaining} von ${VTO_LIMIT} übrig)`;
     }
   }
 
@@ -529,6 +560,11 @@
       const userPhoto = S.get("userPhoto");
       const design = S.get("currentDesign");
       if (!userPhoto || !design) return;
+      if (getVtoCount() >= VTO_LIMIT) {
+        // Belt-and-suspenders: button should already be disabled, but
+        // guard against stale DOM state.
+        return;
+      }
 
       openVtoModal();
       setVtoStatus("Sende Anfrage an Replicate...");
@@ -557,7 +593,12 @@
         }
 
         if (body.imageUrl) {
+          // Only charge against the limit on a real, billable success.
+          // Errors and timeouts don't cost money on Replicate and
+          // shouldn't punish the user's quota.
           showVtoResult(body.imageUrl);
+          incrementVtoCount();
+          updateVtoButtonState();
         } else {
           setVtoStatus("Unerwartete Antwort vom Server.");
         }
