@@ -57,12 +57,164 @@
     });
   }
 
-  function initSuggestions() {
-    document.querySelectorAll(".suggestion").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.getElementById("ai-prompt").value = btn.dataset.prompt;
-        document.getElementById("ai-prompt").focus();
+  // Hex palette → adjective (for label) + lowercase noun (for prompt body).
+  // Mirrors the 10 swatches in the color-palette grid.
+  const COLOR_NAMES = {
+    "#1a1a1a": { adj: "Schwarz", lower: "schwarzes" },
+    "#ffffff": { adj: "Weiß", lower: "weißes" },
+    "#7c2d12": { adj: "Tiefrot", lower: "tiefrotes" },
+    "#1e3a8a": { adj: "Marineblau", lower: "marineblaues" },
+    "#365314": { adj: "Olivgrün", lower: "olivgrünes" },
+    "#a16207": { adj: "Karamell", lower: "karamellfarbenes" },
+    "#831843": { adj: "Burgunder", lower: "burgunderrotes" },
+    "#6b21a8": { adj: "Violett", lower: "violettes" },
+    "#f59e0b": { adj: "Sonnengelb", lower: "sonnengelbes" },
+    "#dc2626": { adj: "Rot", lower: "rotes" },
+  };
+
+  function colorAdjective(hex) {
+    return (COLOR_NAMES[hex] && COLOR_NAMES[hex].adj) || "Custom";
+  }
+
+  function colorLower(hex) {
+    return (COLOR_NAMES[hex] && COLOR_NAMES[hex].lower) || "individuelles";
+  }
+
+  // Per-type prompt template that takes a color adjective + material
+  // label and produces a natural German prompt the AI generator
+  // (Claude or local fallback) handles well.
+  const PROMPT_BUILDERS = {
+    tshirt: (color, mat) => `Schlichtes ${color} T-Shirt aus ${mat} im Slim-Fit, Rundhalsausschnitt, leicht tailliert`,
+    hoodie: (color, mat) => `Oversized ${color} Hoodie aus ${mat}, mit Känguru-Tasche und Kapuze, Streetwear-Stil`,
+    shirt: (color, mat) => `Klassisches ${color} Hemd aus ${mat} mit Button-Down-Kragen, langen Ärmeln, leicht tailliert`,
+    pants: (color, mat) => `Hochgeschnittene ${color} Hose aus ${mat}, Wide-Leg-Schnitt, klassischer Cut, fünf Taschen`,
+    jacket: (color, mat) => `${color} Jacke aus ${mat}, klassischer Schnitt mit Reißverschluss und Stehkragen`,
+    dress: (color, mat) => `${color} Midi-Kleid aus ${mat}, A-Linien-Schnitt, ärmellos, elegant`,
+  };
+
+  // Fallback set when the user has no history yet — matches the original
+  // hardcoded inspirations from index.html so first-time visitors see
+  // familiar examples.
+  const DEFAULT_SUGGESTIONS = [
+    { label: "Minimal Tee", type: "tshirt", prompt: "Minimalistisches schwarzes Slim-Fit T-Shirt aus Pima-Baumwolle mit Rundhalsausschnitt, leicht tailliert" },
+    { label: "Cyber Hoodie", type: "hoodie", prompt: "Oversized Cyberpunk-Hoodie in Neon-Lila mit reflektierenden Streifen, Cropped-Schnitt, Kapuze mit Kordel" },
+    { label: "Oxford Hemd", type: "shirt", prompt: "Klassisches weißes Oxford-Hemd mit Button-Down-Kragen, lange Ärmel, leicht tailliert, aus 100% ägyptischer Baumwolle" },
+    { label: "Wide-Leg Denim", type: "pants", prompt: "Hochgeschnittene Wide-Leg Jeans aus Indigo Selvedge Denim, Vintage-Waschung, fünf Taschen, Knopfleiste" },
+  ];
+
+  function buildPersonalizedSuggestions() {
+    if (!window.Preferences) return DEFAULT_SUGGESTIONS;
+    const total = window.Preferences.totalDesigns();
+    if (total < 1) return DEFAULT_SUGGESTIONS;
+
+    const topTypes = window.Preferences.topValues("type", 3);
+    const topColors = window.Preferences.topValues("color", 2);
+    const topMaterials = window.Preferences.topValues("material", 2);
+
+    const allTypes = Object.keys(TYPE_LABELS);
+    const untriedTypes = allTypes.filter((t) => !topTypes.includes(t));
+
+    const primaryColor = topColors[0] || "#1a1a1a";
+    const primaryMaterialKey = topMaterials[0] || "cotton";
+    const primaryMaterialLabel =
+      (window.CONFIG && window.CONFIG.MATERIALS && window.CONFIG.MATERIALS[primaryMaterialKey]) ||
+      "Bio-Baumwolle";
+
+    const suggestions = [];
+
+    // 1-2 "your style" entries: top types × top color/material
+    topTypes.slice(0, 2).forEach((type) => {
+      const builder = PROMPT_BUILDERS[type];
+      if (!builder) return;
+      suggestions.push({
+        label: `${colorAdjective(primaryColor)} ${TYPE_LABELS[type]}`,
+        type,
+        prompt: builder(colorLower(primaryColor), primaryMaterialLabel.toLowerCase()),
+        personalized: true,
       });
+    });
+
+    // 1 second-color combo with the top type, if a 2nd color was seen
+    if (topColors[1] && topTypes[0] && PROMPT_BUILDERS[topTypes[0]]) {
+      const type = topTypes[0];
+      suggestions.push({
+        label: `${colorAdjective(topColors[1])} ${TYPE_LABELS[type]}`,
+        type,
+        prompt: PROMPT_BUILDERS[type](colorLower(topColors[1]), primaryMaterialLabel.toLowerCase()),
+        personalized: true,
+      });
+    }
+
+    // 1 discovery entry: pick a type the user hasn't tried — encourages
+    // exploration so the suggestion ring doesn't echo-chamber.
+    if (untriedTypes.length) {
+      const discoveryType = untriedTypes[Math.floor(Math.random() * untriedTypes.length)];
+      const builder = PROMPT_BUILDERS[discoveryType];
+      if (builder) {
+        suggestions.push({
+          label: `Probier: ${TYPE_LABELS[discoveryType]}`,
+          type: discoveryType,
+          prompt: builder(colorLower(primaryColor), primaryMaterialLabel.toLowerCase()),
+          discovery: true,
+        });
+      }
+    }
+
+    return suggestions.slice(0, 4);
+  }
+
+  function renderSuggestions() {
+    const pills = document.getElementById("suggestions-pills");
+    const label = document.getElementById("suggestions-label");
+    const stats = document.getElementById("suggestions-stats");
+    if (!pills) return;
+
+    const list = buildPersonalizedSuggestions();
+    const total = window.Preferences ? window.Preferences.totalDesigns() : 0;
+
+    if (total > 0) {
+      label.textContent = "Für dich";
+      stats.textContent = `${total} Design${total !== 1 ? "s" : ""} erstellt`;
+      stats.hidden = false;
+    } else {
+      label.textContent = "Inspiration";
+      stats.hidden = true;
+    }
+
+    pills.innerHTML = list
+      .map((s) => {
+        const icon = typeIconSvg(s.type, 22);
+        const cls = ["suggestion"];
+        if (s.personalized) cls.push("personalized");
+        if (s.discovery) cls.push("discovery");
+        return `<button class="${cls.join(" ")}" data-prompt="${escapeHtml(s.prompt)}" data-type="${escapeHtml(s.type)}">
+          <span class="suggestion-icon">${icon}</span>
+          <span class="suggestion-label">${escapeHtml(s.label)}</span>
+        </button>`;
+      })
+      .join("");
+  }
+
+  function initSuggestions() {
+    renderSuggestions();
+    // Event delegation — pills get re-rendered after each generation
+    // so binding per-button would leak handlers.
+    const container = document.getElementById("suggestions-pills");
+    if (!container) return;
+    container.addEventListener("click", (e) => {
+      const btn = e.target.closest(".suggestion");
+      if (!btn) return;
+      const promptEl = document.getElementById("ai-prompt");
+      if (btn.dataset.prompt) {
+        promptEl.value = btn.dataset.prompt;
+        promptEl.focus();
+      }
+      if (btn.dataset.type) {
+        document.querySelectorAll(".type-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.type === btn.dataset.type);
+        });
+        S.set("currentType", btn.dataset.type);
+      }
     });
   }
 
@@ -144,6 +296,16 @@
         renderDesignResult(design);
         applyDesignToState(design);
         updateProductionPreview();
+        if (window.Preferences) {
+          // Track preferences after the design has been applied to state so
+          // we record the *final* color/material (Claude may have overridden
+          // the user's pre-click selection).
+          window.Preferences.track("type", S.get("currentType"));
+          window.Preferences.track("color", S.get("currentColor"));
+          window.Preferences.track("material", S.get("currentMaterial"));
+          window.Preferences.trackPrompt(prompt);
+          renderSuggestions();
+        }
         showToast(`Design "${design.name}" generiert!`, "success");
       } catch (error) {
         console.error(error);

@@ -68,12 +68,12 @@
                     <label for="ai-prompt">Dein Prompt für die KI</label>
                     <textarea id="ai-prompt" rows="6" placeholder="z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze..."></textarea>
 
-                    <div class="prompt-suggestions">
-                        <p class="suggestions-label">Inspiration:</p>
-                        <button class="suggestion" data-prompt="Minimalistisches schwarzes Slim-Fit T-Shirt aus Pima-Baumwolle mit Rundhalsausschnitt, leicht tailliert">Minimal Tee</button>
-                        <button class="suggestion" data-prompt="Oversized Cyberpunk-Hoodie in Neon-Lila mit reflektierenden Streifen, Cropped-Schnitt, Kapuze mit Kordel">Cyber Hoodie</button>
-                        <button class="suggestion" data-prompt="Klassisches weißes Oxford-Hemd mit Button-Down-Kragen, lange Ärmel, leicht tailliert, aus 100% ägyptischer Baumwolle">Oxford Hemd</button>
-                        <button class="suggestion" data-prompt="Hochgeschnittene Wide-Leg Jeans aus Indigo Selvedge Denim, Vintage-Waschung, fünf Taschen, Knopfleiste">Wide-Leg Denim</button>
+                    <div class="prompt-suggestions" id="prompt-suggestions">
+                        <div class="suggestions-header">
+                            <p class="suggestions-label" id="suggestions-label">Inspiration</p>
+                            <span class="suggestions-stats" id="suggestions-stats" hidden></span>
+                        </div>
+                        <div class="suggestions-pills" id="suggestions-pills"></div>
                     </div>
 
                     <div class="garment-type-selector">
@@ -512,6 +512,7 @@
     <script src="js/measurements.js"></script>
     <script src="js/pose.js"></script>
     <script src="js/export.js"></script>
+    <script src="js/preferences.js"></script>
     <script src="js/app.js"></script>
     <script type="module" src="js/3d/controller.js"></script>
 </body>
