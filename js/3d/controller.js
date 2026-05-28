@@ -14,20 +14,42 @@
  * working — none of it depends on the 3D module.
  */
 
-import { Scene } from "./scene.js";
-import { Avatars } from "./avatars.js";
-import { Garments } from "./garments.js";
+// Dynamic imports — these only fire when mount() actually runs, which
+// means Three.js (~600 KB), the avatar builder, and the garment library
+// don't enter the network or parse pipeline until the user scrolls
+// near the preview section. Significant LCP improvement for visitors
+// who never reach the 3D step.
+let Scene = null;
+let Avatars = null;
+let Garments = null;
+
+async function loadModules() {
+    if (Scene && Avatars && Garments) return;
+    const [sceneMod, avatarsMod, garmentsMod] = await Promise.all([
+        import("./scene.js"),
+        import("./avatars.js"),
+        import("./garments.js"),
+    ]);
+    Scene = sceneMod.Scene;
+    Avatars = avatarsMod.Avatars;
+    Garments = garmentsMod.Garments;
+}
 
 const CONTAINER_ID = "three-canvas";
 
 let currentMannequin = null;
 let currentGarment = null;
 let mounted = false;
+let mountInFlight = false;
 
-function mount() {
+async function mount() {
+    if (mounted || mountInFlight) return;
+    mountInFlight = true;
+
     const container = document.getElementById(CONTAINER_ID);
     if (!container) {
         console.warn("[3d] container not found, skipping mount");
+        mountInFlight = false;
         return;
     }
 
@@ -35,6 +57,8 @@ function mount() {
         if (!isWebGLAvailable()) {
             throw new Error("WebGL nicht verfügbar");
         }
+
+        await loadModules();
 
         container.classList.remove("preview-placeholder");
         container.innerHTML = "";
@@ -48,6 +72,8 @@ function mount() {
     } catch (err) {
         console.error("[3d] mount failed:", err);
         showMountFailure(container, err.message);
+    } finally {
+        mountInFlight = false;
     }
 }
 
@@ -152,8 +178,39 @@ function showMountFailure(container, reason) {
     `;
 }
 
+// Lazy-mount: defer Three.js initialisation (avatars, garments, scene
+// graph, render loop) until the preview section enters the viewport.
+// Without this, every page load pays the full Three.js cost even
+// though most visitors never scroll past the hero/design step.
+function scheduleMount() {
+    const container = document.getElementById("three-canvas");
+    if (!container) return;
+
+    if (!("IntersectionObserver" in window)) {
+        mount();
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                observer.disconnect();
+                mount();
+                break;
+            }
+        }
+    }, {
+        // Begin mounting one viewport before the section actually shows,
+        // so the scene is warm by the time the user arrives.
+        rootMargin: "100% 0px 0px 0px",
+        threshold: 0.01,
+    });
+
+    observer.observe(container);
+}
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mount);
+    document.addEventListener("DOMContentLoaded", scheduleMount);
 } else {
-    mount();
+    scheduleMount();
 }

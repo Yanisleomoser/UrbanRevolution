@@ -2727,3 +2727,30 @@ body::before {
 
 .cta-button:hover::before { transform: translateX(100%); }
 .cta-button > * { position: relative; z-index: 1; }
+
+/* ============================================================
+   A11y — skip link + landmark refinement
+   ============================================================ */
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--gradient);
+    color: white;
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-bottom-right-radius: var(--radius-sm);
+    z-index: 1001;
+    text-decoration: none;
+    transition: top var(--duration-base) var(--ease-out);
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid var(--accent-3);
+    outline-offset: 2px;
+}
+
+main { display: block; }
