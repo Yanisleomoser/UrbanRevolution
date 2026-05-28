@@ -18,7 +18,7 @@ const CONFIG = (() => {
 
     const COLORS = {
         black: '#1a1a1a',
-        white: '#fafafa',
+        white: '#ffffff',
         brown: '#7c2d12',
         blue: '#1e3a8a',
         green: '#365314',

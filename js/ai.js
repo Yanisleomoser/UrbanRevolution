@@ -190,7 +190,7 @@ const AI = (() => {
         }
       }
     }
-    return primaryColor === "#fafafa" ? "#1a1a1a" : "#fafafa";
+    return primaryColor === "#ffffff" ? "#1a1a1a" : "#ffffff";
   }
 
   function generateName(type) {
