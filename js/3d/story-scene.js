@@ -58,6 +58,8 @@ let currentAct = -1;
 let inView = true;
 let rafId = 0;
 let intersectionObserver = null; // IntersectionObserver for cleanup
+let scrollListener = null;
+let resizeListener = null;
 
 const tmp = new THREE.Color();
 
@@ -355,6 +357,27 @@ function readProgress() {
     }
 }
 
+/* ---------- cleanup ---------- */
+
+function cleanup() {
+    if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+    }
+    if (scrollListener) {
+        window.removeEventListener("scroll", scrollListener, { passive: true });
+        scrollListener = null;
+    }
+    if (resizeListener) {
+        window.removeEventListener("resize", resizeListener, { passive: true });
+        resizeListener = null;
+    }
+    if (intersectionObserver) {
+        intersectionObserver.disconnect();
+        intersectionObserver = null;
+    }
+}
+
 /* ---------- render loop ---------- */
 
 function loop() {
@@ -449,8 +472,10 @@ function mount() {
     readProgress();
     easedProgress = targetProgress;
 
-    window.addEventListener("scroll", readProgress, { passive: true });
-    window.addEventListener("resize", () => { readProgress(); resize(); }, { passive: true });
+    scrollListener = readProgress;
+    resizeListener = () => { readProgress(); resize(); };
+    window.addEventListener("scroll", scrollListener, { passive: true });
+    window.addEventListener("resize", resizeListener, { passive: true });
 
     // Pause the loop's heavy work when the section is off-screen.
     if ("IntersectionObserver" in window) {
@@ -469,8 +494,5 @@ if (document.readyState === "loading") {
     mount();
 }
 
-// Defensive: stop the loop if the page is being torn down.
-window.addEventListener("pagehide", () => {
-    if (rafId) cancelAnimationFrame(rafId);
-    if (intersectionObserver) intersectionObserver.disconnect();
-});
+// Defensive: stop the loop and remove event listeners if the page is being torn down.
+window.addEventListener("pagehide", cleanup);
