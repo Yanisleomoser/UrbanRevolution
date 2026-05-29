@@ -57,6 +57,7 @@ let easedProgress = 0;
 let currentAct = -1;
 let inView = true;
 let rafId = 0;
+let intersectionObserver = null; // IntersectionObserver for cleanup
 
 const tmp = new THREE.Color();
 
@@ -453,10 +454,10 @@ function mount() {
 
     // Pause the loop's heavy work when the section is off-screen.
     if ("IntersectionObserver" in window) {
-        const io = new IntersectionObserver((entries) => {
+        intersectionObserver = new IntersectionObserver((entries) => {
             inView = entries[0].isIntersecting;
         }, { rootMargin: "200px 0px" });
-        io.observe(section);
+        intersectionObserver.observe(section);
     }
 
     loop();
@@ -471,4 +472,5 @@ if (document.readyState === "loading") {
 // Defensive: stop the loop if the page is being torn down.
 window.addEventListener("pagehide", () => {
     if (rafId) cancelAnimationFrame(rafId);
+    if (intersectionObserver) intersectionObserver.disconnect();
 });
