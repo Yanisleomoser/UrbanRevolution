@@ -4,6 +4,21 @@
  */
 
 const Export = (() => {
+  const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+  const loc = () => (window.I18N ? window.I18N.locale() : "de-DE");
+  const matLabel = (key) => (window.I18N ? window.I18N.material(key) : key);
+  const typeLabel = (key) => (window.I18N ? window.I18N.typeLabel(key) : key);
+  const mLabel = (key) =>
+    window.I18N
+      ? window.I18N.measureLabel(key)
+      : (window.Measurements && window.Measurements.LABELS[key]) || key;
+
+  function fitLabel(fit) {
+    if (fit < 0.33) return t("fit.slim");
+    if (fit > 0.66) return t("fit.oversized");
+    return t("fit.regular");
+  }
+
   function buildSpecData(design, measurements, garmentType) {
     const size = Measurements.calculateSize(measurements);
     const fabric = Measurements.estimateFabric(measurements, garmentType);
@@ -26,7 +41,7 @@ const Export = (() => {
         garmentType,
         color: design.color,
         material: design.material,
-        fit: design.fit < 0.33 ? "Slim" : design.fit > 0.66 ? "Oversized" : "Regular",
+        fit: fitLabel(design.fit),
         size,
       },
       measurements: {
@@ -75,7 +90,7 @@ const Export = (() => {
       .filter(([k]) => k !== "unit")
       .map(
         ([k, v]) =>
-          `<tr><td>${Measurements.LABELS[k] || k}</td><td>${v} cm</td></tr>`
+          `<tr><td>${mLabel(k)}</td><td>${v} cm</td></tr>`
       )
       .join("");
 
@@ -88,7 +103,7 @@ const Export = (() => {
       .join(" ");
 
     return `<!DOCTYPE html>
-<html lang="de">
+<html lang="${loc().slice(0, 2)}">
 <head>
 <meta charset="UTF-8">
 <title>${spec.metadata.designId} — ${spec.design.name}</title>
@@ -119,43 +134,43 @@ const Export = (() => {
         </div>
         <div class="id">
             ${spec.metadata.designId}<br>
-            ${new Date(spec.metadata.generatedAt).toLocaleDateString("de-DE")}
+            ${new Date(spec.metadata.generatedAt).toLocaleDateString(loc())}
         </div>
     </div>
 
     <div class="description">"${spec.design.description}"</div>
 
-    <h2>Original Prompt</h2>
+    <h2>${t("export.original_prompt")}</h2>
     <p style="font-size: 14px; color: #444; font-style: italic;">"${spec.design.originalPrompt}"</p>
 
-    <h2>Tags</h2>
+    <h2>${t("export.tags")}</h2>
     <p>${tagsHTML || '<span class="tag">custom</span>'}</p>
 
-    <h2>Spezifikationen</h2>
+    <h2>${t("spec.specs_h4")}</h2>
     <table>
-        <tr><td>Kleidungstyp</td><td>${spec.specifications.garmentType}</td></tr>
-        <tr><td>Material</td><td>${spec.specifications.material}</td></tr>
-        <tr><td>Primärfarbe</td><td><span class="color-chip" style="background:${spec.specifications.color}"></span>${spec.specifications.color}</td></tr>
-        <tr><td>Passform</td><td>${spec.specifications.fit}</td></tr>
-        <tr><td>Konfektionsgröße</td><td>${spec.specifications.size}</td></tr>
+        <tr><td>${t("spec.type")}</td><td>${typeLabel(spec.specifications.garmentType)}</td></tr>
+        <tr><td>${t("spec.material")}</td><td>${matLabel(spec.specifications.material)}</td></tr>
+        <tr><td>${t("spec.color")}</td><td><span class="color-chip" style="background:${spec.specifications.color}"></span>${spec.specifications.color}</td></tr>
+        <tr><td>${t("spec.fit")}</td><td>${spec.specifications.fit}</td></tr>
+        <tr><td>${t("spec.size")}</td><td>${spec.specifications.size}</td></tr>
     </table>
 
-    <h2>Körpermaße</h2>
+    <h2>${t("export.body_measures")}</h2>
     <table>${measurementsHTML}</table>
 
-    <h2>Produktionsdaten</h2>
+    <h2>${t("export.production_data")}</h2>
     <table>
-        <tr><td>Geschätzte Stoffmenge</td><td>${spec.production.estimatedFabric}</td></tr>
-        <tr><td>Geschätzte Nahtlänge</td><td>${spec.production.estimatedSeamLength}</td></tr>
-        <tr><td>Produktionsdauer</td><td>${spec.production.estimatedProductionDays} Tage</td></tr>
-        <tr><td>Preisspanne</td><td>${spec.production.estimatedPriceRange.currency} ${spec.production.estimatedPriceRange.min} – ${spec.production.estimatedPriceRange.max}</td></tr>
+        <tr><td>${t("export.est_fabric")}</td><td>${spec.production.estimatedFabric}</td></tr>
+        <tr><td>${t("export.est_seams")}</td><td>${spec.production.estimatedSeamLength}</td></tr>
+        <tr><td>${t("export.duration")}</td><td>${t("est.days", { n: spec.production.estimatedProductionDays })}</td></tr>
+        <tr><td>${t("export.price_range")}</td><td>${spec.production.estimatedPriceRange.currency} ${spec.production.estimatedPriceRange.min} – ${spec.production.estimatedPriceRange.max}</td></tr>
     </table>
 
-    <h2>Schnitt-Notizen für den Schneider</h2>
+    <h2>${t("spec.notes_h4")}</h2>
     <ul>${notesHTML}</ul>
 
     <div class="footer">
-        Generiert von Urban Revolution AI Atelier · ${new Date().toLocaleString("de-DE")}
+        ${t("export.footer")} · ${new Date().toLocaleString(loc())}
     </div>
 </body>
 </html>`;
@@ -174,8 +189,8 @@ const Export = (() => {
           orderId,
           estimatedDelivery: new Date(
             Date.now() + 14 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString("de-DE"),
-          confirmation: `Auftrag ${orderId} wurde an die Produktion gesendet`,
+          ).toLocaleDateString(loc()),
+          confirmation: t("export.order_confirmation", { id: orderId }),
         });
       }, 1200);
     });

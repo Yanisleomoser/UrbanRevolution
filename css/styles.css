@@ -235,6 +235,46 @@ body {
     transform: translateY(-7px) rotate(-45deg);
 }
 
+/* Language toggle — segmented DE / EN control in the nav */
+.nav-lang-item { display: flex; align-items: center; }
+
+.lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text-dim);
+    transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.lang-toggle:hover { border-color: var(--accent); }
+
+.lang-opt {
+    padding: 2px 4px;
+    border-radius: 100px;
+    color: var(--text-dim);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+.lang-opt.is-active {
+    color: var(--text);
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.lang-sep { color: var(--border); }
+
 /* ============ HERO ============ */
 .hero {
     min-height: 100vh;
