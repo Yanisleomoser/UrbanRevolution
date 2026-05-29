@@ -1,0 +1,31 @@
+# Structural CSS validation — fails the build if css/styles.css has a
+# parse error or unintended rule nesting (the "missing brace" bug class
+# that once collapsed the whole layout). See scripts/validate-css.mjs.
+name: Validate CSS
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-css:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install validator
+        run: npm install --no-save css-tree
+
+      - name: Validate stylesheet structure
+        run: node scripts/validate-css.mjs css/styles.css
