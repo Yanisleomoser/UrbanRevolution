@@ -413,6 +413,7 @@ body {
 }
 
 .mission-orb {
+    position: absolute;
     width: 520px;
     height: 520px;
     background: var(--accent-2);
