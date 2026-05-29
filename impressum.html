@@ -24,6 +24,11 @@
                 <span class="logo-mark">UR</span>
                 <span class="logo-text">Urban Revolution</span>
             </a>
+            <button id="nav-toggle" class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-links">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
             <ul class="nav-links" id="nav-links">
                 <li><a href="index.html#design">Design</a></li>
                 <li><a href="index.html#measure">Maße</a></li>
@@ -92,5 +97,35 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Mobile nav toggle initialization for legal pages
+        (function() {
+            const toggle = document.getElementById("nav-toggle");
+            const links = document.getElementById("nav-links");
+            if (!toggle || !links) return;
+
+            const setOpen = (open) => {
+                links.classList.toggle("open", open);
+                toggle.setAttribute("aria-expanded", String(open));
+                toggle.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+            };
+
+            toggle.addEventListener("click", () => {
+                setOpen(!links.classList.contains("open"));
+            });
+
+            // Close after tapping a link or pressing Escape
+            links.querySelectorAll("a").forEach((a) =>
+                a.addEventListener("click", () => setOpen(false))
+            );
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && links.classList.contains("open")) {
+                    setOpen(false);
+                    toggle.focus();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
