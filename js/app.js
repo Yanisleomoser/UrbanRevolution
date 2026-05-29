@@ -1175,7 +1175,35 @@
     });
   }
 
+  function initMobileNav() {
+    const toggle = document.getElementById("nav-toggle");
+    const links = document.getElementById("nav-links");
+    if (!toggle || !links) return;
+
+    const setOpen = (open) => {
+      links.classList.toggle("open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+    };
+
+    toggle.addEventListener("click", () => {
+      setOpen(!links.classList.contains("open"));
+    });
+
+    // Close after tapping a link (anchor navigation) or pressing Escape.
+    links.querySelectorAll("a").forEach((a) =>
+      a.addEventListener("click", () => setOpen(false))
+    );
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && links.classList.contains("open")) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+
   function init() {
+    initMobileNav();
     initSuggestions();
     initTypeSelector();
     initColorPalette();
