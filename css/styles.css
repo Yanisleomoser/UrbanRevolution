@@ -418,7 +418,6 @@ body {
     66% { transform: translate(-30px, 30px); }
 }
 
-/* ============ MISSION (pinned scroll story) ============ */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -431,27 +430,41 @@ body {
     border: 0;
 }
 
-.mission {
+/* ============ VISUAL SCROLL STORY (pinned WebGL, 3 acts) ============ */
+/* Self-contained design system per the editorial brief: pure void black,
+   pure-white body, Poppins for facts/UI, Lora Italic for couture
+   statements. The brand gradient is reserved for hero words only. Scoped
+   to .story so the rest of the site keeps its Inter/Playfair tokens. */
+.story {
+    --void: #0A0A0C;
+    --story-card: #121214;
+    --story-elevated: #161614;
+    --pure: #FFFFFF;
+    --story-gradient: linear-gradient(115deg, #EC4899 0%, #A855F7 52%, #3B82F6 100%);
     position: relative;
-    background: var(--bg);
+    background: var(--void);
 }
 
-/* Tall track = scroll distance (~112vh per beat across 4 beats). */
-.mission-track {
-    height: 450vh;
+/* Tall track = scroll distance. ~133vh per act across 3 acts. */
+.story-track {
+    height: 400vh;
 }
 
-/* Pinned stage stays in view while the track scrolls past. */
-.mission-stage {
+/* Pinned stage holds the WebGL canvas in view while the track scrolls. */
+.story-stage {
     position: sticky;
-    top: 73px;
-    height: calc(100vh - 73px);
-    display: grid;
-    place-items: center;
+    top: 0;
+    height: 100vh;
     overflow: hidden;
-    text-align: center;
+    background: var(--void);
 }
 
+.story-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
 .mission-orb {
     position: absolute;
     width: 520px;
@@ -466,117 +479,201 @@ body {
     animation: none;
 }
 
-/* Beats stack in the same grid cell and crossfade. */
-.mission-beat {
-    grid-area: 1 / 1;
-    max-width: 720px;
-    padding: 0 var(--space-6);
+/* Bottom scrim keeps the lower-third text legible over the particles. */
+.story-scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        rgba(10, 10, 12, 0.55) 0%,
+        rgba(10, 10, 12, 0) 28%,
+        rgba(10, 10, 12, 0) 45%,
+        rgba(10, 10, 12, 0.82) 100%
+    );
+}
+
+/* Text acts — left-aligned, lower third, generous white space above.
+   High-end fashion editorial, not an ad banner. */
+.story-acts {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-8) clamp(48px, 9vh, 110px);
+}
+
+.story-act {
+    position: absolute;
+    left: var(--space-8);
+    right: auto;
+    bottom: clamp(48px, 9vh, 110px);
+    width: min(680px, calc(100% - var(--space-8) * 2));
+    text-align: left;
     opacity: 0;
-    transform: translateY(40px) scale(0.98);
-    transition: opacity var(--duration-base) var(--ease-out),
-                transform var(--duration-base) var(--ease-out);
+    transform: translateY(28px);
+    transition: opacity var(--duration-slow) var(--ease-out),
+                transform var(--duration-slow) var(--ease-out);
     will-change: opacity, transform;
     pointer-events: none;
 }
 
-.mission-beat.is-active {
+.story-act.is-active {
     opacity: 1;
     transform: none;
     pointer-events: auto;
 }
 
-.mission-eyebrow {
+.story-kicker {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
     font-size: var(--text-sm);
-    font-weight: 600;
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: var(--space-4);
-}
-
-.mission-beat-title {
-    font-family: 'Playfair Display', serif;
-    font-size: var(--text-3xl);
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-tight);
+    color: var(--text-dim);
     margin-bottom: var(--space-5);
 }
 
-.mission-beat-body {
-    font-size: var(--text-lg);
-    line-height: var(--leading-normal);
-    color: var(--text-dim);
-    max-width: 600px;
-    margin: 0 auto var(--space-6);
-    text-wrap: pretty;
+.story-headline {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: clamp(26px, 4vw, 52px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--pure);
+    margin-bottom: var(--space-5);
+    text-wrap: balance;
 }
 
-.mission-stat {
-    font-size: var(--text-md);
-    color: var(--text-muted);
-    letter-spacing: var(--tracking-tight);
+.story-statement {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(28px, 4.6vw, 60px);
+    line-height: 1.1;
+    color: var(--pure);
 }
 
-.mission-stat-num {
-    background: var(--gradient);
+/* Gradient reserved for the single "loaded" hero word/line. */
+.story-statement.is-gradient {
+    background: var(--story-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    font-weight: 800;
-    font-size: var(--text-xl);
-    display: inline-block;
-    margin-right: var(--space-2);
 }
 
-.mission-cta {
+/* Ultra-premium outline button with a restrained gradient glow. */
+.story-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     margin-top: var(--space-7);
-}
-
-/* Progress affordance — one dot per beat. */
-.mission-progress {
-    position: absolute;
-    bottom: var(--space-8);
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: var(--space-3);
-}
-
-.mission-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border);
-    transition: background var(--duration-base) var(--ease-out),
+    padding: var(--space-4) var(--space-6);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: var(--text-sm);
+    letter-spacing: 0.02em;
+    color: var(--pure);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    transition: border-color var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out),
                 transform var(--duration-base) var(--ease-out);
 }
 
-.mission-dot.is-active {
-    background: var(--accent-2);
-    transform: scale(1.4);
+.story-cta:hover {
+    border-color: rgba(168, 85, 247, 0.8);
+    box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.35),
+                0 8px 40px rgba(168, 85, 247, 0.28);
+    transform: translateY(-1px);
 }
 
-/* Reduced motion / no-pin: flatten to a normal stacked section. */
+.story-cta span { transition: transform var(--duration-base) var(--ease-out); }
+.story-cta:hover span { transform: translateX(4px); }
+
+/* Persistent footer — UR monogram + page numbering, deliberately quiet. */
+.story-foot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: clamp(20px, 4vh, 36px) var(--space-8);
+    font-family: 'Poppins', sans-serif;
+    pointer-events: none;
+}
+
+.story-mono {
+    font-weight: 600;
+    font-size: var(--text-md);
+    letter-spacing: 0.12em;
+    color: var(--pure);
+    opacity: 0.85;
+}
+
+.story-page {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-dim);
+}
+
+.story-page [data-act-num] { color: var(--pure); }
+
+/* Reduced motion / no WebGL: un-pin, hide canvas, stack acts statically
+   so the narrative stays fully readable. */
 @media (prefers-reduced-motion: reduce) {
-    .mission-track { height: auto; }
-    .mission-stage {
+    .story-track { height: auto; }
+    .story-stage {
         position: static;
         height: auto;
-        display: block;
-        padding: var(--space-12) 0;
         overflow: visible;
+        padding: var(--space-11) 0;
     }
-    .mission-beat {
+    .story-canvas,
+    .story-scrim,
+    .story-foot { display: none; }
+    .story-acts {
         position: static;
+        padding: 0 var(--space-8);
+    }
+    .story-act {
+        position: static;
+        left: auto;
+        right: auto;
         opacity: 1;
         transform: none;
         pointer-events: auto;
-        max-width: 720px;
-        margin: 0 auto var(--space-11);
+        margin-bottom: var(--space-11);
     }
-    .mission-progress,
-    .mission-orb { display: none; }
+}
+
+.story.no-webgl .story-canvas { display: none; }
+.story.no-webgl .story-stage {
+    position: static;
+    height: auto;
+    overflow: visible;
+    padding: var(--space-11) 0;
+}
+.story.no-webgl .story-track { height: auto; }
+.story.no-webgl .story-foot { display: none; }
+.story.no-webgl .story-acts { position: static; padding: 0 var(--space-8); }
+.story.no-webgl .story-act {
+    position: static;
+    left: auto;
+    right: auto;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    margin-bottom: var(--space-11);
 }
 
 /* ============ WORKFLOW STEP TRACKER ============ */
@@ -2199,10 +2296,11 @@ select:focus {
     /* Step tracker — scrollable horizontally so it doesn't crunch */
     .workflow { padding: var(--space-5) 0; top: 60px; }
 
-    /* Mission story — shorter track + align pin with mobile navbar */
-    .mission-track { height: 340vh; }
-    .mission-stage { top: 60px; height: calc(100vh - 60px); }
-    .mission-orb { width: 340px; height: 340px; margin: -170px 0 0 -170px; }
+    /* Scroll story — shorter track + tighter editorial padding on mobile */
+    .story-track { height: 320vh; }
+    .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
+    .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
+    .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }
     .step-tracker {
         gap: var(--space-3);
         flex-wrap: nowrap;
