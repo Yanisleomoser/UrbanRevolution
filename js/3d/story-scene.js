@@ -2,39 +2,41 @@
  * Urban Revolution — Visual Scroll Story (WebGL stage)
  *
  * One GPU particle system (a single BufferGeometry of points) morphs
- * through three target formations as the user scrolls the pinned story
- * section. This makes the brand's "alchemical transformation" literal:
+ * through SIX target formations as the user scrolls the pinned story
+ * section — each formation visualises its act's text 1:1:
  *
- *   Act I  — a dull heap of clothing waste + PET bottles  (formation A)
- *   Act II — bottles dissolve into flowing silk threads    (formation B)
- *   Act III— threads weave into a tailored figure + jacket (formation C)
+ *   I   Overproduction → a chaotic heap of discarded garments
+ *   II  Injustice      → waves washing waste onto a foreign shore
+ *   III Ecosystem      → pervasive microplastic rain filling the field
+ *   IV  The human      → a lone figure dwarfed by a looming waste mound
+ *   V   Belief         → chaos resolves into flowing silk threads
+ *   VI  Vision         → threads weave a tailored figure; the jacket glows
  *
- * Scroll progress (0→1) is read passively from the section's track and
- * eased toward each frame, so the morph scrubs buttery-smooth regardless
- * of how the scroll events fire. Visuals (positions + colors) are the
- * only thing driven; the text acts are toggled via `.is-active` classes.
- *
- * Self-contained ES module — imports `three` from the import map (shared
- * with js/3d/controller.js). Mounts after DOMContentLoaded into
- * #story-canvas. Degrades gracefully:
- *   - prefers-reduced-motion → skipped entirely (CSS shows static acts)
- *   - no WebGL                → `.no-webgl` class, CSS shows static acts
+ * Scroll progress (0→1) is read passively and eased per frame, so the
+ * morph scrubs smoothly. Each act's centre shows its pure formation;
+ * transitions happen across act boundaries. Text acts are toggled via
+ * `.is-active`. Self-contained ES module (imports `three` from the import
+ * map). Degrades gracefully: prefers-reduced-motion / no-WebGL → CSS
+ * shows static, readable acts.
  */
 
 import * as THREE from "three";
 
 const COUNT = 7000;          // particle count — mobile-safe, dense enough
-const THREADS = 52;          // silk threads in formation B
-const EASE = 0.075;          // scroll-progress smoothing per frame
+const THREADS = 52;          // silk threads in the "belief" formation
+const EASE = 0.07;           // scroll-progress smoothing per frame
 
 // Brand gradient stops (the editorial palette).
 const C_PINK = new THREE.Color("#EC4899");
 const C_PURPLE = new THREE.Color("#A855F7");
 const C_BLUE = new THREE.Color("#3B82F6");
-// Dull, desaturated waste tones for Act I.
+// Mood palette for the dark acts.
 const C_WASTE_LO = new THREE.Color("#2c2c30");
 const C_WASTE_HI = new THREE.Color("#5b554c");
-const C_DIM = new THREE.Color("#8a8f99"); // non-jacket body in Act III
+const C_SEA = new THREE.Color("#22323d");   // cold, desaturated water
+const C_TOXIC = new THREE.Color("#2f6b5f"); // sickly microplastic teal
+const C_SKIN = new THREE.Color("#7a6253");  // dim, human warmth
+const C_DIM = new THREE.Color("#8a8f99");   // quiet (non-jacket) body
 
 let renderer = null;
 let scene = null;
@@ -43,25 +45,25 @@ let points = null;
 let halo = null;
 let group = null;
 
-let posA, posB, posC;        // Float32Array(COUNT*3) target positions
-let colA, colB, colC;        // Float32Array(COUNT*3) target colors
-let jacket;                  // Uint8Array(COUNT) — 1 if jacket particle (Act III)
+let formations = [];         // [{ pos:Float32Array, col:Float32Array }, …]
+let jacketMask = null;       // Uint8Array(COUNT) — 1 for jacket particles (act VI)
 let posAttr, colAttr;        // live BufferAttributes
 
-let track = null;            // the .story-track element
-let acts = [];               // .story-act elements
-let actNumEl = null;         // [data-act-num] page number
+let track = null;
+let acts = [];
+let actNumEl = null;
 
 let targetProgress = 0;
 let easedProgress = 0;
 let currentAct = -1;
 let inView = true;
 let rafId = 0;
-let intersectionObserver = null; // IntersectionObserver for cleanup
+let intersectionObserver = null;
 let scrollListener = null;
 let resizeListener = null;
 
 const tmp = new THREE.Color();
+const vec = new THREE.Vector3();
 
 /* ---------- helpers ---------- */
 
@@ -69,175 +71,184 @@ function rand(min, max) {
     return min + Math.random() * (max - min);
 }
 
-// Color sampled along the brand gradient (t: 0=pink → 0.52=purple → 1=blue).
+function smoothstep(x) {
+    x = THREE.MathUtils.clamp(x, 0, 1);
+    return x * x * (3 - 2 * x);
+}
+
+// Color along the brand gradient (t: 0=pink → 0.52=purple → 1=blue).
 function gradientColor(t, out) {
-    if (t < 0.52) {
-        out.copy(C_PINK).lerp(C_PURPLE, t / 0.52);
-    } else {
-        out.copy(C_PURPLE).lerp(C_BLUE, (t - 0.52) / 0.48);
-    }
+    if (t < 0.52) out.copy(C_PINK).lerp(C_PURPLE, t / 0.52);
+    else out.copy(C_PURPLE).lerp(C_BLUE, (t - 0.52) / 0.48);
     return out;
 }
 
-/* ---------- formation builders ---------- */
-
-// Formation A — a chaotic, dramatically-lit waste mound emerging from black.
-function buildWaste() {
-    posA = new Float32Array(COUNT * 3);
-    colA = new Float32Array(COUNT * 3);
-    for (let i = 0; i < COUNT; i++) {
-        const a = rand(0, Math.PI * 2);
-        const rad = Math.sqrt(Math.random()) * 2.7;     // denser core
-        const mound = 1 - rad / 2.7;                    // peak in the middle
-        const x = Math.cos(a) * rad;
-        const z = Math.sin(a) * rad * 0.6;              // flattened depth
-        const y = -2.3 + mound * 2.6 * Math.random() + rand(-0.28, 0.28);
-
-        posA[i * 3] = x;
-        posA[i * 3 + 1] = y;
-        posA[i * 3 + 2] = z;
-
-        // Mostly dull waste; a faint few hint at PET-bottle blue/green.
-        if (Math.random() < 0.06) {
-            tmp.copy(C_BLUE).lerp(C_WASTE_HI, 0.55).multiplyScalar(0.5);
-        } else {
-            tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random());
-            tmp.multiplyScalar(rand(0.55, 1.0)); // dramatic light falloff
-        }
-        colA[i * 3] = tmp.r;
-        colA[i * 3 + 1] = tmp.g;
-        colA[i * 3 + 2] = tmp.b;
-    }
+function alloc() {
+    return { pos: new Float32Array(COUNT * 3), col: new Float32Array(COUNT * 3) };
 }
 
-// Formation B — fine, flowing vertical silk threads in the brand gradient.
-function buildThreads() {
-    posB = new Float32Array(COUNT * 3);
-    colB = new Float32Array(COUNT * 3);
-    for (let i = 0; i < COUNT; i++) {
-        const thread = i % THREADS;
-        const baseX = ((thread / (THREADS - 1)) - 0.5) * 5.4;   // spread across width
-        const phase = thread * 1.7;
-        const p = Math.random();                                // 0..1 up the thread
-        const y = -2.8 + p * 5.6;
-        const wave = Math.sin(p * Math.PI * 2.2 + phase);
-        const x = baseX + wave * 0.32 + rand(-0.04, 0.04);
-        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
-
-        posB[i * 3] = x;
-        posB[i * 3 + 1] = y;
-        posB[i * 3 + 2] = z;
-
-        gradientColor(p, tmp);
-        colB[i * 3] = tmp.r;
-        colB[i * 3 + 1] = tmp.g;
-        colB[i * 3 + 2] = tmp.b;
-    }
+function set(f, i, x, y, z, c) {
+    f.pos[i * 3] = x; f.pos[i * 3 + 1] = y; f.pos[i * 3 + 2] = z;
+    f.col[i * 3] = c.r; f.col[i * 3 + 1] = c.g; f.col[i * 3 + 2] = c.b;
 }
 
-// Sample a point near a line segment (a "limb" capsule) with radial jitter.
+// A point near a line segment (a limb capsule) with radial jitter.
 function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
     const t = Math.random();
-    out.x = ax + (bx - ax) * t + rand(-radius, radius);
-    out.y = ay + (by - ay) * t + rand(-radius, radius);
-    out.z = az + (bz - az) * t + rand(-radius, radius);
+    out.set(
+        ax + (bx - ax) * t + rand(-radius, radius),
+        ay + (by - ay) * t + rand(-radius, radius),
+        az + (bz - az) * t + rand(-radius, radius),
+    );
 }
 
-// Formation C — a floating tailored figure; the jacket region glows.
-function buildFigure() {
-    posC = new Float32Array(COUNT * 3);
-    colC = new Float32Array(COUNT * 3);
-    jacket = new Uint8Array(COUNT);
+// Sample a random point on a standing humanoid; returns the body part so
+// callers can colour the jacket region. Figure spans y ≈ -2.25 … 2.1.
+function sampleHuman(out) {
+    const r = Math.random();
+    if (r < 0.1) {
+        const a = rand(0, Math.PI * 2);
+        const b = Math.acos(rand(-1, 1));
+        const rr = 0.32 * Math.cbrt(Math.random());
+        out.set(Math.sin(b) * Math.cos(a) * rr, 1.78 + Math.cos(b) * rr, Math.sin(b) * Math.sin(a) * rr);
+        return "head";
+    }
+    if (r < 0.5) {
+        const ty = rand(0.45, 1.55);
+        const taper = 0.5 + (ty - 0.45) / 1.1 * 0.18; // wider shoulders, nipped waist
+        out.set(rand(-taper, taper), ty, rand(-0.28, 0.28));
+        return "torso";
+    }
+    if (r < 0.72) {
+        const side = Math.random() < 0.5 ? -1 : 1;
+        pointOnSegment(side * 0.58, 1.45, 0, side * 0.82, 0.45, 0.05, 0.12, out);
+        return "arms";
+    }
+    const side = Math.random() < 0.5 ? -1 : 1;
+    pointOnSegment(side * 0.2, 0.45, 0, side * 0.26, -2.25, 0, 0.14, out);
+    return "legs";
+}
 
-    // Cumulative distribution of body parts.
-    const parts = [
-        { name: "head", frac: 0.08, jacket: 0 },
-        { name: "torso", frac: 0.34, jacket: 1 },
-        { name: "arms", frac: 0.18, jacket: 1 },
-        { name: "legs", frac: 0.28, jacket: 0 },
-        { name: "halo", frac: 0.12, jacket: 1 }, // floating motes around the jacket
-    ];
+/* ---------- the six formations ---------- */
 
-    const v = new THREE.Vector3();
-    let idx = 0;
-    for (const part of parts) {
-        const n = Math.round(part.frac * COUNT);
-        for (let k = 0; k < n && idx < COUNT; k++, idx++) {
-            switch (part.name) {
-                case "head": {
-                    const a = rand(0, Math.PI * 2);
-                    const b = Math.acos(rand(-1, 1));
-                    const r = 0.33 * Math.cbrt(Math.random());
-                    v.set(
-                        Math.sin(b) * Math.cos(a) * r,
-                        1.78 + Math.cos(b) * r,
-                        Math.sin(b) * Math.sin(a) * r,
-                    );
-                    break;
-                }
-                case "torso": {
-                    // tapered jacket body: wider shoulders, nipped waist
-                    const ty = rand(0.45, 1.5);
-                    const taper = 0.5 + (ty - 0.45) / (1.5 - 0.45) * 0.18;
-                    v.set(rand(-taper, taper), ty, rand(-0.28, 0.28));
-                    break;
-                }
-                case "arms": {
-                    const side = Math.random() < 0.5 ? -1 : 1;
-                    pointOnSegment(
-                        side * 0.58, 1.42, 0,
-                        side * 0.82, 0.45, 0.05,
-                        0.12, v,
-                    );
-                    break;
-                }
-                case "legs": {
-                    const side = Math.random() < 0.5 ? -1 : 1;
-                    pointOnSegment(
-                        side * 0.2, 0.42, 0,
-                        side * 0.26, -2.25, 0,
-                        0.14, v,
-                    );
-                    break;
-                }
-                default: { // halo motes drifting around the jacket
-                    const a = rand(0, Math.PI * 2);
-                    const r = rand(0.9, 1.7);
-                    v.set(Math.cos(a) * r, rand(0.6, 1.6), Math.sin(a) * r - 0.1);
-                }
-            }
+// I — Overproduction: a chaotic mound of discarded garments.
+function buildHeap() {
+    const f = alloc();
+    for (let i = 0; i < COUNT; i++) {
+        const a = rand(0, Math.PI * 2);
+        const rad = Math.sqrt(Math.random()) * 2.7;
+        const mound = 1 - rad / 2.7;
+        const y = -2.3 + mound * 2.6 * Math.random() + rand(-0.28, 0.28);
+        if (Math.random() < 0.06) tmp.copy(C_BLUE).lerp(C_WASTE_HI, 0.55).multiplyScalar(0.5);
+        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.55, 1));
+        set(f, i, Math.cos(a) * rad, y, Math.sin(a) * rad * 0.6, tmp);
+    }
+    return f;
+}
 
-            posC[idx * 3] = v.x;
-            posC[idx * 3 + 1] = v.y;
-            posC[idx * 3 + 2] = v.z;
-            jacket[idx] = part.jacket;
-
-            if (part.jacket) {
-                // Gradient by height across the figure → the couture jacket.
-                const t = THREE.MathUtils.clamp((v.y + 2.3) / 4.3, 0, 1);
-                gradientColor(t, tmp);
-                if (part.name === "halo") tmp.multiplyScalar(0.6);
-            } else {
-                tmp.copy(C_DIM).multiplyScalar(rand(0.35, 0.6)); // quiet body
-            }
-            colC[idx * 3] = tmp.r;
-            colC[idx * 3 + 1] = tmp.g;
-            colC[idx * 3 + 2] = tmp.b;
+// II — Injustice: a cold sea, and our cast-offs washed up on a foreign shore.
+function buildShore() {
+    const f = alloc();
+    for (let i = 0; i < COUNT; i++) {
+        if (Math.random() < 0.58) {
+            // undulating sea surface, spread wide to the horizon
+            const x = rand(-3.6, 3.6);
+            const z = rand(-1.8, 1.8);
+            const y = -1.9 + Math.sin(x * 1.2) * 0.22 + Math.sin(z * 1.7 + x) * 0.14 + rand(-0.07, 0.07);
+            tmp.copy(C_SEA).multiplyScalar(rand(0.5, 1));
+            set(f, i, x, y, z, tmp);
+        } else {
+            // a heap of waste beached on the right — someone else's coast
+            const a = rand(0, Math.PI * 2);
+            const rad = Math.sqrt(Math.random()) * 1.5;
+            const y = -1.7 + (1 - rad / 1.5) * 1.5 * Math.random() + rand(-0.14, 0.14);
+            tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.5, 0.95));
+            set(f, i, 2.1 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.7, tmp);
         }
     }
-    // Fill any rounding remainder by repeating the last point.
-    for (; idx < COUNT; idx++) {
-        posC[idx * 3] = posC[(idx - 1) * 3];
-        posC[idx * 3 + 1] = posC[(idx - 1) * 3 + 1];
-        posC[idx * 3 + 2] = posC[(idx - 1) * 3 + 2];
-        colC[idx * 3] = colC[(idx - 1) * 3];
-        colC[idx * 3 + 1] = colC[(idx - 1) * 3 + 1];
-        colC[idx * 3 + 2] = colC[(idx - 1) * 3 + 2];
-        jacket[idx] = jacket[idx - 1];
-    }
+    return f;
 }
 
-// Soft round sprite so particles read as glowing motes, not hard squares.
+// III — Ecosystem: pervasive microplastic, everywhere — rain, fish, blood.
+function buildRain() {
+    const f = alloc();
+    for (let i = 0; i < COUNT; i++) {
+        const x = rand(-3.6, 3.6);
+        const y = rand(-3, 3);
+        const z = rand(-2, 2);
+        tmp.copy(C_TOXIC).multiplyScalar(rand(0.3, 0.9));
+        set(f, i, x, y, z, tmp);
+    }
+    return f;
+}
+
+// IV — The human: a lone figure on the left, dwarfed by a looming mound.
+function buildLoneHuman() {
+    const f = alloc();
+    for (let i = 0; i < COUNT; i++) {
+        if (Math.random() < 0.4) {
+            sampleHuman(vec);
+            vec.multiplyScalar(0.62);      // small, vulnerable
+            vec.x -= 1.8; vec.y -= 0.25;
+            tmp.copy(C_SKIN).multiplyScalar(rand(0.4, 0.72));
+            set(f, i, vec.x, vec.y, vec.z, tmp);
+        } else {
+            const a = rand(0, Math.PI * 2);
+            const rad = Math.sqrt(Math.random()) * 2.1;
+            const y = -2.2 + (1 - rad / 2.1) * 3.4 * Math.random() + rand(-0.2, 0.2);
+            tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random() * 0.6).multiplyScalar(rand(0.4, 0.8));
+            set(f, i, 1.7 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.6, tmp);
+        }
+    }
+    return f;
+}
+
+// V — Belief: chaos resolves into fine, flowing silk threads (the gradient).
+function buildThreads() {
+    const f = alloc();
+    for (let i = 0; i < COUNT; i++) {
+        const thread = i % THREADS;
+        const baseX = ((thread / (THREADS - 1)) - 0.5) * 5.4;
+        const phase = thread * 1.7;
+        const p = Math.random();
+        const y = -2.8 + p * 5.6;
+        const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.32 + rand(-0.04, 0.04);
+        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
+        gradientColor(p, tmp);
+        set(f, i, x, y, z, tmp);
+    }
+    return f;
+}
+
+// VI — Vision: a tailored figure; the jacket region carries the glowing gradient.
+function buildFigure() {
+    const f = alloc();
+    jacketMask = new Uint8Array(COUNT);
+    for (let i = 0; i < COUNT; i++) {
+        let part;
+        if (Math.random() < 0.12) {
+            const a = rand(0, Math.PI * 2);
+            const rr = rand(0.9, 1.7);
+            vec.set(Math.cos(a) * rr, rand(0.6, 1.6), Math.sin(a) * rr - 0.1);
+            part = "halo";
+        } else {
+            part = sampleHuman(vec);
+        }
+        const isJacket = part === "torso" || part === "arms" || part === "halo";
+        jacketMask[i] = isJacket ? 1 : 0;
+        if (isJacket) {
+            gradientColor(THREE.MathUtils.clamp((vec.y + 2.3) / 4.3, 0, 1), tmp);
+            if (part === "halo") tmp.multiplyScalar(0.6);
+        } else {
+            tmp.copy(C_DIM).multiplyScalar(rand(0.35, 0.6));
+        }
+        set(f, i, vec.x, vec.y, vec.z, tmp);
+    }
+    return f;
+}
+
+/* ---------- sprites ---------- */
+
 function makeSprite() {
     const s = 64;
     const c = document.createElement("canvas");
@@ -254,7 +265,6 @@ function makeSprite() {
     return tex;
 }
 
-// Large additive halo behind the jacket — the pulsing gradient glow (Act III).
 function makeHalo() {
     const s = 256;
     const c = document.createElement("canvas");
@@ -267,14 +277,13 @@ function makeHalo() {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, s, s);
     const tex = new THREE.CanvasTexture(c);
-    const mat = new THREE.SpriteMaterial({
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
         map: tex,
         blending: THREE.AdditiveBlending,
         transparent: true,
         depthWrite: false,
         opacity: 0,
-    });
-    const sprite = new THREE.Sprite(mat);
+    }));
     sprite.scale.set(6, 6, 1);
     sprite.position.set(0, 0.9, -0.5);
     return sprite;
@@ -282,54 +291,35 @@ function makeHalo() {
 
 /* ---------- per-frame morph ---------- */
 
-function smoothstep(x) {
-    x = THREE.MathUtils.clamp(x, 0, 1);
-    return x * x * (3 - 2 * x);
-}
-
 function updateMorph(time) {
     const p = easedProgress;
+    const NF = formations.length;
 
-    // Emotional pacing: the waste heap lingers through the dark "problem"
-    // acts; the transformation into silk threads, then a tailored figure,
-    // only resolves late — a hard-won payoff. mprog (0→1) drives the morph
-    // A(waste) → B(threads) → C(figure) on a delayed schedule vs. scroll.
-    let mprog;
-    if (p < 0.55) {
-        mprog = 0;
-    } else if (p < 0.78) {
-        mprog = 0.5 * smoothstep((p - 0.55) / 0.23);
-    } else {
-        mprog = 0.5 + 0.5 * smoothstep((p - 0.78) / 0.22);
-    }
+    // Each act centre shows its pure formation; boundaries cross-fade.
+    const fp = THREE.MathUtils.clamp(p * acts.length - 0.5, 0, NF - 1);
+    const i = Math.floor(fp);
+    const local = smoothstep(fp - i);
+    const A = formations[i];
+    const B = formations[Math.min(i + 1, NF - 1)];
 
-    let from, to, fromC, toC, local;
-    if (mprog < 0.5) {
-        from = posA; to = posB; fromC = colA; toC = colB;
-        local = mprog / 0.5;
-    } else {
-        from = posB; to = posC; fromC = colB; toC = colC;
-        local = (mprog - 0.5) / 0.5;
-    }
-
-    const toFigure = mprog >= 0.5;
+    // How fully the closing "figure" formation has resolved (for the glow).
+    const figureAmt = THREE.MathUtils.clamp(fp - (NF - 2), 0, 1);
     const pulse = 1 + Math.sin(time * 2.2) * 0.18;
+
     const pos = posAttr.array;
     const col = colAttr.array;
+    for (let k = 0; k < COUNT; k++) {
+        const j = k * 3;
+        // morph position + a faint per-particle shimmer so it always breathes
+        pos[j] = A.pos[j] + (B.pos[j] - A.pos[j]) * local + Math.sin(time * 0.7 + k) * 0.015;
+        pos[j + 1] = A.pos[j + 1] + (B.pos[j + 1] - A.pos[j + 1]) * local + Math.cos(time * 0.6 + k * 1.3) * 0.015;
+        pos[j + 2] = A.pos[j + 2] + (B.pos[j + 2] - A.pos[j + 2]) * local;
 
-    for (let i = 0; i < COUNT; i++) {
-        const j = i * 3;
-        pos[j] = from[j] + (to[j] - from[j]) * local;
-        pos[j + 1] = from[j + 1] + (to[j + 1] - from[j + 1]) * local;
-        pos[j + 2] = from[j + 2] + (to[j + 2] - from[j + 2]) * local;
-
-        let r = fromC[j] + (toC[j] - fromC[j]) * local;
-        let g = fromC[j + 1] + (toC[j + 1] - fromC[j + 1]) * local;
-        let b = fromC[j + 2] + (toC[j + 2] - fromC[j + 2]) * local;
-
-        // Jacket particles pulse as the figure resolves (Act III glow).
-        if (toFigure && jacket[i]) {
-            const amt = 1 + (pulse - 1) * local;
+        let r = A.col[j] + (B.col[j] - A.col[j]) * local;
+        let g = A.col[j + 1] + (B.col[j + 1] - A.col[j + 1]) * local;
+        let b = A.col[j + 2] + (B.col[j + 2] - A.col[j + 2]) * local;
+        if (jacketMask[k] && figureAmt > 0) {
+            const amt = 1 + (pulse - 1) * figureAmt;
             r *= amt; g *= amt; b *= amt;
         }
         col[j] = r; col[j + 1] = g; col[j + 2] = b;
@@ -337,22 +327,21 @@ function updateMorph(time) {
     posAttr.needsUpdate = true;
     colAttr.needsUpdate = true;
 
-    // Halo fades/pulses in only as the figure resolves.
-    const haloAmt = smoothstep((mprog - 0.6) / 0.4);
-    halo.material.opacity = haloAmt * (0.6 + Math.sin(time * 2.2) * 0.18);
+    halo.material.opacity = (figureAmt * figureAmt) * (0.6 + Math.sin(time * 2.2) * 0.18);
 
-    // Gentle life: slow sway + a touch of progress-driven rotation.
-    group.rotation.y = Math.sin(time * 0.12) * 0.16 + p * 0.25;
+    group.rotation.y = Math.sin(time * 0.12) * 0.14 + p * 0.2;
 
-    // Subtle camera dolly: pull in as the vision resolves.
-    camera.position.z = 7.6 - p * 1.7;
+    // Camera: pull in as the vision resolves; back off on narrow viewports
+    // so the wide sea/rain formations stay in frame.
+    const zBase = camera.aspect < 1 ? 10.5 : 7.8;
+    camera.position.z = zBase - p * 1.4;
     camera.lookAt(0, -0.1 + p * 0.2, 0);
 }
 
 /* ---------- scroll + acts ---------- */
 
 function setAct(idx) {
-    acts.forEach((el, i) => el.classList.toggle("is-active", i === idx));
+    acts.forEach((el, k) => el.classList.toggle("is-active", k === idx));
     if (actNumEl) actNumEl.textContent = String(idx + 1).padStart(2, "0");
 }
 
@@ -360,39 +349,23 @@ function readProgress() {
     const rect = track.getBoundingClientRect();
     const scrollable = rect.height - window.innerHeight;
     if (scrollable <= 0) return;
-    const p = THREE.MathUtils.clamp(-rect.top / scrollable, 0, 1);
-    targetProgress = p;
+    targetProgress = THREE.MathUtils.clamp(-rect.top / scrollable, 0, 1);
 
-    // Evenly divide the scroll track across however many acts exist.
-    const idx = Math.min(acts.length - 1, Math.floor(p * acts.length));
+    const idx = Math.min(acts.length - 1, Math.floor(targetProgress * acts.length));
     if (idx !== currentAct) {
         currentAct = idx;
         setAct(idx);
     }
 }
 
-/* ---------- cleanup ---------- */
+/* ---------- cleanup / loop / resize ---------- */
 
 function cleanup() {
-    if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = 0;
-    }
-    if (scrollListener) {
-        window.removeEventListener("scroll", scrollListener, { passive: true });
-        scrollListener = null;
-    }
-    if (resizeListener) {
-        window.removeEventListener("resize", resizeListener, { passive: true });
-        resizeListener = null;
-    }
-    if (intersectionObserver) {
-        intersectionObserver.disconnect();
-        intersectionObserver = null;
-    }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    if (scrollListener) { window.removeEventListener("scroll", scrollListener, { passive: true }); scrollListener = null; }
+    if (resizeListener) { window.removeEventListener("resize", resizeListener, { passive: true }); resizeListener = null; }
+    if (intersectionObserver) { intersectionObserver.disconnect(); intersectionObserver = null; }
 }
-
-/* ---------- render loop ---------- */
 
 function loop() {
     rafId = requestAnimationFrame(loop);
@@ -418,10 +391,9 @@ function mount() {
     const canvas = document.getElementById("story-canvas");
     if (!section || !canvas) return;
 
-    // Respect reduced-motion: skip WebGL entirely; CSS shows static acts.
     if (window.matchMedia &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        return;
+        return; // CSS shows static acts
     }
 
     track = section.querySelector("[data-story]");
@@ -429,7 +401,6 @@ function mount() {
     actNumEl = section.querySelector("[data-act-num]");
     if (!track || acts.length < 2) return;
 
-    // Reflect the real act count in the "01 / NN" page indicator.
     const totalEl = section.querySelector("[data-act-total]");
     if (totalEl) totalEl.textContent = String(acts.length).padStart(2, "0");
 
@@ -441,7 +412,6 @@ function mount() {
             powerPreference: "high-performance",
         });
     } catch (err) {
-        // No WebGL → fall back to the static, fully-readable layout.
         section.classList.add("no-webgl");
         console.warn("[story-scene] WebGL unavailable:", err && err.message);
         return;
@@ -451,18 +421,24 @@ function mount() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0a0c, 0.075);
+    scene.fog = new THREE.FogExp2(0x0a0a0c, 0.07);
 
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 0, 7.6);
+    camera.position.set(0, 0, 7.8);
 
-    buildWaste();
-    buildThreads();
-    buildFigure();
+    // One formation per act, in narrative order.
+    formations = [
+        buildHeap(),
+        buildShore(),
+        buildRain(),
+        buildLoneHuman(),
+        buildThreads(),
+        buildFigure(), // sets jacketMask
+    ];
 
     const geo = new THREE.BufferGeometry();
-    posAttr = new THREE.BufferAttribute(new Float32Array(posA), 3);
-    colAttr = new THREE.BufferAttribute(new Float32Array(colA), 3);
+    posAttr = new THREE.BufferAttribute(new Float32Array(formations[0].pos), 3);
+    colAttr = new THREE.BufferAttribute(new Float32Array(formations[0].col), 3);
     posAttr.setUsage(THREE.DynamicDrawUsage);
     colAttr.setUsage(THREE.DynamicDrawUsage);
     geo.setAttribute("position", posAttr);
@@ -495,7 +471,6 @@ function mount() {
     window.addEventListener("scroll", scrollListener, { passive: true });
     window.addEventListener("resize", resizeListener, { passive: true });
 
-    // Pause the loop's heavy work when the section is off-screen.
     if ("IntersectionObserver" in window) {
         intersectionObserver = new IntersectionObserver((entries) => {
             inView = entries[0].isIntersecting;
@@ -512,5 +487,4 @@ if (document.readyState === "loading") {
     mount();
 }
 
-// Defensive: stop the loop and remove event listeners if the page is being torn down.
 window.addEventListener("pagehide", cleanup);
