@@ -378,6 +378,167 @@ body {
     66% { transform: translate(-30px, 30px); }
 }
 
+/* ============ MISSION (pinned scroll story) ============ */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.mission {
+    position: relative;
+    background: var(--bg);
+}
+
+/* Tall track = scroll distance (~112vh per beat across 4 beats). */
+.mission-track {
+    height: 450vh;
+}
+
+/* Pinned stage stays in view while the track scrolls past. */
+.mission-stage {
+    position: sticky;
+    top: 73px;
+    height: calc(100vh - 73px);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    text-align: center;
+}
+
+.mission-orb {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    background: var(--accent-2);
+    opacity: 0.35;
+    top: 50%;
+    left: 50%;
+    margin: -260px 0 0 -260px;
+    /* Drifts upward as the story progresses (driven by --progress). */
+    transform: translateY(calc(var(--progress, 0) * -180px));
+    animation: none;
+}
+
+/* Beats stack in the same grid cell and crossfade. */
+.mission-beat {
+    grid-area: 1 / 1;
+    max-width: 720px;
+    padding: 0 var(--space-6);
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+    transition: opacity var(--duration-base) var(--ease-out),
+                transform var(--duration-base) var(--ease-out);
+    will-change: opacity, transform;
+    pointer-events: none;
+}
+
+.mission-beat.is-active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.mission-eyebrow {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: var(--space-4);
+}
+
+.mission-beat-title {
+    font-family: 'Playfair Display', serif;
+    font-size: var(--text-3xl);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    margin-bottom: var(--space-5);
+}
+
+.mission-beat-body {
+    font-size: var(--text-lg);
+    line-height: var(--leading-normal);
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto var(--space-6);
+    text-wrap: pretty;
+}
+
+.mission-stat {
+    font-size: var(--text-md);
+    color: var(--text-muted);
+    letter-spacing: var(--tracking-tight);
+}
+
+.mission-stat-num {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    font-weight: 800;
+    font-size: var(--text-xl);
+    display: inline-block;
+    margin-right: var(--space-2);
+}
+
+.mission-cta {
+    margin-top: var(--space-7);
+}
+
+/* Progress affordance — one dot per beat. */
+.mission-progress {
+    position: absolute;
+    bottom: var(--space-8);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--space-3);
+}
+
+.mission-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background var(--duration-base) var(--ease-out),
+                transform var(--duration-base) var(--ease-out);
+}
+
+.mission-dot.is-active {
+    background: var(--accent-2);
+    transform: scale(1.4);
+}
+
+/* Reduced motion / no-pin: flatten to a normal stacked section. */
+@media (prefers-reduced-motion: reduce) {
+    .mission-track { height: auto; }
+    .mission-stage {
+        position: static;
+        height: auto;
+        display: block;
+        padding: var(--space-12) 0;
+        overflow: visible;
+    }
+    .mission-beat {
+        position: static;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+        max-width: 720px;
+        margin: 0 auto var(--space-11);
+    }
+    .mission-progress,
+    .mission-orb { display: none; }
+}
+
 /* ============ WORKFLOW STEP TRACKER ============ */
 .workflow {
     padding: 40px 0;
@@ -1997,6 +2158,11 @@ select:focus {
 
     /* Step tracker — scrollable horizontally so it doesn't crunch */
     .workflow { padding: var(--space-5) 0; top: 60px; }
+
+    /* Mission story — shorter track + align pin with mobile navbar */
+    .mission-track { height: 340vh; }
+    .mission-stage { top: 60px; height: calc(100vh - 60px); }
+    .mission-orb { width: 340px; height: 340px; margin: -170px 0 0 -170px; }
     .step-tracker {
         gap: var(--space-3);
         flex-wrap: nowrap;

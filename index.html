@@ -83,6 +83,7 @@
                 <span class="nav-toggle-bar"></span>
             </button>
             <ul class="nav-links" id="nav-links">
+                <li><a href="#mission">Mission</a></li>
                 <li><a href="#design">Design</a></li>
                 <li><a href="#measure">Maße</a></li>
                 <li><a href="#preview">3D Vorschau</a></li>
@@ -244,6 +245,54 @@
             <div class="orb orb-3"></div>
         </div>
     </header>
+
+    <!-- Scroll-getriebene Mission/Vision-Story (Apple-Stil, gepinnt).
+         Beats sind source-geordnete <article> → linear lesbar; das
+         Pinning ist nur visuelle Veredelung (siehe js/scroll-story.js). -->
+    <section id="mission" class="mission" aria-labelledby="mission-heading">
+        <h2 id="mission-heading" class="visually-hidden">Warum Urban Revolution</h2>
+        <div class="mission-track" data-scroll-story>
+            <div class="mission-stage">
+                <div class="orb mission-orb" aria-hidden="true"></div>
+
+                <article class="mission-beat is-active" data-beat="0">
+                    <p class="mission-eyebrow">Das Problem · 01</p>
+                    <h3 class="mission-beat-title">Die Welt ertrinkt in Plastik.</h3>
+                    <p class="mission-beat-body">Jedes Jahr landen rund 8 Millionen Tonnen Plastik in den Ozeanen. PET-Flaschen zerfallen über Jahrhunderte — nicht weg, nur kleiner.</p>
+                    <p class="mission-stat"><span class="mission-stat-num">8 Mio. t</span> Plastik pro Jahr im Meer</p>
+                </article>
+
+                <article class="mission-beat" data-beat="1">
+                    <p class="mission-eyebrow">Das Problem · 02</p>
+                    <h3 class="mission-beat-title">Mode produziert für den Müll.</h3>
+                    <p class="mission-beat-body">Die Industrie fertigt mehr, als die Welt je tragen kann. Jede Sekunde wird eine Lastwagenladung Textilien verbrannt oder deponiert — vieles davon nie getragen.</p>
+                    <p class="mission-stat"><span class="mission-stat-num">~92 Mio. t</span> Textilmüll pro Jahr</p>
+                </article>
+
+                <article class="mission-beat" data-beat="2">
+                    <p class="mission-eyebrow">Unsere Überzeugung</p>
+                    <h3 class="mission-beat-title">KI sollte echte Probleme lösen.</h3>
+                    <p class="mission-beat-body">Statt nur Feeds zu füllen, kann generative KI Ressourcen sparen: entwerfen und fertigen, was wirklich jemand will. Kein Lager, kein Überschuss, keine Verschwendung.</p>
+                    <p class="mission-stat"><span class="mission-stat-num">On demand</span> statt Überproduktion</p>
+                </article>
+
+                <article class="mission-beat" data-beat="3">
+                    <p class="mission-eyebrow">Unsere Vision</p>
+                    <h3 class="mission-beat-title">Deine Kleidung. Aus Plastik gerettet.</h3>
+                    <p class="mission-beat-body">Wir verwandeln recyceltes PET in Couture, die nur für dich entsteht — KI-entworfen, nach deinen Maßen gefertigt. Individualität statt Massenproduktion.</p>
+                    <p class="mission-stat"><span class="mission-stat-num">~14 PET-Flaschen</span> → 1 Teil · 0.9 kg rPET</p>
+                    <a href="#design" class="cta-button mission-cta">Dein Stück entwerfen <span aria-hidden="true">→</span></a>
+                </article>
+
+                <div class="mission-progress" aria-hidden="true">
+                    <span class="mission-dot is-active" data-dot="0"></span>
+                    <span class="mission-dot" data-dot="1"></span>
+                    <span class="mission-dot" data-dot="2"></span>
+                    <span class="mission-dot" data-dot="3"></span>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section class="trust-strip" aria-label="Markenmerkmale">
         <div class="container">
@@ -791,6 +840,7 @@
                 <nav class="footer-col" aria-label="Atelier">
                     <h5>Atelier</h5>
                     <ul>
+                        <li><a href="#mission">Mission</a></li>
                         <li><a href="#design">Design starten</a></li>
                         <li><a href="#measure">Körpermaße</a></li>
                         <li><a href="#preview">3D Vorschau</a></li>
@@ -845,6 +895,7 @@
     <script src="js/preferences.js"></script>
     <script src="js/library.js"></script>
     <script src="js/animations.js"></script>
+    <script src="js/scroll-story.js"></script>
     <script src="js/app.js"></script>
     <script type="module" src="js/3d/controller.js"></script>
 </body>
