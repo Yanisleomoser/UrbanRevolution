@@ -1,0 +1,32 @@
+# Structural HTML validation — fails the build on duplicate IDs or
+# unclosed/mispaired tags (the exact failure that once stacked two
+# <section id="mission"> and left an unclosed block, rendering raw text
+# before the visual story). Rules live in .htmlhintrc.
+name: Validate HTML
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install validator
+        run: npm install --no-save htmlhint
+
+      - name: Validate HTML structure
+        run: npx --no-install htmlhint index.html impressum.html datenschutz.html
