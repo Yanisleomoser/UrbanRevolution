@@ -447,7 +447,8 @@ body {
 
 /* Tall track = scroll distance. ~133vh per act across 3 acts. */
 .story-track {
-    height: 400vh;
+    /* ~103vh of dwell per act across 6 acts — deliberate, cinematic pacing. */
+    height: 620vh;
 }
 
 /* Pinned stage holds the WebGL canvas in view while the track scrolls. */
@@ -474,10 +475,11 @@ body {
     pointer-events: none;
     background: linear-gradient(
         to bottom,
-        rgba(10, 10, 12, 0.55) 0%,
-        rgba(10, 10, 12, 0) 28%,
-        rgba(10, 10, 12, 0) 45%,
-        rgba(10, 10, 12, 0.82) 100%
+        rgba(10, 10, 12, 0.68) 0%,
+        rgba(10, 10, 12, 0) 22%,
+        rgba(10, 10, 12, 0) 36%,
+        rgba(10, 10, 12, 0.62) 68%,
+        rgba(10, 10, 12, 0.94) 100%
     );
 }
 
@@ -498,21 +500,37 @@ body {
     left: var(--space-8);
     right: auto;
     bottom: clamp(48px, 9vh, 110px);
-    width: min(680px, calc(100% - var(--space-8) * 2));
+    width: min(720px, calc(100% - var(--space-8) * 2));
     text-align: left;
-    opacity: 0;
-    transform: translateY(28px);
-    transition: opacity var(--duration-slow) var(--ease-out),
-                transform var(--duration-slow) var(--ease-out);
-    will-change: opacity, transform;
     pointer-events: none;
 }
 
 .story-act.is-active {
-    opacity: 1;
-    transform: none;
     pointer-events: auto;
 }
+
+/* Cinematic per-line reveal: each line rises from below and resolves from
+   blur to sharp, staggered, so the message lands like a film title rather
+   than a banner. The whole act crossfades by virtue of its lines. */
+.story-act > * {
+    opacity: 0;
+    transform: translateY(38px);
+    filter: blur(10px);
+    transition: opacity 0.85s var(--ease-out),
+                transform 1s var(--ease-out),
+                filter 0.85s var(--ease-out);
+    will-change: opacity, transform, filter;
+}
+
+.story-act.is-active > * {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+}
+
+.story-act.is-active .story-headline { transition-delay: 0.14s; }
+.story-act.is-active .story-statement { transition-delay: 0.32s; }
+.story-act.is-active .story-cta { transition-delay: 0.5s; }
 
 .story-kicker {
     font-family: 'Poppins', sans-serif;
@@ -539,18 +557,21 @@ body {
     font-family: 'Lora', serif;
     font-style: italic;
     font-weight: 500;
-    font-size: clamp(28px, 4.6vw, 60px);
-    line-height: 1.1;
+    font-size: clamp(30px, 5vw, 64px);
+    line-height: 1.08;
     color: var(--pure);
+    margin-top: var(--space-2);
 }
 
-/* Gradient reserved for the single "loaded" hero word/line. */
+/* Gradient reserved for the "loaded" turn/payoff lines — it appears only
+   once the story shifts from despair to hope, glowing softly. */
 .story-statement.is-gradient {
     background: var(--story-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    text-shadow: 0 0 34px rgba(168, 85, 247, 0.28);
 }
 
 /* Ultra-premium outline button with a restrained gradient glow. */
@@ -642,6 +663,12 @@ body {
         pointer-events: auto;
         margin-bottom: var(--space-11);
     }
+    .story-act > * {
+        opacity: 1;
+        transform: none;
+        filter: none;
+        transition: none;
+    }
 }
 
 .story.no-webgl .story-canvas { display: none; }
@@ -662,6 +689,11 @@ body {
     transform: none;
     pointer-events: auto;
     margin-bottom: var(--space-11);
+}
+.story.no-webgl .story-act > * {
+    opacity: 1;
+    transform: none;
+    filter: none;
 }
 
 /* ============ WORKFLOW STEP TRACKER ============ */
@@ -2285,7 +2317,7 @@ select:focus {
     .workflow { padding: var(--space-5) 0; top: 60px; }
 
     /* Scroll story — shorter track + tighter editorial padding on mobile */
-    .story-track { height: 320vh; }
+    .story-track { height: 480vh; }
     .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
     .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
     .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }

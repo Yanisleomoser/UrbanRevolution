@@ -289,16 +289,30 @@ function smoothstep(x) {
 
 function updateMorph(time) {
     const p = easedProgress;
-    let from, to, fromC, toC, local;
-    if (p < 0.5) {
-        from = posA; to = posB; fromC = colA; toC = colB;
-        local = smoothstep(p / 0.5);
+
+    // Emotional pacing: the waste heap lingers through the dark "problem"
+    // acts; the transformation into silk threads, then a tailored figure,
+    // only resolves late — a hard-won payoff. mprog (0→1) drives the morph
+    // A(waste) → B(threads) → C(figure) on a delayed schedule vs. scroll.
+    let mprog;
+    if (p < 0.55) {
+        mprog = 0;
+    } else if (p < 0.78) {
+        mprog = 0.5 * smoothstep((p - 0.55) / 0.23);
     } else {
-        from = posB; to = posC; fromC = colB; toC = colC;
-        local = smoothstep((p - 0.5) / 0.5);
+        mprog = 0.5 + 0.5 * smoothstep((p - 0.78) / 0.22);
     }
 
-    const toFigure = p >= 0.5;
+    let from, to, fromC, toC, local;
+    if (mprog < 0.5) {
+        from = posA; to = posB; fromC = colA; toC = colB;
+        local = mprog / 0.5;
+    } else {
+        from = posB; to = posC; fromC = colB; toC = colC;
+        local = (mprog - 0.5) / 0.5;
+    }
+
+    const toFigure = mprog >= 0.5;
     const pulse = 1 + Math.sin(time * 2.2) * 0.18;
     const pos = posAttr.array;
     const col = colAttr.array;
@@ -323,8 +337,8 @@ function updateMorph(time) {
     posAttr.needsUpdate = true;
     colAttr.needsUpdate = true;
 
-    // Halo fades/pulses in only for the back half (figure).
-    const haloAmt = smoothstep((p - 0.6) / 0.4);
+    // Halo fades/pulses in only as the figure resolves.
+    const haloAmt = smoothstep((mprog - 0.6) / 0.4);
     halo.material.opacity = haloAmt * (0.6 + Math.sin(time * 2.2) * 0.18);
 
     // Gentle life: slow sway + a touch of progress-driven rotation.
@@ -349,8 +363,8 @@ function readProgress() {
     const p = THREE.MathUtils.clamp(-rect.top / scrollable, 0, 1);
     targetProgress = p;
 
-    // Act thresholds tuned so the copy lands with its matching visual.
-    const idx = p < 0.38 ? 0 : p < 0.70 ? 1 : 2;
+    // Evenly divide the scroll track across however many acts exist.
+    const idx = Math.min(acts.length - 1, Math.floor(p * acts.length));
     if (idx !== currentAct) {
         currentAct = idx;
         setAct(idx);
@@ -414,6 +428,10 @@ function mount() {
     acts = Array.from(section.querySelectorAll(".story-act"));
     actNumEl = section.querySelector("[data-act-num]");
     if (!track || acts.length < 2) return;
+
+    // Reflect the real act count in the "01 / NN" page indicator.
+    const totalEl = section.querySelector("[data-act-total]");
+    if (totalEl) totalEl.textContent = String(acts.length).padStart(2, "0");
 
     try {
         renderer = new THREE.WebGLRenderer({
