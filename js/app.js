@@ -20,6 +20,10 @@
     },
   };
 
+  // Thin wrapper around I18N.t so the rest of app.js stays terse. Falls back
+  // to the raw key if I18N hasn't loaded (defensive — load order guarantees it).
+  const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+
   function showToast(message, type = "info") {
     const toast = document.getElementById("toast");
     toast.textContent = message;
@@ -57,68 +61,53 @@
     });
   }
 
-  // Hex palette → adjective (for label) + lowercase noun (for prompt body).
-  // Mirrors the 10 swatches in the color-palette grid.
-  const COLOR_NAMES = {
-    "#1a1a1a": { adj: "Schwarz", lower: "schwarzes" },
-    "#ffffff": { adj: "Weiß", lower: "weißes" },
-    "#7c2d12": { adj: "Tiefrot", lower: "tiefrotes" },
-    "#1e3a8a": { adj: "Marineblau", lower: "marineblaues" },
-    "#365314": { adj: "Olivgrün", lower: "olivgrünes" },
-    "#a16207": { adj: "Karamell", lower: "karamellfarbenes" },
-    "#831843": { adj: "Burgunder", lower: "burgunderrotes" },
-    "#6b21a8": { adj: "Violett", lower: "violettes" },
-    "#f59e0b": { adj: "Sonnengelb", lower: "sonnengelbes" },
-    "#dc2626": { adj: "Rot", lower: "rotes" },
-  };
-
+  // Localized color name for the current language (adjective form used in
+  // labels). The lowercase form feeds the generated prompt body.
   function colorAdjective(hex) {
-    return (COLOR_NAMES[hex] && COLOR_NAMES[hex].adj) || "Custom";
+    return window.I18N ? window.I18N.colorName(hex) : hex;
   }
 
   function colorLower(hex) {
-    return (COLOR_NAMES[hex] && COLOR_NAMES[hex].lower) || "individuelles";
+    return colorAdjective(hex).toLowerCase();
   }
 
-  // Per-type prompt template that takes a color adjective + material
-  // label and produces a natural German prompt the AI generator
-  // (Claude or local fallback) handles well.
+  // Per-type prompt template — the localized template carries {color}/{mat}
+  // placeholders so the produced prompt reads naturally in either language.
   const PROMPT_BUILDERS = {
-    tshirt: (color, mat) => `Schlichtes ${color} T-Shirt aus ${mat} im Slim-Fit, Rundhalsausschnitt, leicht tailliert`,
-    hoodie: (color, mat) => `Oversized ${color} Hoodie aus ${mat}, mit Känguru-Tasche und Kapuze, Streetwear-Stil`,
-    shirt: (color, mat) => `Klassisches ${color} Hemd aus ${mat} mit Button-Down-Kragen, langen Ärmeln, leicht tailliert`,
-    pants: (color, mat) => `Hochgeschnittene ${color} Hose aus ${mat}, Wide-Leg-Schnitt, klassischer Cut, fünf Taschen`,
-    jacket: (color, mat) => `${color} Jacke aus ${mat}, klassischer Schnitt mit Reißverschluss und Stehkragen`,
-    dress: (color, mat) => `${color} Midi-Kleid aus ${mat}, A-Linien-Schnitt, ärmellos, elegant`,
+    tshirt: (color, mat) => t("pb.tshirt", { color, mat }),
+    hoodie: (color, mat) => t("pb.hoodie", { color, mat }),
+    shirt: (color, mat) => t("pb.shirt", { color, mat }),
+    pants: (color, mat) => t("pb.pants", { color, mat }),
+    jacket: (color, mat) => t("pb.jacket", { color, mat }),
+    dress: (color, mat) => t("pb.dress", { color, mat }),
   };
 
-  // Fallback set when the user has no history yet — matches the original
-  // hardcoded inspirations from index.html so first-time visitors see
-  // familiar examples.
-  const DEFAULT_SUGGESTIONS = [
-    { label: "Minimal Tee", type: "tshirt", prompt: "Minimalistisches schwarzes Slim-Fit T-Shirt aus Pima-Baumwolle mit Rundhalsausschnitt, leicht tailliert" },
-    { label: "Cyber Hoodie", type: "hoodie", prompt: "Oversized Cyberpunk-Hoodie in Neon-Lila mit reflektierenden Streifen, Cropped-Schnitt, Kapuze mit Kordel" },
-    { label: "Oxford Hemd", type: "shirt", prompt: "Klassisches weißes Oxford-Hemd mit Button-Down-Kragen, lange Ärmel, leicht tailliert, aus 100% ägyptischer Baumwolle" },
-    { label: "Wide-Leg Denim", type: "pants", prompt: "Hochgeschnittene Wide-Leg Jeans aus Indigo Selvedge Denim, Vintage-Waschung, fünf Taschen, Knopfleiste" },
-  ];
+  // Fallback set when the user has no history yet — mirrors the original
+  // hardcoded inspirations, now localized via I18N.
+  function defaultSuggestions() {
+    return [
+      { label: t("sugg.minimal_label"), type: "tshirt", prompt: t("sugg.minimal_prompt") },
+      { label: t("sugg.cyber_label"), type: "hoodie", prompt: t("sugg.cyber_prompt") },
+      { label: t("sugg.oxford_label"), type: "shirt", prompt: t("sugg.oxford_prompt") },
+      { label: t("sugg.wide_label"), type: "pants", prompt: t("sugg.wide_prompt") },
+    ];
+  }
 
   function buildPersonalizedSuggestions() {
-    if (!window.Preferences) return DEFAULT_SUGGESTIONS;
+    if (!window.Preferences) return defaultSuggestions();
     const total = window.Preferences.totalDesigns();
-    if (total < 1) return DEFAULT_SUGGESTIONS;
+    if (total < 1) return defaultSuggestions();
 
     const topTypes = window.Preferences.topValues("type", 3);
     const topColors = window.Preferences.topValues("color", 2);
     const topMaterials = window.Preferences.topValues("material", 2);
 
-    const allTypes = Object.keys(TYPE_LABELS);
-    const untriedTypes = allTypes.filter((t) => !topTypes.includes(t));
+    const allTypes = Object.keys(TYPE_ICON_PATHS);
+    const untriedTypes = allTypes.filter((ty) => !topTypes.includes(ty));
 
     const primaryColor = topColors[0] || "#1a1a1a";
     const primaryMaterialKey = topMaterials[0] || "cotton";
-    const primaryMaterialLabel =
-      (window.CONFIG && window.CONFIG.MATERIALS && window.CONFIG.MATERIALS[primaryMaterialKey]) ||
-      "Bio-Baumwolle";
+    const primaryMaterialLabel = typeMaterialLabel(primaryMaterialKey);
 
     const suggestions = [];
 
@@ -127,7 +116,7 @@
       const builder = PROMPT_BUILDERS[type];
       if (!builder) return;
       suggestions.push({
-        label: `${colorAdjective(primaryColor)} ${TYPE_LABELS[type]}`,
+        label: `${colorAdjective(primaryColor)} ${typeLabel(type)}`,
         type,
         prompt: builder(colorLower(primaryColor), primaryMaterialLabel.toLowerCase()),
         personalized: true,
@@ -138,7 +127,7 @@
     if (topColors[1] && topTypes[0] && PROMPT_BUILDERS[topTypes[0]]) {
       const type = topTypes[0];
       suggestions.push({
-        label: `${colorAdjective(topColors[1])} ${TYPE_LABELS[type]}`,
+        label: `${colorAdjective(topColors[1])} ${typeLabel(type)}`,
         type,
         prompt: PROMPT_BUILDERS[type](colorLower(topColors[1]), primaryMaterialLabel.toLowerCase()),
         personalized: true,
@@ -152,7 +141,7 @@
       const builder = PROMPT_BUILDERS[discoveryType];
       if (builder) {
         suggestions.push({
-          label: `Probier: ${TYPE_LABELS[discoveryType]}`,
+          label: t("sugg.try_prefix", { label: typeLabel(discoveryType) }),
           type: discoveryType,
           prompt: builder(colorLower(primaryColor), primaryMaterialLabel.toLowerCase()),
           discovery: true,
@@ -173,11 +162,11 @@
     const total = window.Preferences ? window.Preferences.totalDesigns() : 0;
 
     if (total > 0) {
-      label.textContent = "Für dich";
-      stats.textContent = `${total} Design${total !== 1 ? "s" : ""} erstellt`;
+      label.textContent = t("design.suggestions_foryou");
+      stats.textContent = t("sugg.foryou_count", { n: total, s: total !== 1 ? "s" : "" });
       stats.hidden = false;
     } else {
-      label.textContent = "Inspiration";
+      label.textContent = t("design.suggestions_inspiration");
       stats.hidden = true;
     }
 
@@ -281,14 +270,14 @@
     btn.addEventListener("click", async () => {
       const prompt = document.getElementById("ai-prompt").value.trim();
       if (!prompt) {
-        showToast("Bitte beschreibe dein gewünschtes Design", "error");
+        showToast(t("toast.empty_prompt"), "error");
         document.getElementById("ai-prompt").focus();
         return;
       }
 
       btn.classList.add("loading");
       btn.disabled = true;
-      btn.querySelector(".btn-text").textContent = "KI generiert...";
+      btn.querySelector(".btn-text").textContent = t("design.generate_loading");
 
       try {
         const design = await AI.generateDesign(prompt, S.get("currentType"));
@@ -306,17 +295,14 @@
           window.Preferences.trackPrompt(prompt);
           renderSuggestions();
         }
-        showToast(`Design "${design.name}" generiert!`, "success");
+        showToast(t("toast.generated", { name: design.name }), "success");
       } catch (error) {
         console.error(error);
-        showToast(
-          "Fehler bei der Generierung. Bitte erneut versuchen.",
-          "error"
-        );
+        showToast(t("toast.gen_error"), "error");
       } finally {
         btn.classList.remove("loading");
         btn.disabled = false;
-        btn.querySelector(".btn-text").textContent = "Design generieren";
+        btn.querySelector(".btn-text").textContent = t("design.generate_btn");
       }
     });
   }
@@ -333,14 +319,21 @@
     dress: "M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z",
   };
 
-  const TYPE_LABELS = {
-    tshirt: "T-Shirt",
-    hoodie: "Hoodie",
-    shirt: "Hemd",
-    pants: "Hose",
-    jacket: "Jacke",
-    dress: "Kleid",
-  };
+  // Localized garment-type label (e.g. "Hemd" / "Shirt").
+  function typeLabel(type) {
+    return window.I18N ? window.I18N.typeLabel(type) : type;
+  }
+
+  // Localized material label (e.g. "Bio-Baumwolle" / "Organic cotton").
+  function typeMaterialLabel(key) {
+    return window.I18N ? window.I18N.material(key) : key;
+  }
+
+  // Localized measurement label (e.g. "Brustumfang" / "Chest").
+  function measureLabel(key) {
+    if (window.I18N) return window.I18N.measureLabel(key);
+    return (window.Measurements && window.Measurements.LABELS[key]) || key;
+  }
 
   function typeIconSvg(type, size = 56) {
     const d = TYPE_ICON_PATHS[type] || TYPE_ICON_PATHS.tshirt;
@@ -348,10 +341,10 @@
   }
 
   function fitLabel(fit) {
-    if (fit === undefined || fit === null) return "Regular";
-    if (fit < 0.33) return "Slim";
-    if (fit > 0.66) return "Oversized";
-    return "Regular";
+    if (fit === undefined || fit === null) return t("fit.regular");
+    if (fit < 0.33) return t("fit.slim");
+    if (fit > 0.66) return t("fit.oversized");
+    return t("fit.regular");
   }
 
   function escapeHtml(str) {
@@ -369,8 +362,8 @@
     const material = design.material || S.get("currentMaterial");
     const fit = design.fit !== undefined ? design.fit : S.get("currentFit");
 
-    const typeLabelText = TYPE_LABELS[type] || type;
-    const materialLabel = (window.CONFIG && window.CONFIG.MATERIALS && window.CONFIG.MATERIALS[material]) || material;
+    const typeLabelText = typeLabel(type);
+    const materialLabel = typeMaterialLabel(material);
     const fitText = fitLabel(fit);
     const patternKey = design.pattern && design.pattern !== "solid" ? design.pattern : null;
     const patternLabel = patternKey && window.CONFIG && window.CONFIG.PATTERNS
@@ -387,11 +380,11 @@
 
     const notes = (design.constructionNotes || []).slice(0, 3);
     const notesHtml = notes.length
-      ? `<details class="design-card-notes"><summary>Schneider-Notizen (${notes.length})</summary><ul>${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul></details>`
+      ? `<details class="design-card-notes"><summary>${escapeHtml(t("card.tailor_notes", { n: notes.length }))}</summary><ul>${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul></details>`
       : "";
 
     const promptHtml = design.originalPrompt
-      ? `<blockquote class="design-card-prompt"><span class="design-card-prompt-label">Dein Wunsch</span><p>“${escapeHtml(design.originalPrompt)}”</p></blockquote>`
+      ? `<blockquote class="design-card-prompt"><span class="design-card-prompt-label">${escapeHtml(t("card.your_wish"))}</span><p>“${escapeHtml(design.originalPrompt)}”</p></blockquote>`
       : "";
 
     const inLibrary = window.Library && window.Library.get(design.designId);
@@ -401,13 +394,13 @@
         <header class="design-card-head">
           <div class="design-card-icon" style="color:${escapeHtml(color)}">${typeIconSvg(type, 56)}</div>
           <div class="design-card-titles">
-            <span class="design-card-eyebrow">KI-DESIGN · ${escapeHtml(design.designId || "––––––")}</span>
+            <span class="design-card-eyebrow">${escapeHtml(t("card.eyebrow", { id: design.designId || "––––––" }))}</span>
             <h3>${escapeHtml(design.name || "Untitled")}</h3>
-            <p class="design-card-subtitle">${escapeHtml(typeLabelText)} · ${escapeHtml(materialLabel)} · ${escapeHtml(fitText)} Fit</p>
+            <p class="design-card-subtitle">${escapeHtml(typeLabelText)} · ${escapeHtml(materialLabel)} · ${escapeHtml(fitText)} ${escapeHtml(t("card.fit_suffix"))}</p>
           </div>
-          <button id="design-save-btn" class="design-save-btn ${inLibrary ? "is-saved" : ""}" type="button" aria-label="Design speichern">
+          <button id="design-save-btn" class="design-save-btn ${inLibrary ? "is-saved" : ""}" type="button" aria-label="${escapeHtml(t("card.save_aria"))}">
             <span class="design-save-icon" aria-hidden="true">${inLibrary ? "✓" : "+"}</span>
-            <span class="design-save-text">${inLibrary ? "Gespeichert" : "Speichern"}</span>
+            <span class="design-save-text">${inLibrary ? escapeHtml(t("card.saved")) : escapeHtml(t("card.save"))}</span>
           </button>
         </header>
 
@@ -419,7 +412,7 @@
             <span>${escapeHtml(color)}</span>
           </div>
           <div class="spec-pill">${escapeHtml(materialLabel)}</div>
-          <div class="spec-pill">${escapeHtml(fitText)} Fit</div>
+          <div class="spec-pill">${escapeHtml(fitText)} ${escapeHtml(t("card.fit_suffix"))}</div>
           ${patternLabel ? `<div class="spec-pill">${escapeHtml(patternLabel)}</div>` : ""}
         </div>
 
@@ -477,10 +470,7 @@
       btn.addEventListener("click", () => {
         Measurements.applyPreset(btn.dataset.preset);
         updateMeasurements();
-        showToast(
-          `Voreinstellung ${btn.dataset.preset} geladen`,
-          "success"
-        );
+        showToast(t("toast.preset_loaded", { p: btn.dataset.preset }), "success");
       });
     });
 
@@ -505,7 +495,7 @@
       fileInput.value = "";
 
       uploadBtn.disabled = true;
-      uploadBtn.textContent = "Lade Modell...";
+      uploadBtn.textContent = t("measure.photo_btn_loading");
       statusEl.textContent = "";
 
       // Hold the photo as a data-URL in memory so the VTO feature can
@@ -521,17 +511,14 @@
 
       try {
         await window.Pose.init();
-        uploadBtn.textContent = "Analysiere...";
-        statusEl.textContent = "Erkenne Pose...";
+        uploadBtn.textContent = t("measure.photo_btn_analyzing");
+        statusEl.textContent = t("measure.status_detecting");
 
         const { result, img } = await window.Pose.detect(file);
 
         if (!result.landmarks || !result.landmarks[0]) {
-          showToast(
-            "Keine Person im Foto erkannt — bitte Ganzkörper-Aufnahme",
-            "error"
-          );
-          statusEl.textContent = "Keine Pose erkannt.";
+          showToast(t("toast.no_person"), "error");
+          statusEl.textContent = t("measure.status_no_pose");
           return;
         }
 
@@ -550,11 +537,8 @@
           return vis >= 0.3 && y <= 1.05;
         };
         if (!ankleUsable(landmarks[27]) && !ankleUsable(landmarks[28])) {
-          showToast(
-            "Foto braucht den ganzen Körper (inkl. Füße) für korrekte Maße",
-            "error"
-          );
-          statusEl.textContent = "Füße nicht im Bild — neues Foto bitte";
+          showToast(t("toast.no_feet"), "error");
+          statusEl.textContent = t("measure.status_no_feet");
           return;
         }
         const heightInput = document.getElementById("height");
@@ -578,23 +562,22 @@
 
         previewWrap.hidden = false;
         window.Pose.drawPoseOverlay(canvas, img, landmarks);
-        statusEl.textContent = `${measurements.chest}cm Brust · ${measurements.waist}cm Taille · ${measurements.hips}cm Hüfte`;
+        statusEl.textContent = t("measure.status_result", {
+          chest: measurements.chest,
+          waist: measurements.waist,
+          hips: measurements.hips,
+        });
         showToast(
-          personalized
-            ? "Maße + Hautton aus Foto übernommen"
-            : "Maße aus Foto übernommen — überprüfe & feinjustiere bei Bedarf",
+          personalized ? t("toast.photo_skin") : t("toast.photo_only"),
           "success"
         );
       } catch (err) {
         console.error("[pose] failed:", err);
-        showToast(
-          "Foto-Analyse fehlgeschlagen: " + (err.message || err),
-          "error"
-        );
-        statusEl.textContent = "Fehler — bitte erneut versuchen.";
+        showToast(t("toast.photo_failed", { msg: err.message || err }), "error");
+        statusEl.textContent = t("measure.status_error");
       } finally {
         uploadBtn.disabled = false;
-        uploadBtn.textContent = "Anderes Foto auswählen";
+        uploadBtn.textContent = t("measure.photo_btn_another");
       }
     });
   }
@@ -632,18 +615,15 @@
     const currentType = S.get("currentType");
 
     const design = S.get("currentDesign") || {
-      name: "Untitled Design",
-      description:
-        "Noch kein Design generiert. Beschreibe oben dein Wunsch-Outfit.",
+      name: t("prod.placeholder_name"),
+      description: t("prod.placeholder_desc"),
       designId: "UR-XXXXXX",
       originalPrompt: "–",
       color: currentColor,
       material: currentMaterial,
       fit: currentFit,
       tags: [],
-      constructionNotes: [
-        "Generiere zuerst ein Design, um Schneider-Notizen zu erhalten.",
-      ],
+      constructionNotes: [t("prod.placeholder_note")],
       generatedAt: new Date().toISOString(),
     };
 
@@ -651,13 +631,13 @@
 
     document.getElementById("spec-title").textContent =
       design.name.toUpperCase();
-    document.getElementById("spec-id").textContent = `Design ID: ${design.designId}`;
+    document.getElementById("spec-id").textContent = t("spec.id_prefix", { id: design.designId });
     document.getElementById("spec-date").textContent =
-      new Date().toLocaleDateString("de-DE");
+      new Date().toLocaleDateString(window.I18N ? window.I18N.locale() : "de-DE");
     document.getElementById("spec-brief").textContent =
       `"${design.originalPrompt}" — ${design.description}`;
-    document.getElementById("spec-type").textContent = currentType;
-    document.getElementById("spec-material").textContent = currentMaterial;
+    document.getElementById("spec-type").textContent = typeLabel(currentType);
+    document.getElementById("spec-material").textContent = typeMaterialLabel(currentMaterial);
 
     const colorCell = document.getElementById("spec-color");
     colorCell.innerHTML =
@@ -672,24 +652,24 @@
     measuresTable.innerHTML = Object.entries(measurements)
       .map(
         ([k, v]) =>
-          `<tr><td>${Measurements.LABELS[k] || k}</td><td>${v} cm</td></tr>`
+          `<tr><td>${escapeHtml(measureLabel(k))}</td><td>${v} cm</td></tr>`
       )
       .join("");
 
     const notesList = document.getElementById("spec-notes");
     notesList.innerHTML = (design.constructionNotes || [])
-      .map((n) => `<li>${n}</li>`)
+      .map((n) => `<li>${escapeHtml(n)}</li>`)
       .join("");
 
     document.getElementById("est-time").textContent =
-      `${specData.production.estimatedProductionDays} Tage`;
+      t("est.days", { n: specData.production.estimatedProductionDays });
     document.getElementById("est-price").textContent =
       `${specData.production.estimatedPriceRange.currency} ${specData.production.estimatedPriceRange.min} – ${specData.production.estimatedPriceRange.max}`;
   }
 
   function getCurrentSpecData() {
     if (!S.get("currentDesign")) {
-      showToast("Bitte zuerst ein Design generieren", "error");
+      showToast(t("toast.need_design"), "error");
       return null;
     }
     return Export.buildSpecData(
@@ -704,14 +684,14 @@
       const spec = getCurrentSpecData();
       if (!spec) return;
       Export.downloadJSON(spec);
-      showToast("JSON-Datei heruntergeladen", "success");
+      showToast(t("toast.json_done"), "success");
     });
 
     document.getElementById("download-html").addEventListener("click", () => {
       const spec = getCurrentSpecData();
       if (!spec) return;
       Export.downloadHTML(spec);
-      showToast("Druckbare Vorlage heruntergeladen", "success");
+      showToast(t("toast.html_done"), "success");
     });
 
     document.getElementById("print-spec").addEventListener("click", () => {
@@ -723,11 +703,14 @@
     document.getElementById("send-order").addEventListener("click", async () => {
       const spec = getCurrentSpecData();
       if (!spec) return;
-      showToast("Auftrag wird übermittelt...", "info");
+      showToast(t("toast.order_sending"), "info");
       const result = await Export.simulateOrderSubmission(spec);
       if (result.success) {
         showToast(
-          `✓ ${result.confirmation}. Lieferung ca. ${result.estimatedDelivery}`,
+          t("toast.order_done", {
+            confirmation: result.confirmation,
+            date: result.estimatedDelivery,
+          }),
           "success"
         );
       }
@@ -797,18 +780,18 @@
     const remaining = Math.max(0, VTO_LIMIT - used);
     if (!hasPhoto) {
       btn.disabled = true;
-      hint.textContent = "Lade zuerst ein Foto unter \"Maße\" hoch";
+      hint.textContent = t("vto.hint_no_photo");
     } else if (!hasDesign) {
       btn.disabled = true;
-      hint.textContent = "Generiere zuerst ein Design";
+      hint.textContent = t("vto.hint_no_design");
     } else if (remaining === 0) {
       btn.disabled = true;
-      hint.textContent = `Demo-Limit erreicht (${VTO_LIMIT}/${VTO_LIMIT}) — kontaktiere uns für mehr`;
+      hint.textContent = t("vto.hint_limit", { limit: VTO_LIMIT });
     } else {
       btn.disabled = false;
       hint.textContent = used === 0
-        ? `Klick generiert deine fotorealistische Vorschau (${VTO_LIMIT} pro Browser)`
-        : `Klick generiert deine fotorealistische Vorschau (${remaining} von ${VTO_LIMIT} übrig)`;
+        ? t("vto.hint_ready_first", { limit: VTO_LIMIT })
+        : t("vto.hint_ready_remaining", { remaining, limit: VTO_LIMIT });
     }
   }
 
@@ -827,7 +810,7 @@
       }
 
       openVtoModal();
-      setVtoStatus("Sende Anfrage an Replicate...");
+      setVtoStatus(t("vto.status_sending"));
 
       const designPrompt = buildVtoPrompt(design);
 
@@ -840,15 +823,12 @@
         const body = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          setVtoError(`Fehler: ${body.error || res.statusText}`);
+          setVtoError(t("vto.error_prefix", { msg: body.error || res.statusText }));
           return;
         }
 
         if (body.pending) {
-          setVtoError(
-            "Generierung läuft länger als erwartet (>20 s) — Server-Limit erreicht. " +
-            "Bitte erneut versuchen oder andere Uhrzeit probieren.",
-          );
+          setVtoError(t("vto.error_pending"));
           return;
         }
 
@@ -860,10 +840,10 @@
           incrementVtoCount();
           updateVtoButtonState();
         } else {
-          setVtoError("Unerwartete Antwort vom Server.");
+          setVtoError(t("vto.error_unexpected"));
         }
       } catch (err) {
-        setVtoError(`Netzwerkfehler: ${err.message}`);
+        setVtoError(t("vto.error_network", { msg: err.message }));
       }
     });
 
@@ -998,7 +978,7 @@
     if (!window.Library) return;
     const design = S.get("currentDesign");
     if (!design) {
-      showToast("Bitte zuerst ein Design generieren", "error");
+      showToast(t("toast.need_design"), "error");
       return;
     }
     const entry = window.Library.add(design, {
@@ -1009,17 +989,17 @@
       vtoImageUrl: vtoLastImageUrl,
     });
     if (!entry) {
-      showToast("Speichern fehlgeschlagen", "error");
+      showToast(t("toast.save_failed"), "error");
       return;
     }
-    // Update save button to "Gespeichert" state
+    // Update save button to "saved" state
     const btn = document.getElementById("design-save-btn");
     if (btn) {
       btn.classList.add("is-saved");
       btn.querySelector(".design-save-icon").textContent = "✓";
-      btn.querySelector(".design-save-text").textContent = "Gespeichert";
+      btn.querySelector(".design-save-text").textContent = t("card.saved");
     }
-    showToast(`"${entry.name}" in deiner Bibliothek gespeichert`, "success");
+    showToast(t("toast.saved_lib", { name: entry.name }), "success");
     updateLibraryCount();
   }
 
@@ -1040,19 +1020,19 @@
     const designs = window.Library.list();
 
     if (designs.length === 0) {
-      hint.textContent = "Noch keine gespeicherten Designs. Erstelle eines und drücke „Speichern“ in der Design-Karte.";
+      hint.textContent = t("library.empty");
       grid.innerHTML = "";
       return;
     }
 
     const max = window.Library.MAX_ENTRIES || 20;
-    hint.textContent = `${designs.length} von ${max} Designs gespeichert`;
+    hint.textContent = t("library.count", { n: designs.length, max });
 
     grid.innerHTML = designs.map((d) => {
-      const typeLabel = TYPE_LABELS[d.type] || d.type;
-      const matLabel = (window.CONFIG && window.CONFIG.MATERIALS && window.CONFIG.MATERIALS[d.material]) || d.material;
+      const tLabel = typeLabel(d.type);
+      const matLabel = typeMaterialLabel(d.material);
       const dateStr = (() => {
-        try { return new Date(d.savedAt).toLocaleDateString("de-DE"); }
+        try { return new Date(d.savedAt).toLocaleDateString(window.I18N ? window.I18N.locale() : "de-DE"); }
         catch { return ""; }
       })();
       const visual = d.vtoImageUrl
@@ -1066,11 +1046,11 @@
           </div>
           <div class="library-tile-body">
             <h4>${escapeHtml(d.name)}</h4>
-            <p class="library-tile-meta">${escapeHtml(typeLabel)} · ${escapeHtml(matLabel)}</p>
+            <p class="library-tile-meta">${escapeHtml(tLabel)} · ${escapeHtml(matLabel)}</p>
             ${dateStr ? `<p class="library-tile-date">${dateStr}</p>` : ""}
             <div class="library-tile-actions">
-              <button class="library-tile-load" data-action="load" data-id="${escapeHtml(d.id)}" type="button">Laden</button>
-              <button class="library-tile-delete" data-action="delete" data-id="${escapeHtml(d.id)}" type="button" aria-label="Löschen">×</button>
+              <button class="library-tile-load" data-action="load" data-id="${escapeHtml(d.id)}" type="button">${escapeHtml(t("library.load"))}</button>
+              <button class="library-tile-delete" data-action="delete" data-id="${escapeHtml(d.id)}" type="button" aria-label="${escapeHtml(t("library.delete"))}">×</button>
             </div>
           </div>
         </article>
@@ -1082,7 +1062,7 @@
     if (!window.Library) return;
     const entry = window.Library.get(id);
     if (!entry) {
-      showToast("Design nicht gefunden", "error");
+      showToast(t("toast.not_found"), "error");
       return;
     }
     const design = {
@@ -1096,7 +1076,7 @@
       pattern: entry.pattern || "solid",
       originalPrompt: entry.originalPrompt || "",
       constructionNotes: entry.constructionNotes || [],
-      description: "Aus deiner Bibliothek geladen",
+      description: t("lib.loaded_desc"),
       generatedAt: entry.savedAt,
     };
     S.set("currentDesign", design);
@@ -1108,7 +1088,7 @@
     applyDesignToState(design);
     updateProductionPreview();
     closeLibraryModal();
-    showToast(`„${entry.name}" geladen`, "success");
+    showToast(t("toast.loaded", { name: entry.name }), "success");
     document.getElementById("ai-output")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
@@ -1118,7 +1098,7 @@
     window.Library.remove(id);
     renderLibraryGrid();
     updateLibraryCount();
-    if (entry) showToast(`„${entry.name}" gelöscht`, "info");
+    if (entry) showToast(t("toast.deleted", { name: entry.name }), "info");
     // If current design was the deleted one, refresh save button state
     const current = S.get("currentDesign");
     if (current && current.designId === id) {
@@ -1126,7 +1106,7 @@
       if (btn) {
         btn.classList.remove("is-saved");
         btn.querySelector(".design-save-icon").textContent = "+";
-        btn.querySelector(".design-save-text").textContent = "Speichern";
+        btn.querySelector(".design-save-text").textContent = t("card.save");
       }
     }
   }
@@ -1183,7 +1163,7 @@
     const setOpen = (open) => {
       links.classList.toggle("open", open);
       toggle.setAttribute("aria-expanded", String(open));
-      toggle.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+      toggle.setAttribute("aria-label", open ? t("nav.toggle_close") : t("nav.toggle_open"));
     };
 
     toggle.addEventListener("click", () => {
@@ -1202,7 +1182,59 @@
     });
   }
 
+  // Reflect the active language on the DE / EN segmented control.
+  function updateLangToggleState() {
+    if (!window.I18N) return;
+    const lang = window.I18N.getLang();
+    document.querySelectorAll("#lang-toggle .lang-opt").forEach((opt) => {
+      opt.classList.toggle("is-active", opt.dataset.lang === lang);
+    });
+  }
+
+  function initLangToggle() {
+    const toggle = document.getElementById("lang-toggle");
+    if (!toggle || !window.I18N) return;
+    updateLangToggleState();
+    toggle.addEventListener("click", (e) => {
+      const opt = e.target.closest(".lang-opt");
+      // Click a specific option, or just flip to the other language.
+      const target = opt
+        ? opt.dataset.lang
+        : window.I18N.getLang() === "de" ? "en" : "de";
+      window.I18N.setLang(target);
+    });
+  }
+
+  // I18N.apply() retranslates the static DOM; here we rebuild everything
+  // app.js renders dynamically so a language switch is reflected everywhere.
+  function onLanguageChange() {
+    updateLangToggleState();
+    renderSuggestions();
+    updateModelInfo();
+    updateProductionPreview();
+    updateVtoButtonState();
+    // Re-render the design card with the new language if one is showing.
+    const design = S.get("currentDesign");
+    if (design && document.querySelector(".design-card")) {
+      renderDesignResult(design);
+    }
+    // Refresh the library grid if its modal is currently open.
+    const libModal = document.getElementById("library-modal");
+    if (libModal && !libModal.hidden) renderLibraryGrid();
+    // Keep the hamburger aria-label in sync with its open state.
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks = document.getElementById("nav-links");
+    if (navToggle && navLinks) {
+      navToggle.setAttribute(
+        "aria-label",
+        navLinks.classList.contains("open") ? t("nav.toggle_close") : t("nav.toggle_open"),
+      );
+    }
+  }
+
   function init() {
+    initLangToggle();
+    window.addEventListener("language:change", onLanguageChange);
     initMobileNav();
     initSuggestions();
     initTypeSelector();
@@ -1223,10 +1255,7 @@
     updateVtoButtonState();
 
     window.addEventListener("ai-fallback", (e) => {
-      showToast(
-        `Claude-API nicht erreichbar (${e.detail.reason}) — lokaler Generator wird verwendet`,
-        "info"
-      );
+      showToast(t("toast.ai_fallback", { reason: e.detail.reason }), "info");
     });
   }
 

@@ -4,6 +4,8 @@
  */
 
 const AI = (() => {
+  const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+
   // Use centralized config
   const COLOR_DICT = Object.entries(CONFIG.COLORS).reduce((acc, [name, hex]) => {
     acc[name.toLowerCase()] = hex;
@@ -202,60 +204,15 @@ const AI = (() => {
       jacket: ["Bauhaus", "Brutalist", "Atelier", "Heritage", "Modular"],
       dress: ["Soirée", "Atelier", "Riviera", "Modern", "Sculptural"],
     };
-    const typeNames = {
-      tshirt: "Tee",
-      hoodie: "Hoodie",
-      shirt: "Hemd",
-      pants: "Pants",
-      jacket: "Jacket",
-      dress: "Kleid",
-    };
     const adj = adjectives[type] || adjectives.tshirt;
     const chosen = adj[Math.floor(Math.random() * adj.length)];
-    return `${chosen} ${typeNames[type] || "Piece"}`;
+    const typeName = t("ainame." + type);
+    return `${chosen} ${typeName === "ainame." + type ? t("ainame.fallback") : typeName}`;
   }
 
   function generateConstructionNotes(type) {
-    const notes = {
-      tshirt: [
-        "Rundhalsausschnitt mit gerippter Halsblende, 2cm breit",
-        "Seitennähte mit doppelter Steppung für Strapazierfähigkeit",
-        "Saum 2.5cm umgeschlagen und gesteppt",
-        "Schulternaht mit Kontrastband verstärkt",
-      ],
-      hoodie: [
-        "Kapuze doppellagig mit gefütterten Innenseiten",
-        "Känguru-Tasche mit zwei Seiteneingriffen",
-        "Bündchen aus Rib-Strick an Saum und Ärmeln, 6cm",
-        "Tunnelzug mit Metallösen und 1cm Flachkordel",
-      ],
-      shirt: [
-        "Button-Down Kragen mit Einlage",
-        "Knopfleiste 3cm breit, 7 Knöpfe à 11mm Perlmutt",
-        "Doppelte Manschette mit zwei Knöpfen",
-        "Rückenpasse mit Mittelfalte 4cm",
-        "Französische Nähte an Seiten und Ärmeleinsatz",
-      ],
-      pants: [
-        "Fünf-Taschen-Konstruktion klassisch",
-        "Reißverschluss YKK Metall, Knopfverschluss am Bund",
-        "Bundhöhe vorne 22cm, hinten 28cm (Mid-Rise)",
-        "Saum mit Kettenstich gesäumt für authentischen Look",
-      ],
-      jacket: [
-        "Vollfutter mit Innentaschen (links, rechts)",
-        "Schulterpolster 8mm dezent",
-        "Reverskragen mit Knopflochstickerei",
-        "Zwei Eingrifftaschen mit Klappe",
-        "Ärmel-Knopfleiste mit 3 Knöpfen",
-      ],
-      dress: [
-        "Verdeckter Reißverschluss am Rücken, YKK 50cm",
-        "Brustabnäher und Taillen-Princessnähte",
-        "Saum 5cm doppelt umgeschlagen, blind gesteppt",
-      ],
-    };
-    return notes[type] || notes.tshirt;
+    const notes = t("notes." + type);
+    return Array.isArray(notes) ? notes : t("notes.tshirt");
   }
 
   /**
@@ -323,7 +280,7 @@ const AI = (() => {
 Antworte NUR mit JSON:
 {
   "name": "Designname (max 4 Wörter)",
-  "description": "2-3 Sätze, Deutsch",
+  "description": "2-3 Sätze, ${window.I18N && window.I18N.getLang() === "en" ? "Englisch" : "Deutsch"}",
   "color": "#hexcode",
   "material": "cotton|linen|denim|wool|fleece|silk|polyester",
   "fit": 0.0 bis 1.0,
@@ -400,8 +357,7 @@ Antworte NUR mit JSON:
 
       return {
         name,
-        description:
-          "Lokal generiertes Design basierend auf Prompt-Keywords",
+        description: t("ai.fallback_desc"),
         type,
         color,
         secondaryColor,

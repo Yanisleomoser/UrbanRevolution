@@ -72,25 +72,32 @@
     </script>
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
-    <nav class="navbar" aria-label="Hauptnavigation">
+    <a href="#main-content" class="skip-link" data-i18n="nav.skip">Zum Inhalt springen</a>
+    <nav class="navbar" data-i18n-aria-label="nav.aria" aria-label="Hauptnavigation">
         <div class="nav-container">
             <div class="logo">
                 <span class="logo-mark">UR</span>
                 <span class="logo-text">Urban Revolution</span>
             </div>
-            <button id="nav-toggle" class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-links">
+            <button id="nav-toggle" class="nav-toggle" data-i18n-aria-label="nav.toggle_open" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-links">
                 <span class="nav-toggle-bar"></span>
                 <span class="nav-toggle-bar"></span>
                 <span class="nav-toggle-bar"></span>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="#mission">Mission</a></li>
-                <li><a href="#design">Design</a></li>
-                <li><a href="#measure">Maße</a></li>
-                <li><a href="#preview">3D Vorschau</a></li>
-                <li><a href="#production">Produktion</a></li>
-                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
+                <li><a href="#design" data-i18n="nav.design">Design</a></li>
+                <li><a href="#measure" data-i18n="nav.measure">Maße</a></li>
+                <li><a href="#preview" data-i18n="nav.preview">3D Vorschau</a></li>
+                <li><a href="#production" data-i18n="nav.production">Produktion</a></li>
+                <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+                <li class="nav-lang-item">
+                    <button id="lang-toggle" class="lang-toggle" type="button" data-i18n-aria-label="nav.lang_aria" aria-label="Sprache wechseln">
+                        <span class="lang-opt" data-lang="de">DE</span>
+                        <span class="lang-sep" aria-hidden="true">/</span>
+                        <span class="lang-opt" data-lang="en">EN</span>
+                    </button>
+                </li>
             </ul>
         </div>
     </nav>
@@ -98,10 +105,10 @@
     <main id="main-content">
     <header class="hero">
         <div class="hero-content" data-reveal-stagger>
-            <p class="hero-eyebrow" data-reveal>AI · 3D · COUTURE</p>
-            <h1 class="hero-title" data-reveal>Deine Vision.<br>Deine Maße.<br><span class="gradient-text">Deine Kleidung.</span></h1>
-            <p class="hero-subtitle" data-reveal>Beschreibe dein Wunschkleidungsstück. Unsere KI gestaltet es. Ein 3D-Modell zeigt dir deine perfekte Passform. Schneider und Produktion bekommen alles, was sie brauchen.</p>
-            <a href="#design" class="cta-button" data-reveal>Jetzt designen <span aria-hidden="true">→</span></a>
+            <p class="hero-eyebrow" data-reveal data-i18n="hero.eyebrow">AI · 3D · COUTURE</p>
+            <h1 class="hero-title" data-reveal data-i18n-html="hero.title_html">Deine Vision.<br>Deine Maße.<br><span class="gradient-text">Deine Kleidung.</span></h1>
+            <p class="hero-subtitle" data-reveal data-i18n="hero.subtitle">Beschreibe dein Wunschkleidungsstück. Unsere KI gestaltet es. Ein 3D-Modell zeigt dir deine perfekte Passform. Schneider und Produktion bekommen alles, was sie brauchen.</p>
+            <a href="#design" class="cta-button" data-reveal data-i18n-html="hero.cta_html">Jetzt designen <span aria-hidden="true">→</span></a>
         </div>
 
         <!-- Brand asset slot — currently shows a stylized SVG fashion-figure
@@ -110,7 +117,7 @@
              and an <img>; the surrounding layout will adapt. -->
         <figure class="hero-asset" data-reveal>
             <picture class="hero-asset-picture">
-                <svg class="hero-asset-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fashion-Figur mit AI-generiertem Hoodie im Brand-Gradient">
+                <svg class="hero-asset-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" data-i18n-aria-label="hero.asset_alt" aria-label="Fashion-Figur mit AI-generiertem Hoodie im Brand-Gradient">
                     <defs>
                         <linearGradient id="heroOutfit" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#ec4899"/>
@@ -238,7 +245,7 @@
                     </g>
                 </svg>
             </picture>
-            <figcaption class="hero-asset-caption">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
+            <figcaption class="hero-asset-caption" data-i18n-html="hero.caption_html">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
         </figure>
 
         <div class="hero-visual" aria-hidden="true">
@@ -248,6 +255,49 @@
         </div>
     </header>
 
+    <!-- Scroll-getriebene Mission/Vision-Story (Apple-Stil, gepinnt).
+         Beats sind source-geordnete <article> → linear lesbar; das
+         Pinning ist nur visuelle Veredelung (siehe js/scroll-story.js). -->
+    <section id="mission" class="mission" aria-labelledby="mission-heading">
+        <h2 id="mission-heading" class="visually-hidden" data-i18n="mission.heading">Warum Urban Revolution</h2>
+        <div class="mission-track" data-scroll-story>
+            <div class="mission-stage">
+                <div class="orb mission-orb" aria-hidden="true"></div>
+
+                <article class="mission-beat is-active" data-beat="0">
+                    <p class="mission-eyebrow" data-i18n="mission.b0_eyebrow">Das Problem · 01</p>
+                    <h3 class="mission-beat-title" data-i18n="mission.b0_title">Die Welt ertrinkt in Plastik.</h3>
+                    <p class="mission-beat-body" data-i18n="mission.b0_body">Jedes Jahr landen rund 8 Millionen Tonnen Plastik in den Ozeanen. PET-Flaschen zerfallen über Jahrhunderte — nicht weg, nur kleiner.</p>
+                    <p class="mission-stat" data-i18n-html="mission.b0_stat_html"><span class="mission-stat-num">8 Mio. t</span> Plastik pro Jahr im Meer</p>
+                </article>
+
+                <article class="mission-beat" data-beat="1">
+                    <p class="mission-eyebrow" data-i18n="mission.b1_eyebrow">Das Problem · 02</p>
+                    <h3 class="mission-beat-title" data-i18n="mission.b1_title">Mode produziert für den Müll.</h3>
+                    <p class="mission-beat-body" data-i18n="mission.b1_body">Die Industrie fertigt mehr, als die Welt je tragen kann. Jede Sekunde wird eine Lastwagenladung Textilien verbrannt oder deponiert — vieles davon nie getragen.</p>
+                    <p class="mission-stat" data-i18n-html="mission.b1_stat_html"><span class="mission-stat-num">~92 Mio. t</span> Textilmüll pro Jahr</p>
+                </article>
+
+                <article class="mission-beat" data-beat="2">
+                    <p class="mission-eyebrow" data-i18n="mission.b2_eyebrow">Unsere Überzeugung</p>
+                    <h3 class="mission-beat-title" data-i18n="mission.b2_title">KI sollte echte Probleme lösen.</h3>
+                    <p class="mission-beat-body" data-i18n="mission.b2_body">Statt nur Feeds zu füllen, kann generative KI Ressourcen sparen: entwerfen und fertigen, was wirklich jemand will. Kein Lager, kein Überschuss, keine Verschwendung.</p>
+                    <p class="mission-stat" data-i18n-html="mission.b2_stat_html"><span class="mission-stat-num">On demand</span> statt Überproduktion</p>
+                </article>
+
+                <article class="mission-beat" data-beat="3">
+                    <p class="mission-eyebrow" data-i18n="mission.b3_eyebrow">Unsere Vision</p>
+                    <h3 class="mission-beat-title" data-i18n="mission.b3_title">Deine Kleidung. Aus Plastik gerettet.</h3>
+                    <p class="mission-beat-body" data-i18n="mission.b3_body">Wir verwandeln recyceltes PET in Couture, die nur für dich entsteht — KI-entworfen, nach deinen Maßen gefertigt. Individualität statt Massenproduktion.</p>
+                    <p class="mission-stat" data-i18n-html="mission.b3_stat_html"><span class="mission-stat-num">~14 PET-Flaschen</span> → 1 Teil · 0.9 kg rPET</p>
+                    <a href="#design" class="cta-button mission-cta" data-i18n-html="mission.cta_html">Dein Stück entwerfen <span aria-hidden="true">→</span></a>
+                </article>
+
+                <div class="mission-progress" aria-hidden="true">
+                    <span class="mission-dot is-active" data-dot="0"></span>
+                    <span class="mission-dot" data-dot="1"></span>
+                    <span class="mission-dot" data-dot="2"></span>
+                    <span class="mission-dot" data-dot="3"></span>
     <!-- Visual Scroll Story — pinned WebGL stage (js/3d/story-scene.js).
          One particle system morphs through three formations across the
          scroll track: waste heap → flowing silk threads → tailored figure.
@@ -289,7 +339,7 @@
         </div>
     </section>
 
-    <section class="trust-strip" aria-label="Markenmerkmale">
+    <section class="trust-strip" data-i18n-aria-label="trust.aria" aria-label="Markenmerkmale">
         <div class="container">
             <ul class="trust-list" data-reveal-stagger>
                 <li class="trust-item" data-reveal>
@@ -297,8 +347,8 @@
                         <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L4 6 L4 12 C4 17 8 21 12 22 C16 21 20 17 20 12 L20 6 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12 L11 14 L15 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </span>
                     <div>
-                        <h4>Maßgefertigt</h4>
-                        <p>Jedes Stück nach deinen 9 Körpermaßen — keine Standardgrößen, kein Kompromiss</p>
+                        <h4 data-i18n="trust.t1_title">Maßgefertigt</h4>
+                        <p data-i18n="trust.t1_body">Jedes Stück nach deinen 9 Körpermaßen — keine Standardgrößen, kein Kompromiss</p>
                     </div>
                 </li>
                 <li class="trust-item" data-reveal>
@@ -306,8 +356,8 @@
                         <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3 C15 6 15 18 12 21 M12 3 C9 6 9 18 12 21 M3 12 L21 12" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
                     </span>
                     <div>
-                        <h4>Designed in Zürich</h4>
-                        <p>Schweizer Atelier, transparente Produktion in CHF, faire Lieferzeit unter 14 Tagen</p>
+                        <h4 data-i18n="trust.t2_title">Designed in Zürich</h4>
+                        <p data-i18n="trust.t2_body">Schweizer Atelier, transparente Produktion in CHF, faire Lieferzeit unter 14 Tagen</p>
                     </div>
                 </li>
                 <li class="trust-item" data-reveal>
@@ -315,8 +365,8 @@
                         <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L14 8 L20 9 L15.5 13 L17 19 L12 16 L7 19 L8.5 13 L4 9 L10 8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
                     </span>
                     <div>
-                        <h4>KI + Handwerk</h4>
-                        <p>Generative Designs treffen auf echte Schneider — kein Print-on-Demand, kein Fast-Fashion</p>
+                        <h4 data-i18n="trust.t3_title">KI + Handwerk</h4>
+                        <p data-i18n="trust.t3_body">Generative Designs treffen auf echte Schneider — kein Print-on-Demand, kein Fast-Fashion</p>
                     </div>
                 </li>
                 <li class="trust-item" data-reveal>
@@ -324,8 +374,8 @@
                         <svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10 L21 10 M8 14 L11 14 M8 17 L13 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                     </span>
                     <div>
-                        <h4>100 % Privatsphäre</h4>
-                        <p>Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in</p>
+                        <h4 data-i18n="trust.t4_title">100 % Privatsphäre</h4>
+                        <p data-i18n="trust.t4_body">Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in</p>
                     </div>
                 </li>
             </ul>
@@ -335,10 +385,10 @@
     <section class="workflow">
         <div class="container">
             <div class="step-tracker">
-                <div class="step active" data-step="1"><span>1</span> Design</div>
-                <div class="step" data-step="2"><span>2</span> Maße</div>
-                <div class="step" data-step="3"><span>3</span> 3D Vorschau</div>
-                <div class="step" data-step="4"><span>4</span> Produktion</div>
+                <div class="step active" data-step="1" data-i18n-html="workflow.s1_html"><span>1</span> Design</div>
+                <div class="step" data-step="2" data-i18n-html="workflow.s2_html"><span>2</span> Maße</div>
+                <div class="step" data-step="3" data-i18n-html="workflow.s3_html"><span>3</span> 3D Vorschau</div>
+                <div class="step" data-step="4" data-i18n-html="workflow.s4_html"><span>4</span> Produktion</div>
             </div>
         </div>
     </section>
@@ -347,18 +397,18 @@
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number">01</span>
-                <h2>Beschreibe dein Design</h2>
-                <p>Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.</p>
+                <h2 data-i18n="design.h2">Beschreibe dein Design</h2>
+                <p data-i18n="design.intro">Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.</p>
             </div>
 
             <div class="design-grid" data-reveal-stagger>
                 <div class="prompt-panel" data-reveal>
-                    <label for="ai-prompt">Dein Prompt für die KI</label>
-                    <textarea id="ai-prompt" rows="6" placeholder="z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze..."></textarea>
+                    <label for="ai-prompt" data-i18n="design.prompt_label">Dein Prompt für die KI</label>
+                    <textarea id="ai-prompt" rows="6" data-i18n-placeholder="design.prompt_placeholder" placeholder="z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze..."></textarea>
 
                     <div class="prompt-suggestions" id="prompt-suggestions">
                         <div class="suggestions-header">
-                            <p class="suggestions-label" id="suggestions-label">Inspiration</p>
+                            <p class="suggestions-label" id="suggestions-label" data-i18n="design.suggestions_inspiration">Inspiration</p>
                             <span class="suggestions-stats" id="suggestions-stats" hidden></span>
                         </div>
                         <div class="suggestions-pills" id="suggestions-pills"></div>
@@ -366,43 +416,43 @@
                             <span class="library-trigger-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 4 L20 4 L20 20 L4 20 Z M4 10 L20 10 M9 4 L9 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
                             </span>
-                            <span class="library-trigger-text">Meine Designs</span>
+                            <span class="library-trigger-text" data-i18n="design.library_trigger">Meine Designs</span>
                             <span class="library-trigger-count" id="library-count">0</span>
                         </button>
                     </div>
 
                     <div class="garment-type-selector">
-                        <label>Kleidungstyp</label>
+                        <label data-i18n="design.garment_label">Kleidungstyp</label>
                         <div class="type-grid">
                             <button class="type-btn active" data-type="tshirt">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 16 L24 8 L40 8 L48 16 L56 22 L48 30 L48 56 L16 56 L16 30 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                T-Shirt
+                                <span data-i18n="type.tshirt">T-Shirt</span>
                             </button>
                             <button class="type-btn" data-type="hoodie">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M20 14 Q32 4 44 14 L52 22 L58 28 L50 34 L50 58 L14 58 L14 34 L6 28 L12 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                Hoodie
+                                <span data-i18n="type.hoodie">Hoodie</span>
                             </button>
                             <button class="type-btn" data-type="shirt">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M18 14 L28 8 L36 8 L46 14 L54 22 L48 28 L48 56 L16 56 L16 28 L10 22 Z M28 8 L32 16 L36 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                Hemd
+                                <span data-i18n="type.shirt">Hemd</span>
                             </button>
                             <button class="type-btn" data-type="pants">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 8 L48 8 L46 32 L44 58 L34 58 L32 34 L30 58 L20 58 L18 32 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                Hose
+                                <span data-i18n="type.pants">Hose</span>
                             </button>
                             <button class="type-btn" data-type="jacket">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 14 L24 8 L40 8 L48 14 L56 22 L50 28 L50 58 L32 58 L32 8 L32 58 L14 58 L14 28 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                Jacke
+                                <span data-i18n="type.jacket">Jacke</span>
                             </button>
                             <button class="type-btn" data-type="dress">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-                                Kleid
+                                <span data-i18n="type.dress">Kleid</span>
                             </button>
                         </div>
                     </div>
 
                     <button id="generate-btn" class="primary-btn">
-                        <span class="btn-text">Design generieren</span>
+                        <span class="btn-text" data-i18n="design.generate_btn">Design generieren</span>
                         <span class="btn-spinner"></span>
                     </button>
                 </div>
@@ -411,14 +461,14 @@
                     <div id="ai-output" class="ai-output">
                         <div class="output-placeholder">
                             <div class="pulse-icon">✦</div>
-                            <p>Dein KI-generiertes Design erscheint hier</p>
+                            <p data-i18n="design.output_placeholder">Dein KI-generiertes Design erscheint hier</p>
                         </div>
                     </div>
 
                     <div class="customize-controls" id="customize-controls" style="display:none;">
-                        <h3>Anpassungen</h3>
+                        <h3 data-i18n="design.customize_h3">Anpassungen</h3>
                         <div class="control-group">
-                            <label>Primärfarbe</label>
+                            <label data-i18n="design.primary_color">Primärfarbe</label>
                             <div class="color-palette">
                                 <button class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a"></button>
                                 <button class="color-swatch" data-color="#ffffff" style="background:#ffffff"></button>
@@ -433,35 +483,35 @@
                             </div>
                         </div>
                         <div class="control-group">
-                            <label>Material</label>
+                            <label data-i18n="design.material_label">Material</label>
                             <select id="material-select">
-                                <option value="cotton">Bio-Baumwolle</option>
-                                <option value="linen">Leinen</option>
-                                <option value="denim">Denim</option>
-                                <option value="wool">Wolle</option>
-                                <option value="fleece">Fleece</option>
-                                <option value="silk">Seide</option>
-                                <option value="polyester">Recycled Polyester</option>
+                                <option value="cotton" data-i18n="material.cotton">Bio-Baumwolle</option>
+                                <option value="linen" data-i18n="material.linen">Leinen</option>
+                                <option value="denim" data-i18n="material.denim">Denim</option>
+                                <option value="wool" data-i18n="material.wool">Wolle</option>
+                                <option value="fleece" data-i18n="material.fleece">Fleece</option>
+                                <option value="silk" data-i18n="material.silk">Seide</option>
+                                <option value="polyester" data-i18n="material.polyester">Recycled Polyester</option>
                             </select>
                         </div>
                         <div class="control-group">
-                            <label>Passform</label>
+                            <label data-i18n="design.fit_label">Passform</label>
                             <div class="fit-slider">
                                 <input type="range" id="fit-slider" min="0" max="100" value="50">
                                 <div class="fit-labels">
-                                    <span>Slim</span>
-                                    <span>Regular</span>
-                                    <span>Oversized</span>
+                                    <span data-i18n="fit.slim">Slim</span>
+                                    <span data-i18n="fit.regular">Regular</span>
+                                    <span data-i18n="fit.oversized">Oversized</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="vto-section">
                             <button id="vto-btn" class="vto-btn" disabled>
-                                <span class="vto-btn-text">Fotorealistische Vorschau</span>
-                                <span class="vto-btn-hint" id="vto-btn-hint">Lade zuerst ein Foto unter "Maße" hoch</span>
+                                <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau</span>
+                                <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
                             </button>
-                            <p class="vto-disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
+                            <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
                         </div>
                     </div>
                 </div>
@@ -473,8 +523,8 @@
         <div class="library-modal-backdrop"></div>
         <div class="library-modal-content" role="dialog" aria-modal="true" aria-labelledby="library-modal-title">
             <header class="library-modal-head">
-                <h3 id="library-modal-title">Meine Designs</h3>
-                <button id="library-modal-close" class="library-modal-close" type="button" aria-label="Schließen">&times;</button>
+                <h3 id="library-modal-title" data-i18n="library.title">Meine Designs</h3>
+                <button id="library-modal-close" class="library-modal-close" type="button" data-i18n-aria-label="library.close" aria-label="Schließen">&times;</button>
             </header>
             <p class="library-modal-hint" id="library-modal-hint"></p>
             <div class="library-grid" id="library-grid"></div>
@@ -484,15 +534,15 @@
     <div id="vto-modal" class="vto-modal" hidden>
         <div class="vto-modal-backdrop"></div>
         <div class="vto-modal-content">
-            <button id="vto-modal-close" class="vto-modal-close" aria-label="Schließen">&times;</button>
+            <button id="vto-modal-close" class="vto-modal-close" data-i18n-aria-label="vto.modal_close" aria-label="Schließen">&times;</button>
             <div id="vto-modal-body">
                 <div class="vto-loading">
                     <div class="vto-spinner"></div>
-                    <p id="vto-status">Generiere fotorealistische Vorschau...</p>
+                    <p id="vto-status" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
                 </div>
-                <img id="vto-result-img" class="vto-result-img" alt="Fotorealistische Vorschau" hidden>
+                <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
                 <div class="vto-result-actions" id="vto-result-actions" hidden>
-                    <button id="vto-download" class="vto-download-btn">Bild speichern</button>
+                    <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
                 </div>
             </div>
         </div>
@@ -502,21 +552,21 @@
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number">02</span>
-                <h2>Deine Körpermaße</h2>
-                <p>Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Maße.</p>
+                <h2 data-i18n="measure.h2">Deine Körpermaße</h2>
+                <p data-i18n="measure.intro">Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Maße.</p>
             </div>
 
             <div class="measure-grid" data-reveal-stagger>
                 <div class="measure-form">
                     <div class="photo-upload-card">
                         <div class="photo-upload-text">
-                            <h4>Maße aus Foto</h4>
-                            <p>Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Maße automatisch.</p>
-                            <p class="photo-privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
+                            <h4 data-i18n="measure.photo_h4">Maße aus Foto</h4>
+                            <p data-i18n="measure.photo_body">Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Maße automatisch.</p>
+                            <p class="photo-privacy" data-i18n="measure.photo_privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
                         </div>
                         <div class="photo-upload-action">
                             <input type="file" id="pose-photo" accept="image/*" hidden>
-                            <button id="pose-upload-btn" class="upload-btn">Foto auswählen</button>
+                            <button id="pose-upload-btn" class="upload-btn" data-i18n="measure.photo_btn">Foto auswählen</button>
                             <span id="pose-status" class="pose-status"></span>
                         </div>
                         <div id="pose-preview" class="pose-preview" hidden>
@@ -525,54 +575,54 @@
                     </div>
 
                     <div class="preset-buttons">
-                        <button class="preset-btn" data-preset="S">Voreinstellung S</button>
-                        <button class="preset-btn" data-preset="M">Voreinstellung M</button>
-                        <button class="preset-btn" data-preset="L">Voreinstellung L</button>
-                        <button class="preset-btn" data-preset="XL">Voreinstellung XL</button>
+                        <button class="preset-btn" data-preset="S" data-i18n="preset.s">Voreinstellung S</button>
+                        <button class="preset-btn" data-preset="M" data-i18n="preset.m">Voreinstellung M</button>
+                        <button class="preset-btn" data-preset="L" data-i18n="preset.l">Voreinstellung L</button>
+                        <button class="preset-btn" data-preset="XL" data-i18n="preset.xl">Voreinstellung XL</button>
                     </div>
 
                     <div class="measure-inputs">
                         <div class="measure-field">
-                            <label for="height">Körpergröße <span class="unit">cm</span></label>
+                            <label for="height"><span data-i18n="ml.height">Körpergröße</span> <span class="unit">cm</span></label>
                             <input type="number" id="height" value="175" min="140" max="220">
                         </div>
                         <div class="measure-field">
-                            <label for="weight">Gewicht <span class="unit">kg</span></label>
+                            <label for="weight"><span data-i18n="ml.weight">Gewicht</span> <span class="unit">kg</span></label>
                             <input type="number" id="weight" value="70" min="40" max="150">
                         </div>
                         <div class="measure-field">
-                            <label for="chest">Brustumfang <span class="unit">cm</span></label>
+                            <label for="chest"><span data-i18n="ml.chest">Brustumfang</span> <span class="unit">cm</span></label>
                             <input type="number" id="chest" value="96" min="60" max="160">
                         </div>
                         <div class="measure-field">
-                            <label for="waist">Taillenumfang <span class="unit">cm</span></label>
+                            <label for="waist"><span data-i18n="ml.waist">Taillenumfang</span> <span class="unit">cm</span></label>
                             <input type="number" id="waist" value="82" min="50" max="150">
                         </div>
                         <div class="measure-field">
-                            <label for="hips">Hüftumfang <span class="unit">cm</span></label>
+                            <label for="hips"><span data-i18n="ml.hips">Hüftumfang</span> <span class="unit">cm</span></label>
                             <input type="number" id="hips" value="98" min="60" max="160">
                         </div>
                         <div class="measure-field">
-                            <label for="shoulder">Schulterbreite <span class="unit">cm</span></label>
+                            <label for="shoulder"><span data-i18n="ml.shoulder">Schulterbreite</span> <span class="unit">cm</span></label>
                             <input type="number" id="shoulder" value="44" min="30" max="70">
                         </div>
                         <div class="measure-field">
-                            <label for="arm">Armlänge <span class="unit">cm</span></label>
+                            <label for="arm"><span data-i18n="ml.arm">Armlänge</span> <span class="unit">cm</span></label>
                             <input type="number" id="arm" value="62" min="40" max="90">
                         </div>
                         <div class="measure-field">
-                            <label for="inseam">Schrittlänge <span class="unit">cm</span></label>
+                            <label for="inseam"><span data-i18n="ml.inseam">Schrittlänge</span> <span class="unit">cm</span></label>
                             <input type="number" id="inseam" value="82" min="50" max="100">
                         </div>
                         <div class="measure-field">
-                            <label for="neck">Halsumfang <span class="unit">cm</span></label>
+                            <label for="neck"><span data-i18n="ml.neck">Halsumfang</span> <span class="unit">cm</span></label>
                             <input type="number" id="neck" value="38" min="28" max="55">
                         </div>
                     </div>
                 </div>
 
                 <div class="body-diagram">
-                    <svg viewBox="0 0 240 460" xmlns="http://www.w3.org/2000/svg" aria-label="Maßdiagramm Körper">
+                    <svg viewBox="0 0 240 460" xmlns="http://www.w3.org/2000/svg" data-i18n-aria-label="svg.body_aria" aria-label="Maßdiagramm Körper">
                         <defs>
                             <radialGradient id="bodyShade" cx="50%" cy="38%" r="62%">
                                 <stop offset="0%" stop-color="#f4f4f5" stop-opacity="0.18"/>
@@ -664,19 +714,19 @@
 
                         <g class="measure-annotations">
                             <line x1="65" y1="96" x2="175" y2="96" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="100" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4">Schulter</text>
+                            <text x="182" y="100" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.shoulder">Schulter</text>
 
                             <line x1="70" y1="134" x2="170" y2="134" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="138" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4">Brust</text>
+                            <text x="182" y="138" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.chest">Brust</text>
 
                             <line x1="76" y1="190" x2="164" y2="190" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="194" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4">Taille</text>
+                            <text x="182" y="194" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.waist">Taille</text>
 
                             <line x1="74" y1="248" x2="166" y2="248" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="252" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4">Hüfte</text>
+                            <text x="182" y="252" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.hips">Hüfte</text>
 
                             <line x1="80" y1="338" x2="160" y2="338" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.65"/>
-                            <text x="166" y="342" font-size="10" font-weight="600" fill="#ec4899" opacity="0.85" letter-spacing="0.4">Schritt</text>
+                            <text x="166" y="342" font-size="10" font-weight="600" fill="#ec4899" opacity="0.85" letter-spacing="0.4" data-i18n="svg.inseam">Schritt</text>
                         </g>
                     </svg>
                 </div>
@@ -688,25 +738,25 @@
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number">03</span>
-                <h2>3D Vorschau</h2>
-                <p>So sieht dein Kleidungsstück mit deinen Maßen aus. Drehen, zoomen, prüfen.</p>
+                <h2 data-i18n="preview.h2">3D Vorschau</h2>
+                <p data-i18n="preview.intro">So sieht dein Kleidungsstück mit deinen Maßen aus. Drehen, zoomen, prüfen.</p>
             </div>
 
             <div class="preview-container" data-reveal>
                 <div id="three-canvas" class="three-canvas preview-placeholder">
                     <div class="placeholder-content">
                         <div class="placeholder-spinner" aria-hidden="true"></div>
-                        <h3>3D-Vorschau wird geladen</h3>
-                        <p>Three.js initialisiert das interaktive Modell mit deinen Maßen. Falls dein Browser kein WebGL unterstützt, zeigen wir hier einen Hinweis.</p>
+                        <h3 data-i18n="preview.loading_h3">3D-Vorschau wird geladen</h3>
+                        <p data-i18n="preview.loading_body">Three.js initialisiert das interaktive Modell mit deinen Maßen. Falls dein Browser kein WebGL unterstützt, zeigen wir hier einen Hinweis.</p>
                     </div>
                 </div>
                 <div class="preview-controls">
                     <div class="control-section">
-                        <h4>Modell-Info</h4>
+                        <h4 data-i18n="preview.model_info">Modell-Info</h4>
                         <div id="model-info" class="model-info">
-                            <div><span>Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
-                            <div><span>Nähte:</span> <span id="info-seams">12 cm</span></div>
-                            <div><span>Größe:</span> <span id="info-size">M</span></div>
+                            <div><span data-i18n="preview.fabric">Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
+                            <div><span data-i18n="preview.seams">Nähte:</span> <span id="info-seams">12 cm</span></div>
+                            <div><span data-i18n="preview.size">Größe:</span> <span id="info-size">M</span></div>
                         </div>
                     </div>
                 </div>
@@ -718,8 +768,8 @@
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number">04</span>
-                <h2>Produktions-Vorlage</h2>
-                <p>Alle Daten, die der Schneider und die Produktion benötigen, in einem Dokument.</p>
+                <h2 data-i18n="prod.h2">Produktions-Vorlage</h2>
+                <p data-i18n="prod.intro">Alle Daten, die der Schneider und die Produktion benötigen, in einem Dokument.</p>
             </div>
 
             <div class="production-grid" data-reveal-stagger>
@@ -734,51 +784,51 @@
 
                     <div class="spec-body">
                         <div class="spec-section">
-                            <h4>Design Brief</h4>
+                            <h4 data-i18n="spec.brief_h4">Design Brief</h4>
                             <p id="spec-brief">––</p>
                         </div>
 
                         <div class="spec-section">
-                            <h4>Spezifikationen</h4>
+                            <h4 data-i18n="spec.specs_h4">Spezifikationen</h4>
                             <table class="spec-table" id="spec-table">
-                                <tr><td>Kleidungstyp</td><td id="spec-type">––</td></tr>
-                                <tr><td>Material</td><td id="spec-material">––</td></tr>
-                                <tr><td>Primärfarbe</td><td id="spec-color">––</td></tr>
-                                <tr><td>Passform</td><td id="spec-fit">––</td></tr>
-                                <tr><td>Konfektionsgröße</td><td id="spec-size">––</td></tr>
+                                <tr><td data-i18n="spec.type">Kleidungstyp</td><td id="spec-type">––</td></tr>
+                                <tr><td data-i18n="spec.material">Material</td><td id="spec-material">––</td></tr>
+                                <tr><td data-i18n="spec.color">Primärfarbe</td><td id="spec-color">––</td></tr>
+                                <tr><td data-i18n="spec.fit">Passform</td><td id="spec-fit">––</td></tr>
+                                <tr><td data-i18n="spec.size">Konfektionsgröße</td><td id="spec-size">––</td></tr>
                             </table>
                         </div>
 
                         <div class="spec-section">
-                            <h4>Maße (cm)</h4>
+                            <h4 data-i18n="spec.measures_h4">Maße (cm)</h4>
                             <table class="spec-table" id="spec-measures"></table>
                         </div>
 
                         <div class="spec-section">
-                            <h4>Schnitt-Notizen für den Schneider</h4>
+                            <h4 data-i18n="spec.notes_h4">Schnitt-Notizen für den Schneider</h4>
                             <ul id="spec-notes"></ul>
                         </div>
                     </div>
                 </div>
 
                 <div class="export-panel">
-                    <h3>Bereit für die Produktion?</h3>
-                    <p>Lade die Vorlage herunter oder sende sie direkt an die Schneiderei.</p>
+                    <h3 data-i18n="export.h3">Bereit für die Produktion?</h3>
+                    <p data-i18n="export.intro">Lade die Vorlage herunter oder sende sie direkt an die Schneiderei.</p>
                     <button id="download-json" class="export-btn">
-                        <span>JSON Daten herunterladen</span>
+                        <span data-i18n="export.json">JSON Daten herunterladen</span>
                     </button>
                     <button id="download-html" class="export-btn">
-                        <span>Druckbare Vorlage (HTML)</span>
+                        <span data-i18n="export.html">Druckbare Vorlage (HTML)</span>
                     </button>
                     <button id="print-spec" class="export-btn primary">
-                        <span>Direkt drucken</span>
+                        <span data-i18n="export.print">Direkt drucken</span>
                     </button>
                     <button id="send-order" class="export-btn dark">
-                        <span>Auftrag an Produktion senden</span>
+                        <span data-i18n="export.send">Auftrag an Produktion senden</span>
                     </button>
                     <div class="estimate">
-                        <div class="estimate-line"><span>Geschätzte Produktion:</span><span id="est-time">14 Tage</span></div>
-                        <div class="estimate-line"><span>Preisspanne:</span><span id="est-price">CHF 145 – 220</span></div>
+                        <div class="estimate-line"><span data-i18n="est.time_label">Geschätzte Produktion:</span><span id="est-time">14 Tage</span></div>
+                        <div class="estimate-line"><span data-i18n="est.price_label">Preisspanne:</span><span id="est-price">CHF 145 – 220</span></div>
                     </div>
                 </div>
             </div>
@@ -789,33 +839,33 @@
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number">FAQ</span>
-                <h2>Häufige Fragen</h2>
-                <p>Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
+                <h2 data-i18n="faq.h2">Häufige Fragen</h2>
+                <p data-i18n="faq.intro">Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
             </div>
             <div class="faq-list" data-reveal-stagger>
                 <details class="faq-item" data-reveal>
-                    <summary>Wie lange dauert die Produktion?</summary>
-                    <p>In der Regel 7 bis 14 Werktage zwischen Bestellung und Versand. Komplexere Stücke (mehrlagige Jacken, aufwändige Stickerei) können bis zu 21 Tage benötigen — die geschätzte Lieferzeit zeigen wir dir nach der Generierung.</p>
+                    <summary data-i18n="faq.q1">Wie lange dauert die Produktion?</summary>
+                    <p data-i18n="faq.a1">In der Regel 7 bis 14 Werktage zwischen Bestellung und Versand. Komplexere Stücke (mehrlagige Jacken, aufwändige Stickerei) können bis zu 21 Tage benötigen — die geschätzte Lieferzeit zeigen wir dir nach der Generierung.</p>
                 </details>
                 <details class="faq-item" data-reveal>
-                    <summary>Was passiert mit meinem Foto?</summary>
-                    <p>Für die Maßerkennung läuft alles direkt in deinem Browser über MediaPipe — das Foto verlässt nie dein Gerät und wird nicht gespeichert. Nur wenn du explizit die fotorealistische Vorschau anforderst, wird das Foto einmalig an Replicate (US-Server) gesendet und nach der Generierung sofort wieder verworfen.</p>
+                    <summary data-i18n="faq.q2">Was passiert mit meinem Foto?</summary>
+                    <p data-i18n="faq.a2">Für die Maßerkennung läuft alles direkt in deinem Browser über MediaPipe — das Foto verlässt nie dein Gerät und wird nicht gespeichert. Nur wenn du explizit die fotorealistische Vorschau anforderst, wird das Foto einmalig an Replicate (US-Server) gesendet und nach der Generierung sofort wieder verworfen.</p>
                 </details>
                 <details class="faq-item" data-reveal>
-                    <summary>Was kostet ein maßgeschneidertes Stück?</summary>
-                    <p>Der Preis hängt von Stofftyp, Schnittkomplexität und gewählten Maßen ab. Eine Spanne in CHF zeigen wir dir live in der Spec-Sheet-Vorschau — typisch CHF 145–220 für T-Shirts und Hemden, CHF 220–450 für Hosen und Jacken, CHF 380–680 für Mäntel und Kleider.</p>
+                    <summary data-i18n="faq.q3">Was kostet ein maßgeschneidertes Stück?</summary>
+                    <p data-i18n="faq.a3">Der Preis hängt von Stofftyp, Schnittkomplexität und gewählten Maßen ab. Eine Spanne in CHF zeigen wir dir live in der Spec-Sheet-Vorschau — typisch CHF 145–220 für T-Shirts und Hemden, CHF 220–450 für Hosen und Jacken, CHF 380–680 für Mäntel und Kleider.</p>
                 </details>
                 <details class="faq-item" data-reveal>
-                    <summary>Was, wenn ich nicht gemessen wurde?</summary>
-                    <p>Drei Wege zu deinen Maßen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder eine Größenpresets (S/M/L/XL) als Startpunkt, die du danach anpassen kannst. Schneider erhalten alle Werte in der Produktions-Spec.</p>
+                    <summary data-i18n="faq.q4">Was, wenn ich nicht gemessen wurde?</summary>
+                    <p data-i18n="faq.a4">Drei Wege zu deinen Maßen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder eine Größenpresets (S/M/L/XL) als Startpunkt, die du danach anpassen kannst. Schneider erhalten alle Werte in der Produktions-Spec.</p>
                 </details>
                 <details class="faq-item" data-reveal>
-                    <summary>Wo wird gefertigt?</summary>
-                    <p>Aktuell arbeiten wir mit Schneider-Ateliers in der Schweiz und Norditalien zusammen — fair entlohnt, traceable Lieferketten, nachhaltige Materialien wo möglich. Für jede Bestellung sehen wir genau, wer welches Stück nach welcher Spec fertigt.</p>
+                    <summary data-i18n="faq.q5">Wo wird gefertigt?</summary>
+                    <p data-i18n="faq.a5">Aktuell arbeiten wir mit Schneider-Ateliers in der Schweiz und Norditalien zusammen — fair entlohnt, traceable Lieferketten, nachhaltige Materialien wo möglich. Für jede Bestellung sehen wir genau, wer welches Stück nach welcher Spec fertigt.</p>
                 </details>
                 <details class="faq-item" data-reveal>
-                    <summary>Kann ich gespeicherte Designs später nochmal bestellen?</summary>
-                    <p>Ja — alle Designs landen in deiner Bibliothek (lokal in deinem Browser), du kannst sie jederzeit wieder laden, anpassen und neu bestellen. Die fotorealistische Vorschau wird auf Wunsch automatisch ans Design angehängt.</p>
+                    <summary data-i18n="faq.q6">Kann ich gespeicherte Designs später nochmal bestellen?</summary>
+                    <p data-i18n="faq.a6">Ja — alle Designs landen in deiner Bibliothek (lokal in deinem Browser), du kannst sie jederzeit wieder laden, anpassen und neu bestellen. Die fotorealistische Vorschau wird auf Wunsch automatisch ans Design angehängt.</p>
                 </details>
             </div>
         </div>
@@ -830,33 +880,33 @@
                         <span class="logo-mark">UR</span>
                         <span class="logo-text">Urban Revolution</span>
                     </div>
-                    <p class="footer-tagline">Maßgeschneiderte AI-Couture aus Zürich. KI entwirft, Schneider fertigen, du trägst.</p>
+                    <p class="footer-tagline" data-i18n="footer.tagline">Maßgeschneiderte AI-Couture aus Zürich. KI entwirft, Schneider fertigen, du trägst.</p>
                 </div>
-                <nav class="footer-col" aria-label="Atelier">
-                    <h5>Atelier</h5>
+                <nav class="footer-col" data-i18n-aria-label="footer.aria_atelier" aria-label="Atelier">
+                    <h5 data-i18n="footer.col_atelier">Atelier</h5>
                     <ul>
-                        <li><a href="#mission">Mission</a></li>
-                        <li><a href="#design">Design starten</a></li>
-                        <li><a href="#measure">Körpermaße</a></li>
-                        <li><a href="#preview">3D Vorschau</a></li>
-                        <li><a href="#production">Produktion</a></li>
-                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
+                        <li><a href="#design" data-i18n="footer.design_start">Design starten</a></li>
+                        <li><a href="#measure" data-i18n="footer.measure">Körpermaße</a></li>
+                        <li><a href="#preview" data-i18n="nav.preview">3D Vorschau</a></li>
+                        <li><a href="#production" data-i18n="nav.production">Produktion</a></li>
+                        <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
                     </ul>
                 </nav>
-                <nav class="footer-col" aria-label="Mehr">
-                    <h5>Mehr</h5>
+                <nav class="footer-col" data-i18n-aria-label="footer.aria_more" aria-label="Mehr">
+                    <h5 data-i18n="footer.col_more">Mehr</h5>
                     <ul>
-                        <li><a href="https://github.com/Yanisleomoser/UrbanRevolution" target="_blank" rel="noopener">Code (Open Source)</a></li>
-                        <li><a href="mailto:hello@revolveurban.com">Kontakt</a></li>
-                        <li><a href="impressum.html">Impressum</a></li>
-                        <li><a href="datenschutz.html">Datenschutz</a></li>
-                        <li><a href="#main-content">Zum Seitenanfang</a></li>
+                        <li><a href="https://github.com/Yanisleomoser/UrbanRevolution" target="_blank" rel="noopener" data-i18n="footer.code">Code (Open Source)</a></li>
+                        <li><a href="mailto:hello@revolveurban.com" data-i18n="footer.contact">Kontakt</a></li>
+                        <li><a href="impressum.html" data-i18n="footer.imprint">Impressum</a></li>
+                        <li><a href="datenschutz.html" data-i18n="footer.privacy">Datenschutz</a></li>
+                        <li><a href="#main-content" data-i18n="footer.top">Zum Seitenanfang</a></li>
                     </ul>
                 </nav>
             </div>
             <div class="footer-meta">
-                <p>© 2026 Urban Revolution · Designed in Zürich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · Hergestellt mit <span aria-label="Liebe">♥</span> und KI</p>
-                <p class="footer-meta-fine">Preise in CHF · Produktion 7–14 Tage · DSGVO-konform · Foto-Auswertung 100 % clientseitig</p>
+                <p data-i18n-html="footer.meta_html">© 2026 Urban Revolution · Designed in Zürich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · Hergestellt mit <span aria-label="Liebe">♥</span> und KI</p>
+                <p class="footer-meta-fine" data-i18n="footer.meta_fine">Preise in CHF · Produktion 7–14 Tage · DSGVO-konform · Foto-Auswertung 100 % clientseitig</p>
             </div>
         </div>
     </footer>
@@ -882,6 +932,7 @@
     </script>
     <script type="module" src="js/analytics.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/state-manager.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/measurements.js"></script>
