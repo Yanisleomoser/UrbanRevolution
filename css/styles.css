@@ -202,16 +202,20 @@ body {
 /* ============ HERO ============ */
 .hero {
     min-height: 100vh;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
     align-items: center;
+    gap: var(--space-9);
     position: relative;
     overflow: hidden;
     padding: var(--space-12) var(--space-6) var(--space-10);
+    max-width: 1280px;
+    margin: 0 auto;
 }
 
 .hero-content {
-    max-width: 1280px;
-    margin: 0 auto;
+    max-width: 600px;
+    margin: 0;
     position: relative;
     z-index: 2;
     width: 100%;
@@ -228,13 +232,24 @@ body {
 
 .hero-title {
     font-family: 'Playfair Display', serif;
-    font-size: var(--text-display);
+    /* Cap at 88px in two-column hero layout — gives the asset slot room
+       to breathe and keeps the CTA above the fold on 900px-tall viewports. */
+    font-size: clamp(48px, 6vw, 88px);
     font-weight: 900;
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tighter);
     margin-bottom: var(--space-7);
-    /* Subtle balance for multi-line headings on modern browsers */
     text-wrap: balance;
+}
+
+/* On viewports below the 2-col breakpoint (asset stacks), the title can
+   go bigger again since it has the full width to play with. */
+@media (max-width: 960px) {
+    .hero-title { font-size: clamp(48px, 9vw, 96px); }
+}
+
+@media (max-width: 600px) {
+    .hero-title { font-size: clamp(40px, 12vw, 72px); }
 }
 
 .gradient-text {
@@ -2946,4 +2961,137 @@ main { display: block; }
     .faq-section { padding-top: var(--space-9); padding-bottom: var(--space-10); }
     .faq-item summary { padding: var(--space-5) var(--space-5); font-size: var(--text-base); }
     .faq-item p { padding: 0 var(--space-5) var(--space-5); }
+}
+
+/* ============================================================
+   Hero — Brand Asset Slot
+   ============================================================ */
+
+.hero-asset {
+    position: relative;
+    margin: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    justify-self: center;
+}
+
+.hero-asset-picture {
+    display: block;
+    width: 100%;
+    max-width: 380px;
+    max-height: 70vh;
+    aspect-ratio: 4 / 5;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    background:
+        radial-gradient(circle at 30% 25%, rgba(236, 72, 153, 0.18), transparent 55%),
+        radial-gradient(circle at 70% 75%, rgba(6, 182, 212, 0.14), transparent 50%),
+        linear-gradient(180deg, rgba(18, 18, 20, 0.85) 0%, rgba(10, 10, 11, 1) 100%);
+    border: 1px solid var(--border);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 80px rgba(236, 72, 153, 0.15) inset;
+    /* Hook for swapping in real photography later:
+       set background-image: url(...) on .hero-asset-picture and hide the SVG */
+}
+
+.hero-asset-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* Subtle drift so the figure feels alive without distracting */
+    animation: heroFigureFloat 7s ease-in-out infinite;
+}
+
+@keyframes heroFigureFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+}
+
+.hero-asset-garment {
+    transform-origin: 50% 30%;
+    animation: heroGarmentBreathe 6s ease-in-out infinite;
+}
+
+@keyframes heroGarmentBreathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.012); }
+}
+
+.hero-asset-particles circle {
+    animation: heroParticle 4s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.hero-asset-particles circle:nth-child(2) { animation-delay: -1.2s; }
+.hero-asset-particles circle:nth-child(3) { animation-delay: -2.4s; }
+.hero-asset-particles circle:nth-child(4) { animation-delay: -3.0s; }
+
+@keyframes heroParticle {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.85; }
+    50%      { transform: translateY(-14px) scale(1.3); opacity: 1; }
+}
+
+.hero-asset-tag {
+    animation: heroTagPulse 3s ease-in-out infinite;
+    transform-origin: 236px 302px;
+}
+
+@keyframes heroTagPulse {
+    0%, 100% { opacity: 0.8; }
+    50%      { opacity: 1; }
+}
+
+.hero-asset-caption {
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    letter-spacing: 0.01em;
+    text-align: center;
+    max-width: 340px;
+}
+
+.hero-asset-caption strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Reduced motion — everything still: */
+@media (prefers-reduced-motion: reduce) {
+    .hero-asset-svg,
+    .hero-asset-garment,
+    .hero-asset-particles circle,
+    .hero-asset-tag {
+        animation: none !important;
+    }
+}
+
+/* Responsive: stack on tablet+, hide visual on small mobile to keep the
+   hero compact. The hero-content already declares max-width so the text
+   fills the row gracefully. */
+@media (max-width: 960px) {
+    .hero {
+        grid-template-columns: 1fr;
+        gap: var(--space-7);
+        text-align: left;
+    }
+    .hero-content { max-width: 100%; margin: 0; }
+    .hero-asset-picture { max-width: 360px; }
+}
+
+@media (max-width: 600px) {
+    .hero { padding: var(--space-11) var(--space-5) var(--space-7); }
+    .hero-asset { order: 2; }
+    .hero-asset-picture { max-width: 280px; aspect-ratio: 3 / 4; }
+    .hero-asset-caption { font-size: var(--text-xs); }
+}
+
+@media (max-width: 400px) {
+    /* On very small phones the visual would shove the CTA off-screen.
+       Hide it — the gradient orbs in .hero-visual stay as ambient layer. */
+    .hero-asset { display: none; }
 }
