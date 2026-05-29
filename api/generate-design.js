@@ -22,6 +22,7 @@ export const config = { runtime: "edge" };
 
 const API_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-4-6";
+const VALID_GARMENT_TYPES = ['tshirt', 'hoodie', 'shirt', 'pants', 'jacket', 'dress'];
 
 export default async function handler(request) {
     if (request.method !== "POST") {
@@ -51,6 +52,9 @@ export default async function handler(request) {
         return jsonError(400, "prompt must be under 2000 chars");
     }
     const garmentType = typeof type === "string" ? type : "tshirt";
+    if (!VALID_GARMENT_TYPES.includes(garmentType)) {
+        return jsonError(400, `Invalid garment type: ${garmentType}. Allowed: ${VALID_GARMENT_TYPES.join(', ')}`);
+    }
 
     const userPrompt =
         `Du bist Designer für Urban Revolution. Erstelle ein JSON-Design-Konzept für: ` +
