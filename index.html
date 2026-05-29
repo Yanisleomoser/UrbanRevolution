@@ -45,6 +45,8 @@
     <link rel="dns-prefetch" href="https://unpkg.com">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Scroll-story type system: Poppins (UI/facts) + Lora Italic (couture statements) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap" rel="stylesheet">
 
     <!-- Vercel Speed Insights -->
     <script>
@@ -246,50 +248,43 @@
         </div>
     </header>
 
-    <!-- Scroll-getriebene Mission/Vision-Story (Apple-Stil, gepinnt).
-         Beats sind source-geordnete <article> → linear lesbar; das
-         Pinning ist nur visuelle Veredelung (siehe js/scroll-story.js). -->
-    <section id="mission" class="mission" aria-labelledby="mission-heading">
-        <h2 id="mission-heading" class="visually-hidden">Warum Urban Revolution</h2>
-        <div class="mission-track" data-scroll-story>
-            <div class="mission-stage">
-                <div class="orb mission-orb" aria-hidden="true"></div>
+    <!-- Visual Scroll Story — pinned WebGL stage (js/3d/story-scene.js).
+         One particle system morphs through three formations across the
+         scroll track: waste heap → flowing silk threads → tailored figure.
+         Text acts are source-ordered <article>s (linear, readable); the
+         WebGL is a visual enhancement and degrades gracefully. -->
+    <section id="mission" class="story" aria-labelledby="story-heading">
+        <h2 id="story-heading" class="visually-hidden">From waste to made-for-one couture</h2>
+        <div class="story-track" data-story>
+            <div class="story-stage">
+                <canvas id="story-canvas" class="story-canvas" aria-hidden="true"></canvas>
+                <div class="story-scrim" aria-hidden="true"></div>
 
-                <article class="mission-beat is-active" data-beat="0">
-                    <p class="mission-eyebrow">Das Problem · 01</p>
-                    <h3 class="mission-beat-title">Die Welt ertrinkt in Plastik.</h3>
-                    <p class="mission-beat-body">Jedes Jahr landen rund 8 Millionen Tonnen Plastik in den Ozeanen. PET-Flaschen zerfallen über Jahrhunderte — nicht weg, nur kleiner.</p>
-                    <p class="mission-stat"><span class="mission-stat-num">8 Mio. t</span> Plastik pro Jahr im Meer</p>
-                </article>
+                <div class="story-acts">
+                    <article class="story-act is-active" data-act="0">
+                        <p class="story-kicker">Act I — The system</p>
+                        <h3 class="story-headline">100&nbsp;billion garments a&nbsp;year.<br>The average one is worn seven&nbsp;times.</h3>
+                        <p class="story-statement is-gradient">The system is the failure.</p>
+                    </article>
 
-                <article class="mission-beat" data-beat="1">
-                    <p class="mission-eyebrow">Das Problem · 02</p>
-                    <h3 class="mission-beat-title">Mode produziert für den Müll.</h3>
-                    <p class="mission-beat-body">Die Industrie fertigt mehr, als die Welt je tragen kann. Jede Sekunde wird eine Lastwagenladung Textilien verbrannt oder deponiert — vieles davon nie getragen.</p>
-                    <p class="mission-stat"><span class="mission-stat-num">~92 Mio. t</span> Textilmüll pro Jahr</p>
-                </article>
+                    <article class="story-act" data-act="1">
+                        <p class="story-kicker">Act II — The shift</p>
+                        <h3 class="story-headline">AI with purpose.<br>Sourced where markets collapsed.</h3>
+                        <p class="story-statement is-gradient">Transformation.</p>
+                    </article>
 
-                <article class="mission-beat" data-beat="2">
-                    <p class="mission-eyebrow">Unsere Überzeugung</p>
-                    <h3 class="mission-beat-title">KI sollte echte Probleme lösen.</h3>
-                    <p class="mission-beat-body">Statt nur Feeds zu füllen, kann generative KI Ressourcen sparen: entwerfen und fertigen, was wirklich jemand will. Kein Lager, kein Überschuss, keine Verschwendung.</p>
-                    <p class="mission-stat"><span class="mission-stat-num">On demand</span> statt Überproduktion</p>
-                </article>
-
-                <article class="mission-beat" data-beat="3">
-                    <p class="mission-eyebrow">Unsere Vision</p>
-                    <h3 class="mission-beat-title">Deine Kleidung. Aus Plastik gerettet.</h3>
-                    <p class="mission-beat-body">Wir verwandeln recyceltes PET in Couture, die nur für dich entsteht — KI-entworfen, nach deinen Maßen gefertigt. Individualität statt Massenproduktion.</p>
-                    <p class="mission-stat"><span class="mission-stat-num">~14 PET-Flaschen</span> → 1 Teil · 0.9 kg rPET</p>
-                    <a href="#design" class="cta-button mission-cta">Dein Stück entwerfen <span aria-hidden="true">→</span></a>
-                </article>
-
-                <div class="mission-progress" aria-hidden="true">
-                    <span class="mission-dot is-active" data-dot="0"></span>
-                    <span class="mission-dot" data-dot="1"></span>
-                    <span class="mission-dot" data-dot="2"></span>
-                    <span class="mission-dot" data-dot="3"></span>
+                    <article class="story-act" data-act="2">
+                        <p class="story-kicker">Act III — The vision</p>
+                        <h3 class="story-headline">No standardized sizing. No trend cycles.<br>On-demand, tailored to one&nbsp;body.</h3>
+                        <p class="story-statement">Made for one. Not for all.</p>
+                        <a href="#preview" class="story-cta">Pre-Launch: View 3D Preview <span aria-hidden="true">→</span></a>
+                    </article>
                 </div>
+
+                <footer class="story-foot" aria-hidden="true">
+                    <span class="story-mono">UR</span>
+                    <span class="story-page"><span data-act-num>01</span> / 03</span>
+                </footer>
             </div>
         </div>
     </section>
@@ -895,8 +890,8 @@
     <script src="js/preferences.js"></script>
     <script src="js/library.js"></script>
     <script src="js/animations.js"></script>
-    <script src="js/scroll-story.js"></script>
     <script src="js/app.js"></script>
+    <script type="module" src="js/3d/story-scene.js"></script>
     <script type="module" src="js/3d/controller.js"></script>
 </body>
 </html>
