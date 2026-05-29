@@ -1,42 +1,49 @@
 /**
  * Urban Revolution — Visual Scroll Story (WebGL stage)
  *
- * One GPU particle system (a single BufferGeometry of points) morphs
- * through SIX target formations as the user scrolls the pinned story
- * section — each formation visualises its act's text 1:1:
+ * One GPU particle system morphs through SIX formations — each one a
+ * legible picture of its act's text:
  *
- *   I   Overproduction → a chaotic heap of discarded garments
- *   II  Injustice      → waves washing waste onto a foreign shore
- *   III Ecosystem      → pervasive microplastic rain filling the field
- *   IV  The human      → a lone figure dwarfed by a looming waste mound
- *   V   Belief         → chaos resolves into flowing silk threads
- *   VI  Vision         → threads weave a tailored figure; the jacket glows
+ *   I   Overproduction → a tall heap of discarded clothes (garment colours)
+ *   II  Injustice      → a sea with a waste pile beached on a foreign shore
+ *   III Ecosystem      → falling vertical streaks of microplastic rain
+ *   IV  The human      → a small lone figure dwarfed by a looming waste mound
+ *   V   Belief         → chaos resolves into flowing silk threads (gradient)
+ *   VI  Vision         → a tailored figure; the jacket glows
  *
- * Scroll progress (0→1) is read passively and eased per frame, so the
- * morph scrubs smoothly. Each act's centre shows its pure formation;
- * transitions happen across act boundaries. Text acts are toggled via
- * `.is-active`. Self-contained ES module (imports `three` from the import
- * map). Degrades gracefully: prefers-reduced-motion / no-WebGL → CSS
- * shows static, readable acts.
+ * Each scene HOLDS for most of its act (so it reads), then morphs to the
+ * next in the act's final stretch. Colours are lifted well clear of the
+ * void so the dark acts are actually visible. Scroll progress is read
+ * passively and eased per frame. Degrades gracefully (reduced-motion /
+ * no-WebGL → CSS shows static, readable acts).
  */
 
 import * as THREE from "three";
 
-const COUNT = 7000;          // particle count — mobile-safe, dense enough
-const THREADS = 52;          // silk threads in the "belief" formation
-const EASE = 0.07;           // scroll-progress smoothing per frame
+// Fewer particles on phones — two WebGL contexts share the page.
+const MOBILE = typeof window !== "undefined" && window.matchMedia &&
+    window.matchMedia("(max-width: 768px)").matches;
+const COUNT = MOBILE ? 4200 : 7200;
+const THREADS = 56;
+const RAIN_COLS = 150;
+const EASE = 0.07;
 
-// Brand gradient stops (the editorial palette).
+// Brand gradient stops.
 const C_PINK = new THREE.Color("#EC4899");
 const C_PURPLE = new THREE.Color("#A855F7");
 const C_BLUE = new THREE.Color("#3B82F6");
-// Mood palette for the dark acts.
-const C_WASTE_LO = new THREE.Color("#2c2c30");
-const C_WASTE_HI = new THREE.Color("#5b554c");
-const C_SEA = new THREE.Color("#22323d");   // cold, desaturated water
-const C_TOXIC = new THREE.Color("#2f6b5f"); // sickly microplastic teal
-const C_SKIN = new THREE.Color("#7a6253");  // dim, human warmth
-const C_DIM = new THREE.Color("#8a8f99");   // quiet (non-jacket) body
+// Lifted "mood" palette — bright enough to read against the void.
+const C_CLOTH_A = new THREE.Color("#6f7176");
+const C_CLOTH_B = new THREE.Color("#8c7f6d");
+const C_SEA = new THREE.Color("#3f5a6b");
+const C_FOAM = new THREE.Color("#a9c2cd");
+const C_TOXIC = new THREE.Color("#4fb6a3");
+const C_SKIN = new THREE.Color("#bd9f85");
+const C_MOUND = new THREE.Color("#4a4a51");
+const C_DIM = new THREE.Color("#9aa0aa");
+// Faded garment colours so a heap reads as clothing, not gravel.
+const GARMENT = ["#7d4f4f", "#4f5f7d", "#5a6b54", "#8a7d4f", "#6d4f6b", "#b9b3a8"]
+    .map((h) => new THREE.Color(h));
 
 let renderer = null;
 let scene = null;
@@ -45,9 +52,9 @@ let points = null;
 let halo = null;
 let group = null;
 
-let formations = [];         // [{ pos:Float32Array, col:Float32Array }, …]
-let jacketMask = null;       // Uint8Array(COUNT) — 1 for jacket particles (act VI)
-let posAttr, colAttr;        // live BufferAttributes
+let formations = [];
+let jacketMask = null;
+let posAttr, colAttr;
 
 let track = null;
 let acts = [];
@@ -76,10 +83,19 @@ function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 
-// Color along the brand gradient (t: 0=pink → 0.52=purple → 1=blue).
 function gradientColor(t, out) {
     if (t < 0.52) out.copy(C_PINK).lerp(C_PURPLE, t / 0.52);
     else out.copy(C_PURPLE).lerp(C_BLUE, (t - 0.52) / 0.48);
+    return out;
+}
+
+// Muted clothing colour — base fabric tones with occasional garment hues.
+function clothColor(out) {
+    if (Math.random() < 0.34) {
+        out.copy(GARMENT[(Math.random() * GARMENT.length) | 0]).multiplyScalar(rand(0.7, 1));
+    } else {
+        out.copy(C_CLOTH_A).lerp(C_CLOTH_B, Math.random()).multiplyScalar(rand(0.65, 1.1));
+    }
     return out;
 }
 
@@ -92,7 +108,6 @@ function set(f, i, x, y, z, c) {
     f.col[i * 3] = c.r; f.col[i * 3 + 1] = c.g; f.col[i * 3 + 2] = c.b;
 }
 
-// A point near a line segment (a limb capsule) with radial jitter.
 function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
     const t = Math.random();
     out.set(
@@ -102,8 +117,7 @@ function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
     );
 }
 
-// Sample a random point on a standing humanoid; returns the body part so
-// callers can colour the jacket region. Figure spans y ≈ -2.25 … 2.1.
+// Random point on a standing humanoid; returns the body part.
 function sampleHuman(out) {
     const r = Math.random();
     if (r < 0.1) {
@@ -113,106 +127,104 @@ function sampleHuman(out) {
         out.set(Math.sin(b) * Math.cos(a) * rr, 1.78 + Math.cos(b) * rr, Math.sin(b) * Math.sin(a) * rr);
         return "head";
     }
-    if (r < 0.5) {
+    if (r < 0.52) {
         const ty = rand(0.45, 1.55);
-        const taper = 0.5 + (ty - 0.45) / 1.1 * 0.18; // wider shoulders, nipped waist
-        out.set(rand(-taper, taper), ty, rand(-0.28, 0.28));
+        const taper = 0.5 + (ty - 0.45) / 1.1 * 0.18;
+        out.set(rand(-taper, taper), ty, rand(-0.26, 0.26));
         return "torso";
     }
-    if (r < 0.72) {
+    if (r < 0.74) {
         const side = Math.random() < 0.5 ? -1 : 1;
-        pointOnSegment(side * 0.58, 1.45, 0, side * 0.82, 0.45, 0.05, 0.12, out);
+        pointOnSegment(side * 0.56, 1.45, 0, side * 0.82, 0.45, 0.05, 0.1, out);
         return "arms";
     }
     const side = Math.random() < 0.5 ? -1 : 1;
-    pointOnSegment(side * 0.2, 0.45, 0, side * 0.26, -2.25, 0, 0.14, out);
+    pointOnSegment(side * 0.2, 0.45, 0, side * 0.26, -2.25, 0, 0.12, out);
     return "legs";
 }
 
 /* ---------- the six formations ---------- */
 
-// I — Overproduction: a chaotic mound of discarded garments.
+// I — a tall, dense heap of discarded clothes.
 function buildHeap() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
         const a = rand(0, Math.PI * 2);
-        const rad = Math.sqrt(Math.random()) * 2.7;
-        const mound = 1 - rad / 2.7;
-        const y = -2.3 + mound * 2.6 * Math.random() + rand(-0.28, 0.28);
-        if (Math.random() < 0.06) tmp.copy(C_BLUE).lerp(C_WASTE_HI, 0.55).multiplyScalar(0.5);
-        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.55, 1));
-        set(f, i, Math.cos(a) * rad, y, Math.sin(a) * rad * 0.6, tmp);
+        const rad = Math.sqrt(Math.random()) * 2.6;
+        const mound = 1 - rad / 2.6;
+        const y = -2.2 + mound * 3.0 * Math.random() + rand(-0.22, 0.22);
+        set(f, i, Math.cos(a) * rad, y, Math.sin(a) * rad * 0.55, clothColor(tmp));
     }
     return f;
 }
 
-// II — Injustice: a cold sea, and our cast-offs washed up on a foreign shore.
+// II — a cold sea (with foam crests) and our cast-offs beached to the side.
 function buildShore() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        if (Math.random() < 0.58) {
-            // undulating sea surface, spread wide to the horizon
-            const x = rand(-3.6, 3.6);
+        if (Math.random() < 0.56) {
+            const x = rand(-3.8, 3.8);
             const z = rand(-1.8, 1.8);
-            const y = -1.9 + Math.sin(x * 1.2) * 0.22 + Math.sin(z * 1.7 + x) * 0.14 + rand(-0.07, 0.07);
-            tmp.copy(C_SEA).multiplyScalar(rand(0.5, 1));
+            const wave = Math.sin(x * 1.1 + z * 0.6);
+            const y = -1.7 + wave * 0.3 + rand(-0.05, 0.05);
+            if (wave > 0.62) tmp.copy(C_FOAM).multiplyScalar(rand(0.75, 1));
+            else tmp.copy(C_SEA).multiplyScalar(rand(0.55, 1));
             set(f, i, x, y, z, tmp);
         } else {
-            // a heap of waste beached on the right — someone else's coast
             const a = rand(0, Math.PI * 2);
             const rad = Math.sqrt(Math.random()) * 1.5;
-            const y = -1.7 + (1 - rad / 1.5) * 1.5 * Math.random() + rand(-0.14, 0.14);
-            tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.5, 0.95));
-            set(f, i, 2.1 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.7, tmp);
+            const y = -1.6 + (1 - rad / 1.5) * 1.7 * Math.random() + rand(-0.12, 0.12);
+            set(f, i, 2.2 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.7, clothColor(tmp));
         }
     }
     return f;
 }
 
-// III — Ecosystem: pervasive microplastic, everywhere — rain, fish, blood.
+// III — microplastic as falling vertical streaks across the whole field.
 function buildRain() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const x = rand(-3.6, 3.6);
-        const y = rand(-3, 3);
-        const z = rand(-2, 2);
-        tmp.copy(C_TOXIC).multiplyScalar(rand(0.3, 0.9));
+        const colmn = i % RAIN_COLS;
+        const x = ((colmn / (RAIN_COLS - 1)) - 0.5) * 7.4 + rand(-0.05, 0.05);
+        const y = rand(-3.2, 3.2);
+        const z = rand(-1.7, 1.7);
+        tmp.copy(C_TOXIC).multiplyScalar(rand(0.5, 1.05));
         set(f, i, x, y, z, tmp);
     }
     return f;
 }
 
-// IV — The human: a lone figure on the left, dwarfed by a looming mound.
+// IV — a small lone figure on the left, a looming waste mound on the right.
 function buildLoneHuman() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        if (Math.random() < 0.4) {
+        if (Math.random() < 0.42) {
             sampleHuman(vec);
-            vec.multiplyScalar(0.62);      // small, vulnerable
-            vec.x -= 1.8; vec.y -= 0.25;
-            tmp.copy(C_SKIN).multiplyScalar(rand(0.4, 0.72));
+            vec.multiplyScalar(0.6);
+            vec.x -= 1.95; vec.y -= 0.35;
+            tmp.copy(C_SKIN).multiplyScalar(rand(0.7, 1.05));
             set(f, i, vec.x, vec.y, vec.z, tmp);
         } else {
             const a = rand(0, Math.PI * 2);
-            const rad = Math.sqrt(Math.random()) * 2.1;
-            const y = -2.2 + (1 - rad / 2.1) * 3.4 * Math.random() + rand(-0.2, 0.2);
-            tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random() * 0.6).multiplyScalar(rand(0.4, 0.8));
-            set(f, i, 1.7 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.6, tmp);
+            const rad = Math.sqrt(Math.random()) * 2.2;
+            const y = -2.2 + (1 - rad / 2.2) * 3.7 * Math.random() + rand(-0.2, 0.2);
+            tmp.copy(C_MOUND).lerp(C_CLOTH_B, Math.random() * 0.5).multiplyScalar(rand(0.6, 1));
+            set(f, i, 1.7 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.55, tmp);
         }
     }
     return f;
 }
 
-// V — Belief: chaos resolves into fine, flowing silk threads (the gradient).
+// V — fine, flowing silk threads in the brand gradient.
 function buildThreads() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
         const thread = i % THREADS;
-        const baseX = ((thread / (THREADS - 1)) - 0.5) * 5.4;
+        const baseX = ((thread / (THREADS - 1)) - 0.5) * 5.2;
         const phase = thread * 1.7;
         const p = Math.random();
         const y = -2.8 + p * 5.6;
-        const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.32 + rand(-0.04, 0.04);
+        const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.3 + rand(-0.04, 0.04);
         const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
         gradientColor(p, tmp);
         set(f, i, x, y, z, tmp);
@@ -220,15 +232,15 @@ function buildThreads() {
     return f;
 }
 
-// VI — Vision: a tailored figure; the jacket region carries the glowing gradient.
+// VI — a tailored figure; torso + arms (the jacket) carry the glowing gradient.
 function buildFigure() {
     const f = alloc();
     jacketMask = new Uint8Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
         let part;
-        if (Math.random() < 0.12) {
+        if (Math.random() < 0.08) {
             const a = rand(0, Math.PI * 2);
-            const rr = rand(0.9, 1.7);
+            const rr = rand(0.9, 1.6);
             vec.set(Math.cos(a) * rr, rand(0.6, 1.6), Math.sin(a) * rr - 0.1);
             part = "halo";
         } else {
@@ -238,9 +250,9 @@ function buildFigure() {
         jacketMask[i] = isJacket ? 1 : 0;
         if (isJacket) {
             gradientColor(THREE.MathUtils.clamp((vec.y + 2.3) / 4.3, 0, 1), tmp);
-            if (part === "halo") tmp.multiplyScalar(0.6);
+            if (part === "halo") tmp.multiplyScalar(0.55);
         } else {
-            tmp.copy(C_DIM).multiplyScalar(rand(0.35, 0.6));
+            tmp.copy(C_DIM).multiplyScalar(rand(0.5, 0.78));
         }
         set(f, i, vec.x, vec.y, vec.z, tmp);
     }
@@ -256,7 +268,7 @@ function makeSprite() {
     const ctx = c.getContext("2d");
     const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
     g.addColorStop(0, "rgba(255,255,255,1)");
-    g.addColorStop(0.35, "rgba(255,255,255,0.55)");
+    g.addColorStop(0.35, "rgba(255,255,255,0.6)");
     g.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, s, s);
@@ -291,29 +303,43 @@ function makeHalo() {
 
 /* ---------- per-frame morph ---------- */
 
+const FALL_SPAN = 6.6;
+
 function updateMorph(time) {
     const p = easedProgress;
     const NF = formations.length;
 
-    // Each act centre shows its pure formation; boundaries cross-fade.
-    const fp = THREE.MathUtils.clamp(p * acts.length - 0.5, 0, NF - 1);
-    const i = Math.floor(fp);
-    const local = smoothstep(fp - i);
+    // Formation i is shown during act i and HOLDS for the first ~60% of
+    // the act, then morphs to i+1 — so each scene reads while its copy is
+    // on screen instead of perpetually dissolving.
+    const a = p * acts.length;
+    let i = Math.floor(a);
+    if (i > NF - 1) i = NF - 1;
+    const frac = a - i;
+    const local = smoothstep((frac - 0.6) / 0.34);
     const A = formations[i];
     const B = formations[Math.min(i + 1, NF - 1)];
 
-    // How fully the closing "figure" formation has resolved (for the glow).
-    const figureAmt = THREE.MathUtils.clamp(fp - (NF - 2), 0, 1);
+    const figureAmt = i >= NF - 1 ? 1 : (i === NF - 2 ? local : 0);
+    // formation index 2 = rain; how much of it is currently on screen
+    const rainAmt = i === 2 ? (1 - local) : (i === 1 ? local : 0);
     const pulse = 1 + Math.sin(time * 2.2) * 0.18;
 
     const pos = posAttr.array;
     const col = colAttr.array;
     for (let k = 0; k < COUNT; k++) {
         const j = k * 3;
-        // morph position + a faint per-particle shimmer so it always breathes
-        pos[j] = A.pos[j] + (B.pos[j] - A.pos[j]) * local + Math.sin(time * 0.7 + k) * 0.015;
-        pos[j + 1] = A.pos[j + 1] + (B.pos[j + 1] - A.pos[j + 1]) * local + Math.cos(time * 0.6 + k * 1.3) * 0.015;
-        pos[j + 2] = A.pos[j + 2] + (B.pos[j + 2] - A.pos[j + 2]) * local;
+        const x = A.pos[j] + (B.pos[j] - A.pos[j]) * local + Math.sin(time * 0.7 + k) * 0.012;
+        let y = A.pos[j + 1] + (B.pos[j + 1] - A.pos[j + 1]) * local + Math.cos(time * 0.6 + k * 1.3) * 0.012;
+        const z = A.pos[j + 2] + (B.pos[j + 2] - A.pos[j + 2]) * local;
+
+        // Microplastic rain streams downward and wraps within the field.
+        if (rainAmt > 0.002) {
+            const off = (k * 0.221 + time * 1.5) % FALL_SPAN;
+            y -= off * rainAmt;
+            if (y < -3.4) y += FALL_SPAN * rainAmt;
+        }
+        pos[j] = x; pos[j + 1] = y; pos[j + 2] = z;
 
         let r = A.col[j] + (B.col[j] - A.col[j]) * local;
         let g = A.col[j + 1] + (B.col[j + 1] - A.col[j + 1]) * local;
@@ -328,14 +354,11 @@ function updateMorph(time) {
     colAttr.needsUpdate = true;
 
     halo.material.opacity = (figureAmt * figureAmt) * (0.6 + Math.sin(time * 2.2) * 0.18);
+    group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.18;
 
-    group.rotation.y = Math.sin(time * 0.12) * 0.14 + p * 0.2;
-
-    // Camera: pull in as the vision resolves; back off on narrow viewports
-    // so the wide sea/rain formations stay in frame.
-    const zBase = camera.aspect < 1 ? 10.5 : 7.8;
-    camera.position.z = zBase - p * 1.4;
-    camera.lookAt(0, -0.1 + p * 0.2, 0);
+    const zBase = camera.aspect < 1 ? 11.5 : 8.4;
+    camera.position.z = zBase - p * 1.3;
+    camera.lookAt(0, -0.1 + p * 0.15, 0);
 }
 
 /* ---------- scroll + acts ---------- */
@@ -393,7 +416,7 @@ function mount() {
 
     if (window.matchMedia &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        return; // CSS shows static acts
+        return;
     }
 
     track = section.querySelector("[data-story]");
@@ -421,19 +444,18 @@ function mount() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0a0c, 0.07);
+    scene.fog = new THREE.FogExp2(0x0a0a0c, 0.055);
 
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 0, 7.8);
+    camera.position.set(0, 0, 8.4);
 
-    // One formation per act, in narrative order.
     formations = [
         buildHeap(),
         buildShore(),
         buildRain(),
         buildLoneHuman(),
         buildThreads(),
-        buildFigure(), // sets jacketMask
+        buildFigure(),
     ];
 
     const geo = new THREE.BufferGeometry();
@@ -445,14 +467,14 @@ function mount() {
     geo.setAttribute("color", colAttr);
 
     const mat = new THREE.PointsMaterial({
-        size: 0.085,
+        size: MOBILE ? 0.11 : 0.095,
         sizeAttenuation: true,
         map: makeSprite(),
         vertexColors: true,
         transparent: true,
         depthWrite: false,
         blending: THREE.NormalBlending,
-        opacity: 0.95,
+        opacity: 1,
     });
 
     group = new THREE.Group();
