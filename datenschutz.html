@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0b">
+    <meta name="color-scheme" content="dark">
+    <meta name="robots" content="index, follow">
+    <title>Datenschutz — Urban Revolution</title>
+    <meta name="description" content="Datenschutzerklärung von Urban Revolution — wie wir mit deinen Daten, Fotos und Maßen umgehen.">
+    <link rel="canonical" href="https://revolveurban.com/datenschutz.html">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ec4899'/%3E%3Cstop offset='50%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Inter,sans-serif' font-size='24' font-weight='800' text-anchor='middle' fill='white'%3EUR%3C/text%3E%3C/svg%3E">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar" aria-label="Hauptnavigation">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="text-decoration:none;color:inherit;">
+                <span class="logo-mark">UR</span>
+                <span class="logo-text">Urban Revolution</span>
+            </a>
+            <button id="nav-toggle" class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-links">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html#design">Design</a></li>
+                <li><a href="index.html#measure">Maße</a></li>
+                <li><a href="index.html#preview">3D Vorschau</a></li>
+                <li><a href="index.html#production">Produktion</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="legal-page">
+        <a href="index.html" class="legal-back"><span aria-hidden="true">←</span> Zurück zur Startseite</a>
+        <h1>Datenschutzerklärung</h1>
+        <p class="legal-lead">
+            Diese Erklärung beschreibt, welche Daten beim Besuch von Urban Revolution
+            verarbeitet werden — im Einklang mit dem Schweizer Datenschutzgesetz (revDSG)
+            und der EU-DSGVO. Grundsatz: So viel wie möglich passiert direkt in deinem
+            Browser, nicht auf unseren Servern.
+        </p>
+
+        <h2>1. Verantwortliche Stelle</h2>
+        <p>
+            Urban Revolution, Zürich (Schweiz). Kontakt:
+            <a href="mailto:hello@revolveurban.com">hello@revolveurban.com</a>.
+            Vollständige Angaben siehe <a href="impressum.html">Impressum</a>.
+        </p>
+
+        <h2>2. Hosting & Server-Logs</h2>
+        <p>
+            Die Website wird bei <strong>Vercel Inc.</strong> (USA) gehostet. Beim Abruf
+            der Seite verarbeitet Vercel technisch notwendige Verbindungsdaten
+            (z. B. IP-Adresse, Zeitpunkt, abgerufene Ressource, Browser-Typ) zur
+            Auslieferung und Sicherheit. Rechtsgrundlage ist unser berechtigtes Interesse
+            am sicheren Betrieb der Website.
+        </p>
+
+        <h2>3. Körpermaße aus Foto (100 % clientseitig)</h2>
+        <p>
+            Lädst du ein Foto zur Maßerkennung hoch, wird es <strong>ausschliesslich
+            lokal in deinem Browser</strong> mit Google MediaPipe verarbeitet. Das Foto
+            verlässt dein Gerät dabei nicht, wird nicht an uns übertragen und nicht
+            gespeichert. Das MediaPipe-Modell wird einmalig von einem CDN (jsDelivr)
+            geladen.
+        </p>
+
+        <h2>4. KI-Designgenerierung</h2>
+        <p>
+            Dein eingegebener Text-Prompt und der gewählte Kleidungstyp werden zur
+            Erstellung eines Design-Konzepts an <strong>Anthropic</strong>
+            (Claude API) übermittelt. Es werden dabei keine Foto- oder Maßdaten gesendet.
+            Ist kein KI-Schlüssel konfiguriert, erfolgt die Generierung vollständig lokal
+            ohne externe Übertragung.
+        </p>
+
+        <h2>5. Fotorealistische Vorschau (optional, Opt-in)</h2>
+        <p>
+            Nur wenn du aktiv auf „Fotorealistische Vorschau" klickst, werden dein Foto
+            und die Design-Beschreibung einmalig an <strong>Replicate Inc.</strong> (USA,
+            Modell FLUX Kontext) gesendet, um das Vorschaubild zu erzeugen. Dabei findet
+            eine Datenübermittlung in die USA statt. Das Foto wird nur für die
+            Generierung verwendet und nicht dauerhaft von uns gespeichert. Diese Funktion
+            ist freiwillig — ohne deinen Klick wird nichts übertragen.
+        </p>
+
+        <h2>6. Lokale Speicherung (localStorage)</h2>
+        <p>
+            Gespeicherte Designs, Voreinstellungen und ein Zähler für die Anzahl
+            erstellter Vorschauen werden im <strong>localStorage deines Browsers</strong>
+            abgelegt — also lokal auf deinem Gerät, nicht auf unseren Servern. Du kannst
+            diese Daten jederzeit über die Browser-Einstellungen löschen.
+        </p>
+
+        <h2>7. Reichweitenmessung</h2>
+        <p>
+            Wir nutzen <strong>Vercel Web Analytics</strong> und <strong>Vercel Speed
+            Insights</strong> zur anonymisierten Messung von Seitenaufrufen und
+            Ladezeiten. Diese Dienste arbeiten ohne Cookies und ohne geräteübergreifendes
+            Tracking; es werden keine personenbezogenen Profile gebildet.
+        </p>
+
+        <h2>8. Externe Dienste / Drittland-Übermittlung</h2>
+        <ul>
+            <li>Vercel (Hosting, Analytics) — USA</li>
+            <li>Anthropic (KI-Designgenerierung) — USA</li>
+            <li>Replicate (fotorealistische Vorschau, nur bei Opt-in) — USA</li>
+            <li>Google Fonts / jsDelivr / unpkg (CDN für Schriften, 3D- und Pose-Bibliotheken)</li>
+        </ul>
+
+        <h2>9. Deine Rechte</h2>
+        <p>
+            Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der
+            Verarbeitung sowie Datenübertragbarkeit. Wende dich dazu an
+            <a href="mailto:hello@revolveurban.com">hello@revolveurban.com</a>. Zudem
+            besteht ein Beschwerderecht bei der zuständigen Aufsichtsbehörde (in der
+            Schweiz: EDÖB).
+        </p>
+
+        <div class="legal-note">
+            <strong>Hinweis für den Betreiber:</strong> Diese Vorlage beschreibt den
+            aktuellen technischen Stand der Anwendung, ist jedoch keine Rechtsberatung.
+            Vor dem Launch durch eine fachkundige Stelle prüfen und Betreiberangaben
+            sowie ggf. AVV/Datenverarbeitungsverträge mit den genannten Diensten ergänzen.
+            Stand: Mai 2026.
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-meta">
+                <p>© 2026 Urban Revolution · Designed in Zürich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile nav toggle initialization for legal pages
+        (function() {
+            const toggle = document.getElementById("nav-toggle");
+            const links = document.getElementById("nav-links");
+            if (!toggle || !links) return;
+
+            const setOpen = (open) => {
+                links.classList.toggle("open", open);
+                toggle.setAttribute("aria-expanded", String(open));
+                toggle.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
+            };
+
+            toggle.addEventListener("click", () => {
+                setOpen(!links.classList.contains("open"));
+            });
+
+            // Close after tapping a link or pressing Escape
+            links.querySelectorAll("a").forEach((a) =>
+                a.addEventListener("click", () => setOpen(false))
+            );
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && links.classList.contains("open")) {
+                    setOpen(false);
+                    toggle.focus();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

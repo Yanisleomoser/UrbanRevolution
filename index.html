@@ -18,11 +18,18 @@
     <meta property="og:description" content="KI entwirft dein Wunschkleidungsstück. 3D-Modell prüft die Passform. Schweizer Schneider fertigen es. Maßgeschneidert, transparent, in unter 14 Tagen.">
     <meta property="og:url" content="https://revolveurban.com">
     <meta property="og:locale" content="de_DE">
+    <meta property="og:image" content="https://revolveurban.com/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Urban Revolution — AI Couture Atelier aus Zürich">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Urban Revolution — AI Couture Atelier">
     <meta name="twitter:description" content="KI entwirft. 3D prüft. Schneider fertigen. Maßgeschneidert aus Zürich.">
+    <meta name="twitter:image" content="https://revolveurban.com/assets/og-image.png">
+
+    <link rel="canonical" href="https://revolveurban.com/">
 
     <!-- Favicons as inline SVG using the brand mark gradient -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ec4899'/%3E%3Cstop offset='50%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Inter,sans-serif' font-size='24' font-weight='800' text-anchor='middle' fill='white'%3EUR%3C/text%3E%3C/svg%3E">
@@ -70,11 +77,17 @@
                 <span class="logo-mark">UR</span>
                 <span class="logo-text">Urban Revolution</span>
             </div>
-            <ul class="nav-links">
+            <button id="nav-toggle" class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-links">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
                 <li><a href="#design">Design</a></li>
                 <li><a href="#measure">Maße</a></li>
                 <li><a href="#preview">3D Vorschau</a></li>
                 <li><a href="#production">Produktion</a></li>
+                <li><a href="#faq">FAQ</a></li>
             </ul>
         </div>
     </nav>
@@ -790,12 +803,14 @@
                     <ul>
                         <li><a href="https://github.com/Yanisleomoser/UrbanRevolution" target="_blank" rel="noopener">Code (Open Source)</a></li>
                         <li><a href="mailto:hello@revolveurban.com">Kontakt</a></li>
+                        <li><a href="impressum.html">Impressum</a></li>
+                        <li><a href="datenschutz.html">Datenschutz</a></li>
                         <li><a href="#main-content">Zum Seitenanfang</a></li>
                     </ul>
                 </nav>
             </div>
             <div class="footer-meta">
-                <p>© 2026 Urban Revolution · Designed in Zürich · Hergestellt mit <span aria-label="Liebe">♥</span> und KI</p>
+                <p>© 2026 Urban Revolution · Designed in Zürich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · Hergestellt mit <span aria-label="Liebe">♥</span> und KI</p>
                 <p class="footer-meta-fine">Preise in CHF · Produktion 7–14 Tage · DSGVO-konform · Foto-Auswertung 100 % clientseitig</p>
             </div>
         </div>

@@ -258,6 +258,47 @@ const AI = (() => {
     return notes[type] || notes.tshirt;
   }
 
+  /**
+   * Preferred path: ask the server-side Vercel Edge Function
+   * (api/generate-design.js) which holds ANTHROPIC_API_KEY securely.
+   * Returns the design JSON, or null so the caller falls through to the
+   * browser-key path and then the local generator. Stays silent when the
+   * endpoint is simply absent (static host) or the key isn't configured;
+   * surfaces real failures via the ai-fallback event so app.js can toast.
+   */
+  async function generateWithServer(prompt, type) {
+    let response;
+    try {
+      response = await fetch("/api/generate-design", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, type }),
+      });
+    } catch {
+      return null; // endpoint unreachable (static host / offline)
+    }
+
+    if (response.status === 404) return null; // no edge function on this host
+
+    let body;
+    try {
+      body = await response.json();
+    } catch {
+      body = {};
+    }
+
+    if (response.ok && body && body.name) {
+      return body;
+    }
+
+    const reason = body && body.error ? body.error : `HTTP ${response.status}`;
+    // "not configured" is an expected, quiet fallback (no key on server).
+    if (!/not configured/i.test(reason)) {
+      window.dispatchEvent(new CustomEvent("ai-fallback", { detail: { reason } }));
+    }
+    return null;
+  }
+
   async function generateWithClaude(prompt, type) {
     const apiKey = window.URBAN_REVOLUTION_API_KEY;
     if (!apiKey) return null;
@@ -330,7 +371,11 @@ Antworte NUR mit JSON:
       const type = garmentType || detectType(prompt) || "tshirt";
       CONFIG.validateGarmentType(type);
 
-      const claudeResult = await generateWithClaude(prompt, type);
+      // Server-side proxy first (secure), then the demo browser-key path,
+      // then the local keyword generator as a final fallback.
+      const claudeResult =
+        (await generateWithServer(prompt, type)) ||
+        (await generateWithClaude(prompt, type));
 
       if (claudeResult) {
         return {
