@@ -17,11 +17,15 @@ cd "$CLAUDE_PROJECT_DIR"
 
 # 1. Project deps — pulls @vercel/speed-insights plus the css-tree / htmlhint
 #    validators behind `npm run validate:css` and `npm run validate:html`.
-npm install
+#    --include=dev is required because this environment sets NODE_ENV=production,
+#    which would otherwise skip devDependencies AND rewrite package-lock.json
+#    (leaving the working tree dirty every session).
+npm install --include=dev
 
 # 2. Headless Chromium for visual checks. `--no-save` keeps playwright-core
-#    out of package.json so the Vercel deploy stays lean. Best-effort.
-npm install --no-save playwright-core || echo "hook: playwright-core install failed (screenshots disabled)"
+#    out of package.json so the Vercel deploy stays lean; --include=dev keeps
+#    the lockfile in sync (see above). Best-effort.
+npm install --no-save --include=dev playwright-core || echo "hook: playwright-core install failed (screenshots disabled)"
 npx --yes playwright@latest install chromium || echo "hook: chromium download failed (screenshots disabled)"
 
 # Persist the browser path so scripts/shoot.mjs finds Chromium this session.
