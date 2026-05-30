@@ -3825,6 +3825,19 @@ main { display: block; }
     filter: brightness(1.18) saturate(1.12) drop-shadow(0 0 24px rgba(236, 72, 153, 0.25));
 }
 
+/* Live 3D hero figure (js/3d/hero-scene.js). Fills the picture frame and
+   overlays the SVG; the module fades the SVG out once it mounts. If WebGL
+   is unavailable or motion is reduced, this stays empty and the SVG shows. */
+.hero-3d {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out);
+}
+.hero-3d.is-live { opacity: 1; }
+.hero-3d canvas { width: 100% !important; height: 100% !important; display: block; }
+
 @media (max-width: 600px) {
     .hero-prompt { max-width: 100%; padding-left: var(--space-4); }
     .hero-prompt-go { padding: var(--space-3); }
