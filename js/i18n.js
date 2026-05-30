@@ -49,6 +49,7 @@ const I18N = (() => {
       "hero.prompt_go_text": "Designen",
       "hero.prompt_go_aria": "Design starten",
       "hero.microcopy_html": 'Tippe los — oder sieh zu, wie aus Worten ein Kleidungsstück wird.',
+      "hero.vision_cta_html": 'Warum das wichtig ist <span aria-hidden="true">↓</span>',
       "hero.examples": [
         "ein oversized Hoodie in Sonnenuntergangsfarben",
         "ein fließendes Leinenkleid für laue Sommerabende",
@@ -429,6 +430,7 @@ const I18N = (() => {
       "hero.prompt_go_text": "Design",
       "hero.prompt_go_aria": "Start designing",
       "hero.microcopy_html": 'Start typing — or watch words become a garment.',
+      "hero.vision_cta_html": 'Why this matters <span aria-hidden="true">↓</span>',
       "hero.examples": [
         "an oversized hoodie in sunset colours",
         "a flowing linen dress for warm summer evenings",
