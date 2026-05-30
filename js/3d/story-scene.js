@@ -1,31 +1,28 @@
 /**
  * Urban Revolution — Visual Scroll Story (continuous single-object morph)
  *
- * One hero object, a single GPU particle system, never dissolves — it
- * transforms continuously as you scroll, so the whole story speaks ONE
- * visual language. The same particles are, in turn:
+ * One hero object, made of a single GPU particle system, never dissolves —
+ * it transforms continuously as you scroll, so the whole story speaks ONE
+ * visual language (no photo↔particle break). The same particles are, in turn:
  *
  *   I   a PET bottle            "this bottle outlives your great-grandkids"
  *   II  → a heap of waste       "your old shirt becomes this mountain"
  *   III → dispersing drift      "it travels on — to places you never see"
  *   IV  → dust inside a body    "it comes back. in the blood of 4 in 5 of us"
- *   V   → glowing silk threads  "but the same fibre can become something else"
- *   VI  → a tailored jacket     "made for one. your next piece."
+ *   V   → a glowing thread      "but the same fibre can become something else"
+ *   VI  → a tailored figure     "made for one. your next piece."
  *
- * Rendering (the combine of the two story branches):
- *   - The morph runs entirely in a points vertex shader: each particle
- *     carries its current keyframe (A = built-in `position`) and the next
- *     (B = aPosB) plus both colours; the shader mixes them by a `uLocal`
- *     uniform every frame. The CPU only swaps the A/B attribute buffers at
- *     act boundaries (~5×/scroll) and nudges a handful of uniforms — so the
- *     per-frame cost is O(1) and the particle budget can be large.
- *   - Act VI is a real tailored jacket (structured shoulders, notched-lapel
- *     collar, tapered body, sleeves) whose couture seams (placket, lapels,
- *     princess/armhole seams, cuffs, hem) are bright particles lifted by a
- *     bloom pass (EffectComposer → UnrealBloomPass) for a soft glow.
+ * Rendering: the morph runs entirely in a points vertex shader (each particle
+ * carries keyframe A = built-in `position` and the next B = aPosB plus both
+ * colours; the shader mixes them by a `uLocal` uniform). The CPU only swaps
+ * the A/B attribute buffers at act boundaries (~5×/scroll) and nudges a few
+ * uniforms — so the per-frame cost is O(1) and the particle budget can grow.
+ * A bloom pass (EffectComposer → UnrealBloomPass) lifts the brightest
+ * particles, so the rim-lit contour and gradient jacket of the final figure
+ * glow.
  *
- * A scroll/time-driven counter (acts I–IV) makes the scale personal.
- * Degrades gracefully: reduced-motion / no-WebGL → CSS shows static acts.
+ * A scroll/time-driven counter (acts I–IV) makes the scale personal. Degrades
+ * gracefully: reduced-motion / no-WebGL → CSS shows static, readable acts.
  */
 
 import * as THREE from "three";
@@ -36,7 +33,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 const MOBILE = typeof window !== "undefined" && window.matchMedia &&
     window.matchMedia("(max-width: 768px)").matches;
-const COUNT = MOBILE ? 5200 : 9000;
+const COUNT = MOBILE ? 4600 : 7600;
 const THREADS = 56;
 const EASE = 0.075;
 const VOID = 0x0a0a0c;
@@ -53,17 +50,6 @@ const C_WASTE_HI = new THREE.Color("#8a8170");
 const C_TOXIC = new THREE.Color("#57c0aa");  // microplastic teal
 const C_SKIN = new THREE.Color("#c79f86");   // warm human tone
 const C_DIM = new THREE.Color("#9aa0aa");
-const C_WHITE = new THREE.Color("#ffffff");
-
-// Jacket silhouette (act VI), in the same world units as the figure.
-const SHOULDER_Y = 1.52, SHOULDER_HALF = 0.82;
-const CHEST_Y = 0.98;
-const WAIST_Y = 0.34, WAIST_HALF = 0.5;
-const HEM_Y = -0.3, HEM_HALF = 0.62;
-const NECK_HALF = 0.17;
-const FRONT_DEPTH = 0.34;
-const CLOSURE_GAP = 0.05;
-const SEAM_N = Math.floor(COUNT * 0.2);   // particles that land on couture seams
 
 // Global throughput, for the live counter (sourced, see CREDITS.md):
 //   >100bn garments/yr ÷ 31.536e6 s ≈ 3,170 produced per second;
@@ -78,28 +64,17 @@ const VERT = /* glsl */`
     attribute vec3 aColB;
     attribute float aMask;
     attribute float aSeed;
-    uniform float uLocal, uTime, uFigureAmt, uPulse, uSeamGlow, uShimmerY, uShimmerAmt, uSize, uScale;
+    uniform float uLocal, uTime, uFigureAmt, uPulse, uSize, uScale;
     uniform vec3 uFog;
     varying vec3 vColor;
     void main() {
         vec3 p = mix(position, aPosB, uLocal);
-        // Jitter keeps the dark acts alive but settles as the jacket forms,
-        // so the final garment reads crisp instead of cloudy.
-        float calm = 1.0 - 0.65 * uFigureAmt;
-        p.x += sin(uTime * 0.7 + aSeed) * 0.012 * calm;
-        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012 * calm;
+        p.x += sin(uTime * 0.7 + aSeed) * 0.012;
+        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012;
 
         vec3 col = mix(aColA, aColB, uLocal);
-        // The mask encodes each particle's role in the jacket keyframe
-        // (0 body, 1 fabric, 2 seam); it only lights up as we reach act VI.
-        if (uFigureAmt > 0.001 && aMask > 0.5) {
-            float g = (aMask > 1.5) ? uSeamGlow : uPulse;
-            if (aMask > 1.5 && uShimmerAmt > 0.001) {
-                float dy = aPosB.y - uShimmerY;
-                g *= 1.0 + uShimmerAmt * exp(-dy * dy * 7.0);
-            }
-            col *= mix(1.0, g, uFigureAmt);
-        }
+        // Jacket particles breathe brighter only as the figure forms (act VI).
+        if (uFigureAmt > 0.001 && aMask > 0.5) col *= mix(1.0, uPulse, uFigureAmt);
 
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         float fog = 1.0 - exp(-pow(0.05 * length(mv.xyz), 2.0));
@@ -173,11 +148,6 @@ function gradientColor(t, out) {
     return out;
 }
 
-function heightTone(y, out) {
-    const h = THREE.MathUtils.clamp((y - HEM_Y) / (SHOULDER_Y + 0.3 - HEM_Y), 0, 1);
-    return gradientColor(h, out);
-}
-
 function alloc() {
     return { pos: new Float32Array(COUNT * 3), col: new Float32Array(COUNT * 3) };
 }
@@ -185,142 +155,85 @@ function put(f, i, x, y, z, c) {
     f.pos[i * 3] = x; f.pos[i * 3 + 1] = y; f.pos[i * 3 + 2] = z;
     f.col[i * 3] = c.r; f.col[i * 3 + 1] = c.g; f.col[i * 3 + 2] = c.b;
 }
-function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
-    const t = Math.random();
-    out.set(ax + (bx - ax) * t + rand(-radius, radius),
-            ay + (by - ay) * t + rand(-radius, radius),
-            az + (bz - az) * t + rand(-radius, radius));
-}
-function sampleHuman(out) {
-    const r = Math.random();
-    if (r < 0.1) {
-        const a = rand(0, Math.PI * 2), b = Math.acos(rand(-1, 1)), rr = 0.32 * Math.cbrt(Math.random());
-        out.set(Math.sin(b) * Math.cos(a) * rr, 1.78 + Math.cos(b) * rr, Math.sin(b) * Math.sin(a) * rr);
-        return "head";
+
+/* ---------- human silhouette via canvas mask ----------
+ * Instead of throwing points into rough body zones (which looked like a
+ * stiff gingerbread T-pose), we DRAW a real, relaxed standing figure onto
+ * an offscreen canvas and sample particles from its opaque pixels. This
+ * yields a recognisably human silhouette with real proportions and pose.
+ * The mask also tags the JACKET region (torso + upper arms) so act VI can
+ * colour it with the brand gradient, and flags EDGE pixels so we can rim-
+ * light the contour (depth/plasticity instead of a flat blob).
+ */
+let humanMask = null; // { pts:[{x,y,edge,jacket}], ... } in normalized coords
+
+function buildHumanMask() {
+    const W = 220, H = 460;
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#fff";
+
+    const cx = W / 2;
+    // Helper: a tapered limb/torso as a rounded capsule.
+    const capsule = (x1, y1, r1, x2, y2, r2) => {
+        const steps = 26;
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t, r = r1 + (r2 - r1) * t;
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+    };
+
+    // Head + neck
+    ctx.beginPath(); ctx.ellipse(cx, 56, 30, 36, 0, 0, Math.PI * 2); ctx.fill();
+    capsule(cx, 88, 13, cx, 110, 17);
+    // Torso (shoulders → waist), slightly tapered — relaxed stance
+    capsule(cx - 2, 116, 46, cx, 250, 34);
+    // Arms DOWN at the sides, slight outward angle (not a T-pose)
+    capsule(cx - 40, 126, 16, cx - 70, 250, 12);   // left upper+fore
+    capsule(cx - 70, 250, 12, cx - 78, 300, 9);
+    capsule(cx + 40, 126, 16, cx + 70, 250, 12);   // right
+    capsule(cx + 70, 250, 12, cx + 78, 300, 9);
+    // Hips → legs, feet slightly apart
+    capsule(cx - 4, 250, 34, cx - 26, 300, 22);
+    capsule(cx - 26, 300, 20, cx - 30, 430, 13);   // left leg
+    capsule(cx + 4, 250, 34, cx + 26, 300, 22);
+    capsule(cx + 26, 300, 20, cx + 30, 430, 13);   // right leg
+
+    const img = ctx.getImageData(0, 0, W, H).data;
+    const at = (x, y) => img[(y * W + x) * 4 + 3] > 80; // opaque?
+    const pts = [];
+    for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+            if (!at(x, y)) continue;
+            // edge = at least one transparent 4-neighbour
+            const edge = !at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1);
+            // jacket region: torso + upper arms (roughly y 110–250)
+            const jacket = y > 108 && y < 252;
+            pts.push({
+                x: (x - cx) / 90,          // → world units (~±1.2 wide)
+                y: (H * 0.52 - y) / 90,    // flip + centre (~±2.4 tall)
+                edge, jacket,
+            });
+        }
     }
-    if (r < 0.52) {
-        const ty = rand(0.45, 1.55), taper = 0.5 + (ty - 0.45) / 1.1 * 0.18;
-        out.set(rand(-taper, taper), ty, rand(-0.26, 0.26)); return "torso";
-    }
-    if (r < 0.74) {
-        const s = Math.random() < 0.5 ? -1 : 1;
-        pointOnSegment(s * 0.56, 1.45, 0, s * 0.82, 0.45, 0.05, 0.1, out); return "arms";
-    }
-    const s = Math.random() < 0.5 ? -1 : 1;
-    pointOnSegment(s * 0.2, 0.45, 0, s * 0.26, -2.25, 0, 0.12, out); return "legs";
+    humanMask = { pts };
 }
 
-/* ---------- jacket silhouette (act VI) ---------- */
-
-function bezier3(p0, p1, p2, t, out) {
-    const mt = 1 - t;
+// Pull a random silhouette point; gives it gentle volume in Z (more at the
+// centre, thin at the contour) so the figure reads as a body, not a sheet.
+function sampleSilhouette(out) {
+    if (!humanMask) buildHumanMask();
+    const pts = humanMask.pts;
+    const p = pts[(Math.random() * pts.length) | 0];
+    const depth = p.edge ? 0.05 : 0.32;
     out.set(
-        mt * mt * p0[0] + 2 * mt * t * p1[0] + t * t * p2[0],
-        mt * mt * p0[1] + 2 * mt * t * p1[1] + t * t * p2[1],
-        mt * mt * p0[2] + 2 * mt * t * p1[2] + t * t * p2[2],
+        p.x + rand(-0.012, 0.012),
+        p.y + rand(-0.012, 0.012),
+        rand(-depth, depth),
     );
-}
-function jacketHalf(y) {
-    if (y >= WAIST_Y) {
-        const t = smoothstep((y - WAIST_Y) / (SHOULDER_Y - WAIST_Y));
-        return WAIST_HALF + (SHOULDER_HALF - WAIST_HALF) * t;
-    }
-    const t = THREE.MathUtils.clamp((WAIST_Y - y) / (WAIST_Y - HEM_Y), 0, 1);
-    return WAIST_HALF + (HEM_HALF - WAIST_HALF) * t;
-}
-function jacketInner(y) {
-    if (y > CHEST_Y) {
-        const t = (y - CHEST_Y) / (SHOULDER_Y - CHEST_Y);
-        return CLOSURE_GAP + (NECK_HALF - CLOSURE_GAP) * t;
-    }
-    return CLOSURE_GAP;
-}
-function frontZ(x, hw) {
-    const u = THREE.MathUtils.clamp(Math.abs(x) / Math.max(hw, 0.001), 0, 1);
-    return FRONT_DEPTH * Math.sqrt(1 - u * u);
-}
-function sampleBody(out) {
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const y = rand(HEM_Y, SHOULDER_Y);
-    const hw = jacketHalf(y);
-    const inner = Math.min(jacketInner(y), hw - 0.02);
-    const x = side * (inner + (hw - inner) * Math.random());
-    out.set(x, y, frontZ(x, hw) + rand(-0.025, 0.025));
-}
-function sleevePath(side, t, out) {
-    bezier3([side * (SHOULDER_HALF - 0.06), SHOULDER_Y - 0.04, 0.05],
-            [side * (SHOULDER_HALF + 0.07), 0.5, 0.24],
-            [side * 0.66, -0.46, 0.12], t, out);
-}
-function sampleSleeve(out) {
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const t = Math.random();
-    sleevePath(side, t, out);
-    const radius = 0.2 * (1 - t) + 0.085 * t;
-    const a = rand(0, Math.PI * 2);
-    const rr = radius * Math.sqrt(Math.random());
-    out.x += Math.cos(a) * rr;
-    out.y += Math.sin(a) * rr * 0.85;
-    out.z += Math.cos(a) * rr * 0.5 + 0.02;
-}
-function sampleCollar(out) {
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const t = Math.random();
-    const x = side * (0.06 + (NECK_HALF - 0.06) * t) + side * rand(0, 0.09);
-    const y = CHEST_Y + (SHOULDER_Y - CHEST_Y) * t;
-    const hw = jacketHalf(y);
-    out.set(x, y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.03);
-}
-function sampleLegs(out) {
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const t = Math.random();
-    const x = side * 0.22 + side * (0.04 * t);
-    const y = (HEM_Y - 0.05) + (-2.35 - (HEM_Y - 0.05)) * t;
-    const radius = 0.2 * (1 - t) + 0.12 * t;
-    const a = rand(0, Math.PI * 2);
-    const rr = radius * Math.sqrt(Math.random());
-    out.set(x + Math.cos(a) * rr, y, Math.sin(a) * rr * 0.7);
-}
-function sampleHead(out) {
-    if (Math.random() < 0.4) {
-        out.set(rand(-0.12, 0.12), rand(SHOULDER_Y, SHOULDER_Y + 0.22), rand(-0.06, 0.1));
-        return;
-    }
-    const a = rand(0, Math.PI * 2);
-    const b = Math.acos(rand(-1, 1));
-    const rr = 0.21 * Math.cbrt(Math.random());
-    out.set(Math.sin(b) * Math.cos(a) * rr, 1.96 + Math.cos(b) * rr, Math.sin(b) * Math.sin(a) * rr);
-}
-
-// A point on one of the couture seams (bright; lifted by the bloom pass).
-function sampleSeam(out) {
-    const r = Math.random();
-    let bright = 1;
-    if (r < 0.14) {                                   // centre placket + buttons
-        out.set(rand(-0.012, 0.012), rand(HEM_Y, CHEST_Y), FRONT_DEPTH + 0.01);
-        if (Math.random() < 0.16) bright = 1.3;
-    } else if (r < 0.4) {                             // notched lapel edges
-        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
-        const x = side * (0.06 + (NECK_HALF - 0.06) * t);
-        const y = CHEST_Y + (SHOULDER_Y - CHEST_Y) * t, hw = jacketHalf(y);
-        out.set(x, y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.04); bright = 1.2;
-    } else if (r < 0.52) {                            // shoulder seams
-        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
-        out.set(side * (NECK_HALF + (SHOULDER_HALF - 0.04 - NECK_HALF) * t), SHOULDER_Y - 0.04 * t, 0.12 * (1 - t) + 0.02);
-    } else if (r < 0.68) {                            // princess seams
-        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
-        const y = HEM_Y + (SHOULDER_Y - 0.12 - HEM_Y) * t, hw = jacketHalf(y);
-        out.set(side * (0.26 + 0.1 * (1 - t)), y, frontZ(Math.min(side * (0.26 + 0.1 * (1 - t)), hw), hw) + 0.02);
-    } else if (r < 0.86) {                            // sleeve outer seam + cuff
-        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
-        sleevePath(side, t, out);
-        out.x += side * (0.2 * (1 - t) + 0.085 * t) * 0.9; out.z += 0.02;
-        if (t > 0.92) bright = 1.25;
-    } else {                                          // hem edge
-        const x = rand(-HEM_HALF, HEM_HALF), hw = jacketHalf(HEM_Y);
-        out.set(x, HEM_Y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.02);
-    }
-    return bright;
+    return p;
 }
 
 /* ---------- the six keyframes of the hero object ---------- */
@@ -331,10 +244,15 @@ function buildBottle() {
     for (let i = 0; i < COUNT; i++) {
         const u = Math.random();
         let y, radius;
-        if (u < 0.66) { y = rand(-1.7, 0.9); radius = 0.62; }
-        else if (u < 0.8) { const t = Math.random(); y = 0.9 + t * 0.5; radius = 0.62 - t * 0.42; }
-        else if (u < 0.94) { y = rand(1.4, 1.9); radius = 0.2; }
-        else { y = rand(1.9, 2.1); radius = 0.26; }
+        if (u < 0.66) {            // body
+            y = rand(-1.7, 0.9); radius = 0.62;
+        } else if (u < 0.8) {      // shoulder taper
+            const t = Math.random(); y = 0.9 + t * 0.5; radius = 0.62 - t * 0.42;
+        } else if (u < 0.94) {     // neck
+            y = rand(1.4, 1.9); radius = 0.2;
+        } else {                   // cap
+            y = rand(1.9, 2.1); radius = 0.26;
+        }
         const a = rand(0, Math.PI * 2);
         const shell = radius * (0.9 + Math.random() * 0.1);
         put(f, i, Math.cos(a) * shell, y, Math.sin(a) * shell,
@@ -343,42 +261,60 @@ function buildBottle() {
     return f;
 }
 
-// II — the bottle becomes a heap (one shirt → this mountain).
+// II — the bottle becomes a heap (one shirt → this mountain). A SOLID,
+// dense cone: height is tied to radius (low at the rim, tall in the centre)
+// and particles fill the volume beneath that surface.
+const HEAP_R = 2.3;        // base radius
+const HEAP_H = 3.4;        // peak height above the base
+const HEAP_BASE = -2.3;    // ground line
 function buildHeap() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const a = rand(0, Math.PI * 2), radius = Math.sqrt(Math.random()) * 2.7;
-        const mound = 1 - radius / 2.7;
-        const y = -2.2 + mound * 3.0 * Math.random() + rand(-0.22, 0.22);
-        if (Math.random() < 0.12) tmp.copy(C_PET_DIM).multiplyScalar(rand(0.5, 0.9));
-        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.6, 1.05));
-        put(f, i, Math.cos(a) * radius, y, Math.sin(a) * radius * 0.6, tmp);
+        const a = rand(0, Math.PI * 2);
+        // bias toward the centre → denser, taller core
+        const radius = Math.pow(Math.random(), 0.7) * HEAP_R;
+        const surface = HEAP_H * (1 - radius / HEAP_R);      // cone height here
+        const y = HEAP_BASE + Math.random() * surface + rand(-0.05, 0.05);
+        const jitter = 1 + rand(-0.06, 0.06);
+        if (Math.random() < 0.14) tmp.copy(C_PET_DIM).multiplyScalar(rand(0.5, 0.9));
+        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.6, 1.1));
+        put(f, i, Math.cos(a) * radius * jitter, y, Math.sin(a) * radius * 0.62 * jitter, tmp);
     }
     return f;
 }
 
-// III — it travels: the heap disperses into a wide drifting field.
+// III — it travels: the heap disperses into a wide drifting current.
 function buildDrift() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const x = rand(-4.2, 4.2), y = rand(-2.6, 2.6), z = rand(-2.2, 2.2);
-        const d = 1 - Math.min(1, Math.hypot(x, y) / 4.5);
-        tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(0.4 + d * 0.6);
+        // A current, not noise: particles ride sweeping horizontal streaks
+        // that drift to the right (the waste "travelling on").
+        const lane = Math.floor(rand(0, 26));
+        const ly = -2.4 + (lane / 25) * 4.8;
+        const t = Math.random();                       // 0 (left) → 1 (right)
+        const x = -4.4 + t * 8.8;
+        const wave = Math.sin(t * Math.PI * 3 + lane) * 0.35;
+        const y = ly + wave + rand(-0.12, 0.12);
+        const z = Math.cos(t * Math.PI * 2 + lane) * 1.4 + rand(-0.15, 0.15);
+        const dens = Math.sin(t * Math.PI) * 0.7 + 0.3;
+        tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(0.45 + dens * 0.6);
         put(f, i, x, y, z, tmp);
     }
     return f;
 }
 
-// IV — it comes back: dust settles INTO a human silhouette.
+// IV — it comes back: toxic dust settles INTO a human silhouette.
 function buildBodyDust() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        if (Math.random() < 0.62) {
-            sampleHuman(vec); vec.multiplyScalar(0.92);
-            tmp.copy(Math.random() < 0.4 ? C_TOXIC : C_SKIN).multiplyScalar(rand(0.55, 0.95));
-        } else {
+        if (Math.random() < 0.7) {             // the body itself
+            const p = sampleSilhouette(vec);
+            // Skin base, shot through with toxic teal; edges rim-lit brighter.
+            tmp.copy(Math.random() < 0.42 ? C_TOXIC : C_SKIN)
+               .multiplyScalar(p.edge ? rand(1.0, 1.35) : rand(0.5, 0.85));
+        } else {                               // ambient drifting dust around it
             vec.set(rand(-3, 3), rand(-2.6, 2.6), rand(-1.6, 1.6));
-            tmp.copy(C_TOXIC).multiplyScalar(rand(0.25, 0.6));
+            tmp.copy(C_TOXIC).multiplyScalar(rand(0.22, 0.55));
         }
         put(f, i, vec.x, vec.y, vec.z, tmp);
     }
@@ -388,49 +324,50 @@ function buildBodyDust() {
 // V — the turn: the same matter draws into flowing silk threads.
 function buildThreads() {
     const f = alloc();
+    // Fewer, denser, CONTINUOUS strands: walk each particle to a stepped
+    // position along its thread so the points form unbroken flowing lines.
+    const perThread = Math.ceil(COUNT / THREADS);
     for (let i = 0; i < COUNT; i++) {
-        const th = i % THREADS, baseX = ((th / (THREADS - 1)) - 0.5) * 5.0, phase = th * 1.7;
-        const p = Math.random(), y = -2.8 + p * 5.6;
-        const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.3 + rand(-0.04, 0.04);
-        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
+        const th = i % THREADS;
+        const baseX = ((th / (THREADS - 1)) - 0.5) * 4.8;
+        const phase = th * 1.7;
+        const step = Math.floor(i / THREADS);
+        const p = (step + Math.random() * 0.6) / perThread;  // even march up the strand
+        const y = -2.9 + p * 5.8;
+        const x = baseX + Math.sin(p * Math.PI * 2.4 + phase) * 0.45 + rand(-0.02, 0.02);
+        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.6 + rand(-0.02, 0.02);
         gradientColor(p, tmp);
         put(f, i, x, y, z, tmp);
     }
     return f;
 }
 
-// VI — the vision: a real tailored jacket. The first SEAM_N particles land
-// on glowing couture seams; the rest are matte fabric + a dim worn figure.
-// jacketMask (0 body / 1 fabric / 2 seam) drives the shader's act-VI glow.
-function buildJacket() {
+// VI — the vision: a tailored figure wearing the couture jacket, which
+// carries the glowing gradient; body dim, contour rim-lit for plasticity.
+function buildFigure() {
     const f = alloc();
     jacketMask = new Uint8Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
-        if (i < SEAM_N) {
-            const bright = sampleSeam(vec);
-            heightTone(vec.y, tmp);
-            tmp.lerp(C_WHITE, 0.42).multiplyScalar(bright);
-            jacketMask[i] = 2;
+        let jacket = 0;
+        if (Math.random() < 0.05) {
+            // a tight aura hugging the torso (behind it), not a wide spray —
+            // wide motes read as "wings", so keep them close and mostly in Z.
+            const a = rand(0, Math.PI * 2), rr = rand(0.35, 0.7);
+            vec.set(Math.cos(a) * rr * 0.6, rand(0.6, 1.5), Math.sin(a) * rr - 0.55);
+            jacket = 1;
+            gradientColor(rand(0.2, 0.9), tmp); tmp.multiplyScalar(0.45);
         } else {
-            const r = Math.random();
-            let mask = 1;
-            if (r < 0.5) sampleBody(vec);
-            else if (r < 0.7) sampleSleeve(vec);
-            else if (r < 0.78) sampleCollar(vec);
-            else if (r < 0.92) { sampleLegs(vec); mask = 0; }
-            else if (r < 0.97) { sampleHead(vec); mask = 0; }
-            else {
-                const a = rand(0, Math.PI * 2), rr = rand(0.7, 1.7);
-                vec.set(Math.cos(a) * rr, rand(0.1, 1.6), Math.sin(a) * rr * 0.6 - 0.1);
+            const p = sampleSilhouette(vec);
+            jacket = p.jacket ? 1 : 0;
+            if (p.jacket) {
+                // gradient across the jacket by height; brighter at the edge
+                gradientColor(THREE.MathUtils.clamp((vec.y + 2.4) / 4.6, 0, 1), tmp);
+                tmp.multiplyScalar(p.edge ? rand(1.15, 1.45) : rand(0.78, 1.0));
+            } else {
+                tmp.copy(C_DIM).multiplyScalar(p.edge ? rand(0.85, 1.1) : rand(0.45, 0.7));
             }
-            if (mask === 0) tmp.copy(C_DIM).multiplyScalar(rand(0.42, 0.62));
-            else {
-                heightTone(vec.y, tmp);
-                if (r >= 0.97) tmp.multiplyScalar(0.32);          // faint aura
-                else tmp.multiplyScalar(rand(0.82, 1));
-            }
-            jacketMask[i] = mask;
         }
+        jacketMask[i] = jacket;
         put(f, i, vec.x, vec.y, vec.z, tmp);
     }
     return f;
@@ -452,7 +389,7 @@ function makeHalo() {
     g.addColorStop(1, "rgba(59,130,246,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, s, s);
     const tex = new THREE.CanvasTexture(c);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0 }));
-    sp.scale.set(6, 6, 1); sp.position.set(0, 0.8, -0.5); return sp;
+    sp.scale.set(6, 6, 1); sp.position.set(0, 0.9, -0.5); return sp;
 }
 
 /* ---------- per-frame morph (GPU; CPU only swaps A/B at act boundaries) ---------- */
@@ -474,32 +411,39 @@ function updateMorph(time) {
         colAAttr.array.set(A.col); colAAttr.needsUpdate = true;
         colBAttr.array.set(B.col); colBAttr.needsUpdate = true;
     }
-
     uniforms.uLocal.value = local;
     uniforms.uTime.value = time;
     uniforms.uFigureAmt.value = figureAmt;
-    uniforms.uPulse.value = 1 + Math.sin(time * 2.2) * 0.16;
-    uniforms.uSeamGlow.value = 1.3 + Math.sin(time * 2.6) * 0.18;
-    uniforms.uShimmerY.value = HEM_Y + ((time * 0.4) % 1) * (SHOULDER_Y - HEM_Y);
-    uniforms.uShimmerAmt.value = 0.55;
+    uniforms.uPulse.value = 1 + Math.sin(time * 2.2) * 0.18;
 
-    halo.material.opacity = (figureAmt * figureAmt) * (0.55 + Math.sin(time * 2.2) * 0.16);
-    group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.2;
+    halo.material.opacity = (figureAmt * figureAmt) * (0.6 + Math.sin(time * 2.2) * 0.18);
+
+    // How "figure-like" the current frame is — strongest at acts IV and VI
+    // (the two silhouette keyframes). Drives a slow turntable + breathing so
+    // the figure reads as a living 3D body, not a flat sheet.
+    const bodyAmt = Math.max(THREE.MathUtils.clamp(1 - Math.abs(fp - 3), 0, 1), figureAmt);
+    const turn = Math.sin(time * 0.32) * 0.5 * bodyAmt;
+    const breathe = 1 + Math.sin(time * 1.1) * 0.012 * bodyAmt;
+    group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.2 + turn;
+    group.scale.setScalar(breathe);
+
     const zBase = camera.aspect < 1 ? 10.5 : 7.8;
-    // Frame wide for the dark acts; pull in and lift onto the jacket as it
-    // forms, so the garment reads as the hero instead of a distant speck.
-    camera.position.z = zBase - p * 1.3 - figureAmt * 1.4;
-    camera.lookAt(0, -0.1 + p * 0.15 + figureAmt * 0.55, 0);
+    // Pull in a touch onto the figure as it forms so the garment reads.
+    camera.position.z = zBase - p * 1.3 - figureAmt * 0.8;
+    camera.lookAt(0, -0.1 + p * 0.15 + figureAmt * 0.25, 0);
 }
 
 /* ---------- counter (acts I–IV) ---------- */
 
 function formatInt(n) {
+    // Match the locale i18n actually uses (de-DE / en-US), and follow
+    // language switching instead of hardcoding a locale.
     const loc = (window.I18N && window.I18N.locale) ? window.I18N.locale() : "de-DE";
     return Math.floor(n).toLocaleString(loc);
 }
 function updateCounter() {
     if (!counterWrap) return;
+    // Show the counter through the problem acts, retire it at the turn.
     const show = currentAct <= 3;
     counterWrap.classList.toggle("is-on", show);
     if (!show) return;
@@ -586,18 +530,18 @@ function mount() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Opaque void so the bloom pass stays clean; the particle object is the
-    // hero throughout (documentary photos remain the no-WebGL/CSS fallback).
+    // hero (documentary photos remain the no-WebGL / reduced-motion fallback).
     renderer.setClearColor(VOID, 1);
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     camera.position.set(0, 0, 7.8);
 
-    formations = [buildBottle(), buildHeap(), buildDrift(), buildBodyDust(), buildThreads(), buildJacket()];
+    formations = [buildBottle(), buildHeap(), buildDrift(), buildBodyDust(), buildThreads(), buildFigure()];
 
     const seed = new Float32Array(COUNT);
     const maskF = new Float32Array(COUNT);
-    for (let i = 0; i < COUNT; i++) { seed[i] = i; maskF[i] = jacketMask[i]; }
+    for (let k = 0; k < COUNT; k++) { seed[k] = k; maskF[k] = jacketMask[k]; }
 
     const geo = new THREE.BufferGeometry();
     posAttr = new THREE.BufferAttribute(new Float32Array(formations[0].pos), 3);
@@ -613,15 +557,12 @@ function mount() {
     geo.setAttribute("aSeed", new THREE.BufferAttribute(seed, 1));
     // Fixed bounds — the position buffer is swapped per keyframe, so let the
     // hero object never frustum-cull itself out.
-    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 8);
+    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 9);
 
     uniforms = {
-        uLocal: { value: 0 }, uTime: { value: 0 }, uFigureAmt: { value: 0 },
-        uPulse: { value: 1 }, uSeamGlow: { value: 1.3 },
-        uShimmerY: { value: 0 }, uShimmerAmt: { value: 0 },
-        uSize: { value: MOBILE ? 0.11 : 0.09 }, uScale: { value: 300 },
-        uMap: { value: makeSprite() }, uOpacity: { value: 1 },
-        uFog: { value: new THREE.Color(VOID) },
+        uLocal: { value: 0 }, uTime: { value: 0 }, uFigureAmt: { value: 0 }, uPulse: { value: 1 },
+        uSize: { value: MOBILE ? 0.1 : 0.085 }, uScale: { value: 300 },
+        uMap: { value: makeSprite() }, uOpacity: { value: 1 }, uFog: { value: new THREE.Color(VOID) },
     };
     const mat = new THREE.ShaderMaterial({
         uniforms, vertexShader: VERT, fragmentShader: FRAG,
@@ -638,9 +579,9 @@ function mount() {
     composer.addPass(new RenderPass(scene, camera));
     bloom = new UnrealBloomPass(
         new THREE.Vector2(1, 1),
-        MOBILE ? 0.35 : 0.5,  // strength — soft couture glow on the seams
+        MOBILE ? 0.35 : 0.5,  // strength — soft glow on the brightest particles
         0.5,                  // radius
-        0.78,                 // threshold — only the bright seam cores bloom
+        0.78,                 // threshold — only the rim-lit / gradient cores bloom
     );
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
