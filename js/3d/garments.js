@@ -22,6 +22,7 @@
  */
 
 import * as THREE from "three";
+import { POSE } from "./avatars.js";
 
 const DEFAULT_MEASUREMENTS = {
     height: 175, chest: 96, waist: 82, hips: 98,
@@ -132,16 +133,28 @@ function setMaterialProps(group, materialKey) {
 }
 
 /* ============================================================
-   Helpers — sleeves wrap the mannequin's arms (T-pose, X-axis)
+   Helpers — sleeves wrap the mannequin's arms (relaxed A-pose).
+   The sleeve swings to the shared POSE.ARM_ANGLE so it tracks the
+   body's arms (see avatars.js buildArms). anchorY/anchorX describe
+   the shoulder joint; the sleeve hangs down-and-out from there.
    ============================================================ */
 
 function buildSleeve(mat, side, anchorY, anchorX, length, baseR, tipR) {
     const sleeve = new THREE.Mesh(
+        // Cylinder default axis is +Y, like the arm capsule, so the same
+        // Z-rotation aligns sleeve and arm. radiusTop=tip, radiusBottom=base.
         new THREE.CylinderGeometry(tipR, baseR, length, 18, 1, true),
         mat
     );
-    sleeve.rotation.z = side * Math.PI / 2;
-    sleeve.position.set(side * (anchorX + length / 2), anchorY, 0);
+    const angle = POSE.ARM_ANGLE;
+    sleeve.rotation.z = side * angle;
+    // Hang from the shoulder joint along the arm axis.
+    const half = length / 2;
+    sleeve.position.set(
+        side * (anchorX + Math.sin(angle) * half),
+        anchorY - Math.cos(angle) * half,
+        0
+    );
     return sleeve;
 }
 

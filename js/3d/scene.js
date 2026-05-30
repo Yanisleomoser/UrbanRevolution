@@ -95,7 +95,7 @@ function mount(targetContainer) {
 
 function initLights() {
     // Key light — warm tungsten, primary illumination
-    const key = new THREE.DirectionalLight(0xfff5e6, 1.4);
+    const key = new THREE.DirectionalLight(0xfff5e6, 1.05);
     key.position.set(2.5, 3.5, 2.0);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -145,9 +145,9 @@ function initComposer(width, height) {
     // strength, radius, threshold
     const bloom = new UnrealBloomPass(
         new THREE.Vector2(width, height),
-        0.45,   // strength — subtle, fashion-grade not anime-grade
-        0.85,   // radius
-        0.82    // threshold — only the brightest pixels get bloomed
+        0.28,   // strength — subtle, fashion-grade not anime-grade
+        0.7,    // radius
+        0.9     // threshold — only the brightest pixels bloom (skin/garment must NOT clip)
     );
     composer.addPass(bloom);
 

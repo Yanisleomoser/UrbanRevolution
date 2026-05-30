@@ -31,11 +31,23 @@ const DEFAULT_MEASUREMENTS = {
     neck: 38,
 };
 
-const DEFAULT_SKIN_TONE = 0xd8d4cf;
+const DEFAULT_SKIN_TONE = 0xb8a898;
 const DEFAULT_HAIR_COLOR = 0x3a2010;
 // Torso depth (front-to-back) is ~75% of lateral width — real torsi are
 // elliptical, not circular. Same factor applies at chest/waist/hips.
 const TORSO_DEPTH_SCALE = 0.72;
+
+// ── Shared pose ────────────────────────────────────────────────────
+// Single source of truth for the arm pose so garments.js can align
+// sleeves to the exact same axis. A relaxed A-pose (arms hanging down
+// and slightly out) reads as a confident fashion stance instead of the
+// old crucifixion T-pose. ARM_ANGLE is measured from the vertical (-Y)
+// axis: 0 = straight down, larger = more outward.
+export const POSE = {
+    // ~17° from vertical — natural arm drop with a little daylight at the
+    // armpit so the silhouette doesn't collapse into the torso.
+    ARM_ANGLE: 0.30,
+};
 
 function hexToInt(hex) {
     if (typeof hex !== "string") return null;
@@ -152,18 +164,41 @@ function buildHead(mat, baseY, r) {
 }
 
 function buildArms(mat, shoulderY, shoulderHalfW, armLen, totalH) {
-    const armR = totalH * 0.028;
-    return [-1, 1].map((side) => {
+    const armR = totalH * 0.026;
+    const handR = armR * 1.15;
+    const angle = POSE.ARM_ANGLE;
+    const limbLen = armLen * 0.90;
+    const sin = Math.sin(angle);
+    const cos = Math.cos(angle);
+
+    return [-1, 1].flatMap((side) => {
+        // Capsule default axis is +Y; rotating by `side*angle` about Z
+        // swings it down-and-out into the A-pose.
         const arm = new THREE.Mesh(
-            new THREE.CapsuleGeometry(armR, armLen * 0.88, 8, 16),
+            new THREE.CapsuleGeometry(armR, limbLen, 10, 18),
             mat
         );
-        // Lay the capsule along the X axis (T-pose)
-        arm.rotation.z = side * Math.PI / 2;
-        // Anchor at shoulder, extend outward
-        const armCenter = shoulderHalfW + (armLen * 0.88) / 2;
-        arm.position.set(side * armCenter, shoulderY - armR * 0.4, 0);
-        return arm;
+        arm.rotation.z = side * angle;
+
+        // Shoulder joint sits just inside the shoulder edge; the arm hangs
+        // from there. Capsule centre is half its length down the axis.
+        const shoulderX = side * shoulderHalfW * 0.92;
+        const half = limbLen / 2 + armR;
+        const cx = shoulderX + side * sin * half;
+        const cy = shoulderY - cos * half;
+        arm.position.set(cx, cy, 0);
+
+        // Hand at the wrist end of the capsule.
+        const wristX = shoulderX + side * sin * (limbLen + armR * 2);
+        const wristY = shoulderY - cos * (limbLen + armR * 2);
+        const hand = new THREE.Mesh(
+            new THREE.SphereGeometry(handR, 16, 12),
+            mat
+        );
+        hand.scale.set(0.85, 1.25, 0.7);
+        hand.position.set(wristX, wristY, 0);
+
+        return [arm, hand];
     });
 }
 
@@ -187,17 +222,28 @@ function buildHair(colorInt, headBaseY, headR) {
 }
 
 function buildLegs(mat, legH, hipsR, totalH) {
-    const thighR = totalH * 0.055;
-    const ankleR = totalH * 0.028;
-    return [-1, 1].map((side) => {
+    const thighR = totalH * 0.052;
+    const ankleR = totalH * 0.026;
+    const footL = totalH * 0.085;
+    const footH = totalH * 0.022;
+    return [-1, 1].flatMap((side) => {
         // CylinderGeometry(radiusTop, radiusBottom, …) — thigh at top, ankle at bottom
         const leg = new THREE.Mesh(
             new THREE.CylinderGeometry(thighR, ankleR, legH, 24),
             mat
         );
-        leg.position.set(side * hipsR * 0.42, legH / 2, 0);
+        const legX = side * hipsR * 0.42;
+        leg.position.set(legX, legH / 2, 0);
         leg.scale.z = 0.9;
-        return leg;
+
+        // Foot — a flattened, forward-pointing box so the figure stands
+        // instead of balancing on cylinder stumps.
+        const foot = new THREE.Mesh(
+            new THREE.BoxGeometry(ankleR * 1.7, footH, footL),
+            mat
+        );
+        foot.position.set(legX, footH / 2, footL * 0.28);
+        return [leg, foot];
     });
 }
 
