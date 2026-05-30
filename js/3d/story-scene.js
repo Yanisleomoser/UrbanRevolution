@@ -177,9 +177,10 @@ function buildHumanMask() {
     };
     const inSeam = (x, y) => Math.abs(x - cx) < 1.5 && y > 150 && y < 280;
 
-    const at = (x, y) => bodyImg[(y * W + x) * 4 + 3] > 80;        // body opaque?
+    const inB = (x, y) => x >= 0 && x < W && y >= 0 && y < H;       // in bounds
+    const at = (x, y) => inB(x, y) && bodyImg[(y * W + x) * 4 + 3] > 80; // body opaque?
     const jAt = (x, y) =>
-        jImg[(y * W + x) * 4 + 3] > 80 && !inV(x, y) && !inSeam(x, y);
+        inB(x, y) && jImg[(y * W + x) * 4 + 3] > 80 && !inV(x, y) && !inSeam(x, y);
 
     const pts = [];
     for (let y = 0; y < H; y++) {
