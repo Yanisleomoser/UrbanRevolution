@@ -1,49 +1,34 @@
 /**
- * Urban Revolution — Visual Scroll Story (WebGL stage)
+ * Urban Revolution — Visual Scroll Story (hybrid stage)
  *
- * One GPU particle system morphs through SIX formations — each one a
- * legible picture of its act's text:
+ * The story is a hybrid:
+ *   Acts I–IV (the dark reality) are real documentary PHOTOGRAPHS
+ *     (CC-licensed, see assets/story/CREDITS.md) — crossfaded with a slow
+ *     Ken Burns push. The photos are plain DOM; this module just toggles
+ *     which one is shown as the active act changes.
+ *   Acts V–VI (the hopeful turn) are this WebGL particle system: chaos
+ *     resolving into flowing silk threads, then weaving a tailored figure
+ *     whose jacket glows. The canvas is invisible (and its work skipped)
+ *     during the photo acts, then fades in for the transformation.
  *
- *   I   Overproduction → a tall heap of discarded clothes (garment colours)
- *   II  Injustice      → a sea with a waste pile beached on a foreign shore
- *   III Ecosystem      → falling vertical streaks of microplastic rain
- *   IV  The human      → a small lone figure dwarfed by a looming waste mound
- *   V   Belief         → chaos resolves into flowing silk threads (gradient)
- *   VI  Vision         → a tailored figure; the jacket glows
- *
- * Each scene HOLDS for most of its act (so it reads), then morphs to the
- * next in the act's final stretch. Colours are lifted well clear of the
- * void so the dark acts are actually visible. Scroll progress is read
- * passively and eased per frame. Degrades gracefully (reduced-motion /
- * no-WebGL → CSS shows static, readable acts).
+ * Scroll progress is read passively and eased per frame. Degrades
+ * gracefully (reduced-motion / no-WebGL → CSS shows static readable acts).
  */
 
 import * as THREE from "three";
 
-// Fewer particles on phones — two WebGL contexts share the page.
 const MOBILE = typeof window !== "undefined" && window.matchMedia &&
     window.matchMedia("(max-width: 768px)").matches;
 const COUNT = MOBILE ? 4200 : 7200;
 const THREADS = 56;
-const RAIN_COLS = 150;
 const EASE = 0.07;
+// Where the WebGL transformation takes over from the photos (scroll 0–1).
+const CANVAS_FROM = 0.6;
 
-// Brand gradient stops.
 const C_PINK = new THREE.Color("#EC4899");
 const C_PURPLE = new THREE.Color("#A855F7");
 const C_BLUE = new THREE.Color("#3B82F6");
-// Lifted "mood" palette — bright enough to read against the void.
-const C_CLOTH_A = new THREE.Color("#6f7176");
-const C_CLOTH_B = new THREE.Color("#8c7f6d");
-const C_SEA = new THREE.Color("#3f5a6b");
-const C_FOAM = new THREE.Color("#a9c2cd");
-const C_TOXIC = new THREE.Color("#4fb6a3");
-const C_SKIN = new THREE.Color("#bd9f85");
-const C_MOUND = new THREE.Color("#4a4a51");
 const C_DIM = new THREE.Color("#9aa0aa");
-// Faded garment colours so a heap reads as clothing, not gravel.
-const GARMENT = ["#7d4f4f", "#4f5f7d", "#5a6b54", "#8a7d4f", "#6d4f6b", "#b9b3a8"]
-    .map((h) => new THREE.Color(h));
 
 let renderer = null;
 let scene = null;
@@ -52,12 +37,13 @@ let points = null;
 let halo = null;
 let group = null;
 
-let formations = [];
+let posThreads, colThreads, posFigure, colFigure;
 let jacketMask = null;
 let posAttr, colAttr;
 
 let track = null;
 let acts = [];
+let photos = [];
 let actNumEl = null;
 
 let targetProgress = 0;
@@ -89,25 +75,6 @@ function gradientColor(t, out) {
     return out;
 }
 
-// Muted clothing colour — base fabric tones with occasional garment hues.
-function clothColor(out) {
-    if (Math.random() < 0.34) {
-        out.copy(GARMENT[(Math.random() * GARMENT.length) | 0]).multiplyScalar(rand(0.7, 1));
-    } else {
-        out.copy(C_CLOTH_A).lerp(C_CLOTH_B, Math.random()).multiplyScalar(rand(0.65, 1.1));
-    }
-    return out;
-}
-
-function alloc() {
-    return { pos: new Float32Array(COUNT * 3), col: new Float32Array(COUNT * 3) };
-}
-
-function set(f, i, x, y, z, c) {
-    f.pos[i * 3] = x; f.pos[i * 3 + 1] = y; f.pos[i * 3 + 2] = z;
-    f.col[i * 3] = c.r; f.col[i * 3 + 1] = c.g; f.col[i * 3 + 2] = c.b;
-}
-
 function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
     const t = Math.random();
     out.set(
@@ -117,7 +84,6 @@ function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
     );
 }
 
-// Random point on a standing humanoid; returns the body part.
 function sampleHuman(out) {
     const r = Math.random();
     if (r < 0.1) {
@@ -143,81 +109,11 @@ function sampleHuman(out) {
     return "legs";
 }
 
-/* ---------- the six formations ---------- */
+/* ---------- two formations: threads → figure ---------- */
 
-// I — a tall, dense heap of discarded clothes.
-function buildHeap() {
-    const f = alloc();
-    for (let i = 0; i < COUNT; i++) {
-        const a = rand(0, Math.PI * 2);
-        const rad = Math.sqrt(Math.random()) * 2.6;
-        const mound = 1 - rad / 2.6;
-        const y = -2.2 + mound * 3.0 * Math.random() + rand(-0.22, 0.22);
-        set(f, i, Math.cos(a) * rad, y, Math.sin(a) * rad * 0.55, clothColor(tmp));
-    }
-    return f;
-}
-
-// II — a cold sea (with foam crests) and our cast-offs beached to the side.
-function buildShore() {
-    const f = alloc();
-    for (let i = 0; i < COUNT; i++) {
-        if (Math.random() < 0.56) {
-            const x = rand(-3.8, 3.8);
-            const z = rand(-1.8, 1.8);
-            const wave = Math.sin(x * 1.1 + z * 0.6);
-            const y = -1.7 + wave * 0.3 + rand(-0.05, 0.05);
-            if (wave > 0.62) tmp.copy(C_FOAM).multiplyScalar(rand(0.75, 1));
-            else tmp.copy(C_SEA).multiplyScalar(rand(0.55, 1));
-            set(f, i, x, y, z, tmp);
-        } else {
-            const a = rand(0, Math.PI * 2);
-            const rad = Math.sqrt(Math.random()) * 1.5;
-            const y = -1.6 + (1 - rad / 1.5) * 1.7 * Math.random() + rand(-0.12, 0.12);
-            set(f, i, 2.2 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.7, clothColor(tmp));
-        }
-    }
-    return f;
-}
-
-// III — microplastic as falling vertical streaks across the whole field.
-function buildRain() {
-    const f = alloc();
-    for (let i = 0; i < COUNT; i++) {
-        const colmn = i % RAIN_COLS;
-        const x = ((colmn / (RAIN_COLS - 1)) - 0.5) * 7.4 + rand(-0.05, 0.05);
-        const y = rand(-3.2, 3.2);
-        const z = rand(-1.7, 1.7);
-        tmp.copy(C_TOXIC).multiplyScalar(rand(0.5, 1.05));
-        set(f, i, x, y, z, tmp);
-    }
-    return f;
-}
-
-// IV — a small lone figure on the left, a looming waste mound on the right.
-function buildLoneHuman() {
-    const f = alloc();
-    for (let i = 0; i < COUNT; i++) {
-        if (Math.random() < 0.42) {
-            sampleHuman(vec);
-            vec.multiplyScalar(0.6);
-            vec.x -= 1.95; vec.y -= 0.35;
-            tmp.copy(C_SKIN).multiplyScalar(rand(0.7, 1.05));
-            set(f, i, vec.x, vec.y, vec.z, tmp);
-        } else {
-            const a = rand(0, Math.PI * 2);
-            const rad = Math.sqrt(Math.random()) * 2.2;
-            const y = -2.2 + (1 - rad / 2.2) * 3.7 * Math.random() + rand(-0.2, 0.2);
-            tmp.copy(C_MOUND).lerp(C_CLOTH_B, Math.random() * 0.5).multiplyScalar(rand(0.6, 1));
-            set(f, i, 1.7 + Math.cos(a) * rad, y, Math.sin(a) * rad * 0.55, tmp);
-        }
-    }
-    return f;
-}
-
-// V — fine, flowing silk threads in the brand gradient.
 function buildThreads() {
-    const f = alloc();
+    posThreads = new Float32Array(COUNT * 3);
+    colThreads = new Float32Array(COUNT * 3);
     for (let i = 0; i < COUNT; i++) {
         const thread = i % THREADS;
         const baseX = ((thread / (THREADS - 1)) - 0.5) * 5.2;
@@ -227,14 +123,14 @@ function buildThreads() {
         const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.3 + rand(-0.04, 0.04);
         const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
         gradientColor(p, tmp);
-        set(f, i, x, y, z, tmp);
+        posThreads[i * 3] = x; posThreads[i * 3 + 1] = y; posThreads[i * 3 + 2] = z;
+        colThreads[i * 3] = tmp.r; colThreads[i * 3 + 1] = tmp.g; colThreads[i * 3 + 2] = tmp.b;
     }
-    return f;
 }
 
-// VI — a tailored figure; torso + arms (the jacket) carry the glowing gradient.
 function buildFigure() {
-    const f = alloc();
+    posFigure = new Float32Array(COUNT * 3);
+    colFigure = new Float32Array(COUNT * 3);
     jacketMask = new Uint8Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
         let part;
@@ -254,9 +150,9 @@ function buildFigure() {
         } else {
             tmp.copy(C_DIM).multiplyScalar(rand(0.5, 0.78));
         }
-        set(f, i, vec.x, vec.y, vec.z, tmp);
+        posFigure[i * 3] = vec.x; posFigure[i * 3 + 1] = vec.y; posFigure[i * 3 + 2] = vec.z;
+        colFigure[i * 3] = tmp.r; colFigure[i * 3 + 1] = tmp.g; colFigure[i * 3 + 2] = tmp.b;
     }
-    return f;
 }
 
 /* ---------- sprites ---------- */
@@ -301,49 +197,29 @@ function makeHalo() {
     return sprite;
 }
 
-/* ---------- per-frame morph ---------- */
-
-const FALL_SPAN = 6.6;
+/* ---------- per-frame morph (only runs for the transformation acts) ---------- */
 
 function updateMorph(time) {
     const p = easedProgress;
-    const NF = formations.length;
 
-    // Formation i is shown during act i and HOLDS for the first ~60% of
-    // the act, then morphs to i+1 — so each scene reads while its copy is
-    // on screen instead of perpetually dissolving.
-    const a = p * acts.length;
-    let i = Math.floor(a);
-    if (i > NF - 1) i = NF - 1;
-    const frac = a - i;
-    const local = smoothstep((frac - 0.6) / 0.34);
-    const A = formations[i];
-    const B = formations[Math.min(i + 1, NF - 1)];
-
-    const figureAmt = i >= NF - 1 ? 1 : (i === NF - 2 ? local : 0);
-    // formation index 2 = rain; how much of it is currently on screen
-    const rainAmt = i === 2 ? (1 - local) : (i === 1 ? local : 0);
+    // Map the last stretch of the scroll to threads → figure, holding
+    // threads through act V and weaving the figure across act VI.
+    const tp = THREE.MathUtils.clamp((p - CANVAS_FROM) / (1 - CANVAS_FROM), 0, 1);
+    const local = smoothstep((tp - 0.42) / 0.4);
+    const figureAmt = local;
     const pulse = 1 + Math.sin(time * 2.2) * 0.18;
 
     const pos = posAttr.array;
     const col = colAttr.array;
     for (let k = 0; k < COUNT; k++) {
         const j = k * 3;
-        const x = A.pos[j] + (B.pos[j] - A.pos[j]) * local + Math.sin(time * 0.7 + k) * 0.012;
-        let y = A.pos[j + 1] + (B.pos[j + 1] - A.pos[j + 1]) * local + Math.cos(time * 0.6 + k * 1.3) * 0.012;
-        const z = A.pos[j + 2] + (B.pos[j + 2] - A.pos[j + 2]) * local;
+        pos[j] = posThreads[j] + (posFigure[j] - posThreads[j]) * local + Math.sin(time * 0.7 + k) * 0.012;
+        pos[j + 1] = posThreads[j + 1] + (posFigure[j + 1] - posThreads[j + 1]) * local + Math.cos(time * 0.6 + k * 1.3) * 0.012;
+        pos[j + 2] = posThreads[j + 2] + (posFigure[j + 2] - posThreads[j + 2]) * local;
 
-        // Microplastic rain streams downward and wraps within the field.
-        if (rainAmt > 0.002) {
-            const off = (k * 0.221 + time * 1.5) % FALL_SPAN;
-            y -= off * rainAmt;
-            if (y < -3.4) y += FALL_SPAN * rainAmt;
-        }
-        pos[j] = x; pos[j + 1] = y; pos[j + 2] = z;
-
-        let r = A.col[j] + (B.col[j] - A.col[j]) * local;
-        let g = A.col[j + 1] + (B.col[j + 1] - A.col[j + 1]) * local;
-        let b = A.col[j + 2] + (B.col[j + 2] - A.col[j + 2]) * local;
+        let r = colThreads[j] + (colFigure[j] - colThreads[j]) * local;
+        let g = colThreads[j + 1] + (colFigure[j + 1] - colThreads[j + 1]) * local;
+        let b = colThreads[j + 2] + (colFigure[j + 2] - colThreads[j + 2]) * local;
         if (jacketMask[k] && figureAmt > 0) {
             const amt = 1 + (pulse - 1) * figureAmt;
             r *= amt; g *= amt; b *= amt;
@@ -354,17 +230,19 @@ function updateMorph(time) {
     colAttr.needsUpdate = true;
 
     halo.material.opacity = (figureAmt * figureAmt) * (0.6 + Math.sin(time * 2.2) * 0.18);
-    group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.18;
+    group.rotation.y = Math.sin(time * 0.1) * 0.12 + tp * 0.25;
 
-    const zBase = camera.aspect < 1 ? 11.5 : 8.4;
-    camera.position.z = zBase - p * 1.3;
-    camera.lookAt(0, -0.1 + p * 0.15, 0);
+    const zBase = camera.aspect < 1 ? 10 : 7.6;
+    camera.position.z = zBase - tp * 1.2;
+    camera.lookAt(0, -0.1 + tp * 0.15, 0);
 }
 
 /* ---------- scroll + acts ---------- */
 
 function setAct(idx) {
     acts.forEach((el, k) => el.classList.toggle("is-active", k === idx));
+    // Photos exist only for the dark acts (0–3); none shown for 4–5.
+    photos.forEach((el, k) => el.classList.toggle("is-shown", k === idx));
     if (actNumEl) actNumEl.textContent = String(idx + 1).padStart(2, "0");
 }
 
@@ -394,6 +272,13 @@ function loop() {
     rafId = requestAnimationFrame(loop);
     if (!inView) return;
     easedProgress += (targetProgress - easedProgress) * EASE;
+
+    // Canvas only matters for the transformation acts — fade it in and
+    // skip the particle work entirely while the photos are on screen.
+    const vis = smoothstep((easedProgress - (CANVAS_FROM - 0.005)) / 0.06);
+    renderer.domElement.style.opacity = vis.toFixed(3);
+    if (vis < 0.01) return;
+
     updateMorph(performance.now() * 0.001);
     renderer.render(scene, camera);
 }
@@ -421,6 +306,7 @@ function mount() {
 
     track = section.querySelector("[data-story]");
     acts = Array.from(section.querySelectorAll(".story-act"));
+    photos = Array.from(section.querySelectorAll(".story-photo"));
     actNumEl = section.querySelector("[data-act-num]");
     if (!track || acts.length < 2) return;
 
@@ -447,20 +333,14 @@ function mount() {
     scene.fog = new THREE.FogExp2(0x0a0a0c, 0.055);
 
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    camera.position.set(0, 0, 8.4);
+    camera.position.set(0, 0, 7.6);
 
-    formations = [
-        buildHeap(),
-        buildShore(),
-        buildRain(),
-        buildLoneHuman(),
-        buildThreads(),
-        buildFigure(),
-    ];
+    buildThreads();
+    buildFigure();
 
     const geo = new THREE.BufferGeometry();
-    posAttr = new THREE.BufferAttribute(new Float32Array(formations[0].pos), 3);
-    colAttr = new THREE.BufferAttribute(new Float32Array(formations[0].col), 3);
+    posAttr = new THREE.BufferAttribute(new Float32Array(posThreads), 3);
+    colAttr = new THREE.BufferAttribute(new Float32Array(colThreads), 3);
     posAttr.setUsage(THREE.DynamicDrawUsage);
     colAttr.setUsage(THREE.DynamicDrawUsage);
     geo.setAttribute("position", posAttr);

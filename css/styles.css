@@ -466,6 +466,53 @@ body {
     width: 100%;
     height: 100%;
     display: block;
+    opacity: 0; /* JS fades it in for the transformation acts (V–VI) */
+}
+
+/* Documentary photo layer for the dark acts I–IV. Only the active act's
+   photo is shown; a slow Ken Burns push keeps it alive. */
+.story-photos {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.story-photos::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Guarantee white-text legibility over any photograph. */
+    background: linear-gradient(
+        to bottom,
+        rgba(10, 10, 12, 0.55) 0%,
+        rgba(10, 10, 12, 0.3) 38%,
+        rgba(10, 10, 12, 0.55) 68%,
+        rgba(10, 10, 12, 0.93) 100%
+    );
+}
+
+.story-photo {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1s var(--ease-out);
+    will-change: opacity;
+}
+
+.story-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scale(1.06);
+}
+
+.story-photo.is-shown { opacity: 1; }
+.story-photo.is-shown img { animation: storyKenBurns 14s ease-out forwards; }
+
+@keyframes storyKenBurns {
+    from { transform: scale(1.06); }
+    to { transform: scale(1.18); }
 }
 
 /* Bottom scrim keeps the lower-third text legible over the particles. */
@@ -649,6 +696,7 @@ body {
     }
     .story-canvas,
     .story-scrim,
+    .story-photos,
     .story-foot { display: none; }
     .story-acts {
         position: static;
@@ -672,6 +720,7 @@ body {
 }
 
 .story.no-webgl .story-canvas { display: none; }
+.story.no-webgl .story-photos { display: none; }
 .story.no-webgl .story-stage {
     position: static;
     height: auto;
