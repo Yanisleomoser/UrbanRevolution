@@ -200,7 +200,9 @@
       }
       if (btn.dataset.type) {
         document.querySelectorAll(".type-btn").forEach((b) => {
-          b.classList.toggle("active", b.dataset.type === btn.dataset.type);
+          const on = b.dataset.type === btn.dataset.type;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
         });
         S.set("currentType", btn.dataset.type);
       }
@@ -210,10 +212,11 @@
   function initTypeSelector() {
     document.querySelectorAll(".type-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".type-btn").forEach((b) =>
-          b.classList.remove("active")
-        );
-        btn.classList.add("active");
+        document.querySelectorAll(".type-btn").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
+        });
         S.set("currentType", btn.dataset.type);
         updateProductionPreview();
       });
@@ -223,10 +226,11 @@
   function initColorPalette() {
     document.querySelectorAll(".color-swatch").forEach((swatch) => {
       swatch.addEventListener("click", () => {
-        document.querySelectorAll(".color-swatch").forEach((s) =>
-          s.classList.remove("active")
-        );
-        swatch.classList.add("active");
+        document.querySelectorAll(".color-swatch").forEach((s) => {
+          const on = s === swatch;
+          s.classList.toggle("active", on);
+          s.setAttribute("aria-pressed", String(on));
+        });
         const newColor = swatch.dataset.color;
         if (!S.set("currentColor", newColor)) return;
         const design = S.get("currentDesign");
@@ -430,7 +434,9 @@
     document.getElementById("customize-controls").style.display = "block";
 
     document.querySelectorAll(".color-swatch").forEach((s) => {
-      s.classList.toggle("active", s.dataset.color === design.color);
+      const on = s.dataset.color === design.color;
+      s.classList.toggle("active", on);
+      s.setAttribute("aria-pressed", String(on));
     });
 
     const matSelect = document.getElementById("material-select");
@@ -452,10 +458,29 @@
     if (design.type && design.type !== S.get("currentType")) {
       if (S.set("currentType", design.type)) {
         document.querySelectorAll(".type-btn").forEach((b) => {
-          b.classList.toggle("active", b.dataset.type === design.type);
+          const on = b.dataset.type === design.type;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
         });
       }
     }
+  }
+
+  // Flag an out-of-range measurement so the user sees/hears it, instead of
+  // it being silently swapped for a preset value in the spec sheet downstream.
+  function validateMeasurementField(input) {
+    if (!window.CONFIG || input.value === "") {
+      input.removeAttribute("aria-invalid");
+      return true;
+    }
+    let valid = true;
+    try {
+      window.CONFIG.validateMeasurement(input.id, parseInt(input.value, 10));
+    } catch (_e) {
+      valid = false;
+    }
+    input.setAttribute("aria-invalid", valid ? "false" : "true");
+    return valid;
   }
 
   function initMeasurements() {
@@ -463,6 +488,8 @@
       const input = document.getElementById(field);
       if (input) {
         input.addEventListener("input", updateMeasurements);
+        // Validate on commit (blur/enter) so the flag doesn't flicker mid-type.
+        input.addEventListener("change", () => validateMeasurementField(input));
       }
     });
 
@@ -1082,7 +1109,9 @@
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
     document.querySelectorAll(".type-btn").forEach((b) => {
-      b.classList.toggle("active", b.dataset.type === entry.type);
+      const on = b.dataset.type === entry.type;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
     });
     renderDesignResult(design);
     applyDesignToState(design);
@@ -1187,7 +1216,10 @@
     if (!window.I18N) return;
     const lang = window.I18N.getLang();
     document.querySelectorAll("#lang-toggle .lang-opt").forEach((opt) => {
-      opt.classList.toggle("is-active", opt.dataset.lang === lang);
+      const on = opt.dataset.lang === lang;
+      opt.classList.toggle("is-active", on);
+      if (on) opt.setAttribute("aria-current", "true");
+      else opt.removeAttribute("aria-current");
     });
   }
 
