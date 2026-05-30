@@ -50,12 +50,26 @@ const C_WASTE_HI = new THREE.Color("#8a8170");
 const C_TOXIC = new THREE.Color("#57c0aa");  // microplastic teal
 const C_SKIN = new THREE.Color("#c79f86");   // warm human tone
 const C_DIM = new THREE.Color("#9aa0aa");
+const C_WHITE = new THREE.Color("#ffffff");   // couture-seam highlight
 
 // Global throughput, for the live counter (sourced, see CREDITS.md):
 //   >100bn garments/yr ÷ 31.536e6 s ≈ 3,170 produced per second;
 //   ~1 rubbish-truck of textiles dumped/burned per second.
 const GARMENTS_PER_SEC = 3170;
 const TRUCKS_PER_SEC = 1;
+
+// Parametric jacket (act VI), authored in its own space then fitted onto the
+// silhouette torso so a real person wears a real, detailed couture jacket.
+const SHOULDER_Y = 1.52, SHOULDER_HALF = 0.82;
+const CHEST_Y = 0.98;
+const WAIST_Y = 0.34, WAIST_HALF = 0.5;
+const HEM_Y = -0.3, HEM_HALF = 0.62;
+const NECK_HALF = 0.17;
+const FRONT_DEPTH = 0.34;
+const CLOSURE_GAP = 0.05;
+// Fit transform → maps the jacket onto the canvas-mask torso (y −0.14…1.46,
+// half-width ~0.51), so it sits on the body instead of floating around it.
+const FIT_SX = 0.62, FIT_SY = 0.879, FIT_OY = 0.124, FIT_SZ = 0.72;
 
 /* ---------- GPU morph shaders ---------- */
 const VERT = /* glsl */`
@@ -64,7 +78,7 @@ const VERT = /* glsl */`
     attribute vec3 aColB;
     attribute float aMask;
     attribute float aSeed;
-    uniform float uLocal, uTime, uFigureAmt, uPulse, uSize, uScale;
+    uniform float uLocal, uTime, uFigureAmt, uPulse, uSeamGlow, uSize, uScale;
     uniform vec3 uFog;
     varying vec3 vColor;
     void main() {
@@ -73,8 +87,12 @@ const VERT = /* glsl */`
         p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012;
 
         vec3 col = mix(aColA, aColB, uLocal);
-        // Jacket particles breathe brighter only as the figure forms (act VI).
-        if (uFigureAmt > 0.001 && aMask > 0.5) col *= mix(1.0, uPulse, uFigureAmt);
+        // Jacket fabric breathes; couture seams (mask 2) glow brighter — only
+        // as the figure forms (act VI); the bloom pass lifts the seam cores.
+        if (uFigureAmt > 0.001 && aMask > 0.5) {
+            float g = (aMask > 1.5) ? uSeamGlow : uPulse;
+            col *= mix(1.0, g, uFigureAmt);
+        }
 
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         float fog = 1.0 - exp(-pow(0.05 * length(mv.xyz), 2.0));
@@ -236,6 +254,108 @@ function sampleSilhouette(out) {
     return p;
 }
 
+/* ---------- parametric couture jacket (worn on the torso in act VI) ---------- */
+
+function heightToneJacket(y, out) {
+    const h = THREE.MathUtils.clamp((y - HEM_Y) / (SHOULDER_Y + 0.3 - HEM_Y), 0, 1);
+    return gradientColor(h, out);
+}
+function bezier3(p0, p1, p2, t, out) {
+    const mt = 1 - t;
+    out.set(
+        mt * mt * p0[0] + 2 * mt * t * p1[0] + t * t * p2[0],
+        mt * mt * p0[1] + 2 * mt * t * p1[1] + t * t * p2[1],
+        mt * mt * p0[2] + 2 * mt * t * p1[2] + t * t * p2[2],
+    );
+}
+function jacketHalf(y) {
+    if (y >= WAIST_Y) {
+        const t = smoothstep((y - WAIST_Y) / (SHOULDER_Y - WAIST_Y));
+        return WAIST_HALF + (SHOULDER_HALF - WAIST_HALF) * t;
+    }
+    const t = THREE.MathUtils.clamp((WAIST_Y - y) / (WAIST_Y - HEM_Y), 0, 1);
+    return WAIST_HALF + (HEM_HALF - WAIST_HALF) * t;
+}
+function jacketInner(y) {
+    if (y > CHEST_Y) {
+        const t = (y - CHEST_Y) / (SHOULDER_Y - CHEST_Y);
+        return CLOSURE_GAP + (NECK_HALF - CLOSURE_GAP) * t;
+    }
+    return CLOSURE_GAP;
+}
+function frontZ(x, hw) {
+    const u = THREE.MathUtils.clamp(Math.abs(x) / Math.max(hw, 0.001), 0, 1);
+    return FRONT_DEPTH * Math.sqrt(1 - u * u);
+}
+function sleevePath(side, t, out) {
+    bezier3([side * (SHOULDER_HALF - 0.06), SHOULDER_Y - 0.04, 0.05],
+            [side * (SHOULDER_HALF + 0.07), 0.5, 0.24],
+            [side * 0.66, -0.46, 0.12], t, out);
+}
+function sampleBody(out) {
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const y = rand(HEM_Y, SHOULDER_Y);
+    const hw = jacketHalf(y);
+    const inner = Math.min(jacketInner(y), hw - 0.02);
+    const x = side * (inner + (hw - inner) * Math.random());
+    out.set(x, y, frontZ(x, hw) + rand(-0.025, 0.025));
+}
+function sampleSleeve(out) {
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const t = Math.random();
+    sleevePath(side, t, out);
+    const radius = 0.2 * (1 - t) + 0.085 * t;
+    const a = rand(0, Math.PI * 2);
+    const rr = radius * Math.sqrt(Math.random());
+    out.x += Math.cos(a) * rr;
+    out.y += Math.sin(a) * rr * 0.85;
+    out.z += Math.cos(a) * rr * 0.5 + 0.02;
+}
+function sampleCollar(out) {
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const t = Math.random();
+    const x = side * (0.06 + (NECK_HALF - 0.06) * t) + side * rand(0, 0.09);
+    const y = CHEST_Y + (SHOULDER_Y - CHEST_Y) * t;
+    const hw = jacketHalf(y);
+    out.set(x, y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.03);
+}
+// A point on one of the couture seams (bright; lifted by the bloom pass).
+function sampleSeam(out) {
+    const r = Math.random();
+    let bright = 1;
+    if (r < 0.14) {                                   // centre placket + buttons
+        out.set(rand(-0.012, 0.012), rand(HEM_Y, CHEST_Y), FRONT_DEPTH + 0.01);
+        if (Math.random() < 0.16) bright = 1.3;
+    } else if (r < 0.4) {                             // notched lapel edges
+        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
+        const x = side * (0.06 + (NECK_HALF - 0.06) * t);
+        const y = CHEST_Y + (SHOULDER_Y - CHEST_Y) * t, hw = jacketHalf(y);
+        out.set(x, y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.04); bright = 1.2;
+    } else if (r < 0.52) {                            // shoulder seams
+        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
+        out.set(side * (NECK_HALF + (SHOULDER_HALF - 0.04 - NECK_HALF) * t), SHOULDER_Y - 0.04 * t, 0.12 * (1 - t) + 0.02);
+    } else if (r < 0.7) {                             // princess seams
+        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
+        const y = HEM_Y + (SHOULDER_Y - 0.12 - HEM_Y) * t, hw = jacketHalf(y);
+        out.set(side * (0.26 + 0.1 * (1 - t)), y, frontZ(Math.min(0.26 + 0.1 * (1 - t), hw), hw) + 0.02);
+    } else if (r < 0.88) {                            // sleeve outer seam + cuff
+        const side = Math.random() < 0.5 ? -1 : 1, t = Math.random();
+        sleevePath(side, t, out);
+        out.x += side * (0.2 * (1 - t) + 0.085 * t) * 0.9; out.z += 0.02;
+        if (t > 0.92) bright = 1.25;
+    } else {                                          // hem edge
+        const x = rand(-HEM_HALF, HEM_HALF), hw = jacketHalf(HEM_Y);
+        out.set(x, HEM_Y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.02);
+    }
+    return bright;
+}
+// Scale + offset the jacket onto the silhouette torso.
+function fitJacket(out) {
+    out.x *= FIT_SX;
+    out.y = out.y * FIT_SY + FIT_OY;
+    out.z *= FIT_SZ;
+}
+
 /* ---------- the six keyframes of the hero object ---------- */
 
 // I — a single PET bottle (body + shoulder + neck + cap).
@@ -347,27 +467,32 @@ function buildThreads() {
 function buildFigure() {
     const f = alloc();
     jacketMask = new Uint8Array(COUNT);
+    // ~55% of the particles build the detailed couture jacket on the torso (of
+    // which ~15% land on glowing seams); the rest are the dim, rim-lit body
+    // (head, arms, legs) — so a real person wears a real, crisp jacket.
+    const jn = Math.floor(COUNT * 0.55);
+    const sn = Math.floor(COUNT * 0.15);
     for (let i = 0; i < COUNT; i++) {
-        let jacket = 0;
-        if (Math.random() < 0.05) {
-            // a tight aura hugging the torso (behind it), not a wide spray —
-            // wide motes read as "wings", so keep them close and mostly in Z.
-            const a = rand(0, Math.PI * 2), rr = rand(0.35, 0.7);
-            vec.set(Math.cos(a) * rr * 0.6, rand(0.6, 1.5), Math.sin(a) * rr - 0.55);
-            jacket = 1;
-            gradientColor(rand(0.2, 0.9), tmp); tmp.multiplyScalar(0.45);
-        } else {
-            const p = sampleSilhouette(vec);
-            jacket = p.jacket ? 1 : 0;
-            if (p.jacket) {
-                // gradient across the jacket by height; brighter at the edge
-                gradientColor(THREE.MathUtils.clamp((vec.y + 2.4) / 4.6, 0, 1), tmp);
-                tmp.multiplyScalar(p.edge ? rand(1.15, 1.45) : rand(0.78, 1.0));
+        if (i < jn) {
+            let bright = 1;
+            const seam = i < sn;
+            if (seam) {
+                bright = sampleSeam(vec);
             } else {
-                tmp.copy(C_DIM).multiplyScalar(p.edge ? rand(0.85, 1.1) : rand(0.45, 0.7));
+                const r = Math.random();
+                if (r < 0.66) sampleBody(vec);
+                else if (r < 0.9) sampleSleeve(vec);
+                else sampleCollar(vec);
             }
+            heightToneJacket(vec.y, tmp);             // colour by jacket-space height
+            if (seam) { tmp.lerp(C_WHITE, 0.4).multiplyScalar(bright); jacketMask[i] = 2; }
+            else { tmp.multiplyScalar(rand(0.85, 1.05)); jacketMask[i] = 1; }
+            fitJacket(vec);                           // place it onto the torso
+        } else {
+            const p = sampleSilhouette(vec);          // dim, rim-lit human body
+            tmp.copy(C_DIM).multiplyScalar(p.edge ? rand(0.85, 1.1) : rand(0.45, 0.7));
+            jacketMask[i] = 0;
         }
-        jacketMask[i] = jacket;
         put(f, i, vec.x, vec.y, vec.z, tmp);
     }
     return f;
@@ -415,6 +540,7 @@ function updateMorph(time) {
     uniforms.uTime.value = time;
     uniforms.uFigureAmt.value = figureAmt;
     uniforms.uPulse.value = 1 + Math.sin(time * 2.2) * 0.18;
+    uniforms.uSeamGlow.value = 1.35 + Math.sin(time * 2.6) * 0.18;
 
     halo.material.opacity = (figureAmt * figureAmt) * (0.6 + Math.sin(time * 2.2) * 0.18);
 
@@ -560,7 +686,8 @@ function mount() {
     geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 9);
 
     uniforms = {
-        uLocal: { value: 0 }, uTime: { value: 0 }, uFigureAmt: { value: 0 }, uPulse: { value: 1 },
+        uLocal: { value: 0 }, uTime: { value: 0 }, uFigureAmt: { value: 0 },
+        uPulse: { value: 1 }, uSeamGlow: { value: 1.35 },
         uSize: { value: MOBILE ? 0.1 : 0.085 }, uScale: { value: 300 },
         uMap: { value: makeSprite() }, uOpacity: { value: 1 }, uFog: { value: new THREE.Color(VOID) },
     };
