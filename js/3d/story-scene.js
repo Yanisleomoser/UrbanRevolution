@@ -101,30 +101,87 @@ function put(f, i, x, y, z, c) {
     f.pos[i * 3] = x; f.pos[i * 3 + 1] = y; f.pos[i * 3 + 2] = z;
     f.col[i * 3] = c.r; f.col[i * 3 + 1] = c.g; f.col[i * 3 + 2] = c.b;
 }
-function pointOnSegment(ax, ay, az, bx, by, bz, radius, out) {
-    const t = Math.random();
-    out.set(ax + (bx - ax) * t + rand(-radius, radius),
-            ay + (by - ay) * t + rand(-radius, radius),
-            az + (bz - az) * t + rand(-radius, radius));
+
+/* ---------- human silhouette via canvas mask ----------
+ * Instead of throwing points into rough body zones (which looked like a
+ * stiff gingerbread T-pose), we DRAW a real, relaxed standing figure onto
+ * an offscreen canvas and sample particles from its opaque pixels. This
+ * yields a recognisably human silhouette with real proportions and pose.
+ * The mask also tags the JACKET region (torso + upper arms) so act VI can
+ * colour it with the brand gradient, and flags EDGE pixels so we can rim-
+ * light the contour (depth/plasticity instead of a flat blob).
+ */
+let humanMask = null; // { w,h, pts:[{x,y,edge,jacket}], ... } in normalized coords
+
+function buildHumanMask() {
+    const W = 220, H = 460;
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#fff";
+
+    const cx = W / 2;
+    // Helper: a tapered limb/torso as a rounded capsule.
+    const capsule = (x1, y1, r1, x2, y2, r2) => {
+        const steps = 26;
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t, r = r1 + (r2 - r1) * t;
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+    };
+
+    // Head + neck
+    ctx.beginPath(); ctx.ellipse(cx, 56, 30, 36, 0, 0, Math.PI * 2); ctx.fill();
+    capsule(cx, 88, 13, cx, 110, 17);
+    // Torso (shoulders → waist), slightly tapered — relaxed stance
+    capsule(cx - 2, 116, 46, cx, 250, 34);
+    // Arms DOWN at the sides, slight outward angle (not a T-pose)
+    capsule(cx - 40, 126, 16, cx - 70, 250, 12);   // left upper+fore
+    capsule(cx - 70, 250, 12, cx - 78, 300, 9);
+    capsule(cx + 40, 126, 16, cx + 70, 250, 12);   // right
+    capsule(cx + 70, 250, 12, cx + 78, 300, 9);
+    // Hips → legs, feet slightly apart
+    capsule(cx - 4, 250, 34, cx - 26, 300, 22);
+    capsule(cx - 26, 300, 20, cx - 30, 430, 13);   // left leg
+    capsule(cx + 4, 250, 34, cx + 26, 300, 22);
+    capsule(cx + 26, 300, 20, cx + 30, 430, 13);   // right leg
+
+    const img = ctx.getImageData(0, 0, W, H).data;
+    const at = (x, y) => img[(y * W + x) * 4 + 3] > 80; // opaque?
+    const pts = [];
+    for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+            if (!at(x, y)) continue;
+            // edge = at least one transparent 4-neighbour
+            const edge = !at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1);
+            // jacket region: torso + upper arms (roughly y 110–250)
+            const jacket = y > 108 && y < 252;
+            pts.push({
+                x: (x - cx) / 90,          // → world units (~±1.2 wide)
+                y: (H * 0.52 - y) / 90,    // flip + centre (~±2.4 tall)
+                edge, jacket,
+            });
+        }
+    }
+    humanMask = { pts };
 }
-function sampleHuman(out) {
-    const r = Math.random();
-    if (r < 0.1) {
-        const a = rand(0, Math.PI * 2), b = Math.acos(rand(-1, 1)), rr = 0.32 * Math.cbrt(Math.random());
-        out.set(Math.sin(b) * Math.cos(a) * rr, 1.78 + Math.cos(b) * rr, Math.sin(b) * Math.sin(a) * rr);
-        return "head";
-    }
-    if (r < 0.52) {
-        const ty = rand(0.45, 1.55), taper = 0.5 + (ty - 0.45) / 1.1 * 0.18;
-        out.set(rand(-taper, taper), ty, rand(-0.26, 0.26)); return "torso";
-    }
-    if (r < 0.74) {
-        const s = Math.random() < 0.5 ? -1 : 1;
-        pointOnSegment(s * 0.56, 1.45, 0, s * 0.82, 0.45, 0.05, 0.1, out); return "arms";
-    }
-    const s = Math.random() < 0.5 ? -1 : 1;
-    pointOnSegment(s * 0.2, 0.45, 0, s * 0.26, -2.25, 0, 0.12, out); return "legs";
+
+// Pull a random silhouette point; gives it gentle volume in Z (more at the
+// centre, thin at the contour) so the figure reads as a body, not a sheet.
+function sampleSilhouette(out) {
+    if (!humanMask) buildHumanMask();
+    const pts = humanMask.pts;
+    const p = pts[(Math.random() * pts.length) | 0];
+    const depth = p.edge ? 0.05 : 0.32;
+    out.set(
+        p.x + rand(-0.012, 0.012),
+        p.y + rand(-0.012, 0.012),
+        rand(-depth, depth),
+    );
+    return p;
 }
+
 
 /* ---------- the six keyframes of the hero object ---------- */
 
@@ -151,16 +208,25 @@ function buildBottle() {
     return f;
 }
 
-// II — the bottle becomes a heap (one shirt → this mountain).
+// II — the bottle becomes a heap (one shirt → this mountain). A SOLID,
+// dense cone: height is tied to radius (low at the rim, tall in the
+// centre) and particles fill the volume beneath that surface, so it reads
+// as a packed mound rather than scattered dust.
+const HEAP_R = 2.3;        // base radius
+const HEAP_H = 3.4;        // peak height above the base
+const HEAP_BASE = -2.3;    // ground line
 function buildHeap() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const a = rand(0, Math.PI * 2), radius = Math.sqrt(Math.random()) * 2.7;
-        const mound = 1 - radius / 2.7;
-        const y = -2.2 + mound * 3.0 * Math.random() + rand(-0.22, 0.22);
-        if (Math.random() < 0.12) tmp.copy(C_PET_DIM).multiplyScalar(rand(0.5, 0.9));
-        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.6, 1.05));
-        put(f, i, Math.cos(a) * radius, y, Math.sin(a) * radius * 0.6, tmp);
+        const a = rand(0, Math.PI * 2);
+        // bias toward the centre → denser, taller core
+        const radius = Math.pow(Math.random(), 0.7) * HEAP_R;
+        const surface = HEAP_H * (1 - radius / HEAP_R);      // cone height here
+        const y = HEAP_BASE + Math.random() * surface + rand(-0.05, 0.05);
+        const jitter = 1 + rand(-0.06, 0.06);
+        if (Math.random() < 0.14) tmp.copy(C_PET_DIM).multiplyScalar(rand(0.5, 0.9));
+        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.6, 1.1));
+        put(f, i, Math.cos(a) * radius * jitter, y, Math.sin(a) * radius * 0.62 * jitter, tmp);
     }
     return f;
 }
@@ -169,25 +235,37 @@ function buildHeap() {
 function buildDrift() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const x = rand(-4.2, 4.2), y = rand(-2.6, 2.6), z = rand(-2.2, 2.2);
-        const d = 1 - Math.min(1, Math.hypot(x, y) / 4.5);
-        tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(0.4 + d * 0.6);
+        // A current, not noise: particles ride sweeping horizontal streaks
+        // that drift to the right (the waste "travelling on"). Each streak
+        // is a row with its own y, denser near the centre band, thinning
+        // toward the edges so there's clear direction and structure.
+        const lane = Math.floor(rand(0, 26));
+        const ly = -2.4 + (lane / 25) * 4.8;
+        const t = Math.random();                       // 0 (left) → 1 (right)
+        const x = -4.4 + t * 8.8;
+        const wave = Math.sin(t * Math.PI * 3 + lane) * 0.35;
+        const y = ly + wave + rand(-0.12, 0.12);
+        const z = Math.cos(t * Math.PI * 2 + lane) * 1.4 + rand(-0.15, 0.15);
+        // fade in on the left, fuller mid-stream, scattering out on the right
+        const dens = Math.sin(t * Math.PI) * 0.7 + 0.3;
+        tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(0.45 + dens * 0.6);
         put(f, i, x, y, z, tmp);
     }
     return f;
 }
 
-// IV — it comes back: dust settles INTO a human silhouette.
+// IV — it comes back: toxic dust settles INTO a human silhouette.
 function buildBodyDust() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        if (Math.random() < 0.62) {            // inside the body
-            sampleHuman(vec);
-            vec.multiplyScalar(0.92);
-            tmp.copy(Math.random() < 0.4 ? C_TOXIC : C_SKIN).multiplyScalar(rand(0.55, 0.95));
-        } else {                               // ambient drifting dust
+        if (Math.random() < 0.7) {             // the body itself
+            const p = sampleSilhouette(vec);
+            // Skin base, shot through with toxic teal; edges rim-lit brighter.
+            tmp.copy(Math.random() < 0.42 ? C_TOXIC : C_SKIN)
+               .multiplyScalar(p.edge ? rand(1.0, 1.35) : rand(0.5, 0.85));
+        } else {                               // ambient drifting dust around it
             vec.set(rand(-3, 3), rand(-2.6, 2.6), rand(-1.6, 1.6));
-            tmp.copy(C_TOXIC).multiplyScalar(rand(0.25, 0.6));
+            tmp.copy(C_TOXIC).multiplyScalar(rand(0.22, 0.55));
         }
         put(f, i, vec.x, vec.y, vec.z, tmp);
     }
@@ -197,33 +275,51 @@ function buildBodyDust() {
 // V — the turn: the same matter draws into flowing silk threads.
 function buildThreads() {
     const f = alloc();
+    // Fewer, denser, CONTINUOUS strands: walk each particle to a fixed
+    // position along its thread (p evenly stepped, not random), so the
+    // points form unbroken flowing lines rather than a sparse scatter.
+    const perThread = Math.ceil(COUNT / THREADS);
     for (let i = 0; i < COUNT; i++) {
-        const th = i % THREADS, baseX = ((th / (THREADS - 1)) - 0.5) * 5.0, phase = th * 1.7;
-        const p = Math.random(), y = -2.8 + p * 5.6;
-        const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.3 + rand(-0.04, 0.04);
-        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
+        const th = i % THREADS;
+        const baseX = ((th / (THREADS - 1)) - 0.5) * 4.8;
+        const phase = th * 1.7;
+        const step = Math.floor(i / THREADS);
+        const p = (step + Math.random() * 0.6) / perThread;  // even march up the strand
+        const y = -2.9 + p * 5.8;
+        const x = baseX + Math.sin(p * Math.PI * 2.4 + phase) * 0.45 + rand(-0.02, 0.02);
+        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.6 + rand(-0.02, 0.02);
         gradientColor(p, tmp);
         put(f, i, x, y, z, tmp);
     }
     return f;
 }
 
-// VI — the vision: a tailored figure; the jacket carries the glowing gradient.
+// VI — the vision: a tailored figure wearing the couture jacket, which
+// carries the glowing gradient; body dim, contour rim-lit for plasticity.
 function buildFigure() {
     const f = alloc();
     jacketMask = new Uint8Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
-        let part;
-        if (Math.random() < 0.08) {
-            const a = rand(0, Math.PI * 2), rr = rand(0.9, 1.6);
-            vec.set(Math.cos(a) * rr, rand(0.6, 1.6), Math.sin(a) * rr - 0.1); part = "halo";
-        } else part = sampleHuman(vec);
-        const isJ = part === "torso" || part === "arms" || part === "halo";
-        jacketMask[i] = isJ ? 1 : 0;
-        if (isJ) {
-            gradientColor(THREE.MathUtils.clamp((vec.y + 2.3) / 4.3, 0, 1), tmp);
-            if (part === "halo") tmp.multiplyScalar(0.55);
-        } else tmp.copy(C_DIM).multiplyScalar(rand(0.5, 0.78));
+        let jacket = 0;
+        if (Math.random() < 0.05) {
+            // a tight aura hugging the torso (behind it), not a wide spray —
+            // wide motes read as "wings", so keep them close and mostly in Z.
+            const a = rand(0, Math.PI * 2), rr = rand(0.35, 0.7);
+            vec.set(Math.cos(a) * rr * 0.6, rand(0.6, 1.5), Math.sin(a) * rr - 0.55);
+            jacket = 1;
+            gradientColor(rand(0.2, 0.9), tmp); tmp.multiplyScalar(0.45);
+        } else {
+            const p = sampleSilhouette(vec);
+            jacket = p.jacket ? 1 : 0;
+            if (p.jacket) {
+                // gradient across the jacket by height; brighter at the edge
+                gradientColor(THREE.MathUtils.clamp((vec.y + 2.4) / 4.6, 0, 1), tmp);
+                tmp.multiplyScalar(p.edge ? rand(1.15, 1.45) : rand(0.78, 1.0));
+            } else {
+                tmp.copy(C_DIM).multiplyScalar(p.edge ? rand(0.85, 1.1) : rand(0.45, 0.7));
+            }
+        }
+        jacketMask[i] = jacket;
         put(f, i, vec.x, vec.y, vec.z, tmp);
     }
     return f;
@@ -274,7 +370,19 @@ function updateMorph(time) {
     posAttr.needsUpdate = true; colAttr.needsUpdate = true;
 
     halo.material.opacity = (figureAmt * figureAmt) * (0.6 + Math.sin(time * 2.2) * 0.18);
-    group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.2;
+
+    // How "figure-like" the current frame is — strongest at acts IV and VI
+    // (the two silhouette keyframes). Drives a slow turntable + breathing so
+    // the figure reads as a living 3D body, not a flat sheet.
+    const bodyAmt = Math.max(
+        THREE.MathUtils.clamp(1 - Math.abs(fp - 3), 0, 1),  // act IV
+        figureAmt,                                          // act VI
+    );
+    const turn = Math.sin(time * 0.32) * 0.5 * bodyAmt;     // gentle ±0.5 rad sway
+    const breathe = 1 + Math.sin(time * 1.1) * 0.012 * bodyAmt;
+    group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.2 + turn;
+    group.scale.setScalar(breathe);
+
     const zBase = camera.aspect < 1 ? 10.5 : 7.8;
     camera.position.z = zBase - p * 1.3;
     camera.lookAt(0, -0.1 + p * 0.15, 0);

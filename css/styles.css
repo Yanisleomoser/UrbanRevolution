@@ -447,8 +447,9 @@ body {
 
 /* Tall track = scroll distance. ~133vh per act across 3 acts. */
 .story-track {
-    /* ~103vh of dwell per act across 6 acts — deliberate, cinematic pacing. */
-    height: 620vh;
+    /* ~200vh of dwell per act across 6 acts — Instagram-like swipe
+       resistance so one flick doesn't fly past several acts. */
+    height: 1200vh;
 }
 
 /* Pinned stage holds the WebGL canvas in view while the track scrolls. */
@@ -2414,7 +2415,7 @@ select:focus {
     .workflow { padding: var(--space-5) 0; top: 60px; }
 
     /* Scroll story — shorter track + tighter editorial padding on mobile */
-    .story-track { height: 480vh; }
+    .story-track { height: 960vh; }
     .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
     .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
     .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }
