@@ -604,6 +604,11 @@
                         <button class="preset-btn" data-preset="XL" data-i18n="preset.xl">Voreinstellung XL</button>
                     </div>
 
+                    <div class="size-readout" aria-live="polite">
+                        <span class="size-readout-label" data-i18n="measure.size_label">Empfohlene Konfektionsgröße</span>
+                        <span class="size-readout-badge" id="measure-size">M</span>
+                    </div>
+
                     <div class="measure-inputs">
                         <div class="measure-field">
                             <label for="height"><span data-i18n="ml.height">Körpergröße</span> <span class="unit">cm</span></label>
@@ -736,20 +741,30 @@
                         </g>
 
                         <g class="measure-annotations">
-                            <line x1="65" y1="96" x2="175" y2="96" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="100" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.shoulder">Schulter</text>
+                            <g class="annotation" data-measure="shoulder">
+                                <line x1="65" y1="96" x2="175" y2="96" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
+                                <text x="182" y="100" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.shoulder">Schulter</text>
+                            </g>
 
-                            <line x1="70" y1="134" x2="170" y2="134" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="138" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.chest">Brust</text>
+                            <g class="annotation" data-measure="chest">
+                                <line x1="70" y1="134" x2="170" y2="134" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
+                                <text x="182" y="138" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.chest">Brust</text>
+                            </g>
 
-                            <line x1="76" y1="190" x2="164" y2="190" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="194" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.waist">Taille</text>
+                            <g class="annotation" data-measure="waist">
+                                <line x1="76" y1="190" x2="164" y2="190" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
+                                <text x="182" y="194" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.waist">Taille</text>
+                            </g>
 
-                            <line x1="74" y1="248" x2="166" y2="248" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                            <text x="182" y="252" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.hips">Hüfte</text>
+                            <g class="annotation" data-measure="hips">
+                                <line x1="74" y1="248" x2="166" y2="248" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
+                                <text x="182" y="252" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.hips">Hüfte</text>
+                            </g>
 
-                            <line x1="80" y1="338" x2="160" y2="338" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.65"/>
-                            <text x="166" y="342" font-size="10" font-weight="600" fill="#ec4899" opacity="0.85" letter-spacing="0.4" data-i18n="svg.inseam">Schritt</text>
+                            <g class="annotation" data-measure="inseam">
+                                <line x1="80" y1="338" x2="160" y2="338" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.65"/>
+                                <text x="166" y="342" font-size="10" font-weight="600" fill="#ec4899" opacity="0.85" letter-spacing="0.4" data-i18n="svg.inseam">Schritt</text>
+                            </g>
                         </g>
                     </svg>
                 </div>

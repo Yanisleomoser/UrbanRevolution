@@ -458,11 +458,23 @@
     }
   }
 
+  // Felder, die eine passende Linie im Körperdiagramm haben
+  const DIAGRAM_FIELDS = ["shoulder", "chest", "waist", "hips", "inseam"];
+
   function initMeasurements() {
     Measurements.FIELDS.forEach((field) => {
       const input = document.getElementById(field);
       if (input) {
         input.addEventListener("input", updateMeasurements);
+        // Beim Fokus die passende Diagramm-Annotation hervorheben
+        if (DIAGRAM_FIELDS.includes(field)) {
+          input.addEventListener("focus", () => highlightAnnotation(field));
+          input.addEventListener("blur", () => highlightAnnotation(null));
+          input.addEventListener("mouseenter", () => highlightAnnotation(field));
+          input.addEventListener("mouseleave", () => {
+            if (document.activeElement !== input) highlightAnnotation(null);
+          });
+        }
       }
     });
 
@@ -478,6 +490,45 @@
     updateMeasurements();
   }
 
+  // Hebt die zum Feld passende Linie im SVG-Körperdiagramm hervor.
+  // field === null setzt alle zurück.
+  function highlightAnnotation(field) {
+    const group = document.querySelector(".measure-annotations");
+    if (!group) return;
+    group.classList.toggle("has-active", Boolean(field));
+    group.querySelectorAll(".annotation").forEach((el) => {
+      el.classList.toggle("is-active", el.dataset.measure === field);
+    });
+    DIAGRAM_FIELDS.forEach((f) => {
+      const fieldEl = document.getElementById(f);
+      if (fieldEl) {
+        fieldEl.closest(".measure-field")?.classList.toggle(
+          "is-linked",
+          f === field
+        );
+      }
+    });
+  }
+
+  // Markiert den Preset-Button, dessen Werte exakt den aktuellen Maßen
+  // entsprechen — oder keinen, sobald der Nutzer manuell abweicht.
+  function updatePresetActive(measurements) {
+    const match = ["S", "M", "L", "XL"].find((name) => {
+      const preset = Measurements.PRESETS[name];
+      return preset && Measurements.FIELDS.every(
+        (f) => preset[f] === measurements[f]
+      );
+    });
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.preset === match);
+    });
+  }
+
+  function updateSizeReadout(measurements) {
+    const el = document.getElementById("measure-size");
+    if (el) el.textContent = Measurements.calculateSize(measurements);
+  }
+
   function initPoseUpload() {
     const fileInput = document.getElementById("pose-photo");
     const uploadBtn = document.getElementById("pose-upload-btn");
@@ -489,11 +540,40 @@
 
     uploadBtn.addEventListener("click", () => fileInput.click());
 
-    fileInput.addEventListener("change", async (e) => {
+    fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
       fileInput.value = "";
+      processPhotoFile(file);
+    });
 
+    // Drag & Drop direkt auf die Foto-Karte
+    const card = uploadBtn.closest(".photo-upload-card");
+    if (card) {
+      ["dragenter", "dragover"].forEach((evt) =>
+        card.addEventListener(evt, (e) => {
+          e.preventDefault();
+          card.classList.add("is-dragover");
+        })
+      );
+      ["dragleave", "dragend"].forEach((evt) =>
+        card.addEventListener(evt, () => card.classList.remove("is-dragover"))
+      );
+      card.addEventListener("drop", (e) => {
+        e.preventDefault();
+        card.classList.remove("is-dragover");
+        if (uploadBtn.disabled) return;
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+          showToast(t("toast.no_person"), "error");
+          return;
+        }
+        processPhotoFile(file);
+      });
+    }
+
+    async function processPhotoFile(file) {
       uploadBtn.disabled = true;
       uploadBtn.textContent = t("measure.photo_btn_loading");
       statusEl.textContent = "";
@@ -579,11 +659,14 @@
         uploadBtn.disabled = false;
         uploadBtn.textContent = t("measure.photo_btn_another");
       }
-    });
+    }
   }
 
   function updateMeasurements() {
-    S.set("measurements", Measurements.read());
+    const measurements = Measurements.read();
+    S.set("measurements", measurements);
+    updatePresetActive(measurements);
+    updateSizeReadout(measurements);
     updateModelInfo();
     updateProductionPreview();
   }
