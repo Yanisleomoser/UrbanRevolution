@@ -466,7 +466,7 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    opacity: 0; /* JS fades it in for the transformation acts (V–VI) */
+    /* The particle object is the hero across ALL acts — always visible. */
 }
 
 /* Documentary photo layer for the dark acts I–IV. Only the active act's
@@ -491,11 +491,13 @@ body {
     );
 }
 
+/* Photos recede to dim, blurred ATMOSPHERE behind the hero particle
+   object — present but never competing with it. */
 .story-photo {
     position: absolute;
     inset: 0;
     opacity: 0;
-    transition: opacity 1s var(--ease-out);
+    transition: opacity 1.2s var(--ease-out);
     will-change: opacity;
 }
 
@@ -504,15 +506,16 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
-    transform: scale(1.06);
+    transform: scale(1.12);
+    filter: blur(6px) saturate(0.7) brightness(0.55);
 }
 
-.story-photo.is-shown { opacity: 1; }
-.story-photo.is-shown img { animation: storyKenBurns 14s ease-out forwards; }
+.story-photo.is-shown { opacity: 0.5; }
+.story-photo.is-shown img { animation: storyKenBurns 18s ease-out forwards; }
 
 @keyframes storyKenBurns {
-    from { transform: scale(1.06); }
-    to { transform: scale(1.18); }
+    from { transform: scale(1.12); }
+    to { transform: scale(1.22); }
 }
 
 /* Bottom scrim keeps the lower-third text legible over the particles. */
@@ -684,6 +687,49 @@ body {
 
 .story-page [data-act-num] { color: var(--pure); }
 
+/* Live counter — top-right, quiet until it matters; retires at the turn. */
+.story-counter {
+    position: absolute;
+    top: clamp(58px, 11vh, 96px);
+    right: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-family: 'Poppins', sans-serif;
+    text-align: right;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity var(--duration-slow) var(--ease-out),
+                transform var(--duration-slow) var(--ease-out);
+    pointer-events: none;
+}
+.story-counter.is-on { opacity: 1; transform: none; }
+
+.story-counter-intro {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: var(--space-1);
+}
+.story-counter-row {
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+}
+.story-counter-row b {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: var(--text-md);
+    color: var(--pure);
+    margin-right: 4px;
+}
+
+@media (max-width: 768px) {
+    .story-counter { right: var(--space-5); top: clamp(48px, 9vh, 80px); }
+    .story-counter-row { font-size: var(--text-xs); }
+}
+
 /* Reduced motion / no WebGL: un-pin, hide canvas, stack acts statically
    so the narrative stays fully readable. */
 @media (prefers-reduced-motion: reduce) {
@@ -697,6 +743,7 @@ body {
     .story-canvas,
     .story-scrim,
     .story-photos,
+    .story-counter,
     .story-foot { display: none; }
     .story-acts {
         position: static;
@@ -721,6 +768,7 @@ body {
 
 .story.no-webgl .story-canvas { display: none; }
 .story.no-webgl .story-photos { display: none; }
+.story.no-webgl .story-counter { display: none; }
 .story.no-webgl .story-stage {
     position: static;
     height: auto;
