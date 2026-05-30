@@ -19,20 +19,32 @@
  *     The canvas is invisible (and its work skipped) during the photo
  *     acts, then fades in for the transformation.
  *
+ * Rendering: the thread→jacket morph runs entirely on the GPU (a custom
+ * points ShaderMaterial mixes two position/colour sets by a uniform), so
+ * the CPU only nudges a handful of uniforms per frame — that buys us a
+ * far denser particle budget. The seams are lifted by a bloom pass
+ * (EffectComposer → UnrealBloomPass) for a soft couture glow.
+ *
  * Scroll progress is read passively and eased per frame. Degrades
  * gracefully (reduced-motion / no-WebGL → CSS shows static readable acts).
  */
 
 import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 const MOBILE = typeof window !== "undefined" && window.matchMedia &&
     window.matchMedia("(max-width: 768px)").matches;
-const COUNT = MOBILE ? 4200 : 7200;       // matte fabric + dim body
-const ACCENT = MOBILE ? 850 : 1600;       // glowing couture seams
-const THREADS = 56;
+// GPU morph lets us run far more particles than the old CPU loop.
+const COUNT = MOBILE ? 5200 : 12000;      // matte fabric + dim body
+const ACCENT = MOBILE ? 1100 : 2600;      // glowing couture seams
+const THREADS = 64;
 const EASE = 0.07;
 // Where the WebGL transformation takes over from the photos (scroll 0–1).
 const CANVAS_FROM = 0.6;
+const VOID = 0x0a0a0c;
 
 const C_PINK = new THREE.Color("#EC4899");
 const C_PURPLE = new THREE.Color("#A855F7");
@@ -49,14 +61,64 @@ const NECK_HALF = 0.17;     // half-width of the collar opening at the shoulders
 const FRONT_DEPTH = 0.34;   // z bulge of the front shell at centre
 const CLOSURE_GAP = 0.05;   // half-gap at centre front (the closure line)
 
+/* ---------- GPU morph shaders ---------- */
+// Each particle carries its thread origin (position), its jacket target
+// (aFigure) and both colours; the vertex shader mixes them by uLocal and
+// applies the settle-jitter, couture glow pulse and seam shimmer.
+const VERT = /* glsl */`
+    attribute vec3 aFigure;
+    attribute vec3 aColA;
+    attribute vec3 aColB;
+    attribute float aMask;
+    attribute float aSeed;
+    uniform float uLocal, uTime, uGlow, uShimmerY, uShimmerAmt, uMaskAll, uSize, uScale;
+    uniform vec3 uFog;
+    varying vec3 vColor;
+    void main() {
+        float calm = 1.0 - 0.7 * uLocal;
+        vec3 p = mix(position, aFigure, uLocal);
+        p.x += sin(uTime * 0.7 + aSeed) * 0.012 * calm;
+        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012 * calm;
+
+        vec3 col = mix(aColA, aColB, uLocal);
+        float glow = mix(1.0, uGlow, max(aMask, uMaskAll));
+        if (uShimmerAmt > 0.001) {
+            float dy = aFigure.y - uShimmerY;
+            glow *= 1.0 + uShimmerAmt * exp(-dy * dy * 7.0);
+        }
+        col *= glow;
+
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        // FogExp2 toward the void so distant particles melt into the dark.
+        float fog = 1.0 - exp(-pow(0.055 * length(mv.xyz), 2.0));
+        vColor = mix(col, uFog, fog);
+
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = uSize * (uScale / -mv.z);
+    }
+`;
+const FRAG = /* glsl */`
+    uniform sampler2D uMap;
+    uniform float uOpacity;
+    varying vec3 vColor;
+    void main() {
+        float a = texture2D(uMap, gl_PointCoord).a;
+        if (a < 0.02) discard;
+        gl_FragColor = vec4(vColor, a * uOpacity);
+    }
+`;
+
 let renderer = null;
 let scene = null;
 let camera = null;
 let group = null;
 let halo = null;
+let composer = null;
+let bloom = null;
+let sprite = null;
 
-let fabric = null;   // { count, posThreads, colThreads, posFigure, colFigure, mask, posAttr, colAttr, points }
-let accent = null;   // same shape, mask=null (every accent particle glows)
+let fabric = null;   // { uniforms, points }  — matte garment + dim body
+let accent = null;   // { uniforms, points }  — glowing couture seams
 
 let track = null;
 let acts = [];
@@ -262,11 +324,11 @@ function fillAccent(count, pos, col) {
     for (let i = 0; i < count; i++) {
         const r = Math.random();
         let bright = 1;
-        if (r < 0.18) {
+        if (r < 0.12) {
             // Centre front placket + buttons.
             const y = rand(HEM_Y, CHEST_Y);
             vec.set(rand(-0.012, 0.012), y, FRONT_DEPTH + 0.01);
-            if (Math.random() < 0.16) bright = 1.6;   // button nodes
+            if (Math.random() < 0.16) bright = 1.3;   // button nodes
         } else if (r < 0.4) {
             // Notched lapel edges (both sides).
             const side = Math.random() < 0.5 ? -1 : 1;
@@ -298,7 +360,7 @@ function fillAccent(count, pos, col) {
             const radius = 0.2 * (1 - t) + 0.085 * t;
             vec.x += side * radius * 0.9;
             vec.z += 0.02;
-            if (t > 0.92) bright = 1.4;               // cuff edge
+            if (t > 0.92) bright = 1.25;              // cuff edge
         } else {
             // Hem edge across the flare.
             const x = rand(-HEM_HALF, HEM_HALF);
@@ -306,7 +368,9 @@ function fillAccent(count, pos, col) {
             vec.set(x, HEM_Y, frontZ(Math.min(Math.abs(x), hw), hw) + 0.02);
         }
         heightTone(vec.y, tmp);
-        tmp.lerp(C_WHITE, 0.5).multiplyScalar(bright);
+        // lerp toward white but leave brightness headroom for the bloom pass
+        // so the additive seams glow rather than clip to a hot white core.
+        tmp.lerp(C_WHITE, 0.42).multiplyScalar(bright);
         pos[i * 3] = vec.x; pos[i * 3 + 1] = vec.y; pos[i * 3 + 2] = vec.z;
         col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;
     }
@@ -343,77 +407,77 @@ function makeHalo() {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, s, s);
     const tex = new THREE.CanvasTexture(c);
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    const s2 = new THREE.Sprite(new THREE.SpriteMaterial({
         map: tex,
         blending: THREE.AdditiveBlending,
         transparent: true,
         depthWrite: false,
         opacity: 0,
     }));
-    sprite.scale.set(6, 6, 1);
-    sprite.position.set(0, 0.7, -0.5);
-    return sprite;
+    s2.scale.set(6, 6, 1);
+    s2.position.set(0, 0.7, -0.5);
+    return s2;
 }
 
 /* ---------- layer construction ---------- */
 
-function createLayer(count, fill, threadWhiteMix, material) {
-    const posThreads = new Float32Array(count * 3);
-    const colThreads = new Float32Array(count * 3);
-    fillThreads(count, posThreads, colThreads, threadWhiteMix);
+function createLayer(count, fill, threadWhiteMix, opts) {
+    const posA = new Float32Array(count * 3);   // thread origin → "position"
+    const colA = new Float32Array(count * 3);
+    fillThreads(count, posA, colA, threadWhiteMix);
 
-    const posFigure = new Float32Array(count * 3);
-    const colFigure = new Float32Array(count * 3);
-    const mask = fill(count, posFigure, colFigure);
+    const posB = new Float32Array(count * 3);   // jacket target
+    const colB = new Float32Array(count * 3);
+    const mask = fill(count, posB, colB);
+
+    const aMask = new Float32Array(count);
+    const aSeed = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+        aMask[i] = mask ? mask[i] : 0;
+        aSeed[i] = i;
+    }
 
     const geo = new THREE.BufferGeometry();
-    const posAttr = new THREE.BufferAttribute(new Float32Array(posThreads), 3);
-    const colAttr = new THREE.BufferAttribute(new Float32Array(colThreads), 3);
-    posAttr.setUsage(THREE.DynamicDrawUsage);
-    colAttr.setUsage(THREE.DynamicDrawUsage);
-    geo.setAttribute("position", posAttr);
-    geo.setAttribute("color", colAttr);
+    geo.setAttribute("position", new THREE.BufferAttribute(posA, 3));
+    geo.setAttribute("aFigure", new THREE.BufferAttribute(posB, 3));
+    geo.setAttribute("aColA", new THREE.BufferAttribute(colA, 3));
+    geo.setAttribute("aColB", new THREE.BufferAttribute(colB, 3));
+    geo.setAttribute("aMask", new THREE.BufferAttribute(aMask, 1));
+    geo.setAttribute("aSeed", new THREE.BufferAttribute(aSeed, 1));
 
-    return {
-        count, posThreads, colThreads, posFigure, colFigure, mask,
-        posAttr, colAttr, points: new THREE.Points(geo, material),
+    const uniforms = {
+        uLocal: { value: 0 },
+        uTime: { value: 0 },
+        uGlow: { value: 1 },
+        uShimmerY: { value: 0 },
+        uShimmerAmt: { value: 0 },
+        uMaskAll: { value: opts.maskAll ? 1 : 0 },
+        uSize: { value: opts.size },
+        uScale: { value: 300 },
+        uMap: { value: sprite },
+        uOpacity: { value: opts.opacity },
+        uFog: { value: new THREE.Color(VOID) },
     };
+    const mat = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: VERT,
+        fragmentShader: FRAG,
+        transparent: true,
+        depthWrite: false,
+        blending: opts.blending,
+    });
+
+    return { uniforms, points: new THREE.Points(geo, mat) };
 }
 
 /* ---------- per-frame morph (only runs for the transformation acts) ---------- */
 
-// Blend one layer from its thread origin to its jacket target. `glow`
-// brightens masked (or, mask===null, all) particles for the couture pulse.
-// `shimmerY` / `shimmerAmt` sweep a soft highlight band up the seams.
-function morphLayer(L, local, time, glow, shimmerY, shimmerAmt) {
-    const pos = L.posAttr.array;
-    const col = L.colAttr.array;
-    const pt = L.posThreads, pf = L.posFigure;
-    const ct = L.colThreads, cf = L.colFigure;
-    const mask = L.mask;
-    const calm = 1 - 0.7 * local;            // jitter settles as the jacket forms
-    const hasShimmer = shimmerAmt > 0.001;
-
-    for (let k = 0; k < L.count; k++) {
-        const j = k * 3;
-        pos[j] = pt[j] + (pf[j] - pt[j]) * local + Math.sin(time * 0.7 + k) * 0.012 * calm;
-        pos[j + 1] = pt[j + 1] + (pf[j + 1] - pt[j + 1]) * local + Math.cos(time * 0.6 + k * 1.3) * 0.012 * calm;
-        pos[j + 2] = pt[j + 2] + (pf[j + 2] - pt[j + 2]) * local;
-
-        let r = ct[j] + (cf[j] - ct[j]) * local;
-        let g = ct[j + 1] + (cf[j + 1] - ct[j + 1]) * local;
-        let b = ct[j + 2] + (cf[j + 2] - ct[j + 2]) * local;
-
-        let mul = (!mask || mask[k]) ? glow : 1;
-        if (hasShimmer) {
-            const dy = pf[j + 1] - shimmerY;
-            mul *= 1 + shimmerAmt * Math.exp(-dy * dy * 7);
-        }
-        if (mul !== 1) { r *= mul; g *= mul; b *= mul; }
-        col[j] = r; col[j + 1] = g; col[j + 2] = b;
-    }
-    L.posAttr.needsUpdate = true;
-    L.colAttr.needsUpdate = true;
+function setLayer(L, local, time, glow, shimmerY, shimmerAmt) {
+    L.uniforms.uLocal.value = local;
+    L.uniforms.uTime.value = time;
+    L.uniforms.uGlow.value = glow;
+    L.uniforms.uShimmerY.value = shimmerY;
+    L.uniforms.uShimmerAmt.value = shimmerAmt;
 }
 
 function updateMorph(time) {
@@ -427,12 +491,13 @@ function updateMorph(time) {
     const pulse = 1 + Math.sin(time * 2.2) * 0.16;
 
     // Fabric: gentle breathing glow on the jacket once it forms.
-    morphLayer(fabric, local, time, 1 + (pulse - 1) * figureAmt, 0, 0);
+    setLayer(fabric, local, time, 1 + (pulse - 1) * figureAmt, 0, 0);
 
-    // Seams: brighter, with a highlight sweeping up the cut.
-    const accentGlow = 0.55 + (0.6 + Math.sin(time * 2.6) * 0.22) * figureAmt;
+    // Seams: brighter, with a highlight sweeping up the cut. Kept below a
+    // hot-white core so the bloom pass does the glowing, not raw clipping.
+    const accentGlow = 0.5 + (0.45 + Math.sin(time * 2.6) * 0.18) * figureAmt;
     const shimmerY = HEM_Y + ((time * 0.4) % 1) * (SHOULDER_Y - HEM_Y);
-    morphLayer(accent, local, time, accentGlow, shimmerY, 0.9 * figureAmt);
+    setLayer(accent, local, time, accentGlow, shimmerY, 0.55 * figureAmt);
 
     halo.material.opacity = (figureAmt * figureAmt) * (0.55 + Math.sin(time * 2.2) * 0.16);
     group.rotation.y = Math.sin(time * 0.1) * 0.1 + tp * 0.22;
@@ -480,13 +545,13 @@ function loop() {
     easedProgress += (targetProgress - easedProgress) * EASE;
 
     // Canvas only matters for the transformation acts — fade it in and
-    // skip the particle work entirely while the photos are on screen.
+    // skip the particle work (incl. the bloom passes) while photos show.
     const vis = smoothstep((easedProgress - (CANVAS_FROM - 0.005)) / 0.06);
     renderer.domElement.style.opacity = vis.toFixed(3);
     if (vis < 0.01) return;
 
     updateMorph(performance.now() * 0.001);
-    renderer.render(scene, camera);
+    composer.render();
 }
 
 function resize() {
@@ -494,6 +559,11 @@ function resize() {
     const w = canvas.clientWidth || window.innerWidth;
     const h = canvas.clientHeight || window.innerHeight;
     renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+    if (bloom) bloom.setSize(w, h);
+    // Match three's PointsMaterial size attenuation (scale = CSS height / 2).
+    fabric.uniforms.uScale.value = h * 0.5;
+    accent.uniforms.uScale.value = h * 0.5;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
 }
@@ -522,8 +592,7 @@ function mount() {
     try {
         renderer = new THREE.WebGLRenderer({
             canvas,
-            antialias: true,
-            alpha: true,
+            antialias: !MOBILE,
             powerPreference: "high-performance",
         });
     } catch (err) {
@@ -532,39 +601,30 @@ function mount() {
         return;
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // Opaque void: during the transformation acts no photo shows behind the
+    // canvas, so a solid clear keeps the bloom pass clean (no alpha fringes).
+    renderer.setClearColor(VOID, 1);
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0a0c, 0.055);
 
     camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     camera.position.set(0, 0.45, 7);
 
-    const sprite = makeSprite();
-    const fabricMat = new THREE.PointsMaterial({
+    sprite = makeSprite();
+    fabric = createLayer(COUNT, fillFabric, 0, {
         size: MOBILE ? 0.12 : 0.1,
-        sizeAttenuation: true,
-        map: sprite,
-        vertexColors: true,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.NormalBlending,
         opacity: 1,
+        blending: THREE.NormalBlending,
+        maskAll: false,
     });
-    const accentMat = new THREE.PointsMaterial({
+    accent = createLayer(ACCENT, fillAccent, 0.5, {
         size: MOBILE ? 0.085 : 0.07,
-        sizeAttenuation: true,
-        map: sprite,
-        vertexColors: true,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
         opacity: 0.95,
+        blending: THREE.AdditiveBlending,
+        maskAll: true,
     });
-
-    fabric = createLayer(COUNT, fillFabric, 0, fabricMat);
-    accent = createLayer(ACCENT, fillAccent, 0.5, accentMat);
 
     group = new THREE.Group();
     halo = makeHalo();
@@ -572,6 +632,18 @@ function mount() {
     group.add(fabric.points);
     group.add(accent.points);   // additive seams render last → glow on top
     scene.add(group);
+
+    composer = new EffectComposer(renderer);
+    composer.setPixelRatio(renderer.getPixelRatio());
+    composer.addPass(new RenderPass(scene, camera));
+    bloom = new UnrealBloomPass(
+        new THREE.Vector2(1, 1),
+        MOBILE ? 0.3 : 0.4,   // strength — a soft couture glow, not a blowout
+        0.5,                  // radius
+        0.85,                 // threshold — only the brightest seam cores bloom
+    );
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
 
     resize();
     readProgress();
