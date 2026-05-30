@@ -408,7 +408,7 @@ const I18N = (() => {
       "hero.asset_alt": "Fashion figure wearing an AI-generated hoodie in the brand gradient",
       "hero.caption_html": "AI-generated. Made to measure. At your door in <strong>14 days</strong>.",
 
-      // ── Visual Scroll Story (3 acts) ──
+      // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Why this system has to change",
       "story.a0_kicker": "Act I — The scale",
       "story.a0_headline_html": "Over 100 billion garments a year.<br>Enough to re-dress every person on Earth twelve times over — and most hit the dump within weeks.",
