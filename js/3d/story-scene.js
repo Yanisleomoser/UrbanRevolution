@@ -83,8 +83,11 @@ const VERT = /* glsl */`
     varying vec3 vColor;
     void main() {
         vec3 p = mix(position, aPosB, uLocal);
-        p.x += sin(uTime * 0.7 + aSeed) * 0.012;
-        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012;
+        // Jitter keeps the dark acts alive but settles as the jacket forms,
+        // so the final garment reads crisp instead of cloudy.
+        float calm = 1.0 - 0.65 * uFigureAmt;
+        p.x += sin(uTime * 0.7 + aSeed) * 0.012 * calm;
+        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012 * calm;
 
         vec3 col = mix(aColA, aColB, uLocal);
         // The mask encodes each particle's role in the jacket keyframe
@@ -483,8 +486,10 @@ function updateMorph(time) {
     halo.material.opacity = (figureAmt * figureAmt) * (0.55 + Math.sin(time * 2.2) * 0.16);
     group.rotation.y = Math.sin(time * 0.1) * 0.12 + p * 0.2;
     const zBase = camera.aspect < 1 ? 10.5 : 7.8;
-    camera.position.z = zBase - p * 1.3;
-    camera.lookAt(0, -0.1 + p * 0.15, 0);
+    // Frame wide for the dark acts; pull in and lift onto the jacket as it
+    // forms, so the garment reads as the hero instead of a distant speck.
+    camera.position.z = zBase - p * 1.3 - figureAmt * 1.4;
+    camera.lookAt(0, -0.1 + p * 0.15 + figureAmt * 0.55, 0);
 }
 
 /* ---------- counter (acts I–IV) ---------- */
@@ -633,9 +638,9 @@ function mount() {
     composer.addPass(new RenderPass(scene, camera));
     bloom = new UnrealBloomPass(
         new THREE.Vector2(1, 1),
-        MOBILE ? 0.3 : 0.4,   // strength — soft couture glow on the seams
+        MOBILE ? 0.35 : 0.5,  // strength — soft couture glow on the seams
         0.5,                  // radius
-        0.85,                 // threshold — only the bright seam cores bloom
+        0.78,                 // threshold — only the bright seam cores bloom
     );
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
