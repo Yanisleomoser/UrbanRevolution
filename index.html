@@ -265,6 +265,27 @@
         <h2 id="story-heading" class="visually-hidden" data-i18n="story.heading">Von Abfall zu Couture für Einen</h2>
         <div class="story-track" data-story>
             <div class="story-stage">
+                <!-- Documentary photos for the dark acts I–IV (CC, see
+                     assets/story/CREDITS.md). The WebGL canvas carries the
+                     hopeful transformation (acts V–VI). -->
+                <div class="story-photos" aria-hidden="true">
+                    <picture class="story-photo" data-photo="0">
+                        <source type="image/avif" srcset="assets/story/act1-sm.avif 800w, assets/story/act1.avif 1600w" sizes="100vw">
+                        <img src="assets/story/act1.jpg" srcset="assets/story/act1-sm.jpg 800w, assets/story/act1.jpg 1600w" sizes="100vw" alt="" decoding="async">
+                    </picture>
+                    <picture class="story-photo" data-photo="1">
+                        <source type="image/avif" srcset="assets/story/act2-sm.avif 800w, assets/story/act2.avif 1600w" sizes="100vw">
+                        <img src="assets/story/act2.jpg" srcset="assets/story/act2-sm.jpg 800w, assets/story/act2.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
+                    </picture>
+                    <picture class="story-photo" data-photo="2">
+                        <source type="image/avif" srcset="assets/story/act3-sm.avif 800w, assets/story/act3.avif 1600w" sizes="100vw">
+                        <img src="assets/story/act3.jpg" srcset="assets/story/act3-sm.jpg 800w, assets/story/act3.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
+                    </picture>
+                    <picture class="story-photo" data-photo="3">
+                        <source type="image/avif" srcset="assets/story/act4-sm.avif 800w, assets/story/act4.avif 1600w" sizes="100vw">
+                        <img src="assets/story/act4.jpg" srcset="assets/story/act4-sm.jpg 800w, assets/story/act4.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
+                    </picture>
+                </div>
                 <canvas id="story-canvas" class="story-canvas" aria-hidden="true"></canvas>
                 <div class="story-scrim" aria-hidden="true"></div>
 
@@ -877,6 +898,7 @@
                         <li><a href="mailto:hello@revolveurban.com" data-i18n="footer.contact">Kontakt</a></li>
                         <li><a href="impressum.html" data-i18n="footer.imprint">Impressum</a></li>
                         <li><a href="datenschutz.html" data-i18n="footer.privacy">Datenschutz</a></li>
+                        <li><a href="https://github.com/Yanisleomoser/UrbanRevolution/blob/main/assets/story/CREDITS.md" target="_blank" rel="noopener" data-i18n="footer.credits">Bildnachweise</a></li>
                         <li><a href="#main-content" data-i18n="footer.top">Zum Seitenanfang</a></li>
                     </ul>
                 </nav>
