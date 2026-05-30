@@ -235,9 +235,20 @@ function buildHeap() {
 function buildDrift() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const x = rand(-4.2, 4.2), y = rand(-2.6, 2.6), z = rand(-2.2, 2.2);
-        const d = 1 - Math.min(1, Math.hypot(x, y) / 4.5);
-        tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(0.4 + d * 0.6);
+        // A current, not noise: particles ride sweeping horizontal streaks
+        // that drift to the right (the waste "travelling on"). Each streak
+        // is a row with its own y, denser near the centre band, thinning
+        // toward the edges so there's clear direction and structure.
+        const lane = Math.floor(rand(0, 26));
+        const ly = -2.4 + (lane / 25) * 4.8;
+        const t = Math.random();                       // 0 (left) → 1 (right)
+        const x = -4.4 + t * 8.8;
+        const wave = Math.sin(t * Math.PI * 3 + lane) * 0.35;
+        const y = ly + wave + rand(-0.12, 0.12);
+        const z = Math.cos(t * Math.PI * 2 + lane) * 1.4 + rand(-0.15, 0.15);
+        // fade in on the left, fuller mid-stream, scattering out on the right
+        const dens = Math.sin(t * Math.PI) * 0.7 + 0.3;
+        tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(0.45 + dens * 0.6);
         put(f, i, x, y, z, tmp);
     }
     return f;
@@ -264,11 +275,19 @@ function buildBodyDust() {
 // V — the turn: the same matter draws into flowing silk threads.
 function buildThreads() {
     const f = alloc();
+    // Fewer, denser, CONTINUOUS strands: walk each particle to a fixed
+    // position along its thread (p evenly stepped, not random), so the
+    // points form unbroken flowing lines rather than a sparse scatter.
+    const perThread = Math.ceil(COUNT / THREADS);
     for (let i = 0; i < COUNT; i++) {
-        const th = i % THREADS, baseX = ((th / (THREADS - 1)) - 0.5) * 5.0, phase = th * 1.7;
-        const p = Math.random(), y = -2.8 + p * 5.6;
-        const x = baseX + Math.sin(p * Math.PI * 2.2 + phase) * 0.3 + rand(-0.04, 0.04);
-        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.5 + rand(-0.04, 0.04);
+        const th = i % THREADS;
+        const baseX = ((th / (THREADS - 1)) - 0.5) * 4.8;
+        const phase = th * 1.7;
+        const step = Math.floor(i / THREADS);
+        const p = (step + Math.random() * 0.6) / perThread;  // even march up the strand
+        const y = -2.9 + p * 5.8;
+        const x = baseX + Math.sin(p * Math.PI * 2.4 + phase) * 0.45 + rand(-0.02, 0.02);
+        const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.6 + rand(-0.02, 0.02);
         gradientColor(p, tmp);
         put(f, i, x, y, z, tmp);
     }

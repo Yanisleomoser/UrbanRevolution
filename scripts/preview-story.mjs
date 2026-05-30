@@ -53,6 +53,9 @@ const bottle = () => { const o = []; for (let i = 0; i < COUNT; i++) { const u =
 const heap = () => { const o = [], R = 2.3, Hh = 3.4, B = -2.3; for (let i = 0; i < COUNT; i++) { const a = rnd(0, 6.283), r = Math.pow(Math.random(), 0.7) * R, surf = Hh * (1 - r / R), y = B + Math.random() * surf, j = 1 + rnd(-0.06, 0.06); o.push([Math.cos(a) * r * j, y, Math.sin(a) * r * 0.62 * j, 1]); } return o; };
 const body = () => { const o = []; for (let i = 0; i < COUNT; i++) { if (Math.random() < 0.7) { const p = sampleSil(); o.push([p.x, p.y, p.z, p.edge ? 1.4 : 0.7]); } else o.push([rnd(-3, 3), rnd(-2.6, 2.6), rnd(-1.6, 1.6), 0.35]); } return o; };
 const figure = () => { const o = []; for (let i = 0; i < COUNT; i++) { if (Math.random() < 0.05) { const a = rnd(0, 6.283), rr = rnd(0.35, 0.7); o.push([Math.cos(a) * rr * 0.6, rnd(0.6, 1.5), Math.sin(a) * rr - 0.55, 0.45]); } else { const p = sampleSil(); o.push([p.x, p.y, p.z, p.edge ? 1.3 : 0.7]); } } return o; };
+const drift = () => { const o = []; for (let i = 0; i < COUNT; i++) { const lane = Math.floor(rnd(0, 26)); const ly = -2.4 + (lane / 25) * 4.8; const t = Math.random(); const x = -4.4 + t * 8.8; const wave = Math.sin(t * Math.PI * 3 + lane) * 0.35; const y = ly + wave + rnd(-0.12, 0.12); const z = Math.cos(t * Math.PI * 2 + lane) * 1.4 + rnd(-0.15, 0.15); const dens = Math.sin(t * Math.PI) * 0.7 + 0.3; o.push([x, y, z, 0.45 + dens * 0.6]); } return o; };
+const THREADS = 56;
+const threads = () => { const o = []; const perThread = Math.ceil(COUNT / THREADS); for (let i = 0; i < COUNT; i++) { const th = i % THREADS, baseX = ((th / (THREADS - 1)) - 0.5) * 4.8, phase = th * 1.7; const step = Math.floor(i / THREADS); const p = (step + Math.random() * 0.6) / perThread; const y = -2.9 + p * 5.8; const x = baseX + Math.sin(p * Math.PI * 2.4 + phase) * 0.45 + rnd(-0.02, 0.02); const z = Math.cos(p * Math.PI * 1.8 + phase) * 0.6 + rnd(-0.02, 0.02); o.push([x, y, z, 0.6 + p * 0.5]); } return o; };
 
 async function render(name, pts) {
     const img = new Float32Array(W * H), scale = H / 6.2, ox = W / 2, oy = H / 2;
@@ -72,5 +75,7 @@ async function render(name, pts) {
 
 await render("1_bottle", bottle());
 await render("2_heap", heap());
+await render("3_drift", drift());
 await render("4_body", body());
+await render("5_threads", threads());
 await render("6_figure", figure());
