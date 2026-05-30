@@ -283,8 +283,10 @@ function updateMorph(time) {
 /* ---------- counter (acts I–IV) ---------- */
 
 function formatInt(n) {
-    return Math.floor(n).toLocaleString(
-        document.documentElement.lang === "en" ? "en-US" : "de-CH");
+    // Match the locale i18n actually uses (de-DE / en-US), and follow
+    // language switching instead of hardcoding a locale.
+    const loc = (window.I18N && window.I18N.locale) ? window.I18N.locale() : "de-DE";
+    return Math.floor(n).toLocaleString(loc);
 }
 function updateCounter() {
     if (!counterWrap) return;
@@ -322,10 +324,12 @@ function cleanup() {
 }
 function loop() {
     rafId = requestAnimationFrame(loop);
+    if (!inView) return;
     const now = performance.now() * 0.001;
+    // First frame after (re)entering view: lastTs is 0, so dt is 0 — no
+    // bogus delta from the time spent off-screen gets added to the counter.
     const dt = lastTs ? Math.min(0.1, now - lastTs) : 0;
     lastTs = now;
-    if (!inView) return;
     viewSeconds += dt;
     easedProgress += (targetProgress - easedProgress) * EASE;
     updateMorph(now);
