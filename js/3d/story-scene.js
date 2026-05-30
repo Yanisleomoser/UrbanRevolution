@@ -129,6 +129,7 @@ let targetProgress = 0;
 let easedProgress = 0;
 let currentAct = -1;
 let inView = true;
+let needsProgress = true;
 let rafId = 0;
 let intersectionObserver = null;
 let scrollListener = null;
@@ -542,6 +543,9 @@ function cleanup() {
 function loop() {
     rafId = requestAnimationFrame(loop);
     if (!inView) return;
+    // Read scroll position at most once per frame (flagged by the scroll /
+    // resize listeners) so we never force a layout read in the scroll handler.
+    if (needsProgress) { readProgress(); needsProgress = false; }
     easedProgress += (targetProgress - easedProgress) * EASE;
 
     // Canvas only matters for the transformation acts — fade it in and
@@ -649,8 +653,8 @@ function mount() {
     readProgress();
     easedProgress = targetProgress;
 
-    scrollListener = readProgress;
-    resizeListener = () => { readProgress(); resize(); };
+    scrollListener = () => { needsProgress = true; };
+    resizeListener = () => { needsProgress = true; resize(); };
     window.addEventListener("scroll", scrollListener, { passive: true });
     window.addEventListener("resize", resizeListener, { passive: true });
 
