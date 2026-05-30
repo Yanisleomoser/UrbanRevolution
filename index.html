@@ -289,42 +289,50 @@
                 <canvas id="story-canvas" class="story-canvas" aria-hidden="true"></canvas>
                 <div class="story-scrim" aria-hidden="true"></div>
 
+                <!-- Live counter — runs through the problem acts (I–IV),
+                     making the global scale personal and present. -->
+                <div class="story-counter" data-counter aria-hidden="true">
+                    <span class="story-counter-intro" data-i18n="story.counter_intro">Seit du hier bist:</span>
+                    <span class="story-counter-row"><b data-count-garments>0</b> <span data-i18n="story.counter_garments">Kleidungsstücke produziert</span></span>
+                    <span class="story-counter-row"><b data-count-trucks>0</b> <span data-i18n="story.counter_trucks">Lkw-Ladungen Textilien entsorgt</span></span>
+                </div>
+
                 <div class="story-acts">
                     <article class="story-act is-active" data-act="0">
-                        <p class="story-kicker" data-i18n="story.a0_kicker">Das Problem · Akt I</p>
-                        <h3 class="story-headline" data-i18n-html="story.a0_headline_html">Über 100 Milliarden Kleidungsstücke pro Jahr.<br>Genug, um jeden Menschen auf der Erde zwölffach neu einzukleiden — und das meiste landet binnen Wochen auf dem Müllberg.</h3>
-                        <p class="story-statement" data-i18n="story.a0_statement">Wir produzieren für die Tonne.</p>
+                        <p class="story-kicker" data-i18n="story.a0_kicker">Akt I</p>
+                        <h3 class="story-headline" data-i18n-html="story.a0_headline_html">Eine Flasche. Achtlos weggeworfen.</h3>
+                        <p class="story-statement" data-i18n="story.a0_statement">Sie überlebt deine Urenkel.</p>
                     </article>
 
                     <article class="story-act" data-act="1">
-                        <p class="story-kicker" data-i18n="story.a1_kicker">Die Ungerechtigkeit · Akt II</p>
-                        <h3 class="story-headline" data-i18n-html="story.a1_headline_html">Was wir wegwerfen, verschwindet nicht — es zieht weiter.<br>Über fremde Flüsse, in Wüsten und Lagunen, wo Synthetik 200 Jahre lang nicht vergeht.</h3>
-                        <p class="story-statement" data-i18n="story.a1_statement">Aus den Augen — auf fremde Küsten.</p>
+                        <p class="story-kicker" data-i18n="story.a1_kicker">Akt II</p>
+                        <h3 class="story-headline" data-i18n-html="story.a1_headline_html">Dein altes Shirt verschwindet nicht.</h3>
+                        <p class="story-statement" data-i18n="story.a1_statement">Es wird zu diesem Berg.</p>
                     </article>
 
                     <article class="story-act" data-act="2">
-                        <p class="story-kicker" data-i18n="story.a2_kicker">Der Kreislauf · Akt III</p>
-                        <h3 class="story-headline" data-i18n-html="story.a2_headline_html">Tiere fressen, was wir liegen lassen. Mikroplastik wandert ins Futter, ins Wasser, in die Nahrung.<br>Es wurde bereits im Blut von vier aus fünf Menschen gefunden — und in der Plazenta Ungeborener.</h3>
-                        <p class="story-statement" data-i18n="story.a2_statement">Es kommt immer zu uns zurück.</p>
+                        <p class="story-kicker" data-i18n="story.a2_kicker">Akt III</p>
+                        <h3 class="story-headline" data-i18n-html="story.a2_headline_html">Es reist weiter — an Orte, die du nie siehst.</h3>
+                        <p class="story-statement" data-i18n="story.a2_statement">Aber es bleibt nicht dort.</p>
                     </article>
 
                     <article class="story-act" data-act="3">
-                        <p class="story-kicker" data-i18n="story.a3_kicker">Der Mensch · Akt IV</p>
-                        <h3 class="story-headline" data-i18n-html="story.a3_headline_html">In Accra treffen jede Woche rund 15 Millionen Altkleider ein — fast die Hälfte wird sofort zu Abfall, oft offen verbrannt.<br>Der Rauch, voller Dioxine, ist die Luft, die Menschen dort täglich atmen.</h3>
-                        <p class="story-statement" data-i18n="story.a3_statement">Jemand zahlt den Preis für unseren Schrank.</p>
+                        <p class="story-kicker" data-i18n="story.a3_kicker">Akt IV</p>
+                        <h3 class="story-headline" data-i18n-html="story.a3_headline_html">Es kommt zurück. Als Staub, so fein, dass er die Haut durchdringt.</h3>
+                        <p class="story-statement" data-i18n="story.a3_statement">Im Blut von 4 aus 5 Menschen. Auch in deinem.</p>
                     </article>
 
                     <article class="story-act" data-act="4">
-                        <p class="story-kicker" data-i18n="story.a4_kicker">Unsere Überzeugung · Akt V</p>
-                        <h3 class="story-headline" data-i18n-html="story.a4_headline_html">Technologie darf die Verschwendung nicht beschleunigen — sie muss sie beenden.<br>Wir entwerfen nur, was ein Mensch wirklich will.</h3>
-                        <p class="story-statement is-gradient" data-i18n="story.a4_statement">KI mit Gewissen.</p>
+                        <p class="story-kicker" data-i18n="story.a4_kicker">Akt V</p>
+                        <h3 class="story-headline" data-i18n-html="story.a4_headline_html">Es muss nicht so enden.<br>Dieselbe Faser kann etwas anderes werden.</h3>
+                        <p class="story-statement is-gradient" data-i18n="story.a4_statement">Wenn Technologie nichts mehr fertigt, das niemand will.</p>
                     </article>
 
                     <article class="story-act" data-act="5">
-                        <p class="story-kicker" data-i18n="story.a5_kicker">Unsere Vision · Akt VI</p>
-                        <h3 class="story-headline" data-i18n-html="story.a5_headline_html">Aus geretteten PET-Flaschen wird Couture — nach deinen Maßen, nur für dich.<br>Kein Lager. Kein Überschuss. Nichts zum Wegwerfen.</h3>
-                        <p class="story-statement is-gradient" data-i18n="story.a5_statement">Für einen gemacht. Nicht für alle.</p>
-                        <a href="#preview" class="story-cta" data-i18n-html="story.cta_html">Pre-Launch: 3D-Vorschau ansehen <span aria-hidden="true">→</span></a>
+                        <p class="story-kicker" data-i18n="story.a5_kicker">Akt VI</p>
+                        <h3 class="story-headline" data-i18n-html="story.a5_headline_html">Aus geretteter Faser wird Couture — KI-entworfen, nach deinen Maßen.</h3>
+                        <p class="story-statement is-gradient" data-i18n="story.a5_statement">Für einen gemacht. Deiner.</p>
+                        <a href="#design" class="story-cta" data-i18n-html="story.cta_html">Mach dein erstes Stück <span aria-hidden="true">→</span></a>
                     </article>
                 </div>
 
