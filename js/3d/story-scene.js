@@ -83,8 +83,10 @@ const VERT = /* glsl */`
     varying vec3 vColor;
     void main() {
         vec3 p = mix(position, aPosB, uLocal);
-        p.x += sin(uTime * 0.7 + aSeed) * 0.012;
-        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012;
+        // Jitter settles as the figure forms, so the zoomed-in jacket is crisp.
+        float calm = 1.0 - 0.6 * uFigureAmt;
+        p.x += sin(uTime * 0.7 + aSeed) * 0.012 * calm;
+        p.y += cos(uTime * 0.6 + aSeed * 1.3) * 0.012 * calm;
 
         vec3 col = mix(aColA, aColB, uLocal);
         // Jacket fabric breathes; couture seams (mask 2) glow brighter — only
@@ -554,9 +556,11 @@ function updateMorph(time) {
     group.scale.setScalar(breathe);
 
     const zBase = camera.aspect < 1 ? 10.5 : 7.8;
-    // Pull in a touch onto the figure as it forms so the garment reads.
-    camera.position.z = zBase - p * 1.3 - figureAmt * 0.8;
-    camera.lookAt(0, -0.1 + p * 0.15 + figureAmt * 0.25, 0);
+    // Zoom right in onto the garment as the figure forms, so the couture
+    // jacket fills the frame (head stays in, lower legs fall away at the edge).
+    const fz = smoothstep(figureAmt);
+    camera.position.z = zBase - p * 1.3 - fz * (camera.aspect < 1 ? 2.6 : 2.0);
+    camera.lookAt(0, -0.1 + p * 0.15 + fz * 0.65, 0);
 }
 
 /* ---------- counter (acts I–IV) ---------- */
