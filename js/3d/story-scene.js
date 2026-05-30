@@ -147,20 +147,53 @@ function buildHumanMask() {
     capsule(cx + 4, 250, 34, cx + 26, 300, 22);
     capsule(cx + 26, 300, 20, cx + 30, 430, 13);   // right leg
 
-    const img = ctx.getImageData(0, 0, W, H).data;
-    const at = (x, y) => img[(y * W + x) * 4 + 3] > 80; // opaque?
+    const bodyImg = ctx.getImageData(0, 0, W, H).data;
+
+    // ---- separate JACKET shape, drawn as a real worn garment ----
+    // A second pass on the SAME canvas (cleared) so we can read a distinct
+    // jacket mask: shoulders → hip hem, sleeves down the arms, V-collar
+    // opening at the neck, and a thin centre closure line.
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#fff";
+    // jacket body: a tapered slab from the shoulders to a hem just below
+    // the hips (longer than the torso band → reads as a garment, not a stripe)
+    ctx.beginPath();
+    ctx.moveTo(cx - 50, 122);   // left shoulder
+    ctx.lineTo(cx + 50, 122);   // right shoulder
+    ctx.lineTo(cx + 44, 282);   // right hem
+    ctx.lineTo(cx - 44, 282);   // left hem
+    ctx.closePath(); ctx.fill();
+    // collar / shoulders rounded
+    capsule(cx - 46, 124, 14, cx + 46, 124, 14);
+    // sleeves: cover the upper arms down to ~3/4
+    capsule(cx - 44, 130, 17, cx - 74, 262, 12);
+    capsule(cx + 44, 130, 17, cx + 74, 262, 12);
+    const jImg = ctx.getImageData(0, 0, W, H).data;
+
+    // carve a V-neck opening + a thin centre closure out of the jacket mask
+    const inV = (x, y) => {
+        const dy = y - 120;                       // from collar line
+        return dy > 0 && dy < 42 && Math.abs(x - cx) < dy * 0.5; // open V
+    };
+    const inSeam = (x, y) => Math.abs(x - cx) < 1.5 && y > 150 && y < 280;
+
+    const at = (x, y) => bodyImg[(y * W + x) * 4 + 3] > 80;        // body opaque?
+    const jAt = (x, y) =>
+        jImg[(y * W + x) * 4 + 3] > 80 && !inV(x, y) && !inSeam(x, y);
+
     const pts = [];
     for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
             if (!at(x, y)) continue;
-            // edge = at least one transparent 4-neighbour
             const edge = !at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1);
-            // jacket region: torso + upper arms (roughly y 110–250)
-            const jacket = y > 108 && y < 252;
+            // jacket = body pixel that the garment shape also covers
+            const jacket = jAt(x, y);
+            // garment edge (collar/hem/cuffs) → brighter trim
+            const jEdge = jacket && (!jAt(x - 1, y) || !jAt(x + 1, y) || !jAt(x, y - 1) || !jAt(x, y + 1));
             pts.push({
-                x: (x - cx) / 90,          // → world units (~±1.2 wide)
-                y: (H * 0.52 - y) / 90,    // flip + centre (~±2.4 tall)
-                edge, jacket,
+                x: (x - cx) / 90,
+                y: (H * 0.52 - y) / 90,
+                edge, jacket, jEdge,
             });
         }
     }
@@ -173,11 +206,16 @@ function sampleSilhouette(out) {
     if (!humanMask) buildHumanMask();
     const pts = humanMask.pts;
     const p = pts[(Math.random() * pts.length) | 0];
-    const depth = p.edge ? 0.05 : 0.32;
+    let depth = p.edge ? 0.05 : 0.32;
+    // The jacket sits ON the body: push its particles slightly forward (+Z)
+    // and give it a touch more thickness, so the garment reads as worn cloth
+    // wrapping the torso rather than a flat patch painted on.
+    let zc = 0;
+    if (p.jacket) { depth = p.jEdge ? 0.1 : 0.4; zc = 0.12; }
     out.set(
         p.x + rand(-0.012, 0.012),
         p.y + rand(-0.012, 0.012),
-        rand(-depth, depth),
+        zc + rand(-depth, depth),
     );
     return p;
 }
@@ -312,11 +350,13 @@ function buildFigure() {
             const p = sampleSilhouette(vec);
             jacket = p.jacket ? 1 : 0;
             if (p.jacket) {
-                // gradient across the jacket by height; brighter at the edge
+                // gradient across the garment by height; collar/hem/cuffs
+                // (jEdge) glow as bright trim, the body of the cloth a touch
+                // softer → reads as a tailored piece with seams, not a blob.
                 gradientColor(THREE.MathUtils.clamp((vec.y + 2.4) / 4.6, 0, 1), tmp);
-                tmp.multiplyScalar(p.edge ? rand(1.15, 1.45) : rand(0.78, 1.0));
+                tmp.multiplyScalar(p.jEdge ? rand(1.35, 1.7) : rand(0.82, 1.05));
             } else {
-                tmp.copy(C_DIM).multiplyScalar(p.edge ? rand(0.85, 1.1) : rand(0.45, 0.7));
+                tmp.copy(C_DIM).multiplyScalar(p.edge ? rand(0.85, 1.1) : rand(0.4, 0.62));
             }
         }
         jacketMask[i] = jacket;
