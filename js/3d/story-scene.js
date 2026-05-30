@@ -282,12 +282,13 @@ function buildFigure() {
     jacketMask = new Uint8Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
         let jacket = 0;
-        if (Math.random() < 0.08) {
-            // soft halo motes drifting around the jacket
-            const a = rand(0, Math.PI * 2), rr = rand(0.9, 1.6);
-            vec.set(Math.cos(a) * rr, rand(0.4, 1.4), Math.sin(a) * rr - 0.1);
+        if (Math.random() < 0.05) {
+            // a tight aura hugging the torso (behind it), not a wide spray —
+            // wide motes read as "wings", so keep them close and mostly in Z.
+            const a = rand(0, Math.PI * 2), rr = rand(0.35, 0.7);
+            vec.set(Math.cos(a) * rr * 0.6, rand(0.6, 1.5), Math.sin(a) * rr - 0.55);
             jacket = 1;
-            gradientColor(rand(0.2, 0.9), tmp); tmp.multiplyScalar(0.5);
+            gradientColor(rand(0.2, 0.9), tmp); tmp.multiplyScalar(0.45);
         } else {
             const p = sampleSilhouette(vec);
             jacket = p.jacket ? 1 : 0;
