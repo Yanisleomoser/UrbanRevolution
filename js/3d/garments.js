@@ -267,7 +267,7 @@ function buildHoodie(mat, lm, fit) {
 }
 
 /* ============================================================
-   SHIRT (button-down style — simplified, no collar v1)
+   SHIRT (button-down style — with stand collar)
    ============================================================ */
 
 function buildShirt(mat, lm, fit) {
@@ -294,6 +294,18 @@ function buildShirt(mat, lm, fit) {
     const torso = new THREE.Mesh(new THREE.LatheGeometry(profile, 48), mat);
     torso.scale.z = TORSO_DEPTH_SCALE;
     group.add(torso);
+
+    // Stehkragen — kurzer, leicht nach außen geöffneter Ring am
+    // Halsausschnitt. Offener Zylinder (oben/unten ohne Deckel), unten am
+    // Ausschnittradius, oben weiter — liest sich als Hemdkragen.
+    const collarH = lm.neckR * 0.62;
+    const collar = new THREE.Mesh(
+        new THREE.CylinderGeometry(neckOpening * 1.32, neckOpening, collarH, 32, 1, true),
+        mat
+    );
+    collar.position.y = topY + collarH / 2 - 0.006;
+    collar.scale.z = TORSO_DEPTH_SCALE;
+    group.add(collar);
 
     const armR = lm.totalH * 0.028;
     const sleeveR = armR * 1.5 * fitFactor(fit, 0.0, 0.18);
@@ -389,6 +401,19 @@ function buildJacket(mat, lm, fit) {
     const torso = new THREE.Mesh(new THREE.LatheGeometry(profile, 48), mat);
     torso.scale.z = TORSO_DEPTH_SCALE;
     group.add(torso);
+
+    // Front-Zipper — schmale vertikale Leiste mittig vorne (+Z). Gleiche
+    // Material-Instanz wie der Korpus, damit setColor die Leiste mitfärbt;
+    // sie liest sich über Geometrie/Schattenkante, nicht über die Farbe.
+    // z liegt an der vordersten Stelle (Brust); zur Taille hin steht die
+    // Leiste minimal proud — bei der abstrakten Figur unkritisch.
+    const frontZ = chestR * 1.06 * TORSO_DEPTH_SCALE;
+    const zip = new THREE.Mesh(
+        new THREE.BoxGeometry(0.022, torsoTotalH * 0.98, 0.012),
+        mat
+    );
+    zip.position.set(0, hemY + torsoTotalH / 2, frontZ - 0.004);
+    group.add(zip);
 
     const armR = lm.totalH * 0.028;
     const sleeveR = armR * 1.85 * fitFactor(fit, 0.0, 0.2);
