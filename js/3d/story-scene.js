@@ -151,16 +151,25 @@ function buildBottle() {
     return f;
 }
 
-// II — the bottle becomes a heap (one shirt → this mountain).
+// II — the bottle becomes a heap (one shirt → this mountain). A SOLID,
+// dense cone: height is tied to radius (low at the rim, tall in the
+// centre) and particles fill the volume beneath that surface, so it reads
+// as a packed mound rather than scattered dust.
+const HEAP_R = 2.3;        // base radius
+const HEAP_H = 3.4;        // peak height above the base
+const HEAP_BASE = -2.3;    // ground line
 function buildHeap() {
     const f = alloc();
     for (let i = 0; i < COUNT; i++) {
-        const a = rand(0, Math.PI * 2), radius = Math.sqrt(Math.random()) * 2.7;
-        const mound = 1 - radius / 2.7;
-        const y = -2.2 + mound * 3.0 * Math.random() + rand(-0.22, 0.22);
-        if (Math.random() < 0.12) tmp.copy(C_PET_DIM).multiplyScalar(rand(0.5, 0.9));
-        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.6, 1.05));
-        put(f, i, Math.cos(a) * radius, y, Math.sin(a) * radius * 0.6, tmp);
+        const a = rand(0, Math.PI * 2);
+        // bias toward the centre → denser, taller core
+        const radius = Math.pow(Math.random(), 0.7) * HEAP_R;
+        const surface = HEAP_H * (1 - radius / HEAP_R);      // cone height here
+        const y = HEAP_BASE + Math.random() * surface + rand(-0.05, 0.05);
+        const jitter = 1 + rand(-0.06, 0.06);
+        if (Math.random() < 0.14) tmp.copy(C_PET_DIM).multiplyScalar(rand(0.5, 0.9));
+        else tmp.copy(C_WASTE_LO).lerp(C_WASTE_HI, Math.random()).multiplyScalar(rand(0.6, 1.1));
+        put(f, i, Math.cos(a) * radius * jitter, y, Math.sin(a) * radius * 0.62 * jitter, tmp);
     }
     return f;
 }
