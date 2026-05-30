@@ -341,3 +341,17 @@ up.
 
 Default branch is `main`; don't push directly. Development happens on
 feature branches. Don't open PRs unless explicitly asked.
+
+### Auto-merge policy (standing instruction from the user)
+
+For PRs Claude opens, Claude may merge them **without asking** once the
+change is verified — scoped to **small, low-risk changes only**: copy/text,
+images/assets, CSS, docs, and self-contained tweaks. For larger changes
+(JS logic, `api/` edge functions, state flow, build/CI, anything
+architectural) still ask before merging.
+
+A PR is mergeable when **all functional CI checks are green** — `build`,
+`test`, `validate`, `validate-css`, `validate-html` — and no review comment
+requests a change. The advisory **"Vercel Agent Review"** is non-blocking;
+address its points if valid, but it need not be green to merge. If any
+functional check is red, fix it first; never merge red CI.
