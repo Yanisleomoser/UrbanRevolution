@@ -107,8 +107,25 @@
         <div class="hero-content" data-reveal-stagger>
             <p class="hero-eyebrow" data-reveal data-i18n="hero.eyebrow">AI · 3D · COUTURE</p>
             <h1 class="hero-title" data-reveal data-i18n-html="hero.title_html">Deine Vision.<br>Deine Maße.<br><span class="gradient-text">Deine Kleidung.</span></h1>
-            <p class="hero-subtitle" data-reveal data-i18n="hero.subtitle">Beschreibe dein Wunschkleidungsstück. Unsere KI gestaltet es. Ein 3D-Modell zeigt dir deine perfekte Passform. Schneider und Produktion bekommen alles, was sie brauchen.</p>
-            <a href="#design" class="cta-button" data-reveal data-i18n-html="hero.cta_html">Jetzt designen <span aria-hidden="true">→</span></a>
+            <p class="hero-subtitle" data-reveal data-i18n="hero.subtitle">Ein Satz genügt. Die KI entwirft dein Stück, ein 3D-Modell zeigt deine Passform — Schneider bekommen die fertige Spec.</p>
+
+            <!-- Lebende Prompt-Konsole (Konzept A): tippt sich selbst durch
+                 Beispiel-Prompts; die 3D-Figur rechts reagiert live mit Farbe.
+                 Logik in js/hero.js, optional & progressive enhancement —
+                 ohne JS bleibt ein normales Eingabefeld + Button. -->
+            <form class="hero-prompt" id="hero-prompt-form" data-reveal role="search" data-i18n-aria-label="hero.prompt_form_aria" aria-label="Kleidungsstück beschreiben">
+                <span class="hero-prompt-spark" aria-hidden="true">✦</span>
+                <div class="hero-prompt-field">
+                    <label class="visually-hidden" for="hero-prompt-input" data-i18n="hero.prompt_aria">Beschreibe dein Wunschkleidungsstück</label>
+                    <input id="hero-prompt-input" class="hero-prompt-input" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="false" data-i18n-placeholder="hero.prompt_placeholder_focus" placeholder="Tippe deine Idee …">
+                    <span class="hero-prompt-ghost" id="hero-prompt-ghost" aria-hidden="true"><span class="hero-prompt-typed"></span><span class="hero-prompt-caret"></span></span>
+                </div>
+                <button type="submit" class="hero-prompt-go" data-i18n-aria-label="hero.prompt_go_aria" aria-label="Design starten">
+                    <span class="hero-prompt-go-text" data-i18n="hero.prompt_go_text">Designen</span>
+                    <span class="hero-prompt-go-arrow" aria-hidden="true">→</span>
+                </button>
+            </form>
+            <p class="hero-microcopy" data-reveal data-i18n-html="hero.microcopy_html">Tippe los — oder sieh zu, wie aus Worten ein Kleidungsstück wird.</p>
         </div>
 
         <!-- Brand asset slot — currently shows a stylized SVG fashion-figure
@@ -120,9 +137,9 @@
                 <svg class="hero-asset-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" data-i18n-aria-label="hero.asset_alt" aria-label="Fashion-Figur mit AI-generiertem Hoodie im Brand-Gradient">
                     <defs>
                         <linearGradient id="heroOutfit" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ec4899"/>
-                            <stop offset="50%" stop-color="#8b5cf6"/>
-                            <stop offset="100%" stop-color="#06b6d4"/>
+                            <stop id="heroStop1" offset="0%" stop-color="#ec4899"/>
+                            <stop id="heroStop2" offset="50%" stop-color="#8b5cf6"/>
+                            <stop id="heroStop3" offset="100%" stop-color="#06b6d4"/>
                         </linearGradient>
                         <linearGradient id="heroOutfitDim" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#ec4899" stop-opacity="0.55"/>
@@ -133,7 +150,7 @@
                             <stop offset="100%" stop-color="#8a6f55"/>
                         </radialGradient>
                         <radialGradient id="heroBackdrop" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stop-color="rgba(236,72,153,0.18)"/>
+                            <stop id="heroBackdropStop" offset="0%" stop-color="rgba(236,72,153,0.18)"/>
                             <stop offset="100%" stop-color="rgba(10,10,11,0)"/>
                         </radialGradient>
                         <filter id="heroBlur"><feGaussianBlur stdDeviation="40"/></filter>
@@ -949,6 +966,7 @@
     <script src="js/library.js"></script>
     <script src="js/animations.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/hero.js"></script>
     <script type="module" src="js/3d/story-scene.js"></script>
     <script type="module" src="js/3d/controller.js"></script>
 </body>
