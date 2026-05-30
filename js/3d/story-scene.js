@@ -164,7 +164,9 @@ function sampleSleeve(out) {
     const rr = radius * Math.sqrt(Math.random());
     out.x += Math.cos(a) * rr;
     out.y += Math.sin(a) * rr * 0.85;
-    out.z += Math.sin(a) * rr * 0.5 + 0.02;
+    // cos (not sin) for depth so the cross-section wraps round the tube
+    // instead of collapsing y and z onto one correlated plane.
+    out.z += Math.cos(a) * rr * 0.5 + 0.02;
 }
 
 // Soft fill across the lapels framing the neckline V.
