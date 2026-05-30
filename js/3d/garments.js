@@ -41,6 +41,8 @@ const MATERIAL_PROPS = {
 };
 
 const TORSO_DEPTH_SCALE = 0.72;
+// Must match ARM_SPLAY in avatars.js so sleeves track the arms' A-pose.
+const ARM_SPLAY = Math.PI / 6; // 30°
 
 function hexToInt(hex) {
     if (typeof hex !== "string") return 0x1a1a1a;
@@ -132,16 +134,26 @@ function setMaterialProps(group, materialKey) {
 }
 
 /* ============================================================
-   Helpers — sleeves wrap the mannequin's arms (T-pose, X-axis)
+   Helpers — sleeves wrap the mannequin's arms (A-pose, down + out)
    ============================================================ */
 
+// anchorY / anchorX describe the shoulder joint; the sleeve runs from
+// there down the A-pose direction. CylinderGeometry's wide end (baseR,
+// at −Y) lands at the shoulder and the narrow end (tipR, at +Y) at the
+// wrist once the +Y axis is aligned with the down-and-outward direction.
 function buildSleeve(mat, side, anchorY, anchorX, length, baseR, tipR) {
     const sleeve = new THREE.Mesh(
         new THREE.CylinderGeometry(tipR, baseR, length, 18, 1, true),
         mat
     );
-    sleeve.rotation.z = side * Math.PI / 2;
-    sleeve.position.set(side * (anchorX + length / 2), anchorY, 0);
+    sleeve.rotation.z = Math.PI + side * ARM_SPLAY;
+    const dx = Math.sin(ARM_SPLAY);
+    const dy = -Math.cos(ARM_SPLAY);
+    sleeve.position.set(
+        side * (anchorX + dx * length / 2),
+        anchorY + dy * length / 2,
+        0
+    );
     return sleeve;
 }
 
