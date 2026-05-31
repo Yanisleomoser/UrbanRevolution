@@ -26,10 +26,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Deno
-        # uses: denoland/setup-deno@v1
-        uses: denoland/setup-deno@61fe2df320078202e33d7d5ad347e7dcfa0e8f31  # v1.1.2
+        uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          # Pinned to a known-good 1.x (Deno 1.x is EOL; v1.x dynamic
+          # resolution via the old action was failing at setup). Keeps the
+          # same lint ruleset the codebase was written against.
+          deno-version: v1.46.3
 
       # Uncomment this step to verify the use of 'deno fmt' on each commit.
       # - name: Verify formatting

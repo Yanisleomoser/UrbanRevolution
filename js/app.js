@@ -200,7 +200,9 @@
       }
       if (btn.dataset.type) {
         document.querySelectorAll(".type-btn").forEach((b) => {
-          b.classList.toggle("active", b.dataset.type === btn.dataset.type);
+          const on = b.dataset.type === btn.dataset.type;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
         });
         S.set("currentType", btn.dataset.type);
       }
@@ -210,10 +212,11 @@
   function initTypeSelector() {
     document.querySelectorAll(".type-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".type-btn").forEach((b) =>
-          b.classList.remove("active")
-        );
-        btn.classList.add("active");
+        document.querySelectorAll(".type-btn").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
+        });
         S.set("currentType", btn.dataset.type);
         updateProductionPreview();
       });
@@ -223,10 +226,11 @@
   function initColorPalette() {
     document.querySelectorAll(".color-swatch").forEach((swatch) => {
       swatch.addEventListener("click", () => {
-        document.querySelectorAll(".color-swatch").forEach((s) =>
-          s.classList.remove("active")
-        );
-        swatch.classList.add("active");
+        document.querySelectorAll(".color-swatch").forEach((s) => {
+          const on = s === swatch;
+          s.classList.toggle("active", on);
+          s.setAttribute("aria-pressed", String(on));
+        });
         const newColor = swatch.dataset.color;
         if (!S.set("currentColor", newColor)) return;
         const design = S.get("currentDesign");
@@ -430,7 +434,9 @@
     document.getElementById("customize-controls").style.display = "block";
 
     document.querySelectorAll(".color-swatch").forEach((s) => {
-      s.classList.toggle("active", s.dataset.color === design.color);
+      const on = s.dataset.color === design.color;
+      s.classList.toggle("active", on);
+      s.setAttribute("aria-pressed", String(on));
     });
 
     const matSelect = document.getElementById("material-select");
@@ -452,17 +458,50 @@
     if (design.type && design.type !== S.get("currentType")) {
       if (S.set("currentType", design.type)) {
         document.querySelectorAll(".type-btn").forEach((b) => {
-          b.classList.toggle("active", b.dataset.type === design.type);
+          const on = b.dataset.type === design.type;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
         });
       }
     }
   }
+
+  // Flag an out-of-range measurement so the user sees/hears it, instead of
+  // it being silently swapped for a preset value in the spec sheet downstream.
+  function validateMeasurementField(input) {
+    if (!window.CONFIG || input.value === "") {
+      input.removeAttribute("aria-invalid");
+      return true;
+    }
+    let valid = true;
+    try {
+      window.CONFIG.validateMeasurement(input.id, parseInt(input.value, 10));
+    } catch (_e) {
+      valid = false;
+    }
+    input.setAttribute("aria-invalid", valid ? "false" : "true");
+    return valid;
+  }
+
+  // Felder, die eine passende Linie im Körperdiagramm haben
+  const DIAGRAM_FIELDS = ["shoulder", "chest", "waist", "hips", "inseam"];
 
   function initMeasurements() {
     Measurements.FIELDS.forEach((field) => {
       const input = document.getElementById(field);
       if (input) {
         input.addEventListener("input", updateMeasurements);
+        // Validate on commit (blur/enter) so the flag doesn't flicker mid-type.
+        input.addEventListener("change", () => validateMeasurementField(input));
+        // Beim Fokus die passende Diagramm-Annotation hervorheben
+        if (DIAGRAM_FIELDS.includes(field)) {
+          input.addEventListener("focus", () => highlightAnnotation(field));
+          input.addEventListener("blur", () => highlightAnnotation(null));
+          input.addEventListener("mouseenter", () => highlightAnnotation(field));
+          input.addEventListener("mouseleave", () => {
+            if (document.activeElement !== input) highlightAnnotation(null);
+          });
+        }
       }
     });
 
@@ -478,6 +517,45 @@
     updateMeasurements();
   }
 
+  // Hebt die zum Feld passende Linie im SVG-Körperdiagramm hervor.
+  // field === null setzt alle zurück.
+  function highlightAnnotation(field) {
+    const group = document.querySelector(".measure-annotations");
+    if (!group) return;
+    group.classList.toggle("has-active", Boolean(field));
+    group.querySelectorAll(".annotation").forEach((el) => {
+      el.classList.toggle("is-active", el.dataset.measure === field);
+    });
+    DIAGRAM_FIELDS.forEach((f) => {
+      const fieldEl = document.getElementById(f);
+      if (fieldEl) {
+        fieldEl.closest(".measure-field")?.classList.toggle(
+          "is-linked",
+          f === field
+        );
+      }
+    });
+  }
+
+  // Markiert den Preset-Button, dessen Werte exakt den aktuellen Maßen
+  // entsprechen — oder keinen, sobald der Nutzer manuell abweicht.
+  function updatePresetActive(measurements) {
+    const match = ["S", "M", "L", "XL"].find((name) => {
+      const preset = Measurements.PRESETS[name];
+      return preset && Measurements.FIELDS.every(
+        (f) => preset[f] === measurements[f]
+      );
+    });
+    document.querySelectorAll(".preset-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.preset === match);
+    });
+  }
+
+  function updateSizeReadout(measurements) {
+    const el = document.getElementById("measure-size");
+    if (el) el.textContent = Measurements.calculateSize(measurements);
+  }
+
   function initPoseUpload() {
     const fileInput = document.getElementById("pose-photo");
     const uploadBtn = document.getElementById("pose-upload-btn");
@@ -489,11 +567,52 @@
 
     uploadBtn.addEventListener("click", () => fileInput.click());
 
-    fileInput.addEventListener("change", async (e) => {
+    fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
       fileInput.value = "";
+      processPhotoFile(file);
+    });
 
+    // Drag & Drop direkt auf die Foto-Karte
+    const card = uploadBtn.closest(".photo-upload-card");
+    if (card) {
+      // dragenter/dragleave feuern auch beim Wechsel zwischen Kind-
+      // Elementen. Ein Tiefen-Zähler verhindert das Flackern: das
+      // Highlight verschwindet erst, wenn der Cursor die Karte wirklich
+      // verlässt (Zähler zurück auf 0).
+      let dragDepth = 0;
+      const clearDrag = () => {
+        dragDepth = 0;
+        card.classList.remove("is-dragover");
+      };
+      card.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dragDepth++;
+        card.classList.add("is-dragover");
+      });
+      card.addEventListener("dragover", (e) => e.preventDefault());
+      card.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) card.classList.remove("is-dragover");
+      });
+      card.addEventListener("dragend", clearDrag);
+      card.addEventListener("drop", (e) => {
+        e.preventDefault();
+        clearDrag();
+        if (uploadBtn.disabled) return;
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+          showToast(t("toast.no_person"), "error");
+          return;
+        }
+        processPhotoFile(file);
+      });
+    }
+
+    async function processPhotoFile(file) {
       uploadBtn.disabled = true;
       uploadBtn.textContent = t("measure.photo_btn_loading");
       statusEl.textContent = "";
@@ -579,11 +698,14 @@
         uploadBtn.disabled = false;
         uploadBtn.textContent = t("measure.photo_btn_another");
       }
-    });
+    }
   }
 
   function updateMeasurements() {
-    S.set("measurements", Measurements.read());
+    const measurements = Measurements.read();
+    S.set("measurements", measurements);
+    updatePresetActive(measurements);
+    updateSizeReadout(measurements);
     updateModelInfo();
     updateProductionPreview();
   }
@@ -1082,7 +1204,9 @@
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
     document.querySelectorAll(".type-btn").forEach((b) => {
-      b.classList.toggle("active", b.dataset.type === entry.type);
+      const on = b.dataset.type === entry.type;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
     });
     renderDesignResult(design);
     applyDesignToState(design);
@@ -1187,7 +1311,10 @@
     if (!window.I18N) return;
     const lang = window.I18N.getLang();
     document.querySelectorAll("#lang-toggle .lang-opt").forEach((opt) => {
-      opt.classList.toggle("is-active", opt.dataset.lang === lang);
+      const on = opt.dataset.lang === lang;
+      opt.classList.toggle("is-active", on);
+      if (on) opt.setAttribute("aria-current", "true");
+      else opt.removeAttribute("aria-current");
     });
   }
 

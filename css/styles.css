@@ -6,7 +6,7 @@
     --border: #2a2a2f;
     --text: #f4f4f5;
     --text-dim: #a1a1aa;
-    --text-muted: #71717a;
+    --text-muted: #8b8b93;
     --accent: #ec4899;
     --accent-2: #8b5cf6;
     --accent-3: #06b6d4;
@@ -936,6 +936,22 @@ select:focus {
     box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
 }
 
+/* Keyboard focus gets a real, high-contrast ring; mouse focus keeps just
+   the subtle border/shadow above (the outline:none on :focus suppresses it
+   for pointer focus, :focus-visible re-adds it for keyboard). */
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent-3);
+    outline-offset: 2px;
+}
+
+/* Out-of-range / invalid measurement inputs surface visibly + to AT. */
+input[aria-invalid="true"] {
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
+}
+
 .prompt-suggestions {
     margin-top: 20px;
 }
@@ -1081,6 +1097,8 @@ select:focus {
     background: var(--gradient);
     border: none;
     color: white;
+    /* Keeps the label legible where the gradient runs to light cyan. */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     padding: var(--space-5);
     border-radius: var(--radius);
     font-weight: 600;
@@ -1610,6 +1628,87 @@ select:focus {
     width: 100%;
     height: auto;
     max-height: 520px;
+}
+
+/* Aktiver Preset-Zustand — zeigt, welche Größe gerade geladen ist */
+.preset-btn.is-active {
+    border-color: transparent;
+    color: var(--text);
+    background:
+        linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+        var(--gradient) border-box;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 14px rgba(236, 72, 153, 0.22);
+}
+
+/* Live berechnete Konfektionsgröße */
+.size-readout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.size-readout-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+}
+
+.size-readout-badge {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    min-width: 44px;
+    text-align: center;
+    padding: 4px 12px;
+    border-radius: 100px;
+    color: white;
+    background: var(--gradient);
+    box-shadow: 0 2px 12px rgba(236, 72, 153, 0.3);
+}
+
+/* Diagramm-Annotation hebt sich hervor, wenn das passende Feld fokussiert wird */
+.annotation {
+    transition: opacity 0.2s ease;
+}
+
+.measure-annotations.has-active .annotation {
+    opacity: 0.28;
+}
+
+.measure-annotations.has-active .annotation.is-active {
+    opacity: 1;
+}
+
+.annotation.is-active line {
+    stroke: #f9a8d4;
+    stroke-width: 1.8;
+    stroke-dasharray: none;
+}
+
+.annotation.is-active text {
+    fill: #f9a8d4;
+}
+
+/* Fokussiertes Maßfeld bekommt eine farbige Markierung */
+.measure-field.is-linked input {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.18);
+}
+
+/* Drag & Drop für den Foto-Upload */
+.photo-upload-card.is-dragover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg,
+        rgba(236, 72, 153, 0.16),
+        rgba(139, 92, 246, 0.16),
+        rgba(6, 182, 212, 0.12));
 }
 
 /* ============ PREVIEW SECTION ============ */
