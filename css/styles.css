@@ -132,10 +132,12 @@ body {
 /* Touch devices (iOS Safari, Android): a fixed bar with a LIVE backdrop blur
    re-rasterizes its 20px blur every frame over the scrolling content beneath
    it — including the WebGL canvases — which is a well-known source of scroll
-   stutter. Drop the live blur on coarse pointers and use a near-opaque bar
-   instead; legibility is preserved and scrolling stays smooth. Desktop keeps
-   the brand glass. */
-@media (hover: none) and (pointer: coarse) {
+   stutter. Drop the live blur on any touch-capable device and use a
+   near-opaque bar instead; legibility is preserved and scrolling stays
+   smooth. (any-pointer: coarse — NOT pointer:coarse — so it still applies on
+   an iPad with a trackpad/Magic Keyboard attached, which reports the PRIMARY
+   pointer as fine.) Pure-mouse desktops keep the brand glass. */
+@media (any-pointer: coarse) {
     .navbar {
         background: rgba(10, 10, 11, 0.94);
         backdrop-filter: none;
@@ -3011,8 +3013,12 @@ body::before {
    while scrolling the wizard. #103 only reset the animation (transform), NOT
    the timeline, so the expensive view() registration stayed live on every
    section. Fully detach the timeline on touch devices; desktop keeps the
-   reveal. (animation:none alone does not reset animation-timeline in Safari.) */
-@media (pointer: coarse) {
+   reveal. (animation:none alone does not reset animation-timeline in Safari.)
+   any-pointer: coarse — NOT pointer:coarse — so this still applies on an iPad
+   with a trackpad attached (primary pointer reports as fine, but the device
+   has a touchscreen), which is exactly where the section-boundary catapult
+   was reported. */
+@media (any-pointer: coarse) {
     .section {
         animation: none;
         animation-timeline: auto;
