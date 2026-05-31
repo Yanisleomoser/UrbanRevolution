@@ -98,6 +98,9 @@ function rebuildGarment() {
     }
     const type = readState("currentType");
     if (!type) return;
+    // Hide the mannequin's base-layer shorts for leg-covering garments so
+    // they can't clip through a narrower waistband.
+    Avatars.setBaseLayerForGarment(currentMannequin, type);
     currentGarment = Garments.buildGarment(type, {
         color: readState("currentColor"),
         material: readState("currentMaterial"),

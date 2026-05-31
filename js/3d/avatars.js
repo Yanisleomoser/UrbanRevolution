@@ -74,6 +74,10 @@ function buildMannequin(measurements, appearance) {
         color: skinColor,
         roughness: 0.82,
         metalness: 0.02,
+        // The bright RoomEnvironment IBL was washing matte skin to near-white
+        // (bare arms/legs read as white tights, shoulders blew past the bloom
+        // threshold). Damp the env contribution so skin reads as skin.
+        envMapIntensity: 0.45,
     });
 
     const totalH = m.height / 100;
@@ -103,6 +107,11 @@ function buildMannequin(measurements, appearance) {
     buildHands(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(hand => group.add(hand));
     buildLegs(skinMat, legH, hipsR, totalH).forEach(leg => group.add(leg));
     buildFeet(skinMat, hipsR, totalH).forEach(foot => group.add(foot));
+
+    // Neutral base layer (fitted dark shorts) over hips + upper thighs, so a
+    // top-only garment (t-shirt, hoodie…) reads as a dressed figure instead
+    // of bare legs. Hidden anyway under pants/dresses, which wrap larger.
+    group.add(buildBaseLayer({ torsoBottomY, hipsR, legH }));
 
     // Haar nur wenn explizit gewollt (User-Foto-Sampling oder Default-Wert).
     // appearance.hairColor === null bedeutet "keine Haare rendern" (Glatze /
@@ -249,6 +258,34 @@ function buildLegs(mat, legH, hipsR, totalH) {
     });
 }
 
+// Neutral fitted shorts over hips + upper thighs. Makes a top-only garment
+// read as a dressed figure rather than a bare-legged mannequin. A single
+// tapered cylinder (the thighs sit close enough to the centre near the hip
+// that one block covers both) in a matte charcoal that recedes visually.
+function buildBaseLayer({ torsoBottomY, hipsR, legH }) {
+    const topY = torsoBottomY + legH * 0.02;
+    const botY = legH * 0.58;
+    const h = topY - botY;
+    const mat = new THREE.MeshStandardMaterial({
+        color: 0x26262c,
+        roughness: 0.9,
+        metalness: 0.0,
+        envMapIntensity: 0.4,
+    });
+    const shorts = new THREE.Mesh(
+        new THREE.CylinderGeometry(hipsR * 1.05, hipsR * 1.06, h, 32),
+        mat
+    );
+    shorts.position.set(0, (topY + botY) / 2, 0);
+    shorts.scale.z = 0.8;
+    shorts.castShadow = true;
+    shorts.receiveShadow = true;
+    // Named so the garment-aware caller can hide it for leg-covering
+    // garments (pants/dress), whose narrower waist would otherwise clip it.
+    shorts.name = "base-layer";
+    return shorts;
+}
+
 // Simple stylised feet so the figure rests on the ground plane instead of
 // ending in floating cylinder stumps. Deliberately abstract (a rounded
 // wedge pointing forward, +Z) to match the mannequin's primitive look.
@@ -273,4 +310,17 @@ function buildFeet(mat, hipsR, totalH) {
     });
 }
 
-export const Avatars = { buildMannequin };
+// Garment types that cover the legs — the neutral base layer is hidden for
+// these so it can't clip through a narrower waistband.
+const LEG_COVERING_TYPES = new Set(["pants", "dress"]);
+
+// Show/hide the mannequin's base-layer shorts based on the current garment
+// type. Called by the garment-aware code (controller / hero scene) without
+// rebuilding the mannequin.
+function setBaseLayerForGarment(mannequin, garmentType) {
+    if (!mannequin) return;
+    const base = mannequin.getObjectByName("base-layer");
+    if (base) base.visible = !LEG_COVERING_TYPES.has(garmentType);
+}
+
+export const Avatars = { buildMannequin, setBaseLayerForGarment };

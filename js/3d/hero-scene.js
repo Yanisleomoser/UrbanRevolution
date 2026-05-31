@@ -158,6 +158,7 @@ function rebuildGarment(type, colorHex) {
         disposeGroup(garment);
         garment = null;
     }
+    Avatars.setBaseLayerForGarment(mannequin, type);
     garment = Garments.buildGarment(type, {
         color: colorHex,
         material: "cotton",
