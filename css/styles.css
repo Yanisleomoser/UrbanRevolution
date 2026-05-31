@@ -801,9 +801,12 @@ body {
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 73px;
-    background: rgba(10, 10, 11, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    /* Solid, opaque background — NOT backdrop-filter. A sticky element that
+       re-blurs the scrolling content (incl. the 3D canvases) every frame is
+       a major Safari scroll-jank / position-jump source, and it engages
+       right after the story — exactly where the page "jumped". Opaque bg
+       composites cheaply and removes the jump. */
+    background: #0c0c0e;
     z-index: 50;
 }
 
