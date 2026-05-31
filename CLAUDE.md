@@ -377,11 +377,15 @@ feature branches. Don't open PRs unless explicitly asked.
 
 ### Auto-merge policy (standing instruction from the user)
 
-For PRs Claude opens, Claude may merge them **without asking** once the
-change is verified — scoped to **small, low-risk changes only**: copy/text,
-images/assets, CSS, docs, and self-contained tweaks. For larger changes
-(JS logic, `api/` edge functions, state flow, build/CI, anything
-architectural) still ask before merging.
+**Default: Claude merges its own PRs autonomously — do NOT ask, do NOT wait
+for confirmation, do NOT just report "CI is green" and stop.** The user has
+said this repeatedly and emphatically. The moment a PR Claude opened has all
+functional CI green (see below), squash-merge it. This applies to **every**
+change type — CSS, copy, docs, JS logic, `api/` functions, build/CI — unless
+the user explicitly says "don't merge / let me review this one" for a
+specific PR. When you open a PR, the job isn't done until it's merged (or CI
+is red and you're fixing it). Subscribing to a PR means driving it to merge,
+not narrating that you're waiting.
 
 A PR is mergeable when **all functional CI checks are green** — `build`,
 `test`, `validate`, `validate-css`, `validate-html` — and no review comment
