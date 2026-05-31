@@ -550,7 +550,12 @@
                         <span class="size-readout-badge" id="measure-size">M</span>
                     </div>
 
-                    <div class="measure-inputs">
+                    <details class="measure-collapse">
+                        <summary class="measure-collapse-toggle">
+                            <span data-i18n="measure.detail_toggle">Maße im Detail anpassen</span>
+                            <span class="measure-collapse-icon" aria-hidden="true">▾</span>
+                        </summary>
+                        <div class="measure-inputs">
                         <div class="measure-field">
                             <label for="height"><span data-i18n="ml.height">Körpergröße</span> <span class="unit">cm</span></label>
                             <input type="number" id="height" value="175" min="140" max="220" step="1">
@@ -587,7 +592,8 @@
                             <label for="neck"><span data-i18n="ml.neck">Halsumfang</span> <span class="unit">cm</span></label>
                             <input type="number" id="neck" value="38" min="28" max="55" step="1">
                         </div>
-                    </div>
+                        </div>
+                    </details>
                 </div>
 
                 <div class="body-diagram">

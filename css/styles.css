@@ -1688,6 +1688,52 @@ input[aria-invalid="true"] {
     font-size: 14px;
 }
 
+/* Respect the hidden attribute on the pose preview — the .pose-preview flex
+   display would otherwise keep the empty canvas + its border-top visible before
+   any upload, leaving a blank band in the photo card. */
+.pose-preview[hidden] { display: none; }
+
+/* Collapsible detail measurements. On phones the nine fields are a very long
+   single column; wrap them in a <details> that's collapsed by default there.
+   On tablet/desktop the toggle is hidden and the grid is always shown. */
+.measure-collapse > summary { display: none; }            /* desktop: no toggle */
+.measure-collapse > .measure-inputs { display: grid; }    /* desktop: always open */
+
+@media (max-width: 600px) {
+    .measure-collapse > summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-3);
+        list-style: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-card);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+        -webkit-tap-highlight-color: transparent;
+        transition: border-color var(--duration-base) var(--ease-out);
+    }
+    .measure-collapse > summary::-webkit-details-marker { display: none; }
+    .measure-collapse > summary:hover,
+    .measure-collapse[open] > summary { border-color: var(--accent-2, #8b5cf6); }
+    .measure-collapse-icon {
+        color: var(--text-muted);
+        transition: transform var(--duration-base) var(--ease-out);
+    }
+    .measure-collapse[open] .measure-collapse-icon { transform: rotate(180deg); }
+    /* Closed: hide the grid. Open: two compact columns instead of one long one. */
+    .measure-collapse:not([open]) > .measure-inputs { display: none; }
+    .measure-collapse[open] > .measure-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: var(--space-4);
+    }
+}
+
 .body-diagram {
     background:
         radial-gradient(ellipse at top, rgba(236, 72, 153, 0.05), transparent 60%),
@@ -2571,7 +2617,23 @@ input[aria-invalid="true"] {
 }
 
 @media (max-width: 600px) {
-    .measure-inputs { grid-template-columns: 1fr; }
+    /* Collapsed measurements show two compact columns when opened (see the
+       .measure-collapse[open] rule); the bare 1-col fallback stays for any
+       inputs grid not inside the collapse. */
+    .measure-inputs { grid-template-columns: 1fr 1fr; }
+
+    /* Step-3 teaser: the wide 16:9 shot was being cover-cropped to a tall
+       phone box (only a sliver of the figure showed). Let the stage hug its
+       content and give the example image its true 16:9 ratio so the whole
+       look is visible; the generated result keeps its natural portrait size.
+       Selectors are deliberately more specific than the base #vto-example /
+       .vto-stage rules (which sit later in the file) so these win the cascade. */
+    .preview-container .vto-stage { min-height: 0; }
+    .preview-container .vto-stage .vto-result-img { min-height: 0; max-height: 75vh; }
+    .vto-stage #vto-example.has-image {
+        min-height: 0;
+        aspect-ratio: 16 / 9;
+    }
 
     .hero-inner {
         padding: var(--space-11) var(--space-5) var(--space-8);
