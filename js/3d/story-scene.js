@@ -131,6 +131,7 @@ let uniforms = null;
 let lastPair = -1;
 
 let track = null;
+let stage = null;
 let acts = [];
 let photos = [];
 let actNumEl = null;
@@ -590,7 +591,12 @@ function setAct(idx) {
 }
 function readProgress() {
     const rect = track.getBoundingClientRect();
-    const scrollable = rect.height - window.innerHeight;
+    // Measure against the pinned stage's actual height, NOT window.innerHeight.
+    // The stage is sized in svh (stable across the iOS toolbar); innerHeight is
+    // the dynamic viewport that grows/shrinks as the toolbar shows/hides. Using
+    // the stable stage height keeps morph progress steady while scrolling up.
+    const stageH = (stage && stage.clientHeight) || window.innerHeight;
+    const scrollable = rect.height - stageH;
     if (scrollable <= 0) return;
     targetProgress = THREE.MathUtils.clamp(-rect.top / scrollable, 0, 1);
     const idx = Math.min(acts.length - 1, Math.floor(targetProgress * acts.length));
@@ -639,6 +645,7 @@ function mount() {
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     track = section.querySelector("[data-story]");
+    stage = section.querySelector(".story-stage");
     acts = Array.from(section.querySelectorAll(".story-act"));
     photos = Array.from(section.querySelectorAll(".story-photo"));
     actNumEl = section.querySelector("[data-act-num]");
