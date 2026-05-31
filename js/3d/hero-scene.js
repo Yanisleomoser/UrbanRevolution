@@ -150,7 +150,9 @@ function initLights() {
     key.shadow.radius = 6;
     scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0xff6ab8, 0.4);
+    // Lifted to soften the shadow side, matching the preview scene's studio
+    // fill (slightly under scene.js' 0.55 since the hero has a stronger rim).
+    const fill = new THREE.DirectionalLight(0xff6ab8, 0.5);
     fill.position.set(-2.2, 1.6, 1.4);
     scene.add(fill);
 
