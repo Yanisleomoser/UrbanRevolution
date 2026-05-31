@@ -41,8 +41,8 @@ const MATERIAL_PROPS = {
 };
 
 const TORSO_DEPTH_SCALE = 0.72;
-// Must match ARM_SPLAY in avatars.js so sleeves track the arms' A-pose.
-const ARM_SPLAY = Math.PI / 6; // 30°
+// Must match ARM_SPLAY in avatars.js so sleeves track the arms' relaxed pose.
+const ARM_SPLAY = Math.PI / 13; // ~14° (kept in sync with avatars.js)
 
 function hexToInt(hex) {
     if (typeof hex !== "string") return 0x1a1a1a;

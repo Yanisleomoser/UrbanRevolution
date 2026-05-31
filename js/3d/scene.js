@@ -56,7 +56,7 @@ function mount(targetContainer) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // ACES Filmic — cinematic tone curve, the de facto Pixar/Hollywood standard
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.15;
     container.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
@@ -111,8 +111,9 @@ function initLights() {
     key.shadow.radius = 6;
     scene.add(key);
 
-    // Fill light — magenta from camera-left, brand color hint
-    const fill = new THREE.DirectionalLight(0xff6ab8, 0.35);
+    // Fill light — magenta from camera-left, brand color hint. Lifted so the
+    // shadow side isn't crushed black (reads more like a studio softbox).
+    const fill = new THREE.DirectionalLight(0xff6ab8, 0.55);
     fill.position.set(-2.0, 1.8, 1.5);
     scene.add(fill);
 

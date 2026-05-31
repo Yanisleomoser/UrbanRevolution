@@ -44,7 +44,7 @@ const TORSO_DEPTH_SCALE = 0.72;
 // compact, and stops the arms from dominating the frame the way a full
 // horizontal T-pose did. garments.js mirrors this exact value so sleeves
 // stay concentric with the arms.
-const ARM_SPLAY = Math.PI / 6; // 30°
+const ARM_SPLAY = Math.PI / 13; // ~14° — relaxed stance, arms near the body (was 30°, which read as a stiff scarecrow A-pose)
 
 function hexToInt(hex) {
     if (typeof hex !== "string") return null;
