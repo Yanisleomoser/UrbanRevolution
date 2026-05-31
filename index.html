@@ -419,7 +419,7 @@
     <section id="design" class="section design-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number">01</span>
+                <span class="section-number" aria-hidden="true">01</span>
                 <h2 data-i18n="design.h2">Beschreibe dein Design</h2>
                 <p data-i18n="design.intro">Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.</p>
             </div>
@@ -446,28 +446,28 @@
 
                     <div class="garment-type-selector">
                         <label data-i18n="design.garment_label">Kleidungstyp</label>
-                        <div class="type-grid">
-                            <button class="type-btn active" data-type="tshirt">
+                        <div class="type-grid" role="group" data-i18n-aria-label="design.garment_label" aria-label="Kleidungstyp">
+                            <button class="type-btn active" data-type="tshirt" aria-pressed="true">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 16 L24 8 L40 8 L48 16 L56 22 L48 30 L48 56 L16 56 L16 30 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.tshirt">T-Shirt</span>
                             </button>
-                            <button class="type-btn" data-type="hoodie">
+                            <button class="type-btn" data-type="hoodie" aria-pressed="false">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M20 14 Q32 4 44 14 L52 22 L58 28 L50 34 L50 58 L14 58 L14 34 L6 28 L12 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.hoodie">Hoodie</span>
                             </button>
-                            <button class="type-btn" data-type="shirt">
+                            <button class="type-btn" data-type="shirt" aria-pressed="false">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M18 14 L28 8 L36 8 L46 14 L54 22 L48 28 L48 56 L16 56 L16 28 L10 22 Z M28 8 L32 16 L36 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.shirt">Hemd</span>
                             </button>
-                            <button class="type-btn" data-type="pants">
+                            <button class="type-btn" data-type="pants" aria-pressed="false">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 8 L48 8 L46 32 L44 58 L34 58 L32 34 L30 58 L20 58 L18 32 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.pants">Hose</span>
                             </button>
-                            <button class="type-btn" data-type="jacket">
+                            <button class="type-btn" data-type="jacket" aria-pressed="false">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 14 L24 8 L40 8 L48 14 L56 22 L50 28 L50 58 L32 58 L32 8 L32 58 L14 58 L14 28 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.jacket">Jacke</span>
                             </button>
-                            <button class="type-btn" data-type="dress">
+                            <button class="type-btn" data-type="dress" aria-pressed="false">
                                 <svg viewBox="0 0 64 64" width="36" height="36"><path d="M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.dress">Kleid</span>
                             </button>
@@ -492,17 +492,17 @@
                         <h3 data-i18n="design.customize_h3">Anpassungen</h3>
                         <div class="control-group">
                             <label data-i18n="design.primary_color">Primärfarbe</label>
-                            <div class="color-palette">
-                                <button class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a"></button>
-                                <button class="color-swatch" data-color="#ffffff" style="background:#ffffff"></button>
-                                <button class="color-swatch" data-color="#7c2d12" style="background:#7c2d12"></button>
-                                <button class="color-swatch" data-color="#1e3a8a" style="background:#1e3a8a"></button>
-                                <button class="color-swatch" data-color="#365314" style="background:#365314"></button>
-                                <button class="color-swatch" data-color="#a16207" style="background:#a16207"></button>
-                                <button class="color-swatch" data-color="#831843" style="background:#831843"></button>
-                                <button class="color-swatch" data-color="#6b21a8" style="background:#6b21a8"></button>
-                                <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b"></button>
-                                <button class="color-swatch" data-color="#dc2626" style="background:#dc2626"></button>
+                            <div class="color-palette" role="group" data-i18n-aria-label="design.primary_color" aria-label="Primärfarbe">
+                                <button class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a" aria-pressed="false" aria-label="Schwarz"></button>
+                                <button class="color-swatch" data-color="#ffffff" style="background:#ffffff" aria-pressed="false" aria-label="Weiß"></button>
+                                <button class="color-swatch" data-color="#7c2d12" style="background:#7c2d12" aria-pressed="false" aria-label="Rostbraun"></button>
+                                <button class="color-swatch" data-color="#1e3a8a" style="background:#1e3a8a" aria-pressed="false" aria-label="Marineblau"></button>
+                                <button class="color-swatch" data-color="#365314" style="background:#365314" aria-pressed="false" aria-label="Olivgrün"></button>
+                                <button class="color-swatch" data-color="#a16207" style="background:#a16207" aria-pressed="false" aria-label="Ocker"></button>
+                                <button class="color-swatch" data-color="#831843" style="background:#831843" aria-pressed="false" aria-label="Bordeaux"></button>
+                                <button class="color-swatch" data-color="#6b21a8" style="background:#6b21a8" aria-pressed="false" aria-label="Violett"></button>
+                                <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-pressed="false" aria-label="Bernstein"></button>
+                                <button class="color-swatch" data-color="#dc2626" style="background:#dc2626" aria-pressed="false" aria-label="Rot"></button>
                             </div>
                         </div>
                         <div class="control-group">
@@ -556,12 +556,12 @@
 
     <div id="vto-modal" class="vto-modal" hidden>
         <div class="vto-modal-backdrop"></div>
-        <div class="vto-modal-content">
+        <div class="vto-modal-content" role="dialog" aria-modal="true" data-i18n-aria-label="vto.btn" aria-label="Fotorealistische Vorschau">
             <button id="vto-modal-close" class="vto-modal-close" data-i18n-aria-label="vto.modal_close" aria-label="Schließen">&times;</button>
             <div id="vto-modal-body">
                 <div class="vto-loading">
                     <div class="vto-spinner"></div>
-                    <p id="vto-status" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
+                    <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
                 </div>
                 <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
                 <div class="vto-result-actions" id="vto-result-actions" hidden>
@@ -574,7 +574,7 @@
     <section id="measure" class="section measure-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number">02</span>
+                <span class="section-number" aria-hidden="true">02</span>
                 <h2 data-i18n="measure.h2">Deine Körpermaße</h2>
                 <p data-i18n="measure.intro">Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Maße.</p>
             </div>
@@ -590,10 +590,10 @@
                         <div class="photo-upload-action">
                             <input type="file" id="pose-photo" accept="image/*" hidden>
                             <button id="pose-upload-btn" class="upload-btn" data-i18n="measure.photo_btn">Foto auswählen</button>
-                            <span id="pose-status" class="pose-status"></span>
+                            <span id="pose-status" class="pose-status" role="status" aria-live="polite"></span>
                         </div>
                         <div id="pose-preview" class="pose-preview" hidden>
-                            <canvas id="pose-canvas"></canvas>
+                            <canvas id="pose-canvas" aria-hidden="true"></canvas>
                         </div>
                     </div>
 
@@ -612,39 +612,39 @@
                     <div class="measure-inputs">
                         <div class="measure-field">
                             <label for="height"><span data-i18n="ml.height">Körpergröße</span> <span class="unit">cm</span></label>
-                            <input type="number" id="height" value="175" min="140" max="220">
+                            <input type="number" id="height" value="175" min="140" max="220" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="weight"><span data-i18n="ml.weight">Gewicht</span> <span class="unit">kg</span></label>
-                            <input type="number" id="weight" value="70" min="40" max="150">
+                            <input type="number" id="weight" value="70" min="40" max="150" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="chest"><span data-i18n="ml.chest">Brustumfang</span> <span class="unit">cm</span></label>
-                            <input type="number" id="chest" value="96" min="60" max="160">
+                            <input type="number" id="chest" value="96" min="60" max="160" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="waist"><span data-i18n="ml.waist">Taillenumfang</span> <span class="unit">cm</span></label>
-                            <input type="number" id="waist" value="82" min="50" max="150">
+                            <input type="number" id="waist" value="82" min="50" max="150" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="hips"><span data-i18n="ml.hips">Hüftumfang</span> <span class="unit">cm</span></label>
-                            <input type="number" id="hips" value="98" min="60" max="160">
+                            <input type="number" id="hips" value="98" min="60" max="160" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="shoulder"><span data-i18n="ml.shoulder">Schulterbreite</span> <span class="unit">cm</span></label>
-                            <input type="number" id="shoulder" value="44" min="30" max="70">
+                            <input type="number" id="shoulder" value="44" min="30" max="70" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="arm"><span data-i18n="ml.arm">Armlänge</span> <span class="unit">cm</span></label>
-                            <input type="number" id="arm" value="62" min="40" max="90">
+                            <input type="number" id="arm" value="62" min="40" max="90" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="inseam"><span data-i18n="ml.inseam">Schrittlänge</span> <span class="unit">cm</span></label>
-                            <input type="number" id="inseam" value="82" min="50" max="100">
+                            <input type="number" id="inseam" value="82" min="50" max="100" step="1">
                         </div>
                         <div class="measure-field">
                             <label for="neck"><span data-i18n="ml.neck">Halsumfang</span> <span class="unit">cm</span></label>
-                            <input type="number" id="neck" value="38" min="28" max="55">
+                            <input type="number" id="neck" value="38" min="28" max="55" step="1">
                         </div>
                     </div>
                 </div>
@@ -775,13 +775,13 @@
     <section id="preview" class="section preview-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number">03</span>
+                <span class="section-number" aria-hidden="true">03</span>
                 <h2 data-i18n="preview.h2">3D Vorschau</h2>
                 <p data-i18n="preview.intro">So sieht dein Kleidungsstück mit deinen Maßen aus. Drehen, zoomen, prüfen.</p>
             </div>
 
             <div class="preview-container" data-reveal>
-                <div id="three-canvas" class="three-canvas preview-placeholder">
+                <div id="three-canvas" class="three-canvas preview-placeholder" role="img" aria-label="3D-Vorschau deines Kleidungsstücks">
                     <div class="placeholder-content">
                         <div class="placeholder-spinner" aria-hidden="true"></div>
                         <h3 data-i18n="preview.loading_h3">3D-Vorschau wird geladen</h3>
@@ -805,7 +805,7 @@
     <section id="production" class="section production-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number">04</span>
+                <span class="section-number" aria-hidden="true">04</span>
                 <h2 data-i18n="prod.h2">Produktions-Vorlage</h2>
                 <p data-i18n="prod.intro">Alle Daten, die der Schneider und die Produktion benötigen, in einem Dokument.</p>
             </div>
@@ -876,7 +876,7 @@
     <section id="faq" class="section faq-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number">FAQ</span>
+                <span class="section-number" aria-hidden="true">FAQ</span>
                 <h2 data-i18n="faq.h2">Häufige Fragen</h2>
                 <p data-i18n="faq.intro">Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
             </div>
@@ -950,16 +950,10 @@
         </div>
     </footer>
 
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Vercel Web Analytics -->
     <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
-
-    <!-- Vercel Speed Insights -->
-    <script>
-        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
 
     <script type="importmap">
     {
