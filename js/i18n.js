@@ -119,6 +119,7 @@ const I18N = (() => {
       "design.customize_h3": "Anpassungen",
       "design.primary_color": "Primärfarbe",
       "design.material_label": "Material",
+      "design.pattern_label": "Muster",
       "design.fit_label": "Passform",
 
       // ── Kleidungstypen ──
@@ -311,6 +312,15 @@ const I18N = (() => {
       "color.#f59e0b": "Sonnengelb",
       "color.#dc2626": "Rot",
       "color.custom": "Custom",
+      "pattern.solid": "Uni",
+      "pattern.stripes_h": "Querstreifen",
+      "pattern.stripes_v": "Längsstreifen",
+      "pattern.dots": "Punkte",
+      "pattern.plaid": "Karo",
+      "pattern.camo": "Camouflage",
+      "pattern.gradient": "Farbverlauf",
+      "pattern.heather": "Meliert",
+      "pattern.floral": "Blumenmuster",
 
       // ── Vorschläge (dynamisch) ──
       "sugg.foryou_count": "{n} Design{s} erstellt",
@@ -501,6 +511,7 @@ const I18N = (() => {
       "design.customize_h3": "Customize",
       "design.primary_color": "Primary color",
       "design.material_label": "Material",
+      "design.pattern_label": "Pattern",
       "design.fit_label": "Fit",
 
       // ── Garment types ──
@@ -693,6 +704,15 @@ const I18N = (() => {
       "color.#f59e0b": "Sun yellow",
       "color.#dc2626": "Red",
       "color.custom": "Custom",
+      "pattern.solid": "Solid",
+      "pattern.stripes_h": "Horizontal stripes",
+      "pattern.stripes_v": "Vertical stripes",
+      "pattern.dots": "Dots",
+      "pattern.plaid": "Plaid",
+      "pattern.camo": "Camo",
+      "pattern.gradient": "Gradient",
+      "pattern.heather": "Heather",
+      "pattern.floral": "Floral",
 
       // ── Suggestions (dynamic) ──
       "sugg.foryou_count": "{n} design{s} created",
@@ -837,6 +857,9 @@ const I18N = (() => {
     const v = t(k);
     return v === k ? t("color.custom") : v;
   }
+  function pattern(key) {
+    return t("pattern." + key);
+  }
 
   // Translate every element carrying an i18n attribute within `root`.
   function apply(root = document) {
@@ -895,6 +918,7 @@ const I18N = (() => {
     measureLabel,
     typeLabel,
     colorName,
+    pattern,
     apply,
   };
 })();
