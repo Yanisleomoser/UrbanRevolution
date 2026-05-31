@@ -1055,13 +1055,15 @@
     const spinner = stage?.querySelector(".vto-spinner");
     const img = document.getElementById("vto-result-img");
     const actions = document.getElementById("vto-result-actions");
-    if (example) example.style.display = "none";
+    // Toggle the hidden attribute (not inline display) so the markup stays
+    // semantically correct; CSS [hidden] guards on .vto-stage handle layout.
+    if (example) example.hidden = true;
     if (img) {
       img.hidden = true;
       img.removeAttribute("src");
     }
     if (actions) actions.hidden = true;
-    if (loading) loading.style.display = "flex";
+    if (loading) loading.hidden = false;
     if (spinner) spinner.style.display = "";
   }
 
@@ -1084,8 +1086,8 @@
     const example = document.getElementById("vto-example");
     const img = document.getElementById("vto-result-img");
     const actions = document.getElementById("vto-result-actions");
-    if (loading) loading.style.display = "none";
-    if (example) example.style.display = "none";
+    if (loading) loading.hidden = true;
+    if (example) example.hidden = true;
     if (img) {
       img.src = url;
       img.hidden = false;
