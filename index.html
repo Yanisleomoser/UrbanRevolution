@@ -151,7 +151,7 @@
                 <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
                 <li><a href="#design" data-i18n="nav.design">Design</a></li>
                 <li><a href="#measure" data-i18n="nav.measure">Maße</a></li>
-                <li><a href="#preview" data-i18n="nav.preview">3D Vorschau</a></li>
+                <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
                 <li><a href="#production" data-i18n="nav.production">Produktion</a></li>
                 <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
                 <li class="nav-lang-item">
@@ -205,137 +205,7 @@
              and an <img>; the surrounding layout will adapt. -->
         <figure class="hero-asset" data-reveal>
             <picture class="hero-asset-picture">
-                <!-- Live 3D figure mounts here (js/3d/hero-scene.js) when WebGL
-                     is available and motion is allowed; otherwise the SVG below
-                     stays as the baseline visual. -->
-                <div id="hero-3d" class="hero-3d" aria-hidden="true"></div>
-                <svg class="hero-asset-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" data-i18n-aria-label="hero.asset_alt" aria-label="Fashion-Figur mit AI-generiertem Hoodie im Brand-Gradient">
-                    <defs>
-                        <linearGradient id="heroOutfit" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop id="heroStop1" offset="0%" stop-color="#ec4899"/>
-                            <stop id="heroStop2" offset="50%" stop-color="#8b5cf6"/>
-                            <stop id="heroStop3" offset="100%" stop-color="#06b6d4"/>
-                        </linearGradient>
-                        <linearGradient id="heroOutfitDim" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ec4899" stop-opacity="0.55"/>
-                            <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.55"/>
-                        </linearGradient>
-                        <radialGradient id="heroSkin" cx="50%" cy="40%" r="60%">
-                            <stop offset="0%" stop-color="#c4a282"/>
-                            <stop offset="100%" stop-color="#8a6f55"/>
-                        </radialGradient>
-                        <radialGradient id="heroBackdrop" cx="50%" cy="50%" r="50%">
-                            <stop id="heroBackdropStop" offset="0%" stop-color="rgba(236,72,153,0.18)"/>
-                            <stop offset="100%" stop-color="rgba(10,10,11,0)"/>
-                        </radialGradient>
-                        <filter id="heroBlur"><feGaussianBlur stdDeviation="40"/></filter>
-                    </defs>
-
-                    <!-- Soft backdrop glow -->
-                    <ellipse cx="200" cy="320" rx="180" ry="240" fill="url(#heroBackdrop)"/>
-
-                    <!-- Body / skin layer (legs + arms + face peek) -->
-                    <g>
-                        <!-- Face -->
-                        <ellipse cx="200" cy="125" rx="38" ry="46" fill="url(#heroSkin)"/>
-                        <!-- Hair shape (subtle) -->
-                        <path d="M 162 110 Q 200 70 238 110 Q 240 95 220 80 Q 200 70 180 80 Q 160 95 162 110 Z" fill="#2a2024"/>
-                        <!-- Neck -->
-                        <path d="M 188 160 L 188 178 Q 200 184 212 178 L 212 160 Z" fill="url(#heroSkin)"/>
-                        <!-- Legs (slim trousers / dark) -->
-                        <path d="M 165 440 L 170 580 L 195 580 L 200 440 Z" fill="#1f1f23" opacity="0.92"/>
-                        <path d="M 200 440 L 205 580 L 230 580 L 235 440 Z" fill="#1f1f23" opacity="0.92"/>
-                        <!-- Feet -->
-                        <ellipse cx="180" cy="582" rx="20" ry="6" fill="#0a0a0b"/>
-                        <ellipse cx="220" cy="582" rx="20" ry="6" fill="#0a0a0b"/>
-                    </g>
-
-                    <!-- Garment — AI-designed hoodie in brand gradient -->
-                    <g class="hero-asset-garment">
-                        <!-- Hood draped on shoulders -->
-                        <path d="
-                            M 138 200
-                            Q 145 165 200 158
-                            Q 255 165 262 200
-                            L 268 235
-                            Q 258 225 240 222
-                            L 240 218
-                            Q 200 213 160 218
-                            L 160 222
-                            Q 142 225 132 235
-                            Z
-                        " fill="url(#heroOutfit)"/>
-
-                        <!-- Main torso of hoodie -->
-                        <path d="
-                            M 130 220
-                            Q 145 215 165 218
-                            L 235 218
-                            Q 255 215 270 220
-                            L 282 290
-                            Q 286 340 282 390
-                            L 278 460
-                            L 122 460
-                            L 118 390
-                            Q 114 340 118 290
-                            Z
-                        " fill="url(#heroOutfit)"/>
-
-                        <!-- Highlight strip (signals 3D depth) -->
-                        <path d="
-                            M 145 230
-                            Q 200 220 255 230
-                            L 252 280
-                            Q 200 270 148 280
-                            Z
-                        " fill="url(#heroOutfitDim)" opacity="0.55"/>
-
-                        <!-- Drawstrings -->
-                        <line x1="190" y1="218" x2="186" y2="260" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.65"/>
-                        <line x1="210" y1="218" x2="214" y2="260" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.65"/>
-
-                        <!-- Kangaroo pocket outline -->
-                        <path d="M 155 340 Q 200 350 245 340 L 240 400 Q 200 408 160 400 Z" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.35"/>
-
-                        <!-- Sleeves -->
-                        <path d="
-                            M 130 220
-                            C 110 250, 100 320, 100 380
-                            C 100 400, 105 410, 118 410
-                            L 130 408
-                            Q 134 360, 138 320
-                            Q 142 270, 150 230
-                            Z
-                        " fill="url(#heroOutfit)"/>
-                        <path d="
-                            M 270 220
-                            C 290 250, 300 320, 300 380
-                            C 300 400, 295 410, 282 410
-                            L 270 408
-                            Q 266 360, 262 320
-                            Q 258 270, 250 230
-                            Z
-                        " fill="url(#heroOutfit)"/>
-
-                        <!-- Hands (just dot suggestions) -->
-                        <ellipse cx="113" cy="412" rx="9" ry="11" fill="url(#heroSkin)"/>
-                        <ellipse cx="287" cy="412" rx="9" ry="11" fill="url(#heroSkin)"/>
-
-                        <!-- Tiny "AI" tag on the chest -->
-                        <g class="hero-asset-tag">
-                            <rect x="218" y="295" width="36" height="14" rx="3" fill="#0a0a0b" opacity="0.7"/>
-                            <text x="236" y="305" font-family="Inter, sans-serif" font-size="9" font-weight="700" letter-spacing="1" text-anchor="middle" fill="white">AI · UR</text>
-                        </g>
-                    </g>
-
-                    <!-- Floating accent particles to suggest "generated" -->
-                    <g class="hero-asset-particles">
-                        <circle cx="320" cy="180" r="3" fill="#ec4899"/>
-                        <circle cx="80" cy="240" r="2" fill="#8b5cf6"/>
-                        <circle cx="340" cy="380" r="2.5" fill="#06b6d4"/>
-                        <circle cx="60" cy="380" r="2" fill="#ec4899"/>
-                    </g>
-                </svg>
+                <img class="hero-asset-img" src="assets/hero.jpg" width="1152" height="1728" loading="eager" fetchpriority="high" decoding="async" data-i18n-alt="hero.asset_alt" alt="Model in einer KI-designten Pufferjacke, von Neon-Lichtspuren in Pink und Cyan umspielt">
             </picture>
             <figcaption class="hero-asset-caption" data-i18n-html="hero.caption_html">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
         </figure>
@@ -854,7 +724,7 @@
                     <!-- Default state: a static example (user-provided image drops in
                          here; until then a styled placeholder) so the step never looks
                          empty before a photo is uploaded. -->
-                    <div class="vto-example" id="vto-example">
+                    <div class="vto-example has-image" id="vto-example">
                         <span class="vto-example-tag" data-i18n="preview.example_tag">Beispiel</span>
                         <p class="vto-example-label" data-i18n="preview.example_label">So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.</p>
                     </div>
@@ -1014,7 +884,7 @@
                         <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
                         <li><a href="#design" data-i18n="footer.design_start">Design starten</a></li>
                         <li><a href="#measure" data-i18n="footer.measure">Körpermaße</a></li>
-                        <li><a href="#preview" data-i18n="nav.preview">3D Vorschau</a></li>
+                        <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
                         <li><a href="#production" data-i18n="nav.production">Produktion</a></li>
                         <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
                     </ul>
@@ -1064,7 +934,6 @@
     <script src="js/animations.js"></script>
     <script src="js/app.js"></script>
     <script src="js/hero.js"></script>
-    <script type="module" src="js/3d/hero-scene.js"></script>
     <script type="module" src="js/3d/story-scene.js"></script>
 </body>
 </html>
