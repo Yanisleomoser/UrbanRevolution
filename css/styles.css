@@ -129,6 +129,20 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
+/* Touch devices (iOS Safari, Android): a fixed bar with a LIVE backdrop blur
+   re-rasterizes its 20px blur every frame over the scrolling content beneath
+   it — including the WebGL canvases — which is a well-known source of scroll
+   stutter. Drop the live blur on coarse pointers and use a near-opaque bar
+   instead; legibility is preserved and scrolling stays smooth. Desktop keeps
+   the brand glass. */
+@media (hover: none) and (pointer: coarse) {
+    .navbar {
+        background: rgba(10, 10, 11, 0.94);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
 .nav-container {
     max-width: 1280px;
     margin: 0 auto;
@@ -278,6 +292,7 @@ body {
 /* ============ HERO ============ */
 .hero {
     min-height: 100vh;
+    min-height: 100svh; /* stable across the iOS toolbar — no scroll jump */
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
     align-items: center;
@@ -450,6 +465,12 @@ body {
     /* ~200vh of dwell per act across 6 acts — Instagram-like swipe
        resistance so one flick doesn't fly past several acts. */
     height: 1200vh;
+    /* svh = "small viewport height" — pinned to the SMALL viewport, so it
+       does NOT recompute when the iOS Safari toolbar shows/hides on scroll.
+       Without this, scrolling up reveals the toolbar, every vh grows, and a
+       12×-tall track suddenly shifts everything below it → wild page jumps.
+       Old browsers ignore this line and keep the vh fallback above. */
+    height: 1200svh;
 }
 
 /* Pinned stage holds the WebGL canvas in view while the track scrolls. */
@@ -457,6 +478,7 @@ body {
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100svh; /* stable across the iOS toolbar — see .story-track */
     overflow: hidden;
     background: var(--void);
 }
@@ -2549,8 +2571,9 @@ input[aria-invalid="true"] {
     /* Step tracker — scrollable horizontally so it doesn't crunch */
     .workflow { padding: var(--space-5) 0; }
 
-    /* Scroll story — shorter track + tighter editorial padding on mobile */
-    .story-track { height: 960vh; }
+    /* Scroll story — shorter track + tighter editorial padding on mobile.
+       svh keeps it stable against the iOS Safari toolbar (see desktop rule). */
+    .story-track { height: 960vh; height: 960svh; }
     .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
     .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
     .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }
