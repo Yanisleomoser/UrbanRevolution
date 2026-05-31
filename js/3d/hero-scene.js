@@ -45,6 +45,8 @@ let garment = null;
 let host = null;
 let raf = null;
 let pmrem = null;
+let io = null;
+let inView = true;          // false once the hero scrolls out of view
 
 let currentType = "hoodie";
 // Colours are mutated in place (set/lerp/copy), never rebound → const.
@@ -113,6 +115,23 @@ function mount() {
     window.addEventListener("hero:look", onLook);
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
+
+    // Pause the turntable RAF loop whenever the hero scrolls out of view.
+    // Without this it renders WebGL 60fps the whole time the user is down in
+    // the tool sections, which on iOS Safari competes with scroll compositing
+    // and makes every section jump/stutter. Resume when it returns.
+    if ("IntersectionObserver" in window) {
+        io = new IntersectionObserver((entries) => {
+            inView = entries[0].isIntersecting;
+            if (inView && !raf && renderer && !document.hidden) {
+                loop();
+            } else if (!inView && raf) {
+                cancelAnimationFrame(raf);
+                raf = null;
+            }
+        }, { threshold: 0.01 });
+        io.observe(host);
+    }
 
     loop();
 }
@@ -210,13 +229,21 @@ function onVisibility() {
     if (document.hidden) {
         cancelAnimationFrame(raf);
         raf = null;
-    } else if (!raf && renderer) {
+    } else if (!raf && renderer && inView) {
         loop();
     }
 }
 
 let t = 0;
 function loop() {
+    // Guard the reschedule: if a frame callback was already queued when the
+    // IntersectionObserver (or visibilitychange) paused us, it would still
+    // fire, render, and re-arm raf — defeating the pause and leaving the
+    // turntable running off-screen. Bail and null raf so the loop truly stops.
+    if (!inView || document.hidden) {
+        raf = null;
+        return;
+    }
     raf = requestAnimationFrame(loop);
     t += 0.0045;
 

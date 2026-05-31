@@ -799,15 +799,11 @@ body {
     padding: 40px 0;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 73px;
-    /* Solid, opaque background — NOT backdrop-filter. A sticky element that
-       re-blurs the scrolling content (incl. the 3D canvases) every frame is
-       a major Safari scroll-jank / position-jump source, and it engages
-       right after the story — exactly where the page "jumped". Opaque bg
-       composites cheaply and removes the jump. */
+    /* NOT position:sticky. On iOS Safari a sticky bar floating over every
+       post-story section (and over the 3D WebGL canvases) caused the page
+       to jump up/down in all sections. It's now a normal in-flow progress
+       band that introduces the steps once, then scrolls away. */
     background: #0c0c0e;
-    z-index: 50;
 }
 
 .step-tracker {
@@ -2551,7 +2547,7 @@ input[aria-invalid="true"] {
     .section-header p { font-size: var(--text-base); }
 
     /* Step tracker — scrollable horizontally so it doesn't crunch */
-    .workflow { padding: var(--space-5) 0; top: 60px; }
+    .workflow { padding: var(--space-5) 0; }
 
     /* Scroll story — shorter track + tighter editorial padding on mobile */
     .story-track { height: 960vh; }
