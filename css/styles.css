@@ -3002,19 +3002,21 @@ body::before {
     50%      { box-shadow: 0 0 0 6px rgba(236, 72, 153, 0.25), 0 0 28px rgba(236, 72, 153, 0.75); }
 }
 
-/* ---------- Section entrance reveal ---------- */
+/* ---------- Section entrance reveal ----------
+   One-shot fade on load — deliberately NOT scroll-driven. A scroll-driven
+   animation-timeline: view() remaps its progress on EVERY viewport resize; in
+   in-app browsers (Instagram) the bottom toolbar appears on scroll-up and
+   resizes the viewport, which remapped the section transform and flung the
+   page ("catapult", per the user's own diagnosis). An on-load animation has
+   zero scroll coupling, so toggling the toolbar can't move anything — works on
+   every browser with no touch detection needed. Touch devices skip the
+   animation entirely via the .is-touch / any-pointer rules further below. */
 .section {
     animation: revealUp 0.9s ease-out both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 50%;
 }
 @keyframes revealUp {
     from { opacity: 0; transform: translateY(40px); }
     to   { opacity: 1; transform: translateY(0); }
-}
-/* Fallback for browsers without scroll-driven animations */
-@supports not (animation-timeline: view()) {
-    .section { animation: none; opacity: 1; transform: none; }
 }
 /* iOS Safari runs per-frame layout work for any registered scroll-driven
    timeline — even when its animation-name is none — which fights momentum

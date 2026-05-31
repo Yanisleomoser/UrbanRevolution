@@ -56,8 +56,8 @@ assets/
   story/                # Documentary photos (Acts I–IV) — see CREDITS.md
 vercel.json             # Hosting config — no build, /api/ runs as edge functions
 scripts/validate-css.mjs# css-tree structural CSS check (CI)
-.github/workflows/      # CI: deno(test), webpack(validate), jekyll-docker(build),
-                        # validate-css, validate-html, deploy(Pages) — see Deployment
+.github/workflows/      # CI only: deno(test), webpack(validate),
+                        # jekyll-docker(build), validate-css, validate-html — see Deployment
 ```
 
 No unit tests. CI runs `deno lint` (configured via `deno.json`, with
@@ -326,10 +326,9 @@ functions only run on Vercel (or `vercel dev`).
 
 - **Vercel** (`vercel.json`) — no build, root is output. `npm install`
   runs so analytics resolves. Speed Insights + Web Analytics inject from
-  `index.html`. The two `/api/` functions run as Edge Functions.
-- **GitHub Pages** (`.github/workflows/deploy.yml`) — uploads repo root on
-  pushes to `main` (and one named claude branch). No build. (The `/api/`
-  functions don't run on Pages — AI generation falls back to local there.)
+  `index.html`. The two `/api/` functions run as Edge Functions. **This is the
+  only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
+  — the repo no longer has a Pages workflow.
 
 The functional PR checks come from files with **misleading GitHub-default
 names** — don't delete one assuming it's a stub. The mapping:
@@ -342,13 +341,12 @@ names** — don't delete one assuming it's a stub. The mapping:
 | `validate-css` | `validate-css.yml`    |                      | css-tree check            |
 | `validate-html`| `validate-html.yml`   |                      | htmlhint                  |
 
-Plus `deploy.yml` (GitHub Pages). **Keep all of the above.**
-
-The genuinely inert files: `jekyll-gh-pages.yml` (second Pages build, unused),
-`npm-publish*.yml` (only fire on `release`, never on push). They produce no
-push noise — leave them. `copilot-setup-steps.yml` was a broken GitHub
-template (empty-keyed SecureStack scan) that failed on every push; it was
-removed.
+These five are the **entire** `.github/workflows/` set — **keep all of them**.
+The old GitHub-template clutter was removed: `deploy.yml` + `jekyll-gh-pages.yml`
+(two redundant GitHub Pages deploys, unused since the site is on Vercel),
+`npm-publish*.yml` (duplicate "Node.js Package", release-only, never ran), and
+`copilot-setup-steps.yml` (broken empty-keyed SecureStack scan that failed on
+every push).
 
 ### Checking deploy / CI status yourself (standing instruction from the user)
 
