@@ -303,7 +303,8 @@ html.is-touch .navbar {
 /* ============ HERO ============ */
 .hero {
     min-height: 100vh;
-    min-height: 100svh; /* stable across the iOS toolbar — no scroll jump */
+    min-height: 100svh;
+    min-height: calc(var(--svh, 1svh) * 100); /* JS-pinned px (see index.html) — stable across in-app toolbars */
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
     align-items: center;
@@ -476,12 +477,13 @@ html.is-touch .navbar {
     /* ~200vh of dwell per act across 6 acts — Instagram-like swipe
        resistance so one flick doesn't fly past several acts. */
     height: 1200vh;
-    /* svh = "small viewport height" — pinned to the SMALL viewport, so it
-       does NOT recompute when the iOS Safari toolbar shows/hides on scroll.
-       Without this, scrolling up reveals the toolbar, every vh grows, and a
-       12×-tall track suddenly shifts everything below it → wild page jumps.
-       Old browsers ignore this line and keep the vh fallback above. */
     height: 1200svh;
+    /* JS-pinned px unit (--svh, set in index.html) is the load-bearing one:
+       svh is stable in Safari but in-app browsers (Instagram) recompute it as
+       their toolbar toggles, and ×1200 that flung the whole page. --svh is
+       frozen in px and only changes on rotation, so this 12×-tall track never
+       reflows on a toolbar toggle. Falls back to svh/vh where --svh is unset. */
+    height: calc(var(--svh, 1svh) * 1200);
 }
 
 /* Pinned stage holds the WebGL canvas in view while the track scrolls. */
@@ -489,7 +491,8 @@ html.is-touch .navbar {
     position: sticky;
     top: 0;
     height: 100vh;
-    height: 100svh; /* stable across the iOS toolbar — see .story-track */
+    height: 100svh;
+    height: calc(var(--svh, 1svh) * 100); /* JS-pinned px — see .story-track */
     overflow: hidden;
     background: var(--void);
 }
@@ -2584,7 +2587,7 @@ input[aria-invalid="true"] {
 
     /* Scroll story — shorter track + tighter editorial padding on mobile.
        svh keeps it stable against the iOS Safari toolbar (see desktop rule). */
-    .story-track { height: 960vh; height: 960svh; }
+    .story-track { height: 960vh; height: 960svh; height: calc(var(--svh, 1svh) * 960); }
     .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
     .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
     .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }

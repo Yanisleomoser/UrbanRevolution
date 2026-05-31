@@ -48,7 +48,30 @@
         } catch (e) { /* no-op */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260531-3">
+    <!-- Freeze a stable "1% of viewport height" unit (--svh) in px, set BEFORE
+         the stylesheet. The story track is 12× viewport-height tall; in-app
+         browsers (Instagram/Facebook) recompute viewport units when their
+         bottom toolbar slides in on scroll-up, so a 12× element reflowed and
+         flung the page ("verkleinert das Bild und springt"). We only recompute
+         on a real WIDTH change (rotation) — never on the height-only toolbar
+         toggle — so the page height stays rock-stable while scrolling. -->
+    <script>
+      (function () {
+        try {
+          var de = document.documentElement, lastW = -1;
+          function setSVH() {
+            de.style.setProperty("--svh", (window.innerHeight * 0.01) + "px");
+            lastW = window.innerWidth;
+          }
+          setSVH();
+          window.addEventListener("resize", function () {
+            if (window.innerWidth !== lastW) setSVH(); // ignore toolbar (height-only) resizes
+          }, { passive: true });
+          window.addEventListener("orientationchange", setSVH);
+        } catch (e) { /* no-op — CSS falls back to svh/vh */ }
+      })();
+    </script>
+    <link rel="stylesheet" href="css/styles.css?v=20260531-4">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
