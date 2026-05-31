@@ -100,6 +100,7 @@ function buildMannequin(measurements, appearance) {
     group.add(buildNeck(skinMat, torsoTopY, neckR, neckH));
     group.add(buildHead(skinMat, torsoTopY + neckH, headR));
     buildArms(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(arm => group.add(arm));
+    buildHands(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(hand => group.add(hand));
     buildLegs(skinMat, legH, hipsR, totalH).forEach(leg => group.add(leg));
     buildFeet(skinMat, hipsR, totalH).forEach(foot => group.add(foot));
 
@@ -186,6 +187,31 @@ function buildArms(mat, shoulderY, shoulderHalfW, armLen, totalH) {
             0
         );
         return arm;
+    });
+}
+
+// Stylised hands at the wrist end of each arm. Mirrors buildArms' A-pose
+// geometry so the hand lands exactly on the capsule's far tip; flattened
+// into a mitten-ish ovoid rather than modelling fingers (matches the
+// abstract mannequin look, same spirit as the feet).
+function buildHands(mat, shoulderY, shoulderHalfW, armLen, totalH) {
+    const armR = totalH * 0.028;
+    const cylLen = armLen * 0.88;
+    const reach = cylLen + 2 * armR; // shoulder joint → wrist tip distance
+    const handR = armR * 1.15;
+    const dx = Math.sin(ARM_SPLAY);
+    const dy = -Math.cos(ARM_SPLAY);
+    // Pull the hand slightly inside the wrist tip so it overlaps the arm.
+    const reachToHand = reach - handR * 0.6;
+    return [-1, 1].map((side) => {
+        const hand = new THREE.Mesh(new THREE.SphereGeometry(handR, 20, 16), mat);
+        hand.position.set(
+            side * shoulderHalfW + side * dx * reachToHand,
+            shoulderY - armR * 0.4 + dy * reachToHand,
+            0
+        );
+        hand.scale.set(0.82, 1.15, 0.7);
+        return hand;
     });
 }
 

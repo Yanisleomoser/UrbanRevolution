@@ -577,18 +577,30 @@
     // Drag & Drop direkt auf die Foto-Karte
     const card = uploadBtn.closest(".photo-upload-card");
     if (card) {
-      ["dragenter", "dragover"].forEach((evt) =>
-        card.addEventListener(evt, (e) => {
-          e.preventDefault();
-          card.classList.add("is-dragover");
-        })
-      );
-      ["dragleave", "dragend"].forEach((evt) =>
-        card.addEventListener(evt, () => card.classList.remove("is-dragover"))
-      );
+      // dragenter/dragleave feuern auch beim Wechsel zwischen Kind-
+      // Elementen. Ein Tiefen-Zähler verhindert das Flackern: das
+      // Highlight verschwindet erst, wenn der Cursor die Karte wirklich
+      // verlässt (Zähler zurück auf 0).
+      let dragDepth = 0;
+      const clearDrag = () => {
+        dragDepth = 0;
+        card.classList.remove("is-dragover");
+      };
+      card.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dragDepth++;
+        card.classList.add("is-dragover");
+      });
+      card.addEventListener("dragover", (e) => e.preventDefault());
+      card.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) card.classList.remove("is-dragover");
+      });
+      card.addEventListener("dragend", clearDrag);
       card.addEventListener("drop", (e) => {
         e.preventDefault();
-        card.classList.remove("is-dragover");
+        clearDrag();
         if (uploadBtn.disabled) return;
         const file = e.dataTransfer?.files?.[0];
         if (!file) return;
