@@ -988,7 +988,7 @@
         return;
       }
 
-      openVtoModal();
+      startVtoInline();
       setVtoStatus(t("vto.status_sending"));
 
       const designPrompt = buildVtoPrompt(design);
@@ -1027,9 +1027,6 @@
     });
 
     document.getElementById("vto-download")?.addEventListener("click", downloadVtoImage);
-
-    document.getElementById("vto-modal-close")?.addEventListener("click", closeVtoModal);
-    document.querySelector(".vto-modal-backdrop")?.addEventListener("click", closeVtoModal);
   }
 
   function buildVtoPrompt(design) {
@@ -1045,50 +1042,27 @@
     return parts.filter(Boolean).join(". ");
   }
 
-  // ESC handler — bound only while the modal is open. Stored at module
-  // scope so close can detach it; otherwise repeated opens leak listeners.
-  let vtoEscHandler = null;
-  // Element to restore focus to on close — the trigger that opened the modal.
-  let vtoFocusReturnEl = null;
   // Last successful generation URL, kept so the download button can fetch it.
   let vtoLastImageUrl = null;
 
-  function openVtoModal() {
-    const modal = document.getElementById("vto-modal");
-    const loading = modal?.querySelector(".vto-loading");
-    const spinner = modal?.querySelector(".vto-spinner");
+  // Put the inline preview stage into its "generating" state: hide the example
+  // placeholder and any prior result, reveal the spinner. (The result renders
+  // inline in step 3 now — there is no modal.)
+  function startVtoInline() {
+    const stage = document.getElementById("vto-stage");
+    const example = document.getElementById("vto-example");
+    const loading = stage?.querySelector(".vto-loading");
+    const spinner = stage?.querySelector(".vto-spinner");
     const img = document.getElementById("vto-result-img");
     const actions = document.getElementById("vto-result-actions");
-    if (!modal) return;
-    modal.hidden = false;
-    if (loading) loading.style.display = "flex";
-    if (spinner) spinner.style.display = "";
+    if (example) example.style.display = "none";
     if (img) {
       img.hidden = true;
       img.removeAttribute("src");
     }
     if (actions) actions.hidden = true;
-
-    vtoFocusReturnEl = document.activeElement;
-    document.getElementById("vto-modal-close")?.focus();
-
-    vtoEscHandler = (e) => {
-      if (e.key === "Escape") closeVtoModal();
-    };
-    document.addEventListener("keydown", vtoEscHandler);
-  }
-
-  function closeVtoModal() {
-    const modal = document.getElementById("vto-modal");
-    if (modal) modal.hidden = true;
-    if (vtoEscHandler) {
-      document.removeEventListener("keydown", vtoEscHandler);
-      vtoEscHandler = null;
-    }
-    if (vtoFocusReturnEl && typeof vtoFocusReturnEl.focus === "function") {
-      vtoFocusReturnEl.focus();
-    }
-    vtoFocusReturnEl = null;
+    if (loading) loading.style.display = "flex";
+    if (spinner) spinner.style.display = "";
   }
 
   function setVtoStatus(text) {
@@ -1107,9 +1081,11 @@
 
   function showVtoResult(url) {
     const loading = document.querySelector(".vto-loading");
+    const example = document.getElementById("vto-example");
     const img = document.getElementById("vto-result-img");
     const actions = document.getElementById("vto-result-actions");
     if (loading) loading.style.display = "none";
+    if (example) example.style.display = "none";
     if (img) {
       img.src = url;
       img.hidden = false;
