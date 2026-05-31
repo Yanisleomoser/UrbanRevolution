@@ -2577,16 +2577,25 @@ input[aria-invalid="true"] {
     .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
     .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
     .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }
+    /* Fit all four steps on one row — no horizontal scroll (the cut-off
+       4th step + the masked connector line read as "unfinished" on phones). */
     .step-tracker {
-        gap: var(--space-3);
+        gap: var(--space-2);
         flex-wrap: nowrap;
-        overflow-x: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        padding: 0 var(--space-1);
+        justify-content: space-between;
+        padding: 0;
     }
-    .step-tracker::-webkit-scrollbar { display: none; }
-    .step { flex: 0 0 auto; min-width: max-content; font-size: 11px; }
+    .step-tracker::before { display: none; } /* drop the fragile connector line on mobile */
+    .step {
+        flex: 0 1 auto;
+        min-width: 0;
+        gap: 6px;
+        font-size: 10px;
+        white-space: nowrap;
+        background: transparent;
+        padding-right: 0;
+    }
+    .step span { flex: 0 0 auto; }
 
     /* Panels: tighter padding */
     .prompt-panel,
@@ -2657,7 +2666,10 @@ input[aria-invalid="true"] {
     .hero { padding-top: var(--space-10); }
     .nav-container { padding: var(--space-3) var(--space-4); }
     .logo-text { display: none; }
-    .step-tracker { font-size: 10px; }
+    /* Narrowest phones: tighten so all four steps still fit one row. */
+    .step-tracker { font-size: 10px; gap: var(--space-1); }
+    .step { gap: 4px; }
+    .step span { width: 20px; height: 20px; }
     .type-grid { grid-template-columns: repeat(3, 1fr); }
     .type-btn { padding: var(--space-3); }
     .type-btn svg { width: 28px; height: 28px; }
@@ -2991,6 +3003,13 @@ body::before {
 }
 /* Fallback for browsers without scroll-driven animations */
 @supports not (animation-timeline: view()) {
+    .section { animation: none; opacity: 1; transform: none; }
+}
+/* iOS Safari (and touch devices generally) recompute the scroll-driven
+   transform every frame, which fights momentum scrolling and the dynamic
+   toolbar — the page gets flung up then back down while scrolling the
+   wizard. Touch devices get the settled state; desktop keeps the reveal. */
+@media (pointer: coarse) {
     .section { animation: none; opacity: 1; transform: none; }
 }
 
