@@ -485,7 +485,7 @@
             <div class="step-tracker">
                 <div class="step active" data-step="1" data-i18n-html="workflow.s1_html"><span>1</span> Design</div>
                 <div class="step" data-step="2" data-i18n-html="workflow.s2_html"><span>2</span> Maße</div>
-                <div class="step" data-step="3" data-i18n-html="workflow.s3_html"><span>3</span> 3D Vorschau</div>
+                <div class="step" data-step="3" data-i18n-html="workflow.s3_html"><span>3</span> Vorschau</div>
                 <div class="step" data-step="4" data-i18n-html="workflow.s4_html"><span>4</span> Produktion</div>
             </div>
         </div>
@@ -621,14 +621,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="vto-section">
-                            <button id="vto-btn" class="vto-btn" disabled>
-                                <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau</span>
-                                <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
-                            </button>
-                            <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -647,22 +639,6 @@
         </div>
     </div>
 
-    <div id="vto-modal" class="vto-modal" hidden>
-        <div class="vto-modal-backdrop"></div>
-        <div class="vto-modal-content" role="dialog" aria-modal="true" data-i18n-aria-label="vto.btn" aria-label="Fotorealistische Vorschau">
-            <button id="vto-modal-close" class="vto-modal-close" data-i18n-aria-label="vto.modal_close" aria-label="Schließen">&times;</button>
-            <div id="vto-modal-body">
-                <div class="vto-loading">
-                    <div class="vto-spinner"></div>
-                    <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
-                </div>
-                <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
-                <div class="vto-result-actions" id="vto-result-actions" hidden>
-                    <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <section id="measure" class="section measure-section">
         <div class="container">
@@ -869,19 +845,38 @@
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number" aria-hidden="true">03</span>
-                <h2 data-i18n="preview.h2">3D Vorschau</h2>
-                <p data-i18n="preview.intro">So sieht dein Kleidungsstück mit deinen Maßen aus. Drehen, zoomen, prüfen.</p>
+                <h2 data-i18n="preview.h2">Fotorealistische Vorschau</h2>
+                <p data-i18n="preview.intro">Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.</p>
             </div>
 
             <div class="preview-container" data-reveal>
-                <div id="three-canvas" class="three-canvas preview-placeholder" role="img" aria-label="3D-Vorschau deines Kleidungsstücks">
-                    <div class="placeholder-content">
-                        <div class="placeholder-spinner" aria-hidden="true"></div>
-                        <h3 data-i18n="preview.loading_h3">3D-Vorschau wird geladen</h3>
-                        <p data-i18n="preview.loading_body">Three.js initialisiert das interaktive Modell mit deinen Maßen. Falls dein Browser kein WebGL unterstützt, zeigen wir hier einen Hinweis.</p>
+                <div class="vto-stage" id="vto-stage">
+                    <!-- Default state: a static example (user-provided image drops in
+                         here; until then a styled placeholder) so the step never looks
+                         empty before a photo is uploaded. -->
+                    <div class="vto-example" id="vto-example">
+                        <span class="vto-example-tag" data-i18n="preview.example_tag">Beispiel</span>
+                        <p class="vto-example-label" data-i18n="preview.example_label">So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.</p>
                     </div>
+                    <!-- Generating -->
+                    <div class="vto-loading" hidden>
+                        <div class="vto-spinner"></div>
+                        <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
+                    </div>
+                    <!-- Result -->
+                    <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
                 </div>
                 <div class="preview-controls">
+                    <div class="vto-section">
+                        <button id="vto-btn" class="vto-btn" disabled>
+                            <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau generieren</span>
+                            <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
+                        </button>
+                        <div class="vto-result-actions" id="vto-result-actions" hidden>
+                            <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
+                        </div>
+                        <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
+                    </div>
                     <div class="control-section">
                         <h4 data-i18n="preview.model_info">Modell-Info</h4>
                         <div id="model-info" class="model-info">
@@ -1071,6 +1066,5 @@
     <script src="js/hero.js"></script>
     <script type="module" src="js/3d/hero-scene.js"></script>
     <script type="module" src="js/3d/story-scene.js"></script>
-    <script type="module" src="js/3d/controller.js"></script>
 </body>
 </html>

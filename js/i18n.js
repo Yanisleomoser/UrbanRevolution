@@ -101,7 +101,7 @@ const I18N = (() => {
       // ── Workflow ──
       "workflow.s1_html": "<span>1</span> Design",
       "workflow.s2_html": "<span>2</span> Maße",
-      "workflow.s3_html": "<span>3</span> 3D Vorschau",
+      "workflow.s3_html": "<span>3</span> Vorschau",
       "workflow.s4_html": "<span>4</span> Produktion",
 
       // ── Design-Sektion ──
@@ -145,7 +145,7 @@ const I18N = (() => {
       "fit.oversized": "Oversized",
 
       // ── VTO ──
-      "vto.btn": "Fotorealistische Vorschau",
+      "vto.btn": "Fotorealistische Vorschau generieren",
       "vto.disclaimer": "Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.",
       "vto.modal_close": "Schließen",
       "vto.generating": "Generiere fotorealistische Vorschau...",
@@ -213,8 +213,10 @@ const I18N = (() => {
       "svg.inseam": "Schritt",
 
       // ── 3D-Vorschau ──
-      "preview.h2": "3D Vorschau",
-      "preview.intro": "So sieht dein Kleidungsstück mit deinen Maßen aus. Drehen, zoomen, prüfen.",
+      "preview.h2": "Fotorealistische Vorschau",
+      "preview.intro": "Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.",
+      "preview.example_tag": "Beispiel",
+      "preview.example_label": "So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.",
       "preview.loading_h3": "3D-Vorschau wird geladen",
       "preview.loading_body": "Three.js initialisiert das interaktive Modell mit deinen Maßen. Falls dein Browser kein WebGL unterstützt, zeigen wir hier einen Hinweis.",
       "preview.model_info": "Modell-Info",
@@ -493,7 +495,7 @@ const I18N = (() => {
       // ── Workflow ──
       "workflow.s1_html": "<span>1</span> Design",
       "workflow.s2_html": "<span>2</span> Measurements",
-      "workflow.s3_html": "<span>3</span> 3D Preview",
+      "workflow.s3_html": "<span>3</span> Preview",
       "workflow.s4_html": "<span>4</span> Production",
 
       // ── Design section ──
@@ -537,7 +539,7 @@ const I18N = (() => {
       "fit.oversized": "Oversized",
 
       // ── VTO ──
-      "vto.btn": "Photorealistic preview",
+      "vto.btn": "Generate photorealistic preview",
       "vto.disclaimer": "Sends your photo + the design description to Replicate (FLUX Kontext) for photorealistic generation. External API, ~10 seconds wait.",
       "vto.modal_close": "Close",
       "vto.generating": "Generating photorealistic preview...",
@@ -605,8 +607,10 @@ const I18N = (() => {
       "svg.inseam": "Inseam",
 
       // ── 3D preview ──
-      "preview.h2": "3D Preview",
-      "preview.intro": "This is how your garment looks with your measurements. Rotate, zoom, check.",
+      "preview.h2": "Photorealistic preview",
+      "preview.intro": "See your AI design on a real photo of you — photorealistically generated, not a model approximation.",
+      "preview.example_tag": "Example",
+      "preview.example_label": "This is how your AI design looks photorealistically on you — upload a full-body photo under “Measurements”.",
       "preview.loading_h3": "Loading 3D preview",
       "preview.loading_body": "Three.js is initializing the interactive model with your measurements. If your browser doesn't support WebGL, we'll show a note here.",
       "preview.model_info": "Model info",
