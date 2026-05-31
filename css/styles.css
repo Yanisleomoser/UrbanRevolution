@@ -2883,8 +2883,11 @@ input[aria-invalid="true"] {
     line-height: 1.65;
     max-width: 360px;
 }
-/* When you drop in a real example image, set it as the background here and the
-   placeholder text auto-hides:  #vto-example.has-image .vto-example-label{display:none} */
+/* Static teaser image for the no-photo state; .has-image hides the placeholder
+   text and pins the BEISPIEL badge over the photo. */
+#vto-example.has-image {
+    background-image: url("../assets/vto-example.jpg");
+}
 #vto-example.has-image {
     width: 100%;
     height: 100%;
@@ -3851,6 +3854,15 @@ main { display: block; }
         0 0 80px rgba(236, 72, 153, 0.15) inset;
     /* Hook for swapping in real photography later:
        set background-image: url(...) on .hero-asset-picture and hide the SVG */
+}
+
+.hero-asset-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    /* Keep the face + neon swirl in frame when the 2:3 photo is cropped to 4:5 */
+    object-position: 50% 28%;
 }
 
 .hero-asset-svg {

@@ -33,7 +33,7 @@ const I18N = (() => {
       "nav.mission": "Mission",
       "nav.design": "Design",
       "nav.measure": "Maße",
-      "nav.preview": "3D Vorschau",
+      "nav.preview": "Vorschau",
       "nav.production": "Produktion",
       "nav.faq": "FAQ",
       "nav.lang_aria": "Sprache wechseln",
@@ -58,7 +58,7 @@ const I18N = (() => {
         "ein langer Mantel in Tiefsee-Blau und Petrol",
         "ein Streetwear-Set in sattem Waldgrün",
       ],
-      "hero.asset_alt": "Fashion-Figur mit AI-generiertem Hoodie im Brand-Gradient",
+      "hero.asset_alt": "Model in einer KI-designten Pufferjacke, von Neon-Lichtspuren in Pink und Cyan umspielt",
       "hero.caption_html": "AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.",
 
       // ── Visual Scroll Story (6 acts) ──
@@ -427,7 +427,7 @@ const I18N = (() => {
       "nav.mission": "Mission",
       "nav.design": "Design",
       "nav.measure": "Measurements",
-      "nav.preview": "3D Preview",
+      "nav.preview": "Preview",
       "nav.production": "Production",
       "nav.faq": "FAQ",
       "nav.lang_aria": "Switch language",
@@ -452,7 +452,7 @@ const I18N = (() => {
         "a long coat in deep-sea blue and petrol",
         "a streetwear set in rich forest green",
       ],
-      "hero.asset_alt": "Fashion figure wearing an AI-generated hoodie in the brand gradient",
+      "hero.asset_alt": "Model in an AI-designed puffer jacket, wrapped in pink and cyan neon light trails",
       "hero.caption_html": "AI-generated. Made to measure. At your door in <strong>14 days</strong>.",
 
       // ── Visual Scroll Story (6 acts) ──
