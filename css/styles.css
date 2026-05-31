@@ -3005,12 +3005,24 @@ body::before {
 @supports not (animation-timeline: view()) {
     .section { animation: none; opacity: 1; transform: none; }
 }
-/* iOS Safari (and touch devices generally) recompute the scroll-driven
-   transform every frame, which fights momentum scrolling and the dynamic
-   toolbar — the page gets flung up then back down while scrolling the
-   wizard. Touch devices get the settled state; desktop keeps the reveal. */
+/* iOS Safari runs per-frame layout work for any registered scroll-driven
+   timeline — even when its animation-name is none — which fights momentum
+   scrolling and the dynamic toolbar, flinging the page up then back down
+   while scrolling the wizard. #103 only reset the animation (transform), NOT
+   the timeline, so the expensive view() registration stayed live on every
+   section. Fully detach the timeline on touch devices; desktop keeps the
+   reveal. (animation:none alone does not reset animation-timeline in Safari.) */
 @media (pointer: coarse) {
-    .section { animation: none; opacity: 1; transform: none; }
+    .section {
+        animation: none;
+        animation-timeline: auto;
+        animation-range: normal;
+        opacity: 1;
+        transform: none;
+    }
+    /* Smooth scroll on <html> lets iOS animate every scroll correction, which
+       reads as the page being "flung". Touch gets native instant scrolling. */
+    html { scroll-behavior: auto; }
 }
 
 /* ---------- Buttons: subtle hover lift + accent glow ---------- */
