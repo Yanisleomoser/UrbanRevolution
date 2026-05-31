@@ -541,7 +541,7 @@
   }
 
   // Felder, die eine passende Linie im Körperdiagramm haben
-  const DIAGRAM_FIELDS = ["shoulder", "chest", "waist", "hips", "inseam"];
+  const DIAGRAM_FIELDS = ["height", "shoulder", "chest", "waist", "hips", "inseam"];
 
   function initMeasurements() {
     Measurements.FIELDS.forEach((field) => {
@@ -571,7 +571,57 @@
     });
 
     initPoseUpload();
+    initAnnotationLinks();
     updateMeasurements();
+  }
+
+  // Reverse link: make the markers on the figure tappable. Clicking (or
+  // Enter/Space on) a marker focuses its input — opening the collapsed
+  // measurements on mobile first — so the photo doubles as a tappable legend.
+  function initAnnotationLinks() {
+    const group = document.querySelector(".measure-annotations");
+    if (!group) return;
+    const reduce = !!(window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    group.querySelectorAll(".annotation").forEach((el) => {
+      const field = el.dataset.measure;
+      if (!DIAGRAM_FIELDS.includes(field)) return;
+      const input = document.getElementById(field);
+      if (!input) return;
+
+      el.classList.add("is-tappable");
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      const labelEl = el.querySelector("text");
+      el.setAttribute("aria-label",
+        t("measure.jump_aria", { label: labelEl ? labelEl.textContent.trim() : field }));
+
+      const activate = () => {
+        const details = input.closest("details");
+        if (details && !details.open) details.open = true;
+        input.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+        // Focus after the optional expand/scroll so the caret lands correctly.
+        window.setTimeout(() => {
+          input.focus();
+          if (typeof input.select === "function") input.select();
+        }, reduce ? 0 : 180);
+      };
+
+      el.addEventListener("click", activate);
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
+      });
+      // Hover / keyboard focus previews the same highlight as focusing the field.
+      el.addEventListener("mouseenter", () => highlightAnnotation(field));
+      el.addEventListener("focus", () => highlightAnnotation(field));
+      const clearIfIdle = () => {
+        if (document.activeElement !== input && document.activeElement !== el) {
+          highlightAnnotation(null);
+        }
+      };
+      el.addEventListener("mouseleave", clearIfIdle);
+      el.addEventListener("blur", clearIfIdle);
+    });
   }
 
   // Hebt die zum Feld passende Linie im SVG-Körperdiagramm hervor.
