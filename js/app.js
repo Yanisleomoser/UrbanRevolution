@@ -229,6 +229,10 @@
       s.setAttribute("aria-pressed", on ? "true" : "false");
     });
 
+    // The custom swatch is a <label> wrapping the native color <input>, not a
+    // button — aria-pressed is invalid on a non-button role, so we only drive
+    // the visual active/has-custom classes here. The pressed state is carried
+    // by the input itself.
     const customSwatch = document.getElementById("custom-color-swatch");
     const customInput = document.getElementById("custom-color");
     const isHex = /^#[0-9a-f]{6}$/.test(hex);
@@ -245,7 +249,6 @@
         customSwatch.classList.remove("has-custom");
       }
       customSwatch.classList.toggle("active", useCustom);
-      customSwatch.setAttribute("aria-pressed", useCustom ? "true" : "false");
     }
   }
 

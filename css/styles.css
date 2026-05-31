@@ -1417,7 +1417,7 @@ input[aria-invalid="true"] {
     box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.25);
 }
 
-/* Custom-color picker — a <button> wrapping a native <input type="color">.
+/* Custom-color picker — a <label> wrapping a native <input type="color">.
    Shows a "+" on a brand-gradient disc until an off-palette color is active,
    then reflects that color via an inline background. */
 .color-swatch-custom {
