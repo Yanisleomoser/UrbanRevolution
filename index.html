@@ -126,6 +126,14 @@
                 </button>
             </form>
             <p class="hero-microcopy" data-reveal data-i18n-html="hero.microcopy_html">Tippe los — oder sieh zu, wie aus Worten ein Kleidungsstück wird.</p>
+
+            <!-- Vision-first path (A2): the emotional story sits between the
+                 hero and the design tool. Make entering it the prominent
+                 move so visitors don't skip straight past the "why". The
+                 prompt console above remains the direct-design shortcut. -->
+            <div class="hero-actions">
+                <a href="#mission" class="hero-vision-link" data-i18n-html="hero.vision_cta_html">Warum das wichtig ist <span aria-hidden="true">↓</span></a>
+            </div>
         </div>
 
         <!-- Brand asset slot — currently shows a stylized SVG fashion-figure
@@ -134,6 +142,10 @@
              and an <img>; the surrounding layout will adapt. -->
         <figure class="hero-asset" data-reveal>
             <picture class="hero-asset-picture">
+                <!-- Live 3D figure mounts here (js/3d/hero-scene.js) when WebGL
+                     is available and motion is allowed; otherwise the SVG below
+                     stays as the baseline visual. -->
+                <div id="hero-3d" class="hero-3d" aria-hidden="true"></div>
                 <svg class="hero-asset-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" role="img" data-i18n-aria-label="hero.asset_alt" aria-label="Fashion-Figur mit AI-generiertem Hoodie im Brand-Gradient">
                     <defs>
                         <linearGradient id="heroOutfit" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -976,6 +988,7 @@
     <script src="js/animations.js"></script>
     <script src="js/app.js"></script>
     <script src="js/hero.js"></script>
+    <script type="module" src="js/3d/hero-scene.js"></script>
     <script type="module" src="js/3d/story-scene.js"></script>
     <script type="module" src="js/3d/controller.js"></script>
 </body>

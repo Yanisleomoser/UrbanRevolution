@@ -3912,6 +3912,41 @@ main { display: block; }
     letter-spacing: 0.01em;
 }
 
+/* Vision-first path into the story (A2). Quiet but clear; the bouncing
+   arrow pulls the eye downward so the "why" isn't skipped. */
+.hero-actions {
+    margin-top: var(--space-6);
+}
+.hero-vision-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    transition: color var(--duration-base) var(--ease-out),
+                border-color var(--duration-base) var(--ease-out);
+}
+.hero-vision-link:hover {
+    color: var(--text);
+    border-bottom-color: var(--accent-pink, #ec4899);
+}
+.hero-vision-link span {
+    display: inline-block;
+    animation: heroNudge 1.8s ease-in-out infinite;
+}
+@keyframes heroNudge {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-vision-link span { animation: none; }
+}
+
 /* SVG-Figur: weiche Farbüberblendung beim Look-Wechsel + kurzer „Ping".
    Puls läuft über filter (nicht transform), damit er sich nicht mit der
    bestehenden heroFigureFloat/heroGarmentBreathe-Animation beißt. */
@@ -3923,6 +3958,19 @@ main { display: block; }
 .hero-asset-svg.is-morphing {
     filter: brightness(1.18) saturate(1.12) drop-shadow(0 0 24px rgba(236, 72, 153, 0.25));
 }
+
+/* Live 3D hero figure (js/3d/hero-scene.js). Fills the picture frame and
+   overlays the SVG; the module fades the SVG out once it mounts. If WebGL
+   is unavailable or motion is reduced, this stays empty and the SVG shows. */
+.hero-3d {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out);
+}
+.hero-3d.is-live { opacity: 1; }
+.hero-3d canvas { width: 100% !important; height: 100% !important; display: block; }
 
 @media (max-width: 600px) {
     .hero-prompt { max-width: 100%; padding-left: var(--space-4); }

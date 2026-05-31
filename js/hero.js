@@ -20,17 +20,20 @@
 
     // Farb-Looks indexgleich zu i18n `hero.examples`. Jeder Look färbt die
     // drei Gradient-Stops der Figur + Backdrop-Glow + Partikel.
+    // `garment`/`color` drive the optional 3D hero figure (hero-scene.js):
+    // garment = which type to build, color = the dominant garment colour
+    // (the middle gradient stop reads best on the 3D PBR material).
     const LOOKS = [
-        { stops: ["#fb923c", "#ec4899", "#a855f7"], glow: "rgba(249,115,22,0.20)" }, // Sonnenuntergang
-        { stops: ["#fde68a", "#fca5a5", "#f9a8d4"], glow: "rgba(252,211,77,0.18)" }, // Leinen / Sommer
-        { stops: ["#a855f7", "#8b5cf6", "#22d3ee"], glow: "rgba(168,85,247,0.22)" }, // Cyberpunk-Neon
-        { stops: ["#e4e4e7", "#a1a1aa", "#52525b"], glow: "rgba(161,161,170,0.16)" }, // Minimal Schwarz/Grau
-        { stops: ["#38bdf8", "#0ea5e9", "#1d4ed8"], glow: "rgba(14,165,233,0.20)" }, // Tiefsee-Blau
-        { stops: ["#4ade80", "#22c55e", "#15803d"], glow: "rgba(34,197,94,0.20)" },  // Waldgrün
+        { stops: ["#fb923c", "#ec4899", "#a855f7"], glow: "rgba(249,115,22,0.20)", garment: "hoodie", color: "#ec4899" }, // Sonnenuntergang
+        { stops: ["#fde68a", "#fca5a5", "#f9a8d4"], glow: "rgba(252,211,77,0.18)", garment: "dress",  color: "#fca5a5" }, // Leinen / Sommer
+        { stops: ["#a855f7", "#8b5cf6", "#22d3ee"], glow: "rgba(168,85,247,0.22)", garment: "jacket", color: "#8b5cf6" }, // Cyberpunk-Neon
+        { stops: ["#e4e4e7", "#a1a1aa", "#52525b"], glow: "rgba(161,161,170,0.16)", garment: "tshirt", color: "#3f3f46" }, // Minimal Schwarz/Grau
+        { stops: ["#38bdf8", "#0ea5e9", "#1d4ed8"], glow: "rgba(14,165,233,0.20)", garment: "jacket", color: "#0ea5e9" }, // Tiefsee-Mantel
+        { stops: ["#4ade80", "#22c55e", "#15803d"], glow: "rgba(34,197,94,0.20)", garment: "hoodie", color: "#22c55e" },  // Waldgrün
     ];
 
     // Ausgangs-Look (entspricht dem Markup-Default der Figur).
-    const DEFAULT_LOOK = { stops: ["#ec4899", "#8b5cf6", "#06b6d4"], glow: "rgba(236,72,153,0.18)" };
+    const DEFAULT_LOOK = { stops: ["#ec4899", "#8b5cf6", "#06b6d4"], glow: "rgba(236,72,153,0.18)", garment: "hoodie", color: "#8b5cf6" };
 
     const TYPE_MS = 42;     // Tempo beim Tippen
     const ERASE_MS = 20;    // Tempo beim Löschen
@@ -86,6 +89,9 @@
                 svg.classList.add("is-morphing");
                 window.setTimeout(() => svg.classList.remove("is-morphing"), 600);
             }
+            // Broadcast for the optional 3D hero figure (js/3d/hero-scene.js),
+            // which recolours its garment to match. No-op if 3D never mounts.
+            window.dispatchEvent(new CustomEvent("hero:look", { detail: { look } }));
         }
 
         // ── Reduced motion: kein Tippen, nur ein statisches Beispiel + Look ──
