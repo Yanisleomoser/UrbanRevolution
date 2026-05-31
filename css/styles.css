@@ -1695,9 +1695,12 @@ input[aria-invalid="true"] {
         var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 32px;
+    padding: 16px;
     color: var(--text-dim);
-    height: 100%;
+    /* Hug the photo (no forced 100% height) so the card fills with the figure
+       instead of leaving big empty bands above/below it. Centre it beside the
+       taller form column. */
+    align-self: center;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1706,7 +1709,7 @@ input[aria-invalid="true"] {
 .body-diagram svg {
     width: 100%;
     height: auto;
-    max-height: 520px;
+    display: block;
 }
 
 /* Aktiver Preset-Zustand — zeigt, welche Größe gerade geladen ist */
@@ -2671,8 +2674,8 @@ input[aria-invalid="true"] {
     .library-tile-load { padding: var(--space-2) var(--space-3); font-size: 12px; }
 
     /* Body diagram doesn't need to be huge on mobile */
-    .body-diagram { padding: var(--space-5); }
-    .body-diagram svg { max-height: 380px; }
+    .body-diagram { padding: var(--space-4); }
+    .body-diagram svg { max-height: 70vh; }
 
     /* Spec sheet readability */
     .spec-sheet { padding: var(--space-5) !important; }
