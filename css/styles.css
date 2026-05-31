@@ -302,6 +302,13 @@ html.is-touch .navbar {
 
 /* ============ HERO ============ */
 .hero {
+    /* Full-bleed stage: the gradient visual + glow span the whole viewport.
+       The content is constrained by .hero-inner so it never touches edges. */
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-inner {
     min-height: 100vh;
     min-height: 100svh;
     min-height: calc(var(--svh, 1svh) * 100); /* JS-pinned px (see index.html) — stable across in-app toolbars */
@@ -310,7 +317,7 @@ html.is-touch .navbar {
     align-items: center;
     gap: var(--space-9);
     position: relative;
-    overflow: hidden;
+    z-index: 1; /* above .hero-visual / .hero::after */
     padding: var(--space-12) var(--space-6) var(--space-10);
     max-width: 1280px;
     margin: 0 auto;
@@ -2563,7 +2570,7 @@ input[aria-invalid="true"] {
 @media (max-width: 600px) {
     .measure-inputs { grid-template-columns: 1fr; }
 
-    .hero {
+    .hero-inner {
         padding: var(--space-11) var(--space-5) var(--space-8);
         min-height: auto;
     }
@@ -2683,7 +2690,7 @@ input[aria-invalid="true"] {
 }
 
 @media (max-width: 400px) {
-    .hero { padding-top: var(--space-10); }
+    .hero-inner { padding-top: var(--space-10); }
     .nav-container { padding: var(--space-3) var(--space-4); }
     .logo-text { display: none; }
     /* Narrowest phones: tighten so all four steps still fit one row. */
@@ -3883,7 +3890,7 @@ main { display: block; }
    hero compact. The hero-content already declares max-width so the text
    fills the row gracefully. */
 @media (max-width: 960px) {
-    .hero {
+    .hero-inner {
         grid-template-columns: 1fr;
         gap: var(--space-7);
         text-align: left;
@@ -3893,7 +3900,7 @@ main { display: block; }
 }
 
 @media (max-width: 600px) {
-    .hero { padding: var(--space-11) var(--space-5) var(--space-7); }
+    .hero-inner { padding: var(--space-11) var(--space-5) var(--space-7); }
     .hero-asset { order: 2; }
     .hero-asset-picture { max-width: 280px; aspect-ratio: 3 / 4; }
     .hero-asset-caption { font-size: var(--text-xs); }
