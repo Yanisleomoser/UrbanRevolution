@@ -31,11 +31,20 @@ const DEFAULT_MEASUREMENTS = {
     neck: 38,
 };
 
-const DEFAULT_SKIN_TONE = 0xd8d4cf;
+// Warmer, slightly desaturated mid-tone. The previous near-white
+// (0xd8d4cf) clipped into the bloom pass and read as bare plastic;
+// this sits below the highlight threshold and looks like skin.
+const DEFAULT_SKIN_TONE = 0xc9a98c;
 const DEFAULT_HAIR_COLOR = 0x3a2010;
 // Torso depth (front-to-back) is ~75% of lateral width — real torsi are
 // elliptical, not circular. Same factor applies at chest/waist/hips.
 const TORSO_DEPTH_SCALE = 0.72;
+// Arms rest in a relaxed A-pose: angled this far outward from straight
+// down (radians). Reads as a natural stance, keeps the silhouette
+// compact, and stops the arms from dominating the frame the way a full
+// horizontal T-pose did. garments.js mirrors this exact value so sleeves
+// stay concentric with the arms.
+const ARM_SPLAY = Math.PI / 6; // 30°
 
 function hexToInt(hex) {
     if (typeof hex !== "string") return null;
@@ -91,7 +100,9 @@ function buildMannequin(measurements, appearance) {
     group.add(buildNeck(skinMat, torsoTopY, neckR, neckH));
     group.add(buildHead(skinMat, torsoTopY + neckH, headR));
     buildArms(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(arm => group.add(arm));
+    buildHands(skinMat, torsoTopY, shoulderHalfW, m.arm / 100, totalH).forEach(hand => group.add(hand));
     buildLegs(skinMat, legH, hipsR, totalH).forEach(leg => group.add(leg));
+    buildFeet(skinMat, hipsR, totalH).forEach(foot => group.add(foot));
 
     // Haar nur wenn explizit gewollt (User-Foto-Sampling oder Default-Wert).
     // appearance.hairColor === null bedeutet "keine Haare rendern" (Glatze /
@@ -153,17 +164,54 @@ function buildHead(mat, baseY, r) {
 
 function buildArms(mat, shoulderY, shoulderHalfW, armLen, totalH) {
     const armR = totalH * 0.028;
+    const cylLen = armLen * 0.88;
+    // Capsule's local long axis is +Y. Rotating by (π + side·splay) about
+    // Z aligns it with the down-and-outward A-pose direction
+    // dir = (side·sin, −cos): R_z(α)·(0,1,0) = (−sinα, cosα) = dir.
+    const halfTotal = cylLen / 2 + armR;
+    const dx = Math.sin(ARM_SPLAY);
+    const dy = -Math.cos(ARM_SPLAY);
     return [-1, 1].map((side) => {
         const arm = new THREE.Mesh(
-            new THREE.CapsuleGeometry(armR, armLen * 0.88, 8, 16),
+            new THREE.CapsuleGeometry(armR, cylLen, 8, 16),
             mat
         );
-        // Lay the capsule along the X axis (T-pose)
-        arm.rotation.z = side * Math.PI / 2;
-        // Anchor at shoulder, extend outward
-        const armCenter = shoulderHalfW + (armLen * 0.88) / 2;
-        arm.position.set(side * armCenter, shoulderY - armR * 0.4, 0);
+        arm.rotation.z = Math.PI + side * ARM_SPLAY;
+        // Shoulder joint anchor; capsule centre sits half its length down
+        // the A-pose direction so the top end meets the shoulder.
+        const shoulderX = side * shoulderHalfW;
+        const shoulderJointY = shoulderY - armR * 0.4;
+        arm.position.set(
+            shoulderX + side * dx * halfTotal,
+            shoulderJointY + dy * halfTotal,
+            0
+        );
         return arm;
+    });
+}
+
+// Stylised hands at the wrist end of each arm. Mirrors buildArms' A-pose
+// geometry so the hand lands exactly on the capsule's far tip; flattened
+// into a mitten-ish ovoid rather than modelling fingers (matches the
+// abstract mannequin look, same spirit as the feet).
+function buildHands(mat, shoulderY, shoulderHalfW, armLen, totalH) {
+    const armR = totalH * 0.028;
+    const cylLen = armLen * 0.88;
+    const reach = cylLen + 2 * armR; // shoulder joint → wrist tip distance
+    const handR = armR * 1.15;
+    const dx = Math.sin(ARM_SPLAY);
+    const dy = -Math.cos(ARM_SPLAY);
+    // Pull the hand slightly inside the wrist tip so it overlaps the arm.
+    const reachToHand = reach - handR * 0.6;
+    return [-1, 1].map((side) => {
+        const hand = new THREE.Mesh(new THREE.SphereGeometry(handR, 20, 16), mat);
+        hand.position.set(
+            side * shoulderHalfW + side * dx * reachToHand,
+            shoulderY - armR * 0.4 + dy * reachToHand,
+            0
+        );
+        hand.scale.set(0.82, 1.15, 0.7);
+        return hand;
     });
 }
 
@@ -198,6 +246,30 @@ function buildLegs(mat, legH, hipsR, totalH) {
         leg.position.set(side * hipsR * 0.42, legH / 2, 0);
         leg.scale.z = 0.9;
         return leg;
+    });
+}
+
+// Simple stylised feet so the figure rests on the ground plane instead of
+// ending in floating cylinder stumps. Deliberately abstract (a rounded
+// wedge pointing forward, +Z) to match the mannequin's primitive look.
+function buildFeet(mat, hipsR, totalH) {
+    const footLen = totalH * 0.135;
+    const footW = totalH * 0.05;
+    const footH = totalH * 0.035;
+    const ankleR = totalH * 0.028;
+    return [-1, 1].map((side) => {
+        const foot = new THREE.Mesh(
+            new THREE.BoxGeometry(footW, footH, footLen, 1, 1, 1),
+            mat
+        );
+        // Shift forward so the heel sits under the ankle and the toe
+        // points along +Z (the direction the mannequin faces).
+        foot.position.set(
+            side * hipsR * 0.42,
+            footH / 2,
+            footLen * 0.5 - ankleR
+        );
+        return foot;
     });
 }
 

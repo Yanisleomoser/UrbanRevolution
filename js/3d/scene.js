@@ -68,7 +68,7 @@ function mount(targetContainer) {
     pmrem = new THREE.PMREMGenerator(renderer);
     pmrem.compileEquirectangularShader();
     const envScene = new RoomEnvironment();
-    scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+    scene.environment = pmrem.fromScene(envScene, 0.06).texture;
 
     camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 50);
     camera.position.set(0, 1.1, 4.2);
@@ -94,8 +94,11 @@ function mount(targetContainer) {
 }
 
 function initLights() {
-    // Key light — warm tungsten, primary illumination
-    const key = new THREE.DirectionalLight(0xfff5e6, 1.4);
+    // Key light — warm tungsten, primary illumination.
+    // Kept moderate (1.0) so bright skin/light fabrics don't clip into
+    // the bloom threshold and turn into glowing tubes — the env map
+    // (RoomEnvironment IBL) carries the rest of the base illumination.
+    const key = new THREE.DirectionalLight(0xfff5e6, 1.0);
     key.position.set(2.5, 3.5, 2.0);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -145,9 +148,11 @@ function initComposer(width, height) {
     // strength, radius, threshold
     const bloom = new UnrealBloomPass(
         new THREE.Vector2(width, height),
-        0.45,   // strength — subtle, fashion-grade not anime-grade
+        0.28,   // strength — subtle, fashion-grade not anime-grade
         0.85,   // radius
-        0.82    // threshold — only the brightest pixels get bloomed
+        0.90    // threshold — only genuine highlights (silk sheen, jewelry)
+                // bloom; skin and light fabrics stay below the cutoff so
+                // they no longer glow.
     );
     composer.addPass(bloom);
 

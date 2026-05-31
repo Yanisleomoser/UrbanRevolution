@@ -6,7 +6,7 @@
     --border: #2a2a2f;
     --text: #f4f4f5;
     --text-dim: #a1a1aa;
-    --text-muted: #71717a;
+    --text-muted: #8b8b93;
     --accent: #ec4899;
     --accent-2: #8b5cf6;
     --accent-3: #06b6d4;
@@ -936,6 +936,22 @@ select:focus {
     box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
 }
 
+/* Keyboard focus gets a real, high-contrast ring; mouse focus keeps just
+   the subtle border/shadow above (the outline:none on :focus suppresses it
+   for pointer focus, :focus-visible re-adds it for keyboard). */
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent-3);
+    outline-offset: 2px;
+}
+
+/* Out-of-range / invalid measurement inputs surface visibly + to AT. */
+input[aria-invalid="true"] {
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
+}
+
 .prompt-suggestions {
     margin-top: 20px;
 }
@@ -1081,6 +1097,8 @@ select:focus {
     background: var(--gradient);
     border: none;
     color: white;
+    /* Keeps the label legible where the gradient runs to light cyan. */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     padding: var(--space-5);
     border-radius: var(--radius);
     font-weight: 600;
@@ -1610,6 +1628,87 @@ select:focus {
     width: 100%;
     height: auto;
     max-height: 520px;
+}
+
+/* Aktiver Preset-Zustand — zeigt, welche Größe gerade geladen ist */
+.preset-btn.is-active {
+    border-color: transparent;
+    color: var(--text);
+    background:
+        linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+        var(--gradient) border-box;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 14px rgba(236, 72, 153, 0.22);
+}
+
+/* Live berechnete Konfektionsgröße */
+.size-readout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.size-readout-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+}
+
+.size-readout-badge {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    min-width: 44px;
+    text-align: center;
+    padding: 4px 12px;
+    border-radius: 100px;
+    color: white;
+    background: var(--gradient);
+    box-shadow: 0 2px 12px rgba(236, 72, 153, 0.3);
+}
+
+/* Diagramm-Annotation hebt sich hervor, wenn das passende Feld fokussiert wird */
+.annotation {
+    transition: opacity 0.2s ease;
+}
+
+.measure-annotations.has-active .annotation {
+    opacity: 0.28;
+}
+
+.measure-annotations.has-active .annotation.is-active {
+    opacity: 1;
+}
+
+.annotation.is-active line {
+    stroke: #f9a8d4;
+    stroke-width: 1.8;
+    stroke-dasharray: none;
+}
+
+.annotation.is-active text {
+    fill: #f9a8d4;
+}
+
+/* Fokussiertes Maßfeld bekommt eine farbige Markierung */
+.measure-field.is-linked input {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.18);
+}
+
+/* Drag & Drop für den Foto-Upload */
+.photo-upload-card.is-dragover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg,
+        rgba(236, 72, 153, 0.16),
+        rgba(139, 92, 246, 0.16),
+        rgba(6, 182, 212, 0.12));
 }
 
 /* ============ PREVIEW SECTION ============ */
@@ -3661,4 +3760,229 @@ main { display: block; }
     /* On very small phones the visual would shove the CTA off-screen.
        Hide it — the gradient orbs in .hero-visual stay as ambient layer. */
     .hero-asset { display: none; }
+}
+
+/* ===================================================================
+   Hero — „Lebender Prompt" (Konzept A)
+   ------------------------------------------------------------------
+   Selbst-tippende Prompt-Konsole als Haupt-Hook; die SVG-Figur rechts
+   morpht farblich passend zum gerade getippten Beispiel-Prompt.
+   Logik in js/hero.js (progressive enhancement: ohne JS bleibt ein
+   normales Eingabefeld + Button). Bewusst additiv ans Dateiende
+   gehängt, um Merge-Konflikte mit parallel laufenden Branches
+   (Story-Sektion) klein zu halten.
+   =================================================================== */
+
+.hero-prompt {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: var(--space-4);
+    padding: 6px 6px 6px var(--space-5);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 100px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: relative;
+    transition: border-color var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+}
+
+/* Gradient-Ring, der bei Fokus aufleuchtet (mask-trick: nur Rand) */
+.hero-prompt::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out);
+    pointer-events: none;
+}
+
+.hero-prompt:focus-within { border-color: transparent; box-shadow: var(--shadow-glow); }
+.hero-prompt:focus-within::before { opacity: 1; }
+
+.hero-prompt-spark {
+    flex: none;
+    font-size: var(--text-lg);
+    line-height: 1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: heroSparkle 3.2s ease-in-out infinite;
+}
+
+@keyframes heroSparkle {
+    0%, 100% { opacity: 0.7; transform: scale(1) rotate(0deg); }
+    50%      { opacity: 1;   transform: scale(1.18) rotate(18deg); }
+}
+
+.hero-prompt-field {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.hero-prompt-input {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    color: var(--text);
+    font-family: inherit;
+    font-size: var(--text-base);
+    padding: var(--space-3) 0;
+    outline: none;
+}
+
+.hero-prompt-input::placeholder { color: var(--text-dim); opacity: 0; transition: opacity 0.2s; }
+.hero-prompt:focus-within .hero-prompt-input::placeholder { opacity: 0.6; }
+
+/* Ghost-Layer = die selbst tippende Zeile, liegt über dem leeren Input.
+   Wird ausgeblendet, sobald der Nutzer fokussiert oder selbst tippt. */
+.hero-prompt-ghost {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    font-size: var(--text-base);
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.25s var(--ease-out);
+}
+
+.hero-prompt:focus-within .hero-prompt-ghost,
+.hero-prompt.is-filled .hero-prompt-ghost { opacity: 0; }
+
+.hero-prompt-caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.15em;
+    margin-left: 2px;
+    background: var(--gradient);
+    animation: heroCaret 1s steps(1) infinite;
+}
+
+@keyframes heroCaret {
+    0%, 50%      { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+}
+
+.hero-prompt-go {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--gradient);
+    color: #fff;
+    border: 0;
+    border-radius: 100px;
+    padding: var(--space-3) var(--space-5);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform var(--duration-base) var(--ease-out),
+                box-shadow var(--duration-base) var(--ease-out);
+}
+
+.hero-prompt-go:hover { transform: translateY(-1px); box-shadow: var(--shadow-glow); }
+.hero-prompt-go:active { transform: translateY(0); }
+.hero-prompt-go-arrow { transition: transform var(--duration-base) var(--ease-out); }
+.hero-prompt-go:hover .hero-prompt-go-arrow { transform: translateX(3px); }
+
+.hero-microcopy {
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+/* Vision-first path into the story (A2). Quiet but clear; the bouncing
+   arrow pulls the eye downward so the "why" isn't skipped. */
+.hero-actions {
+    margin-top: var(--space-6);
+}
+.hero-vision-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    transition: color var(--duration-base) var(--ease-out),
+                border-color var(--duration-base) var(--ease-out);
+}
+.hero-vision-link:hover {
+    color: var(--text);
+    border-bottom-color: var(--accent-pink, #ec4899);
+}
+.hero-vision-link span {
+    display: inline-block;
+    animation: heroNudge 1.8s ease-in-out infinite;
+}
+@keyframes heroNudge {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-vision-link span { animation: none; }
+}
+
+/* SVG-Figur: weiche Farbüberblendung beim Look-Wechsel + kurzer „Ping".
+   Puls läuft über filter (nicht transform), damit er sich nicht mit der
+   bestehenden heroFigureFloat/heroGarmentBreathe-Animation beißt. */
+#heroStop1, #heroStop2, #heroStop3, #heroBackdropStop {
+    transition: stop-color 1.1s var(--ease-out);
+}
+.hero-asset-particles circle { transition: fill 1.1s var(--ease-out); }
+.hero-asset-svg { transition: filter 0.6s var(--ease-out); }
+.hero-asset-svg.is-morphing {
+    filter: brightness(1.18) saturate(1.12) drop-shadow(0 0 24px rgba(236, 72, 153, 0.25));
+}
+
+/* Live 3D hero figure (js/3d/hero-scene.js). Fills the picture frame and
+   overlays the SVG; the module fades the SVG out once it mounts. If WebGL
+   is unavailable or motion is reduced, this stays empty and the SVG shows. */
+.hero-3d {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out);
+}
+.hero-3d.is-live { opacity: 1; }
+.hero-3d canvas { width: 100% !important; height: 100% !important; display: block; }
+
+@media (max-width: 600px) {
+    .hero-prompt { max-width: 100%; padding-left: var(--space-4); }
+    .hero-prompt-go { padding: var(--space-3); }
+    .hero-prompt-go-text { display: none; }   /* nur Pfeil auf dem Handy */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-prompt-spark,
+    .hero-prompt-caret,
+    .hero-asset-svg.is-morphing { animation: none; }
+    #heroStop1, #heroStop2, #heroStop3, #heroBackdropStop,
+    .hero-asset-particles circle,
+    .hero-asset-svg { transition: none; }
 }
