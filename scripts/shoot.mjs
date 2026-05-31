@@ -29,7 +29,10 @@ try {
       viewport: { width: vp.width, height: vp.height },
       deviceScaleFactor: 2,
     });
-    await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+    // domcontentloaded (not networkidle): the live site keeps analytics /
+    // speed-insights sockets open, so "networkidle" never settles and the
+    // shot times out. We just need the DOM + a beat for the hero animation.
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
     // Let the hero typewriter type a bit so the shot captures it mid-animation.
     await page.waitForTimeout(2200);
     const file = `${outDir}/${prefix}-${vp.name}.png`;

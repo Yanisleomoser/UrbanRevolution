@@ -337,6 +337,28 @@ Active workflows: `deno.yml` (lint), `deploy.yml` (Pages),
 GitHub-generated stubs that don't apply — leave them unless asked to clean
 up.
 
+### Checking deploy / CI status yourself (standing instruction from the user)
+
+Before asking the user to verify something you can verify yourself, check it.
+The tools are available — use them instead of delegating the lookup back:
+
+- **Deploy status / live URL:** the Vercel MCP tools (`list_deployments`,
+  `get_deployment`, `get_deployment_build_logs`, `get_runtime_logs`). Team
+  `jack's projects` (`team_6vAACRftikFNNglCvAGxBRku`), project
+  `urban-revolution-3ugz` (`prj_nByd8AePhWuduPtx0HQCTiIyxX7N`), production
+  domain `urban-revolution-3ugz.vercel.app`. Confirm a commit is live by
+  matching `meta.githubCommitSha` + `state: READY`.
+- **CI / PR / review status:** the GitHub MCP tools (`pull_request_read`
+  with `get_check_runs` / `get` / `get_diff`, etc.).
+- **Visual rendering:** the SessionStart hook installs headless Chromium;
+  `node scripts/shoot.mjs <url> <prefix>` writes desktop + mobile PNGs to
+  `screenshots/` (gitignored). Use it to self-check layout instead of asking
+  for a screenshot.
+
+Only ask the user for things that genuinely require their hardware or eyes —
+e.g. confirming an **iOS-Safari-specific scroll/toolbar bug on a real
+device**, which headless Chromium cannot reproduce.
+
 ## Git
 
 Default branch is `main`; don't push directly. Development happens on
