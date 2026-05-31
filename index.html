@@ -48,10 +48,11 @@
     <!-- Scroll-story type system: Poppins (UI/facts) + Lora Italic (couture statements) -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap" rel="stylesheet">
 
-    <!-- Sentry Error-Monitoring — build-freier Loader, früh geladen, um auch
-         Fehler beim Seitenaufbau zu erfassen. Datensparsam (DSGVO): kein
-         Session Replay, kein Performance-Tracing, keine PII. Der Pose-/Foto-
-         Flow bleibt 100 % client-seitig — Sentry sieht nur Fehler-Stacks.
+    <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
+         geladen, um auch Fehler beim Seitenaufbau zu erfassen. Datensparsam
+         (DSGVO): kein Session Replay, keine PII; Performance-Tracing aktiv
+         (Seitenladezeiten / Web Vitals / Navigation, EU-Region .de.sentry.io).
+         Der Pose-/Foto-Flow bleibt 100 % client-seitig.
          Hinweis: Der DSN ist ein öffentlicher Client-Key (kein Secret) — er
          gehört per Design in den Browser-Code; ein build-freier statischer
          Site-Stack kann ihn nicht aus Env-Variablen injizieren. -->
@@ -62,10 +63,12 @@
       window.sentryOnLoad = function () {
         Sentry.init({
           dsn: "https://541763f2f4076a2291fad4ad414c566a@o4511484411904000.ingest.de.sentry.io/4511484435300432",
-          // Datenschutz: Replay & Tracing aus, keine personenbezogenen Daten.
+          // Datenschutz: Session Replay aus, keine personenbezogenen Daten.
           replaysSessionSampleRate: 0,
           replaysOnErrorSampleRate: 0,
-          tracesSampleRate: 0,
+          // Performance-Tracing an: 100 % der Transaktionen (Seitenladezeiten,
+          // Web Vitals, Navigation). Für Low-Traffic ok; bei viel Traffic 0.1–0.2.
+          tracesSampleRate: 1.0,
           sendDefaultPii: false,
         });
       };
