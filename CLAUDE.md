@@ -56,8 +56,8 @@ assets/
   story/                # Documentary photos (Acts I–IV) — see CREDITS.md
 vercel.json             # Hosting config — no build, /api/ runs as edge functions
 scripts/validate-css.mjs# css-tree structural CSS check (CI)
-.github/workflows/      # deno (lint), deploy (Pages), validate-css, validate-html
-                        # the rest (webpack, jekyll-*, npm-publish*) are stubs
+.github/workflows/      # CI: deno(test), webpack(validate), jekyll-docker(build),
+                        # validate-css, validate-html, deploy(Pages) — see Deployment
 ```
 
 No unit tests. CI runs `deno lint` (configured via `deno.json`, with
@@ -331,11 +331,24 @@ functions only run on Vercel (or `vercel dev`).
   pushes to `main` (and one named claude branch). No build. (The `/api/`
   functions don't run on Pages — AI generation falls back to local there.)
 
-Active workflows: `deno.yml` (lint), `deploy.yml` (Pages),
-`validate-css.yml`, `validate-html.yml`. The others (`webpack.yml`,
-`jekyll-*.yml`, `npm-publish*.yml`, `copilot-setup-steps.yml`) are
-GitHub-generated stubs that don't apply — leave them unless asked to clean
-up.
+The functional PR checks come from files with **misleading GitHub-default
+names** — don't delete one assuming it's a stub. The mapping:
+
+| PR check       | File                  | Workflow name        | What it runs              |
+| -------------- | --------------------- | -------------------- | ------------------------- |
+| `build`        | `jekyll-docker.yml`   | "Jekyll site CI"     | `jekyll build` (trivial)  |
+| `test`         | `deno.yml`            | "Deno"               | `deno lint`               |
+| `validate`     | `webpack.yml`         | "Validate Static Site" | `npm run build` (no-op) |
+| `validate-css` | `validate-css.yml`    |                      | css-tree check            |
+| `validate-html`| `validate-html.yml`   |                      | htmlhint                  |
+
+Plus `deploy.yml` (GitHub Pages). **Keep all of the above.**
+
+The genuinely inert files: `jekyll-gh-pages.yml` (second Pages build, unused),
+`npm-publish*.yml` (only fire on `release`, never on push). They produce no
+push noise — leave them. `copilot-setup-steps.yml` was a broken GitHub
+template (empty-keyed SecureStack scan) that failed on every push; it was
+removed.
 
 ### Checking deploy / CI status yourself (standing instruction from the user)
 
