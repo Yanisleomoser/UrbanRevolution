@@ -48,6 +48,30 @@
     <!-- Scroll-story type system: Poppins (UI/facts) + Lora Italic (couture statements) -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap" rel="stylesheet">
 
+    <!-- Sentry Error-Monitoring — build-freier Loader, früh geladen, um auch
+         Fehler beim Seitenaufbau zu erfassen. Datensparsam (DSGVO): kein
+         Session Replay, kein Performance-Tracing, keine PII. Der Pose-/Foto-
+         Flow bleibt 100 % client-seitig — Sentry sieht nur Fehler-Stacks.
+         Hinweis: Der DSN ist ein öffentlicher Client-Key (kein Secret) — er
+         gehört per Design in den Browser-Code; ein build-freier statischer
+         Site-Stack kann ihn nicht aus Env-Variablen injizieren. -->
+    <link rel="dns-prefetch" href="https://o4511484411904000.ingest.de.sentry.io">
+    <!-- sentryOnLoad muss VOR dem Loader-Script definiert sein, sonst kann
+         der Loader die Init-Konfiguration verpassen (Sentry-Doku). -->
+    <script>
+      window.sentryOnLoad = function () {
+        Sentry.init({
+          dsn: "https://541763f2f4076a2291fad4ad414c566a@o4511484411904000.ingest.de.sentry.io/4511484435300432",
+          // Datenschutz: Replay & Tracing aus, keine personenbezogenen Daten.
+          replaysSessionSampleRate: 0,
+          replaysOnErrorSampleRate: 0,
+          tracesSampleRate: 0,
+          sendDefaultPii: false,
+        });
+      };
+    </script>
+    <script src="https://js-de.sentry-cdn.com/541763f2f4076a2291fad4ad414c566a.min.js" crossorigin="anonymous"></script>
+
     <!-- Vercel Speed Insights -->
     <script>
       window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
