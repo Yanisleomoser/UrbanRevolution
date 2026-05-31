@@ -928,8 +928,10 @@
   // Client-side rate limit. localStorage persists across sessions so
   // refreshing the page doesn't reset the count. A motivated user can
   // still bypass via incognito / devtools, but for honest visitors this
-  // caps the per-browser Replicate spend at VTO_LIMIT × ~$0.04.
-  const VTO_LIMIT = 3;
+  // caps the per-browser Replicate spend at VTO_LIMIT × ~$0.04. Set high
+  // enough (25 ≈ $1/browser) that real users never hit it — it exists only
+  // as a cheap backstop against accidental runaway spend.
+  const VTO_LIMIT = 25;
   const VTO_STORAGE_KEY = "urev_vto_count";
 
   function getVtoCount() {
