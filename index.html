@@ -483,41 +483,41 @@
                     <div class="garment-type-selector">
                         <label data-i18n="design.garment_label">Kleidungstyp</label>
                         <div class="type-grid" role="group" data-i18n-aria-label="design.garment_label" aria-label="Kleidungstyp">
-                            <button class="type-btn active" data-type="tshirt" aria-pressed="true">
-                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 16 L24 8 L40 8 L48 16 L56 22 L48 30 L48 56 L16 56 L16 30 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <button type="button" class="type-btn active" data-type="tshirt" aria-pressed="true">
+                                <svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M16 16 L24 8 L40 8 L48 16 L56 22 L48 30 L48 56 L16 56 L16 30 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.tshirt">T-Shirt</span>
                             </button>
-                            <button class="type-btn" data-type="hoodie" aria-pressed="false">
-                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M20 14 Q32 4 44 14 L52 22 L58 28 L50 34 L50 58 L14 58 L14 34 L6 28 L12 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <button type="button" class="type-btn" data-type="hoodie" aria-pressed="false">
+                                <svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M20 14 Q32 4 44 14 L52 22 L58 28 L50 34 L50 58 L14 58 L14 34 L6 28 L12 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.hoodie">Hoodie</span>
                             </button>
-                            <button class="type-btn" data-type="shirt" aria-pressed="false">
-                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M18 14 L28 8 L36 8 L46 14 L54 22 L48 28 L48 56 L16 56 L16 28 L10 22 Z M28 8 L32 16 L36 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <button type="button" class="type-btn" data-type="shirt" aria-pressed="false">
+                                <svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M18 14 L28 8 L36 8 L46 14 L54 22 L48 28 L48 56 L16 56 L16 28 L10 22 Z M28 8 L32 16 L36 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.shirt">Hemd</span>
                             </button>
-                            <button class="type-btn" data-type="pants" aria-pressed="false">
-                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 8 L48 8 L46 32 L44 58 L34 58 L32 34 L30 58 L20 58 L18 32 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <button type="button" class="type-btn" data-type="pants" aria-pressed="false">
+                                <svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M16 8 L48 8 L46 32 L44 58 L34 58 L32 34 L30 58 L20 58 L18 32 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.pants">Hose</span>
                             </button>
-                            <button class="type-btn" data-type="jacket" aria-pressed="false">
-                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M16 14 L24 8 L40 8 L48 14 L56 22 L50 28 L50 58 L32 58 L32 8 L32 58 L14 58 L14 28 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <button type="button" class="type-btn" data-type="jacket" aria-pressed="false">
+                                <svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M16 14 L24 8 L40 8 L48 14 L56 22 L50 28 L50 58 L32 58 L32 8 L32 58 L14 58 L14 28 L8 22 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.jacket">Jacke</span>
                             </button>
-                            <button class="type-btn" data-type="dress" aria-pressed="false">
-                                <svg viewBox="0 0 64 64" width="36" height="36"><path d="M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                            <button type="button" class="type-btn" data-type="dress" aria-pressed="false">
+                                <svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M22 12 L28 8 L36 8 L42 12 L40 24 L52 58 L12 58 L24 24 Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <span data-i18n="type.dress">Kleid</span>
                             </button>
                         </div>
                     </div>
 
-                    <button id="generate-btn" class="primary-btn">
+                    <button type="button" id="generate-btn" class="primary-btn">
                         <span class="btn-text" data-i18n="design.generate_btn">Design generieren</span>
                         <span class="btn-spinner"></span>
                     </button>
                 </div>
 
                 <div class="result-panel" data-reveal>
-                    <div id="ai-output" class="ai-output">
+                    <div id="ai-output" class="ai-output" aria-live="polite" aria-busy="false">
                         <div class="output-placeholder">
                             <div class="pulse-icon">✦</div>
                             <p data-i18n="design.output_placeholder">Dein KI-generiertes Design erscheint hier</p>
@@ -529,16 +529,20 @@
                         <div class="control-group">
                             <label data-i18n="design.primary_color">Primärfarbe</label>
                             <div class="color-palette" role="group" data-i18n-aria-label="design.primary_color" aria-label="Primärfarbe">
-                                <button class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a" aria-pressed="false" aria-label="Schwarz"></button>
-                                <button class="color-swatch" data-color="#ffffff" style="background:#ffffff" aria-pressed="false" aria-label="Weiß"></button>
-                                <button class="color-swatch" data-color="#7c2d12" style="background:#7c2d12" aria-pressed="false" aria-label="Rostbraun"></button>
-                                <button class="color-swatch" data-color="#1e3a8a" style="background:#1e3a8a" aria-pressed="false" aria-label="Marineblau"></button>
-                                <button class="color-swatch" data-color="#365314" style="background:#365314" aria-pressed="false" aria-label="Olivgrün"></button>
-                                <button class="color-swatch" data-color="#a16207" style="background:#a16207" aria-pressed="false" aria-label="Ocker"></button>
-                                <button class="color-swatch" data-color="#831843" style="background:#831843" aria-pressed="false" aria-label="Bordeaux"></button>
-                                <button class="color-swatch" data-color="#6b21a8" style="background:#6b21a8" aria-pressed="false" aria-label="Violett"></button>
-                                <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-pressed="false" aria-label="Bernstein"></button>
-                                <button class="color-swatch" data-color="#dc2626" style="background:#dc2626" aria-pressed="false" aria-label="Rot"></button>
+                                <button type="button" class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a" aria-pressed="false" data-i18n-aria-label="color.#1a1a1a"></button>
+                                <button type="button" class="color-swatch" data-color="#ffffff" style="background:#ffffff" aria-pressed="false" data-i18n-aria-label="color.#ffffff"></button>
+                                <button type="button" class="color-swatch" data-color="#7c2d12" style="background:#7c2d12" aria-pressed="false" data-i18n-aria-label="color.#7c2d12"></button>
+                                <button type="button" class="color-swatch" data-color="#1e3a8a" style="background:#1e3a8a" aria-pressed="false" data-i18n-aria-label="color.#1e3a8a"></button>
+                                <button type="button" class="color-swatch" data-color="#365314" style="background:#365314" aria-pressed="false" data-i18n-aria-label="color.#365314"></button>
+                                <button type="button" class="color-swatch" data-color="#a16207" style="background:#a16207" aria-pressed="false" data-i18n-aria-label="color.#a16207"></button>
+                                <button type="button" class="color-swatch" data-color="#831843" style="background:#831843" aria-pressed="false" data-i18n-aria-label="color.#831843"></button>
+                                <button type="button" class="color-swatch" data-color="#6b21a8" style="background:#6b21a8" aria-pressed="false" data-i18n-aria-label="color.#6b21a8"></button>
+                                <button type="button" class="color-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-pressed="false" data-i18n-aria-label="color.#f59e0b"></button>
+                                <button type="button" class="color-swatch" data-color="#dc2626" style="background:#dc2626" aria-pressed="false" data-i18n-aria-label="color.#dc2626"></button>
+                                <label class="color-swatch color-swatch-custom" id="custom-color-swatch" aria-pressed="false" data-i18n-title="color.custom" title="Custom">
+                                    <input type="color" id="custom-color" value="#1a1a1a" data-i18n-aria-label="color.custom" aria-label="Custom">
+                                    <span class="custom-color-plus" aria-hidden="true">+</span>
+                                </label>
                             </div>
                         </div>
                         <div class="control-group">
@@ -551,6 +555,20 @@
                                 <option value="fleece" data-i18n="material.fleece">Fleece</option>
                                 <option value="silk" data-i18n="material.silk">Seide</option>
                                 <option value="polyester" data-i18n="material.polyester">Recycled Polyester</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="pattern-select" data-i18n="design.pattern_label">Muster</label>
+                            <select id="pattern-select">
+                                <option value="solid" data-i18n="pattern.solid">Uni</option>
+                                <option value="stripes_h" data-i18n="pattern.stripes_h">Querstreifen</option>
+                                <option value="stripes_v" data-i18n="pattern.stripes_v">Längsstreifen</option>
+                                <option value="dots" data-i18n="pattern.dots">Punkte</option>
+                                <option value="plaid" data-i18n="pattern.plaid">Karo</option>
+                                <option value="camo" data-i18n="pattern.camo">Camouflage</option>
+                                <option value="gradient" data-i18n="pattern.gradient">Farbverlauf</option>
+                                <option value="heather" data-i18n="pattern.heather">Meliert</option>
+                                <option value="floral" data-i18n="pattern.floral">Blumenmuster</option>
                             </select>
                         </div>
                         <div class="control-group">

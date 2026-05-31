@@ -199,12 +199,8 @@
         promptEl.focus();
       }
       if (btn.dataset.type) {
-        document.querySelectorAll(".type-btn").forEach((b) => {
-          const on = b.dataset.type === btn.dataset.type;
-          b.classList.toggle("active", on);
-          b.setAttribute("aria-pressed", String(on));
-        });
-        S.set("currentType", btn.dataset.type);
+        setActiveType(btn.dataset.type);
+        if (S.set("currentType", btn.dataset.type)) updateProductionPreview();
       }
     });
   }
@@ -212,33 +208,81 @@
   function initTypeSelector() {
     document.querySelectorAll(".type-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".type-btn").forEach((b) => {
-          const on = b === btn;
-          b.classList.toggle("active", on);
-          b.setAttribute("aria-pressed", String(on));
-        });
+        setActiveType(btn.dataset.type);
         S.set("currentType", btn.dataset.type);
         updateProductionPreview();
       });
     });
   }
 
+  // Reflect `color` in the palette: activate the matching preset swatch, or
+  // fold an off-palette color (e.g. one the AI generated outside the 10-swatch
+  // palette) into the custom-color control so it stays visible and
+  // re-selectable. Keeps aria-pressed in sync for assistive tech.
+  function syncColorPalette(color) {
+    const hex = String(color || "").toLowerCase();
+    let matched = false;
+    document.querySelectorAll("button.color-swatch").forEach((s) => {
+      const on = (s.dataset.color || "").toLowerCase() === hex;
+      if (on) matched = true;
+      s.classList.toggle("active", on);
+      s.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    const customSwatch = document.getElementById("custom-color-swatch");
+    const customInput = document.getElementById("custom-color");
+    const isHex = /^#[0-9a-f]{6}$/.test(hex);
+    if (customInput && isHex) customInput.value = hex;
+    if (customSwatch) {
+      const useCustom = !matched && isHex;
+      if (useCustom) {
+        customSwatch.style.background = hex;
+        customSwatch.dataset.color = hex;
+        customSwatch.classList.add("has-custom");
+      } else {
+        customSwatch.style.background = "";
+        delete customSwatch.dataset.color;
+        customSwatch.classList.remove("has-custom");
+      }
+      customSwatch.classList.toggle("active", useCustom);
+      customSwatch.setAttribute("aria-pressed", useCustom ? "true" : "false");
+    }
+  }
+
+  // Single funnel for a color change from any control (preset swatch or the
+  // native custom picker): validate via state, sync the palette UI, mirror it
+  // onto the current design and rebuild the spec preview.
+  function applyColor(newColor) {
+    if (!S.set("currentColor", newColor)) return;
+    syncColorPalette(newColor);
+    const design = S.get("currentDesign");
+    if (design) {
+      design.color = newColor;
+      updateProductionPreview();
+    }
+  }
+
   function initColorPalette() {
-    document.querySelectorAll(".color-swatch").forEach((swatch) => {
-      swatch.addEventListener("click", () => {
-        document.querySelectorAll(".color-swatch").forEach((s) => {
-          const on = s === swatch;
-          s.classList.toggle("active", on);
-          s.setAttribute("aria-pressed", String(on));
-        });
-        const newColor = swatch.dataset.color;
-        if (!S.set("currentColor", newColor)) return;
-        const design = S.get("currentDesign");
-        if (design) {
-          design.color = newColor;
-          updateProductionPreview();
-        }
-      });
+    document.querySelectorAll("button.color-swatch").forEach((swatch) => {
+      swatch.addEventListener("click", () => applyColor(swatch.dataset.color));
+    });
+    const customInput = document.getElementById("custom-color");
+    if (customInput) {
+      customInput.addEventListener("input", () => applyColor(customInput.value));
+    }
+  }
+
+  function initPatternSelector() {
+    const select = document.getElementById("pattern-select");
+    if (!select) return;
+    select.addEventListener("change", () => {
+      const design = S.get("currentDesign");
+      if (!design) return;
+      // Pattern lives on the design object (no dedicated state key); the spec
+      // sheet and design card read it, so refresh both.
+      design.pattern = select.value;
+      renderDesignResult(design);
+      updateProductionPreview();
     });
   }
 
@@ -279,9 +323,11 @@
         return;
       }
 
+      const output = document.getElementById("ai-output");
       btn.classList.add("loading");
       btn.disabled = true;
       btn.querySelector(".btn-text").textContent = t("design.generate_loading");
+      if (output) output.setAttribute("aria-busy", "true");
 
       try {
         const design = await AI.generateDesign(prompt, S.get("currentType"));
@@ -307,6 +353,7 @@
         btn.classList.remove("loading");
         btn.disabled = false;
         btn.querySelector(".btn-text").textContent = t("design.generate_btn");
+        if (output) output.setAttribute("aria-busy", "false");
       }
     });
   }
@@ -337,6 +384,22 @@
   function measureLabel(key) {
     if (window.I18N) return window.I18N.measureLabel(key);
     return (window.Measurements && window.Measurements.LABELS[key]) || key;
+  }
+
+  // Reflect the active garment type across the type-grid buttons, keeping
+  // aria-pressed in sync for assistive tech. Centralizes the toggle logic
+  // that was previously duplicated across the type/suggestion handlers.
+  function setActiveType(type) {
+    document.querySelectorAll(".type-btn").forEach((b) => {
+      const on = b.dataset.type === type;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  // Localized fabric-pattern label (e.g. "Querstreifen" / "Horizontal stripes").
+  function patternLabelText(key) {
+    return window.I18N ? window.I18N.pattern(key) : key;
   }
 
   function typeIconSvg(type, size = 56) {
@@ -370,9 +433,7 @@
     const materialLabel = typeMaterialLabel(material);
     const fitText = fitLabel(fit);
     const patternKey = design.pattern && design.pattern !== "solid" ? design.pattern : null;
-    const patternLabel = patternKey && window.CONFIG && window.CONFIG.PATTERNS
-      ? (window.CONFIG.PATTERNS[patternKey] || patternKey)
-      : patternKey;
+    const patternLabel = patternKey ? patternLabelText(patternKey) : null;
 
     const tagsHtml = (design.tags && design.tags.length
       ? design.tags
@@ -433,14 +494,13 @@
 
     document.getElementById("customize-controls").style.display = "block";
 
-    document.querySelectorAll(".color-swatch").forEach((s) => {
-      const on = s.dataset.color === design.color;
-      s.classList.toggle("active", on);
-      s.setAttribute("aria-pressed", String(on));
-    });
+    syncColorPalette(color);
 
     const matSelect = document.getElementById("material-select");
     if (matSelect && design.material) matSelect.value = design.material;
+
+    const patSelect = document.getElementById("pattern-select");
+    if (patSelect) patSelect.value = design.pattern || "solid";
 
     const fitSlider = document.getElementById("fit-slider");
     if (fitSlider && design.fit !== undefined) {
@@ -456,13 +516,7 @@
     if (design.material) S.set("currentMaterial", design.material);
     if (design.fit !== undefined) S.set("currentFit", design.fit);
     if (design.type && design.type !== S.get("currentType")) {
-      if (S.set("currentType", design.type)) {
-        document.querySelectorAll(".type-btn").forEach((b) => {
-          const on = b.dataset.type === design.type;
-          b.classList.toggle("active", on);
-          b.setAttribute("aria-pressed", String(on));
-        });
-      }
+      if (S.set("currentType", design.type)) setActiveType(design.type);
     }
   }
 
@@ -1367,6 +1421,7 @@
     initTypeSelector();
     initColorPalette();
     initMaterialSelector();
+    initPatternSelector();
     initFitSlider();
     initGenerateButton();
     initMeasurements();
