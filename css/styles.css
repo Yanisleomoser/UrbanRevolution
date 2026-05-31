@@ -144,6 +144,15 @@ body {
         -webkit-backdrop-filter: none;
     }
 }
+/* In-app browsers (Instagram/Facebook WKWebView) evaluate pointer media
+   queries unreliably — many report no coarse pointer even on iPad — so the
+   query above silently fails there. .is-touch is set from JS via
+   navigator.maxTouchPoints (reliable in WKWebViews) as the load-bearing path. */
+html.is-touch .navbar {
+    background: rgba(10, 10, 11, 0.94);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
 
 .nav-container {
     max-width: 1280px;
@@ -3030,6 +3039,18 @@ body::before {
        reads as the page being "flung". Touch gets native instant scrolling. */
     html { scroll-behavior: auto; }
 }
+/* Load-bearing duplicate gated on the JS .is-touch class — the media query
+   above does not fire in Instagram/Facebook in-app browsers, which is exactly
+   where the catapult kept happening after the any-pointer fix worked in
+   Safari. Keep both: media query for correct browsers, class for the rest. */
+html.is-touch .section {
+    animation: none;
+    animation-timeline: auto;
+    animation-range: normal;
+    opacity: 1;
+    transform: none;
+}
+html.is-touch { scroll-behavior: auto; }
 
 /* ---------- Buttons: subtle hover lift + accent glow ---------- */
 .primary-btn,
