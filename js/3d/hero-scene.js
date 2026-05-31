@@ -47,8 +47,9 @@ let raf = null;
 let pmrem = null;
 
 let currentType = "hoodie";
-let currentColor = new THREE.Color("#8b5cf6");
-let targetColor = new THREE.Color("#8b5cf6");
+// Colours are mutated in place (set/lerp/copy), never rebound → const.
+const currentColor = new THREE.Color("#8b5cf6");
+const targetColor = new THREE.Color("#8b5cf6");
 let pendingType = null;     // set when a look wants a different garment
 let morphFlash = 0;         // 0..1 brief emissive pulse on change
 
