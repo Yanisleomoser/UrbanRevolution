@@ -1257,11 +1257,7 @@
     };
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
-    document.querySelectorAll(".type-btn").forEach((b) => {
-      const on = b.dataset.type === entry.type;
-      b.classList.toggle("active", on);
-      b.setAttribute("aria-pressed", String(on));
-    });
+    setActiveType(entry.type);
     renderDesignResult(design);
     applyDesignToState(design);
     updateProductionPreview();
