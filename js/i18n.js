@@ -211,6 +211,7 @@ const I18N = (() => {
       "svg.waist": "Taille",
       "svg.hips": "Hüfte",
       "svg.inseam": "Schritt",
+      "svg.height": "Körpergröße",
 
       // ── 3D-Vorschau ──
       "preview.h2": "Fotorealistische Vorschau",
@@ -605,6 +606,7 @@ const I18N = (() => {
       "svg.waist": "Waist",
       "svg.hips": "Hips",
       "svg.inseam": "Inseam",
+      "svg.height": "Height",
 
       // ── 3D preview ──
       "preview.h2": "Photorealistic preview",

@@ -591,120 +591,43 @@
                 </div>
 
                 <div class="body-diagram">
-                    <svg viewBox="0 0 240 460" xmlns="http://www.w3.org/2000/svg" data-i18n-aria-label="svg.body_aria" aria-label="Maßdiagramm Körper">
+                    <svg viewBox="0 0 1152 1728" xmlns="http://www.w3.org/2000/svg" data-i18n-aria-label="svg.body_aria" aria-label="Maßdiagramm Körper" class="measure-figure-svg">
                         <defs>
-                            <radialGradient id="bodyShade" cx="50%" cy="38%" r="62%">
-                                <stop offset="0%" stop-color="#f4f4f5" stop-opacity="0.18"/>
-                                <stop offset="55%" stop-color="#a1a1aa" stop-opacity="0.14"/>
-                                <stop offset="100%" stop-color="#0a0a0b" stop-opacity="0.05"/>
-                            </radialGradient>
-                            <linearGradient id="bodyStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#ec4899"/>
-                                <stop offset="50%" stop-color="#8b5cf6"/>
-                                <stop offset="100%" stop-color="#06b6d4"/>
-                            </linearGradient>
-                            <linearGradient id="bodyHighlight" x1="20%" y1="0%" x2="80%" y2="100%">
-                                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
-                                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-                            </linearGradient>
-                            <filter id="bodyGlow" x="-15%" y="-15%" width="130%" height="130%">
-                                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                                <feMerge>
-                                    <feMergeNode in="blur"/>
-                                    <feMergeNode in="SourceGraphic"/>
-                                </feMerge>
-                            </filter>
+                            <clipPath id="figClip"><rect x="0" y="0" width="1152" height="1728" rx="40"/></clipPath>
                         </defs>
-
-                        <g filter="url(#bodyGlow)">
-                            <ellipse cx="120" cy="48" rx="23" ry="28" fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-                            <ellipse cx="120" cy="42" rx="14" ry="10" fill="url(#bodyHighlight)"/>
-
-                            <path d="M108 74 Q120 79 132 74 L132 90 L108 90 Z" fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-
-                            <path d="
-                                M 70 96
-                                Q 88 90 120 90 Q 152 90 170 96
-                                L 172 134
-                                C 172 150, 170 162, 166 174
-                                L 158 208
-                                C 154 222, 154 232, 158 244
-                                L 166 270
-                                L 74 270
-                                L 82 244
-                                C 86 232, 86 222, 82 208
-                                L 74 174
-                                C 70 162, 68 150, 68 134
-                                Z
-                            " fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-
-                            <path d="M 84 100 Q 120 96 156 100 L 154 130 Q 120 134 86 130 Z" fill="url(#bodyHighlight)"/>
-
-                            <path d="
-                                M 70 96
-                                C 60 108, 50 134, 44 174
-                                C 40 204, 38 226, 38 244
-                                C 38 250, 42 254, 47 254
-                                C 52 254, 55 250, 55 244
-                                C 56 226, 58 204, 62 174
-                                C 68 134, 76 108, 82 98
-                            " fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-
-                            <path d="
-                                M 170 96
-                                C 180 108, 190 134, 196 174
-                                C 200 204, 202 226, 202 244
-                                C 202 250, 198 254, 193 254
-                                C 188 254, 185 250, 185 244
-                                C 184 226, 182 204, 178 174
-                                C 172 134, 164 108, 158 98
-                            " fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-
-                            <path d="
-                                M 82 270
-                                L 84 310
-                                C 86 342, 86 384, 86 428
-                                L 108 428
-                                C 110 384, 110 342, 108 310
-                                L 110 270
-                                Z
-                            " fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-
-                            <path d="
-                                M 130 270
-                                L 132 310
-                                C 130 342, 130 384, 132 428
-                                L 154 428
-                                C 154 384, 154 342, 156 310
-                                L 158 270
-                                Z
-                            " fill="url(#bodyShade)" stroke="url(#bodyStroke)" stroke-width="1.5"/>
-                        </g>
-
-                        <g class="measure-annotations">
+                        <image href="assets/measure-figure.jpg" x="0" y="0" width="1152" height="1728" clip-path="url(#figClip)"/>
+                        <g class="measure-annotations" font-family="Inter, system-ui, sans-serif" font-size="31" font-weight="700" letter-spacing="0.5" style="paint-order:stroke" stroke="#08080a" stroke-width="7" stroke-linejoin="round">
                             <g class="annotation" data-measure="shoulder">
-                                <line x1="65" y1="96" x2="175" y2="96" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                                <text x="182" y="100" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.shoulder">Schulter</text>
+                                <line x1="330" y1="408" x2="846" y2="408" stroke="#ec4899" stroke-width="3" stroke-dasharray="10,8" opacity="0.95"/>
+                                <circle cx="330" cy="408" r="7" fill="#ec4899" stroke="none"/>
+                                <text x="858" y="418" fill="#fff" data-i18n="svg.shoulder">Schulter</text>
                             </g>
-
                             <g class="annotation" data-measure="chest">
-                                <line x1="70" y1="134" x2="170" y2="134" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                                <text x="182" y="138" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.chest">Brust</text>
+                                <line x1="315" y1="566" x2="846" y2="566" stroke="#ec4899" stroke-width="3" stroke-dasharray="10,8" opacity="0.95"/>
+                                <circle cx="315" cy="566" r="7" fill="#ec4899" stroke="none"/>
+                                <text x="858" y="576" fill="#fff" data-i18n="svg.chest">Brust</text>
                             </g>
-
                             <g class="annotation" data-measure="waist">
-                                <line x1="76" y1="190" x2="164" y2="190" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                                <text x="182" y="194" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.waist">Taille</text>
+                                <line x1="345" y1="772" x2="846" y2="772" stroke="#ec4899" stroke-width="3" stroke-dasharray="10,8" opacity="0.95"/>
+                                <circle cx="345" cy="772" r="7" fill="#ec4899" stroke="none"/>
+                                <text x="858" y="782" fill="#fff" data-i18n="svg.waist">Taille</text>
                             </g>
-
                             <g class="annotation" data-measure="hips">
-                                <line x1="74" y1="248" x2="166" y2="248" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.9"/>
-                                <text x="182" y="252" font-size="10" font-weight="600" fill="#ec4899" letter-spacing="0.4" data-i18n="svg.hips">Hüfte</text>
+                                <line x1="455" y1="905" x2="846" y2="905" stroke="#ec4899" stroke-width="3" stroke-dasharray="10,8" opacity="0.95"/>
+                                <circle cx="455" cy="905" r="7" fill="#ec4899" stroke="none"/>
+                                <text x="858" y="915" fill="#fff" data-i18n="svg.hips">Hüfte</text>
                             </g>
-
+                            <g class="annotation" data-measure="height">
+                                <line x1="100" y1="135" x2="100" y2="1615" stroke="#22d3ee" stroke-width="3" stroke-dasharray="10,8" opacity="0.92"/>
+                                <line x1="82" y1="135" x2="118" y2="135" stroke="#22d3ee" stroke-width="3"/>
+                                <line x1="82" y1="1615" x2="118" y2="1615" stroke="#22d3ee" stroke-width="3"/>
+                                <text x="64" y="875" fill="#fff" text-anchor="middle" transform="rotate(-90 64 875)" data-i18n="svg.height">Körpergröße</text>
+                            </g>
                             <g class="annotation" data-measure="inseam">
-                                <line x1="80" y1="338" x2="160" y2="338" stroke="#ec4899" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.65"/>
-                                <text x="166" y="342" font-size="10" font-weight="600" fill="#ec4899" opacity="0.85" letter-spacing="0.4" data-i18n="svg.inseam">Schritt</text>
+                                <line x1="560" y1="968" x2="560" y2="1505" stroke="#22d3ee" stroke-width="3" stroke-dasharray="10,8" opacity="0.9"/>
+                                <line x1="544" y1="968" x2="576" y2="968" stroke="#22d3ee" stroke-width="3"/>
+                                <line x1="544" y1="1505" x2="576" y2="1505" stroke="#22d3ee" stroke-width="3"/>
+                                <text x="592" y="1250" fill="#fff" data-i18n="svg.inseam">Schritt</text>
                             </g>
                         </g>
                     </svg>
