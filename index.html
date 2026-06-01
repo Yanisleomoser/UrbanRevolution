@@ -214,8 +214,13 @@
              replace the <svg> contents inside <picture> with <source srcset="...">
              and an <img>; the surrounding layout will adapt. -->
         <figure class="hero-asset" data-reveal>
-            <picture class="hero-asset-picture">
-                <img class="hero-asset-img" src="assets/hero.jpg" width="1152" height="1728" loading="eager" fetchpriority="high" decoding="async" data-i18n-alt="hero.asset_alt" alt="Model in einer KI-designten Pufferjacke, von Neon-Lichtspuren in Pink und Cyan umspielt">
+            <picture class="hero-asset-picture" id="hero-gallery">
+                <img class="hero-asset-img is-visible" src="assets/hero-1.jpg" width="768" height="1376" loading="eager" fetchpriority="high" decoding="async" data-i18n-alt="hero.asset_alt" alt="Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt">
+                <img class="hero-asset-img" src="assets/hero-2.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" src="assets/hero-3.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" src="assets/hero-4.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" src="assets/hero-5.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" src="assets/hero-6.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
             </picture>
             <figcaption class="hero-asset-caption" data-i18n-html="hero.caption_html">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
         </figure>
