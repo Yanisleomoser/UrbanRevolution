@@ -1,0 +1,15 @@
+{
+  "name": "Urban Revolution — AI Couture Atelier",
+  "short_name": "Urban Revolution",
+  "description": "KI gestaltet dein Wunschkleidungsstück, Schweizer Schneider fertigen es maßgeschneidert in unter 14 Tagen.",
+  "lang": "de",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
