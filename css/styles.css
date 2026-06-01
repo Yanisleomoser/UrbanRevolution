@@ -1693,45 +1693,42 @@ input[aria-invalid="true"] {
    any upload, leaving a blank band in the photo card. */
 .pose-preview[hidden] { display: none; }
 
-/* Collapsible detail measurements. On phones the nine fields are a very long
-   single column; wrap them in a <details> that's collapsed by default there.
-   On tablet/desktop the toggle is hidden and the grid is always shown. */
-.measure-collapse > summary { display: none; }            /* desktop: no toggle */
-.measure-collapse > .measure-inputs { display: grid; }    /* desktop: always open */
-
-@media (max-width: 600px) {
-    .measure-collapse > summary {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: var(--space-3);
-        list-style: none;
-        cursor: pointer;
-        padding: 14px 16px;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        background: var(--bg-card);
-        color: var(--text);
-        font-size: 14px;
-        font-weight: 600;
-        -webkit-tap-highlight-color: transparent;
-        transition: border-color var(--duration-base) var(--ease-out);
-    }
-    .measure-collapse > summary::-webkit-details-marker { display: none; }
-    .measure-collapse > summary:hover,
-    .measure-collapse[open] > summary { border-color: var(--accent-2, #8b5cf6); }
-    .measure-collapse-icon {
-        color: var(--text-muted);
-        transition: transform var(--duration-base) var(--ease-out);
-    }
-    .measure-collapse[open] .measure-collapse-icon { transform: rotate(180deg); }
-    /* Closed: hide the grid. Open: two compact columns instead of one long one. */
-    .measure-collapse:not([open]) > .measure-inputs { display: none; }
-    .measure-collapse[open] > .measure-inputs {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        margin-top: var(--space-4);
-    }
+/* Collapsible detail measurements — a dropdown on EVERY screen size. The nine
+   fields live in a <details> whose toggle is always visible; the fields show
+   only when open. Display is gated on [open] / :not([open]) rather than
+   force-showing a closed <details> — that keeps it consistent across Chromium
+   and WebKit/Safari (Safari ignores a display override on closed details). */
+.measure-collapse > summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color var(--duration-base) var(--ease-out);
+}
+.measure-collapse > summary::-webkit-details-marker { display: none; }
+.measure-collapse > summary::marker { content: ""; }
+.measure-collapse > summary:hover,
+.measure-collapse[open] > summary { border-color: var(--accent-2, #8b5cf6); }
+.measure-collapse-icon {
+    color: var(--text-muted);
+    transition: transform var(--duration-base) var(--ease-out);
+}
+.measure-collapse[open] .measure-collapse-icon { transform: rotate(180deg); }
+/* Closed: hide the grid. Open: show it (columns come from .measure-inputs). */
+.measure-collapse:not([open]) > .measure-inputs { display: none; }
+.measure-collapse[open] > .measure-inputs {
+    display: grid;
+    margin-top: var(--space-4);
 }
 
 .body-diagram {
@@ -1748,14 +1745,30 @@ input[aria-invalid="true"] {
        taller form column. */
     align-self: center;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: var(--space-3);
 }
 
 .body-diagram svg {
     width: 100%;
     height: auto;
     display: block;
+}
+
+/* Hint that the figure markers are tappable — makes the two-way link
+   (tap a marker → open the measurements + edit that value) discoverable. */
+.measure-figure-hint {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--text-muted);
+}
+.measure-figure-hint::before {
+    content: "\2726  ";
+    color: var(--accent-2, #8b5cf6);
 }
 
 /* Aktiver Preset-Zustand — zeigt, welche Größe gerade geladen ist */
