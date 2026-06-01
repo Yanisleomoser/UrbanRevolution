@@ -1,0 +1,5 @@
+# Urban Revolution — https://revolveurban.com
+User-agent: *
+Allow: /
+
+Sitemap: https://revolveurban.com/sitemap.xml

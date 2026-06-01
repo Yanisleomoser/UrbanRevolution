@@ -71,7 +71,11 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260531-4">
+    <link rel="stylesheet" href="css/styles.css?v=20260601-1">
+
+    <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
+         Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
+    <link rel="preload" as="image" href="assets/hero-1.jpg" fetchpriority="high">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -216,11 +220,11 @@
         <figure class="hero-asset" data-reveal>
             <picture class="hero-asset-picture" id="hero-gallery">
                 <img class="hero-asset-img is-visible" src="assets/hero-1.jpg" width="768" height="1376" loading="eager" fetchpriority="high" decoding="async" data-i18n-alt="hero.asset_alt" alt="Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt">
-                <img class="hero-asset-img" src="assets/hero-2.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" src="assets/hero-3.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" src="assets/hero-4.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" src="assets/hero-5.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" src="assets/hero-6.jpg" width="768" height="1376" loading="lazy" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" data-src="assets/hero-2.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" data-src="assets/hero-3.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" data-src="assets/hero-4.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" data-src="assets/hero-5.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
+                <img class="hero-asset-img" data-src="assets/hero-6.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
             </picture>
             <figcaption class="hero-asset-caption" data-i18n-html="hero.caption_html">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
         </figure>
@@ -471,7 +475,7 @@
                             </div>
                         </div>
                         <div class="control-group">
-                            <label data-i18n="design.material_label">Material</label>
+                            <label for="material-select" data-i18n="design.material_label">Material</label>
                             <select id="material-select">
                                 <option value="cotton" data-i18n="material.cotton">Bio-Baumwolle</option>
                                 <option value="linen" data-i18n="material.linen">Leinen</option>
@@ -497,7 +501,7 @@
                             </select>
                         </div>
                         <div class="control-group">
-                            <label data-i18n="design.fit_label">Passform</label>
+                            <label for="fit-slider" data-i18n="design.fit_label">Passform</label>
                             <div class="fit-slider">
                                 <input type="range" id="fit-slider" min="0" max="100" value="50">
                                 <div class="fit-labels">
@@ -543,7 +547,7 @@
                             <p class="photo-privacy" data-i18n="measure.photo_privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
                         </div>
                         <div class="photo-upload-action">
-                            <input type="file" id="pose-photo" accept="image/*" hidden>
+                            <input type="file" id="pose-photo" accept="image/*" hidden data-i18n-aria-label="measure.photo_btn" aria-label="Foto auswählen">
                             <button id="pose-upload-btn" class="upload-btn" data-i18n="measure.photo_btn">Foto auswählen</button>
                             <span id="pose-status" class="pose-status" role="status" aria-live="polite"></span>
                         </div>
