@@ -363,11 +363,19 @@ html.is-touch .navbar {
 }
 
 .gradient-text {
-    background: var(--gradient);
+    /* Living brand gradient — a wider 5-stop ribbon that slowly drifts so the
+       brand mark feels alive. background-clip:text paints it into the glyphs. */
+    background: linear-gradient(120deg, #ec4899, #8b5cf6, #06b6d4, #8b5cf6, #ec4899);
+    background-size: 220% 220%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    animation: brandFlow 9s ease-in-out infinite;
+}
+@keyframes brandFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
 }
 
 .hero-subtitle {
@@ -4185,4 +4193,93 @@ main { display: block; }
 @media (prefers-reduced-motion: reduce) {
     .hero-prompt-spark,
     .hero-prompt-caret { animation: none; }
+}
+
+/* ============================================================
+   Flair — pointer/scroll micro-interactions + easter egg
+   (wired in js/flair.js; pure progressive enhancement)
+   ============================================================ */
+
+/* Scroll "thread": a 2px gradient seam that sews shut as you scroll. */
+.scroll-thread {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+    z-index: 1000;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* Hero pointer aura — a soft neon spotlight that follows the cursor. Only
+   active once js/flair.js adds .has-pointer-flair (fine pointer, motion ok). */
+.hero.has-pointer-flair::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--hero-mx, 50%) var(--hero-my, 40%),
+        rgba(139, 92, 246, 0.16), rgba(236, 72, 153, 0.07) 28%, transparent 52%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out);
+}
+.hero.has-pointer-flair:hover::after { opacity: 1; }
+
+/* Holographic tilt of the hero photo card toward the cursor. Gated on
+   .has-pointer-flair so touch / reduced-motion / no-JS never get the 3D layer
+   (avoids any sub-pixel blur at rest). */
+.has-pointer-flair .hero-asset-picture {
+    transform: perspective(1100px) rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg));
+    transition: transform 0.25s var(--ease-out);
+    will-change: transform;
+}
+
+/* Easter egg — neon fabric-particle burst + a fading message. */
+.egg-burst { position: fixed; inset: 0; z-index: 1200; pointer-events: none; }
+.egg-burst span {
+    position: fixed;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    animation: eggFly 0.95s var(--ease-out) forwards;
+}
+@keyframes eggFly {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.3) rotate(160deg); }
+}
+.egg-msg {
+    position: fixed;
+    left: 50%;
+    bottom: 20%;
+    transform: translateX(-50%);
+    z-index: 1200;
+    padding: 10px 18px;
+    border-radius: 100px;
+    background: rgba(10, 10, 11, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+    animation: eggMsg 1.7s var(--ease-out) forwards;
+}
+@keyframes eggMsg {
+    0%        { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    15%, 72%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100%      { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gradient-text { animation: none; }
+    .has-pointer-flair .hero-asset-picture { transform: none; }
 }

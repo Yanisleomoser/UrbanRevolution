@@ -83,6 +83,7 @@ const I18N = (() => {
       "story.a5_statement": "Für einen gemacht. Deiner.",
       "story.cta_html": 'Mach dein erstes Stück <span aria-hidden="true">→</span>',
       "story.skip": "Direkt zum Design",
+      "flair.egg": "✦ Revolution entdeckt.",
       // Live counter (acts I–IV)
       "story.counter_intro": "Seit du hier bist:",
       "story.counter_garments": "Kleidungsstücke produziert",
@@ -482,6 +483,7 @@ const I18N = (() => {
       "story.a5_statement": "Made for one. Yours.",
       "story.cta_html": 'Make your first piece <span aria-hidden="true">→</span>',
       "story.skip": "Skip to design",
+      "flair.egg": "✦ Revolution unlocked.",
       // Live counter (acts I–IV)
       "story.counter_intro": "Since you arrived:",
       "story.counter_garments": "garments produced",

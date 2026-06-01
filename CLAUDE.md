@@ -43,6 +43,7 @@ js/
   preferences.js        # localStorage usage history → personalised suggestions
   library.js            # localStorage saved designs (max 20, + optional VTO url)
   animations.js         # IntersectionObserver scroll-reveal (side effect)
+  flair.js              # Pointer/scroll micro-interactions + easter egg (side effect)
   app.js                # Main controller — wires DOM events to StateManager
   3d/
     scene.js            # Three.js renderer, lights, bloom composer (ES module)
@@ -84,6 +85,7 @@ window.Foo = Foo;
 | `preferences.js`  | `window.Preferences`    | classic         |
 | `library.js`      | `window.Library`        | classic         |
 | `animations.js`   | (none — side effect)    | classic         |
+| `flair.js`        | (none — side effect)    | classic         |
 | `app.js`          | (none — controller)     | classic         |
 | `3d/story-scene.js`| (self-mounts)          | `type="module"` |
 | `3d/controller.js`| (self-mounts)           | `type="module"` |
@@ -101,8 +103,8 @@ subscribe to its events). The bottom-of-body order is:
 
 ```
 config → i18n → state-manager → ai → measurements →
-pose → export → preferences → library → animations → app →
-3d/story-scene.js (module) → 3d/controller.js (module)
+pose → export → preferences → library → animations → app → hero → flair →
+3d/story-scene.js (module)
 ```
 
 Follow the IIFE-with-global pattern for new classic code; don't introduce a
