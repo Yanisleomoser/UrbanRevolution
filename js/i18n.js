@@ -39,9 +39,9 @@ const I18N = (() => {
       "nav.lang_aria": "Sprache wechseln",
 
       // ── Hero ──
-      "hero.eyebrow": "AI · 3D · COUTURE",
+      "hero.eyebrow": "AI · ATELIER · COUTURE",
       "hero.title_html": 'Deine Vision.<br>Deine Maße.<br><span class="gradient-text">Deine Kleidung.</span>',
-      "hero.subtitle": "Ein Satz genügt. Die KI entwirft dein Stück, ein 3D-Modell zeigt deine Passform — Schneider bekommen die fertige Spec.",
+      "hero.subtitle": "Ein Satz genügt. Die KI entwirft dein Stück, eine fotorealistische Vorschau zeigt es an dir — Schneider bekommen die fertige Spec.",
       "hero.cta_html": 'Jetzt designen <span aria-hidden="true">→</span>',
       "hero.prompt_form_aria": "Kleidungsstück beschreiben und Design starten",
       "hero.prompt_aria": "Beschreibe dein Wunschkleidungsstück",
@@ -439,9 +439,9 @@ const I18N = (() => {
       "nav.lang_aria": "Switch language",
 
       // ── Hero ──
-      "hero.eyebrow": "AI · 3D · COUTURE",
+      "hero.eyebrow": "AI · ATELIER · COUTURE",
       "hero.title_html": 'Your vision.<br>Your measurements.<br><span class="gradient-text">Your clothing.</span>',
-      "hero.subtitle": "One sentence is enough. The AI designs your piece, a 3D model shows your fit — tailors get the finished spec.",
+      "hero.subtitle": "One sentence is enough. The AI designs your piece, a photorealistic preview shows it on you — tailors get the finished spec.",
       "hero.cta_html": 'Start designing <span aria-hidden="true">→</span>',
       "hero.prompt_form_aria": "Describe a garment and start designing",
       "hero.prompt_aria": "Describe the garment you want",
