@@ -82,6 +82,7 @@ const I18N = (() => {
       "story.a5_headline_html": "Aus geretteter Faser wird Couture — KI-entworfen, nach deinen Maßen.",
       "story.a5_statement": "Für einen gemacht. Deiner.",
       "story.cta_html": 'Mach dein erstes Stück <span aria-hidden="true">→</span>',
+      "story.skip": "Direkt zum Design",
       // Live counter (acts I–IV)
       "story.counter_intro": "Seit du hier bist:",
       "story.counter_garments": "Kleidungsstücke produziert",
@@ -480,6 +481,7 @@ const I18N = (() => {
       "story.a5_headline_html": "Rescued fibre becomes couture — AI-designed, to your measurements.",
       "story.a5_statement": "Made for one. Yours.",
       "story.cta_html": 'Make your first piece <span aria-hidden="true">→</span>',
+      "story.skip": "Skip to design",
       // Live counter (acts I–IV)
       "story.counter_intro": "Since you arrived:",
       "story.counter_garments": "garments produced",
