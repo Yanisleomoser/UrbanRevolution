@@ -499,7 +499,12 @@ html.is-touch .navbar {
     top: 0;
     height: 100vh;
     height: 100svh;
-    height: calc(var(--svh, 1svh) * 100); /* JS-pinned px — see .story-track */
+    height: calc(var(--svh, 1svh) * 100); /* JS-pinned px fallback — see .story-track */
+    /* Fill the *dynamic* viewport so no dark gap opens at the bottom when the
+       iOS Safari toolbar collapses on scroll-down. Only the 1× sticky stage
+       uses dvh; the 1200×-tall .story-track stays --svh-frozen, so the page
+       never reflows/flings on a toolbar toggle. */
+    height: 100dvh;
     overflow: hidden;
     background: var(--void);
 }
@@ -770,7 +775,7 @@ html.is-touch .navbar {
 }
 
 @media (max-width: 768px) {
-    .story-counter { right: var(--space-5); top: clamp(48px, 9vh, 80px); }
+    .story-counter { right: var(--space-5); top: clamp(80px, 13vh, 104px); }
     .story-counter-row { font-size: var(--text-xs); }
 }
 
