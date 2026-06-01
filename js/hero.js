@@ -41,6 +41,17 @@
         let examples = getExamples();
         let currentExample = examples[0] || "";
 
+        // Rotating hero gallery — one slide per example prompt, crossfaded in
+        // sync with the typewriter. The first slide carries .is-visible in the
+        // markup, so a static image shows even with JS disabled / reduced motion.
+        const gallery = document.getElementById("hero-gallery");
+        const slides = gallery ? Array.from(gallery.querySelectorAll(".hero-asset-img")) : [];
+        function setHeroImage(i) {
+            if (!slides.length) return;
+            const n = ((i % slides.length) + slides.length) % slides.length;
+            slides.forEach((s, k) => s.classList.toggle("is-visible", k === n));
+        }
+
         // ── Reduced motion: kein Tippen, nur ein statisches Beispiel ──
         if (prefersReduced()) {
             typed.textContent = currentExample;
@@ -63,6 +74,7 @@
             if (paused) return;
             const text = examples[idx % examples.length] || "";
             currentExample = text;
+            setHeroImage(idx); // crossfade the hero photo to match the typed look
             let pos = 0;
             (function step() {
                 if (paused) return;

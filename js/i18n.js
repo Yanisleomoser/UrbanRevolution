@@ -58,7 +58,7 @@ const I18N = (() => {
         "ein langer Mantel in Tiefsee-Blau und Petrol",
         "ein Streetwear-Set in sattem Waldgrün",
       ],
-      "hero.asset_alt": "Model in einer KI-designten Pufferjacke, von Neon-Lichtspuren in Pink und Cyan umspielt",
+      "hero.asset_alt": "Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt",
       "hero.caption_html": "AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.",
 
       // ── Visual Scroll Story (6 acts) ──
@@ -455,7 +455,7 @@ const I18N = (() => {
         "a long coat in deep-sea blue and petrol",
         "a streetwear set in rich forest green",
       ],
-      "hero.asset_alt": "Model in an AI-designed puffer jacket, wrapped in pink and cyan neon light trails",
+      "hero.asset_alt": "Model in an AI-designed outfit, wrapped in pink and cyan neon light trails",
       "hero.caption_html": "AI-generated. Made to measure. At your door in <strong>14 days</strong>.",
 
       // ── Visual Scroll Story (6 acts) ──
