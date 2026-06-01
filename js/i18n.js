@@ -188,6 +188,7 @@ const I18N = (() => {
       "measure.size_label": "Empfohlene Konfektionsgröße",
       "measure.detail_toggle": "Maße im Detail anpassen",
       "measure.jump_aria": "{label} – zum Eingabefeld springen",
+      "measure.figure_hint": "Tippe eine Markierung, um den Wert anzupassen",
 
       // ── Voreinstellungen ──
       "preset.s": "Voreinstellung S",
@@ -585,6 +586,7 @@ const I18N = (() => {
       "measure.size_label": "Recommended size",
       "measure.detail_toggle": "Adjust detailed measurements",
       "measure.jump_aria": "{label} – jump to input field",
+      "measure.figure_hint": "Tap a marker to edit that measurement",
 
       // ── Presets ──
       "preset.s": "Preset S",
