@@ -4288,3 +4288,38 @@ main { display: block; }
    comfortable height on touch (measured at 390px: preset 33px, lang 28px). */
 html.is-touch .preset-btn { min-height: 44px; }
 html.is-touch .lang-toggle { min-height: 38px; }
+
+/* ── Card spotlight: a faint sheen follows the cursor across dark cards
+      (wired in js/flair.js; desktop fine-pointer only). ── */
+.spotlight { position: relative; }
+.spotlight > .card-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%),
+        rgba(255, 255, 255, 0.08), rgba(139, 92, 246, 0.05) 35%, transparent 60%);
+}
+.spotlight:hover > .card-glow { opacity: 1; }
+
+/* ── Section "seam": a short gradient thread under each section header that
+      sews itself in when the header reveals (tailoring motif). ── */
+.section-header::after {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 2px;
+    margin-top: var(--space-5);
+    border-radius: 2px;
+    background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+}
+@media (prefers-reduced-motion: no-preference) {
+    [data-reveal].section-header::after {
+        width: 0;
+        transition: width 0.9s var(--ease-out) 0.15s;
+    }
+    [data-reveal].section-header.is-revealed::after { width: 56px; }
+}
