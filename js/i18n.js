@@ -187,6 +187,7 @@ const I18N = (() => {
       "measure.status_result": "{chest}cm Brust · {waist}cm Taille · {hips}cm Hüfte",
       "measure.size_label": "Empfohlene Konfektionsgröße",
       "measure.detail_toggle": "Maße im Detail anpassen",
+      "measure.jump_aria": "{label} – zum Eingabefeld springen",
 
       // ── Voreinstellungen ──
       "preset.s": "Voreinstellung S",
@@ -583,6 +584,7 @@ const I18N = (() => {
       "measure.status_result": "{chest}cm chest · {waist}cm waist · {hips}cm hips",
       "measure.size_label": "Recommended size",
       "measure.detail_toggle": "Adjust detailed measurements",
+      "measure.jump_aria": "{label} – jump to input field",
 
       // ── Presets ──
       "preset.s": "Preset S",

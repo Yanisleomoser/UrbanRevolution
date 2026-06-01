@@ -1816,12 +1816,26 @@ input[aria-invalid="true"] {
 
 .annotation.is-active line {
     stroke: #f9a8d4;
-    stroke-width: 1.8;
+    stroke-width: 5;
     stroke-dasharray: none;
+}
+
+.annotation.is-active circle {
+    fill: #f9a8d4;
+    r: 11;
 }
 
 .annotation.is-active text {
     fill: #f9a8d4;
+}
+
+/* Tappable markers (wired in app.js) — the figure doubles as a legend that
+   jumps to the matching input. */
+.annotation.is-tappable { cursor: pointer; }
+.annotation.is-tappable:focus-visible {
+    outline: 2px solid var(--accent-3, #06b6d4);
+    outline-offset: 3px;
+    border-radius: 4px;
 }
 
 /* Fokussiertes Maßfeld bekommt eine farbige Markierung */
