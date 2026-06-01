@@ -43,7 +43,6 @@ js/
   preferences.js        # localStorage usage history → personalised suggestions
   library.js            # localStorage saved designs (max 20, + optional VTO url)
   animations.js         # IntersectionObserver scroll-reveal (side effect)
-  analytics.js          # Vercel Web Analytics inject (ES module, npm dep)
   app.js                # Main controller — wires DOM events to StateManager
   3d/
     scene.js            # Three.js renderer, lights, bloom composer (ES module)
@@ -86,7 +85,6 @@ window.Foo = Foo;
 | `library.js`      | `window.Library`        | classic         |
 | `animations.js`   | (none — side effect)    | classic         |
 | `app.js`          | (none — controller)     | classic         |
-| `analytics.js`    | (none — side effect)    | `type="module"` |
 | `3d/story-scene.js`| (self-mounts)          | `type="module"` |
 | `3d/controller.js`| (self-mounts)           | `type="module"` |
 
@@ -102,7 +100,7 @@ section nears the viewport.
 subscribe to its events). The bottom-of-body order is:
 
 ```
-analytics.js (module) → config → i18n → state-manager → ai → measurements →
+config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → animations → app →
 3d/story-scene.js (module) → 3d/controller.js (module)
 ```
@@ -318,15 +316,17 @@ python3 -m http.server 8080
 npm run dev          # → npx serve .
 ```
 
-`npm install` is **only** needed so `js/analytics.js` resolves its local
-`@vercel/analytics` import; the app works without it. The `/api/*` edge
-functions only run on Vercel (or `vercel dev`).
+`npm install` is not needed to run the app locally. Vercel Web Analytics and
+Speed Insights load at runtime from Vercel's own `/_vercel/insights/script.js`
+and `/_vercel/speed-insights/script.js` endpoints (served only on Vercel, via
+script tags in `index.html` — no npm import). The `/api/*` edge functions only
+run on Vercel (or `vercel dev`).
 
 ## Deployment
 
-- **Vercel** (`vercel.json`) — no build, root is output. `npm install`
-  runs so analytics resolves. Speed Insights + Web Analytics inject from
-  `index.html`. The two `/api/` functions run as Edge Functions. **This is the
+- **Vercel** (`vercel.json`) — no build, root is output. Speed Insights +
+  Web Analytics load from Vercel's `/_vercel/*` script endpoints (script tags
+  in `index.html`). The two `/api/` functions run as Edge Functions. **This is the
   only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
   — the repo no longer has a Pages workflow.
 
