@@ -736,6 +736,47 @@ html.is-touch .navbar {
 
 .story-page [data-act-num] { color: var(--pure); }
 
+/* "Skip to design" — lets impatient visitors jump past the 12-viewport story
+   straight to the tool. Top-left so it clears the counter (top-right) and the
+   act copy (bottom). Sits inside the pinned stage, so it's visible exactly
+   while the story is on screen. Hidden in the reduced-motion / no-WebGL
+   fallbacks where the story collapses to a short static block. */
+.story-skip {
+    position: absolute;
+    top: clamp(64px, 12vh, 92px);
+    left: var(--space-8);
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 100px;
+    background: rgba(10, 10, 11, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: 'Poppins', sans-serif;
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--ease-out),
+                border-color var(--duration-base) var(--ease-out),
+                background var(--duration-base) var(--ease-out);
+}
+.story-skip:hover,
+.story-skip:focus-visible {
+    color: var(--pure);
+    border-color: var(--accent-2, #8b5cf6);
+    background: rgba(10, 10, 11, 0.6);
+}
+.story-skip span[aria-hidden] { transition: transform var(--duration-base) var(--ease-out); }
+.story-skip:hover span[aria-hidden] { transform: translateX(3px); }
+
+@media (max-width: 600px) {
+    .story-skip { left: var(--space-5); top: clamp(80px, 13vh, 104px); padding: 7px 12px; }
+}
+
 /* Live counter — top-right, quiet until it matters; retires at the turn. */
 .story-counter {
     position: absolute;
@@ -793,6 +834,7 @@ html.is-touch .navbar {
     .story-scrim,
     .story-photos,
     .story-counter,
+    .story-skip,
     .story-foot { display: none; }
     .story-acts {
         position: static;
@@ -825,7 +867,8 @@ html.is-touch .navbar {
     padding: var(--space-11) 0;
 }
 .story.no-webgl .story-track { height: auto; }
-.story.no-webgl .story-foot { display: none; }
+.story.no-webgl .story-foot,
+.story.no-webgl .story-skip { display: none; }
 .story.no-webgl .story-acts { position: static; padding: 0 var(--space-8); }
 .story.no-webgl .story-act {
     position: static;
