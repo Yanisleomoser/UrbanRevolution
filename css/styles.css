@@ -3938,9 +3938,9 @@ main { display: block; }
 .hero-asset-picture {
     display: block;
     width: 100%;
-    max-width: 380px;
-    max-height: 70vh;
-    aspect-ratio: 4 / 5;
+    max-width: 400px;
+    max-height: 76vh;
+    aspect-ratio: 768 / 1376; /* match the photo so the full figure (hair → hands) shows uncropped */
     border-radius: 28px;
     overflow: hidden;
     position: relative;
@@ -3963,8 +3963,8 @@ main { display: block; }
     height: 100%;
     display: block;
     object-fit: cover;
-    /* Keep the face + neon trails in frame when the tall photo is cropped to 4:5 */
-    object-position: 50% 28%;
+    /* Card matches the photo aspect, so cover shows the whole figure; centre it. */
+    object-position: 50% 50%;
     /* Crossfade gallery: only .is-visible is shown; hero.js swaps it in sync
        with the typed example prompt. First slide carries .is-visible in the
        markup so it shows even without JS. */
@@ -4003,7 +4003,7 @@ main { display: block; }
 @media (max-width: 600px) {
     .hero-inner { padding: var(--space-11) var(--space-5) var(--space-7); }
     .hero-asset { order: 2; }
-    .hero-asset-picture { max-width: 280px; aspect-ratio: 3 / 4; }
+    .hero-asset-picture { max-width: 300px; }
     .hero-asset-caption { font-size: var(--text-xs); }
 }
 
@@ -4084,6 +4084,9 @@ main { display: block; }
     min-width: 0;
     display: flex;
     align-items: center;
+    /* Inset the typed/ghost text so it isn't flush against (and clipped by) the
+       left edge — the absolute ghost positions to this padding box too. */
+    padding-left: var(--space-3);
 }
 
 .hero-prompt-input {
