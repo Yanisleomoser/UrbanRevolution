@@ -4323,3 +4323,91 @@ html.is-touch .lang-toggle { min-height: 38px; }
     }
     [data-reveal].section-header.is-revealed::after { width: 56px; }
 }
+
+/* ============================================================
+   Post-story life — round 2 (F3/F4/F5)
+   3 tasteful, professional micro-interactions for the sections
+   after the scroll story. All reduced-motion safe.
+   ============================================================ */
+
+/* ── F3. CTA sheen — a single soft glint sweeps across the brand-gradient
+      buttons on hover, like light catching satin. Compositor-only. ── */
+.upload-btn,
+.export-btn.primary,
+.vto-download-btn,
+.hero-prompt-go {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+.upload-btn::after,
+.export-btn.primary::after,
+.vto-download-btn::after,
+.hero-prompt-go::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(
+        100deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 35%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0.05) 65%,
+        transparent 100%);
+    transform: translateX(-180%) skewX(-18deg);
+    opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .upload-btn:hover::after,
+    .export-btn.primary:hover::after,
+    .vto-download-btn:hover::after,
+    .hero-prompt-go:hover::after {
+        opacity: 1;
+        animation: ctaSheen 0.85s var(--ease-out);
+    }
+}
+@keyframes ctaSheen {
+    from { transform: translateX(-180%) skewX(-18deg); }
+    to   { transform: translateX(320%)  skewX(-18deg); }
+}
+
+/* ── F4. Trust badges come alive on hover — the icon tile lights up with the
+      brand gradient ring, the glyph picks up the accent and lifts a touch.
+      Colour shift stays under reduced motion; only the lift is dropped. ── */
+.trust-item .trust-icon {
+    transition:
+        transform var(--duration-base) var(--ease-out),
+        border-color var(--duration-base) var(--ease-out),
+        box-shadow var(--duration-base) var(--ease-out),
+        color var(--duration-base) var(--ease-out);
+}
+.trust-item:hover .trust-icon {
+    border-color: rgba(236, 72, 153, 0.55);
+    color: #fff;
+    box-shadow:
+        0 0 0 1px rgba(236, 72, 153, 0.35),
+        0 8px 24px rgba(236, 72, 153, 0.22);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .trust-item:hover .trust-icon { transform: translateY(-3px) scale(1.04); }
+}
+
+/* ── F5. Workflow connector "thread" — the hairline between the steps draws
+      itself left-to-right when the tracker scrolls into view (tailoring
+      stitch motif, echoes the section seam). Desktop only — the connector
+      is already hidden on small screens. ── */
+@media (prefers-reduced-motion: no-preference) {
+    [data-reveal].step-tracker::before {
+        transform: translateY(-50%) scaleX(0);
+        transform-origin: left center;
+        transition: transform 1.1s var(--ease-out) 0.1s;
+    }
+    [data-reveal].step-tracker.is-revealed::before {
+        transform: translateY(-50%) scaleX(1);
+    }
+}
