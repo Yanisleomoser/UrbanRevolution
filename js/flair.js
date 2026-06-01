@@ -67,6 +67,27 @@
     hero.classList.add("has-pointer-flair"); // unlocks the CSS aura + tilt
   }
 
+  // ── 5. Card spotlight — a soft sheen tracks the cursor across the dark cards
+  //    in the post-story sections (glass-under-light). Desktop / motion only. ──
+  function initCardSpotlight() {
+    if (reduced || isTouch || !finePointer) return;
+    const cards = document.querySelectorAll(
+      ".prompt-panel, .result-panel, .photo-upload-card, .body-diagram, .trust-item, .preview-controls"
+    );
+    cards.forEach((card) => {
+      card.classList.add("spotlight");
+      const glow = document.createElement("span");
+      glow.className = "card-glow";
+      glow.setAttribute("aria-hidden", "true");
+      card.appendChild(glow);
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+        card.style.setProperty("--my", (e.clientY - r.top) + "px");
+      });
+    });
+  }
+
   // ── 4. Easter egg — type a brand word in the hero prompt for a neon burst ──
   function initEasterEgg() {
     const input = document.getElementById("hero-prompt-input");
@@ -112,6 +133,7 @@
   function init() {
     initScrollThread();
     initHeroPointer();
+    initCardSpotlight();
     initEasterEgg();
   }
   if (document.readyState === "loading") {
