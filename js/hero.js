@@ -46,9 +46,17 @@
         // markup, so a static image shows even with JS disabled / reduced motion.
         const gallery = document.getElementById("hero-gallery");
         const slides = gallery ? Array.from(gallery.querySelectorAll(".hero-asset-img")) : [];
+        // Slides 2–6 carry data-src (no src) so they don't load on first paint —
+        // only slide 1 does. Each is fetched just-in-time the first time it (or
+        // the upcoming one) is shown, so the initial hero is ~490 KB lighter.
+        function loadSlide(s) {
+            if (s && s.dataset.src && !s.getAttribute("src")) s.src = s.dataset.src;
+        }
         function setHeroImage(i) {
             if (!slides.length) return;
             const n = ((i % slides.length) + slides.length) % slides.length;
+            loadSlide(slides[n]);                          // current
+            loadSlide(slides[(n + 1) % slides.length]);    // preload next for a smooth crossfade
             slides.forEach((s, k) => s.classList.toggle("is-visible", k === n));
         }
 
