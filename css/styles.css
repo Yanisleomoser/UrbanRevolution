@@ -4283,3 +4283,8 @@ main { display: block; }
     .gradient-text { animation: none; }
     .has-pointer-flair .hero-asset-picture { transform: none; }
 }
+
+/* QA: touch tap-target sizing — lift the two shortest interactive controls to a
+   comfortable height on touch (measured at 390px: preset 33px, lang 28px). */
+html.is-touch .preset-btn { min-height: 44px; }
+html.is-touch .lang-toggle { min-height: 38px; }
