@@ -223,12 +223,26 @@ const I18N = (() => {
       "preview.intro": "Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.",
       "preview.example_tag": "Beispiel",
       "preview.example_label": "So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.",
-      "preview.loading_h3": "3D-Vorschau wird geladen",
-      "preview.loading_body": "Three.js initialisiert das interaktive Modell mit deinen Maßen. Falls dein Browser kein WebGL unterstützt, zeigen wir hier einen Hinweis.",
-      "preview.model_info": "Modell-Info",
+      "preview.model_info": "Stück-Info",
       "preview.fabric": "Stoffmenge:",
       "preview.seams": "Nähte:",
       "preview.size": "Größe:",
+
+      // ── Entwurfs-Vorschau (KI-Studio-Render im Design-Schritt) ──
+      "dpreview.btn": "Entwurf visualisieren",
+      "dpreview.loading": "KI rendert deinen Entwurf …",
+      "dpreview.badge": "KI-RENDER",
+      "dpreview.caption": "Studio-Visualisierung deines Entwurfs — die finale Maßanfertigung kann abweichen.",
+      "dpreview.img_alt": "KI-Studio-Render des Entwurfs",
+      "dpreview.regenerate": "Neu rendern",
+      "dpreview.hint_first": "Zeigt dein Design als Studio-Render — ohne Foto, {limit} pro Browser. Das Try-on mit deinem Foto kommt in Schritt 3.",
+      "dpreview.hint_remaining": "Noch {remaining} von {limit} Renders übrig.",
+      "dpreview.hint_limit": "Render-Limit erreicht ({limit}/{limit}).",
+      "dpreview.retry": "Erneut versuchen",
+      "dpreview.error_prefix": "Fehler: {msg}",
+      "dpreview.error_pending": "Render dauert länger als erwartet (>20 s). Bitte erneut versuchen.",
+      "dpreview.error_unexpected": "Unerwartete Antwort vom Server.",
+      "dpreview.error_network": "Netzwerkfehler: {msg}",
 
       // ── Produktion ──
       "prod.h2": "Produktions-Vorlage",
@@ -618,17 +632,31 @@ const I18N = (() => {
       "svg.inseam": "Inseam",
       "svg.height": "Height",
 
-      // ── 3D preview ──
+      // ── Photorealistic preview ──
       "preview.h2": "Photorealistic preview",
       "preview.intro": "See your AI design on a real photo of you — photorealistically generated, not a model approximation.",
       "preview.example_tag": "Example",
       "preview.example_label": "This is how your AI design looks photorealistically on you — upload a full-body photo under “Measurements”.",
-      "preview.loading_h3": "Loading 3D preview",
-      "preview.loading_body": "Three.js is initializing the interactive model with your measurements. If your browser doesn't support WebGL, we'll show a note here.",
-      "preview.model_info": "Model info",
+      "preview.model_info": "Garment info",
       "preview.fabric": "Fabric:",
       "preview.seams": "Seams:",
       "preview.size": "Size:",
+
+      // ── Design preview (AI studio render in the design step) ──
+      "dpreview.btn": "Visualise the design",
+      "dpreview.loading": "AI is rendering your design …",
+      "dpreview.badge": "AI RENDER",
+      "dpreview.caption": "Studio visualisation of your concept — the final tailored piece may differ.",
+      "dpreview.img_alt": "AI studio render of the design",
+      "dpreview.regenerate": "Re-render",
+      "dpreview.hint_first": "Shows your design as a studio render — no photo needed, {limit} per browser. The try-on with your photo comes in step 3.",
+      "dpreview.hint_remaining": "{remaining} of {limit} renders left.",
+      "dpreview.hint_limit": "Render limit reached ({limit}/{limit}).",
+      "dpreview.retry": "Try again",
+      "dpreview.error_prefix": "Error: {msg}",
+      "dpreview.error_pending": "Render is taking longer than expected (>20 s). Please try again.",
+      "dpreview.error_unexpected": "Unexpected response from the server.",
+      "dpreview.error_network": "Network error: {msg}",
 
       // ── Production ──
       "prod.h2": "Production spec",

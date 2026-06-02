@@ -474,6 +474,8 @@
 
         ${promptHtml}
 
+        <div class="design-card-preview" id="design-preview-slot"></div>
+
         <div class="design-card-specs">
           <div class="spec-pill spec-pill-color">
             <span class="spec-swatch" style="background:${escapeHtml(color)}"></span>
@@ -494,6 +496,8 @@
     if (saveBtn) {
       saveBtn.addEventListener("click", () => saveCurrentDesign());
     }
+
+    renderPreviewSlot(design);
 
     document.getElementById("customize-controls").style.display = "block";
 
@@ -1091,7 +1095,12 @@
     const material = S.get("currentMaterial");
     const color = S.get("currentColor");
     parts.push(`${type} in ${color} (${material})`);
-    return parts.filter(Boolean).join(". ");
+    // Both /api/try-on and /api/preview-design reject a designPrompt over
+    // 1000 chars (400). A detailed prompt + a verbose AI description can
+    // exceed that, so cap the joined string with a small safety margin —
+    // the trailing type/colour/material clause is the least important to
+    // keep intact, so trimming the tail is fine.
+    return parts.filter(Boolean).join(". ").slice(0, 990);
   }
 
   // Last successful generation URL, kept so the download button can fetch it.
@@ -1178,6 +1187,158 @@
     }
   }
 
+  // ───── Design preview (AI studio render — the cheap "do I like it?" gate) ─────
+  //
+  // A ghost-mannequin product render of the *garment* (no user photo) shown
+  // inline in the design card, so the user can judge the concept before
+  // spending a photo-based try-on run on themselves. Same client-side
+  // localStorage rate-limit pattern as the VTO, with its own (higher) cap
+  // since a render is text-only and cheaper to a brand than a wasted try-on.
+  const PREVIEW_LIMIT = 30;
+  const PREVIEW_STORAGE_KEY = "urev_preview_count";
+  // True while a render request is in flight. Lets a card rebuild (e.g. the
+  // pattern selector calls renderDesignResult mid-render) keep the loading
+  // state instead of snapping back to the button, and blocks a double-fire.
+  let previewGenerating = false;
+
+  function getPreviewCount() {
+    try {
+      const n = parseInt(localStorage.getItem(PREVIEW_STORAGE_KEY) || "0", 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function incrementPreviewCount() {
+    try {
+      localStorage.setItem(PREVIEW_STORAGE_KEY, String(getPreviewCount() + 1));
+    } catch {
+      // localStorage blocked — silently skip; the server stays the real cap.
+    }
+  }
+
+  function previewRemaining() {
+    return Math.max(0, PREVIEW_LIMIT - getPreviewCount());
+  }
+
+  function previewHintText() {
+    const remaining = previewRemaining();
+    if (remaining === 0) return t("dpreview.hint_limit", { limit: PREVIEW_LIMIT });
+    return getPreviewCount() === 0
+      ? t("dpreview.hint_first", { limit: PREVIEW_LIMIT })
+      : t("dpreview.hint_remaining", { remaining, limit: PREVIEW_LIMIT });
+  }
+
+  // Markup for the "no render yet" state (button + hint). Disabled at the cap.
+  function previewSlotPrompt(label) {
+    const atLimit = previewRemaining() === 0;
+    return `
+      <button id="design-preview-btn" class="design-preview-btn" type="button"${atLimit ? " disabled" : ""}>
+        <span class="design-preview-btn-icon" aria-hidden="true">✦</span>
+        <span>${escapeHtml(label || t("dpreview.btn"))}</span>
+      </button>
+      <p class="design-preview-hint">${escapeHtml(previewHintText())}</p>`;
+  }
+
+  // Render the preview slot for the given design. opts: { loading, error }.
+  function renderPreviewSlot(design, opts) {
+    const slot = document.getElementById("design-preview-slot");
+    if (!slot) return;
+    opts = opts || {};
+
+    // Keep the spinner up if a render is in flight but the card got rebuilt
+    // (the pattern selector re-renders the whole card), unless we already
+    // have a result or an explicit error to show.
+    if (opts.loading ||
+        (previewGenerating && !opts.error && !(design && design.previewImageUrl))) {
+      slot.innerHTML =
+        `<div class="design-preview-loading">` +
+        `<span class="design-preview-spinner" aria-hidden="true"></span>` +
+        `<p role="status" aria-live="polite">${escapeHtml(t("dpreview.loading"))}</p>` +
+        `</div>`;
+      return;
+    }
+
+    if (opts.error) {
+      slot.innerHTML =
+        `<p class="design-preview-error" role="status">${escapeHtml(opts.error)}</p>` +
+        previewSlotPrompt(t("dpreview.retry"));
+      document.getElementById("design-preview-btn")
+        ?.addEventListener("click", generateDesignPreview);
+      return;
+    }
+
+    if (design && design.previewImageUrl) {
+      slot.innerHTML = `
+        <figure class="design-preview-figure">
+          <img class="design-preview-img" src="${escapeHtml(design.previewImageUrl)}"
+               alt="${escapeHtml(t("dpreview.img_alt"))}" loading="lazy">
+          <figcaption class="design-preview-cap">
+            <span class="design-preview-badge">${escapeHtml(t("dpreview.badge"))}</span>
+            ${escapeHtml(t("dpreview.caption"))}
+          </figcaption>
+        </figure>`;
+      return;
+    }
+
+    slot.innerHTML = previewSlotPrompt();
+    document.getElementById("design-preview-btn")
+      ?.addEventListener("click", generateDesignPreview);
+  }
+
+  async function generateDesignPreview() {
+    const design = S.get("currentDesign");
+    if (!design) return;
+    if (previewGenerating) return; // already rendering — ignore re-clicks
+    if (getPreviewCount() >= PREVIEW_LIMIT) return; // belt-and-suspenders
+
+    previewGenerating = true;
+    renderPreviewSlot(design, { loading: true });
+
+    // The garment description is identical to what the VTO sends — it's the
+    // garment, just without the "keep this person" instruction.
+    const designPrompt = buildVtoPrompt(design);
+
+    try {
+      const res = await fetch("/api/preview-design", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ designPrompt }),
+      });
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        renderPreviewSlot(design, { error: t("dpreview.error_prefix", { msg: body.error || res.statusText }) });
+        return;
+      }
+      if (body.pending) {
+        renderPreviewSlot(design, { error: t("dpreview.error_pending") });
+        return;
+      }
+      if (body.imageUrl) {
+        // Cache on the live design object so re-renders are free, and persist
+        // to the library if this design is saved (the tile then shows it).
+        design.previewImageUrl = body.imageUrl;
+        const current = S.get("currentDesign");
+        if (current && current.designId === design.designId) {
+          current.previewImageUrl = body.imageUrl;
+        }
+        if (window.Library && design.designId && window.Library.get(design.designId)) {
+          window.Library.setPreviewImage(design.designId, body.imageUrl);
+        }
+        incrementPreviewCount();
+        renderPreviewSlot(design);
+      } else {
+        renderPreviewSlot(design, { error: t("dpreview.error_unexpected") });
+      }
+    } catch (err) {
+      renderPreviewSlot(design, { error: t("dpreview.error_network", { msg: err.message }) });
+    } finally {
+      previewGenerating = false;
+    }
+  }
+
   // ───── Saved Designs Library ─────
 
   let libraryEscHandler = null;
@@ -1244,8 +1405,9 @@
         try { return new Date(d.savedAt).toLocaleDateString(window.I18N ? window.I18N.locale() : "de-DE"); }
         catch { return ""; }
       })();
-      const visual = d.vtoImageUrl
-        ? `<img class="library-tile-photo" src="${escapeHtml(d.vtoImageUrl)}" alt="" loading="lazy">`
+      const tileImage = d.vtoImageUrl || d.previewImageUrl;
+      const visual = tileImage
+        ? `<img class="library-tile-photo" src="${escapeHtml(tileImage)}" alt="" loading="lazy">`
         : `<div class="library-tile-icon" style="color:${escapeHtml(d.color)}">${typeIconSvg(d.type, 56)}</div>`;
       return `
         <article class="library-tile" data-id="${escapeHtml(d.id)}">
@@ -1287,6 +1449,7 @@
       constructionNotes: entry.constructionNotes || [],
       description: t("lib.loaded_desc"),
       generatedAt: entry.savedAt,
+      previewImageUrl: entry.previewImageUrl || null,
     };
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
