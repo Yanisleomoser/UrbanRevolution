@@ -41,6 +41,13 @@ button:hover{transform:translateY(-2px);}
 .tags{margin-top:46px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ts);}
 .tags span{display:flex;align-items:center;gap:8px;}.tags i{width:5px;height:5px;border-radius:50%;background:var(--grad);}
 .foot{margin-top:48px;font-size:12px;color:var(--ts);letter-spacing:0.08em;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.consent{display:flex;align-items:flex-start;gap:9px;justify-content:flex-start;text-align:left;max-width:420px;margin:16px auto 0;font-size:12px;line-height:1.5;color:var(--ts);letter-spacing:0.02em;cursor:pointer;}
+.consent input{margin-top:3px;accent-color:var(--purple);flex:0 0 auto;width:15px;height:15px;cursor:pointer;}
+.consent a{color:var(--tm);text-decoration:underline;}
+.formError{display:none;margin-top:14px;font-size:13px;color:#fda4af;}
+.formError.show{display:block;}
+button:disabled{opacity:.6;cursor:wait;transform:none;}
 </style>
 </head>
 <body>
@@ -50,17 +57,19 @@ button:hover{transform:translateY(-2px);}
     <div class="eyebrow">Pre-launch · Building in public</div>
     <h1>The waitlist<br>for <em class="grad-text">one of one.</em></h1>
     <p class="lead">Made-to-measure fashion, designed by you, spun from recycled PET. First drops go to the list. No spam — just the build, and your invite.</p>
-    <form id="form">
-      <label for="email">Email address</label>
-      <input type="email" id="email" placeholder="you@email.com" required />
-      <button type="submit">Join the list →</button>
+    <form id="form" novalidate>
+      <label for="email" class="sr-only">Email address</label>
+      <input type="email" id="email" placeholder="you@email.com" autocomplete="email" required />
+      <button type="submit" id="submitBtn">Join the list →</button>
     </form>
+    <label class="consent"><input type="checkbox" id="consent" /> <span>I agree my email is stored so Urban Revolution can contact me about the launch. See the <a href="datenschutz.html">privacy notice</a>.</span></label>
+    <div class="formError" id="formError" role="alert"></div>
     <div class="micro">Be early. Early supporters get the first made-to-measure orders.</div>
-    <div class="count"><span class="dot"></span><b id="num">2,847</b> already on the list</div>
+    <div class="count" id="countWrap" style="visibility:hidden;"><span class="dot"></span><b id="num"></b> <span id="countLabel">already on the list</span></div>
     <div class="tags">
-      <span><i></i>AI · 3D · Couture</span>
+      <span><i></i>AI · Atelier · Couture</span>
       <span><i></i>Recycled rPET</span>
-      <span><i></i>Bern, CH</span>
+      <span><i></i>Zürich, CH</span>
     </div>
   </div>
 
@@ -80,21 +89,77 @@ const form=document.getElementById('form');
 const formWrap=document.getElementById('formWrap');
 const success=document.getElementById('success');
 const numEl=document.getElementById('num');
+const countWrap=document.getElementById('countWrap');
+const countLabel=document.getElementById('countLabel');
 const rankEl=document.getElementById('rank');
 const succMsg=document.getElementById('succMsg');
+const emailEl=document.getElementById('email');
+const consentEl=document.getElementById('consent');
+const submitBtn=document.getElementById('submitBtn');
+const errEl=document.getElementById('formError');
 
-// In-memory list (demo). In production, POST to your email provider / backend.
-let count=2847;
-form.addEventListener('submit',e=>{
+// Only surface a number once it's genuine social proof — below that we say
+// "be among the first" rather than show an unimpressive (but honest) count.
+const COUNT_THRESHOLD=50;
+const fmt=n=>n.toLocaleString('en-US');
+const showError=m=>{errEl.textContent=m;errEl.classList.add('show');};
+const clearError=()=>{errEl.classList.remove('show');errEl.textContent='';};
+
+function renderCount(n){
+  if(typeof n!=='number'||n<COUNT_THRESHOLD){
+    numEl.textContent='';
+    countLabel.textContent='Be among the first to join';
+  }else{
+    numEl.textContent=fmt(n);
+    countLabel.textContent='already on the list';
+  }
+  countWrap.style.visibility='visible';
+}
+
+// Live count on load — graceful: if the store isn't configured the count
+// stays hidden and the page still works.
+fetch('/api/waitlist').then(r=>r.json()).then(d=>{
+  if(d&&typeof d.count==='number') renderCount(d.count);
+}).catch(()=>{});
+
+const ERR={
+  invalid_email:'Please enter a valid email address.',
+  consent_required:'Please tick the box so we can add you.',
+  service_unavailable:'The waitlist is warming up — please try again in a moment.',
+  default:'Something went wrong. Please try again.'
+};
+
+form.addEventListener('submit',async e=>{
   e.preventDefault();
-  const email=document.getElementById('email').value.trim();
-  if(!email) return;
-  count++;
-  rankEl.textContent="#"+count.toLocaleString();
-  formWrap.classList.add('hide');
-  success.classList.add('show');
-  // Where to wire it up:
-  // fetch('/api/waitlist',{method:'POST',body:JSON.stringify({email})})
+  clearError();
+  const email=emailEl.value.trim();
+  if(!email){showError(ERR.invalid_email);return;}
+  if(!consentEl.checked){showError(ERR.consent_required);return;}
+
+  const label=submitBtn.textContent;
+  submitBtn.disabled=true; submitBtn.textContent='Joining…';
+  try{
+    const res=await fetch('/api/waitlist',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,consent:true})
+    });
+    const d=await res.json().catch(()=>({}));
+    if(!res.ok){
+      showError(ERR[d.code]||ERR.default);
+      submitBtn.disabled=false; submitBtn.textContent=label;
+      return;
+    }
+    if(typeof d.count==='number') rankEl.textContent='#'+fmt(d.count);
+    else rankEl.parentElement.style.display='none';
+    if(d.status==='already')
+      succMsg.textContent="You're already on the list. Watch your inbox — the first build update lands soon.";
+    formWrap.classList.add('hide');
+    success.classList.add('show');
+  }catch(err){
+    showError(ERR.default);
+    submitBtn.disabled=false; submitBtn.textContent=label;
+  }
 });
 </script>
 </body>
