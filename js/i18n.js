@@ -164,6 +164,11 @@ const I18N = (() => {
       "vto.error_prefix": "Fehler: {msg}",
       "vto.error_network": "Netzwerkfehler: {msg}",
 
+      // ── Generische, neutrale Service-Fehler (Edge-Function-Codes) ──
+      "err.service_unavailable": "Der Bild-Dienst ist gerade nicht verfügbar. Bitte versuch es später erneut.",
+      "err.rate_limited": "Gerade sind viele Anfragen unterwegs — bitte in einer Minute erneut versuchen.",
+      "err.failed": "Die Generierung ist fehlgeschlagen. Bitte versuch es erneut.",
+
       // ── Bibliothek ──
       "library.title": "Meine Designs",
       "library.close": "Schließen",
@@ -577,6 +582,11 @@ const I18N = (() => {
       "vto.error_unexpected": "Unexpected response from the server.",
       "vto.error_prefix": "Error: {msg}",
       "vto.error_network": "Network error: {msg}",
+
+      // ── Generic, neutral service errors (edge-function codes) ──
+      "err.service_unavailable": "The image service is currently unavailable. Please try again later.",
+      "err.rate_limited": "A lot of requests are coming in right now — please try again in a minute.",
+      "err.failed": "Generation failed. Please try again.",
 
       // ── Library ──
       "library.title": "My designs",

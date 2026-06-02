@@ -29,10 +29,10 @@ export default async function handler(request) {
 
     const apiKey = process.env.REPLICATE_API_TOKEN;
     if (!apiKey) {
-        return jsonError(500,
-            "REPLICATE_API_TOKEN not configured on the server. " +
-            "Set it in Vercel → Project Settings → Environment Variables.",
-        );
+        // Log the actionable detail server-side; the browser only gets a
+        // neutral, coded message (never leak config/billing state to users).
+        console.error("[try-on] REPLICATE_API_TOKEN not configured");
+        return jsonError(503, "Try-on service unavailable", "service_unavailable");
     }
 
     let payload;
@@ -83,14 +83,13 @@ export default async function handler(request) {
             }),
         });
     } catch (err) {
-        return jsonError(502, `Replicate request failed: ${err.message}`);
+        console.error(`[try-on] Replicate request failed: ${err.message}`);
+        return jsonError(502, "Upstream request failed", "service_unavailable");
     }
 
     if (!createResponse.ok) {
         const text = await createResponse.text().catch(() => "");
-        return jsonError(502,
-            `Replicate API ${createResponse.status}: ${text.slice(0, 400)}`,
-        );
+        return upstreamError("try-on", createResponse.status, text.slice(0, 400));
     }
 
     const prediction = await createResponse.json();
@@ -103,9 +102,8 @@ export default async function handler(request) {
     }
 
     if (prediction.status === "failed" || prediction.status === "canceled") {
-        return jsonError(502,
-            `Generation failed: ${prediction.error || prediction.status}`,
-        );
+        console.error(`[try-on] prediction ${prediction.status}: ${prediction.error || ""}`);
+        return jsonError(502, "Generation failed", "failed");
     }
 
     // Still processing after the synchronous wait — return the polling
@@ -118,6 +116,17 @@ export default async function handler(request) {
     }, { status: 202 });
 }
 
-function jsonError(status, message) {
-    return Response.json({ error: message }, { status });
+// Classify an upstream Replicate failure into a SAFE, coded client error.
+// The real status/body (which can include billing/credit/account state) is
+// logged server-side only — the browser never sees it. `code` drives the
+// localised user message in js/app.js.
+function upstreamError(tag, status, detail) {
+    console.error(`[${tag}] Replicate ${status}: ${detail}`);
+    if (status === 429) return jsonError(503, "Rate limited", "rate_limited");
+    // 402 (insufficient credit), 401/403 (auth), 5xx, etc. → generic.
+    return jsonError(503, "Image service unavailable", "service_unavailable");
+}
+
+function jsonError(status, message, code) {
+    return Response.json(code ? { error: message, code } : { error: message }, { status });
 }

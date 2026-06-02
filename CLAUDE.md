@@ -205,9 +205,16 @@ It forwards `{ userPhoto, designPrompt }` to Replicate's
 `flux-kontext-pro` (instruction-following image editor) and returns the
 generated image URL.
 
-- **Setup:** set `REPLICATE_API_TOKEN` in Vercel env vars. Without it the
-  function returns a 500 with a clear message; the rest of the app keeps
-  working (button enabled, generation fails with a toast).
+- **Setup:** set `REPLICATE_API_TOKEN` in Vercel env vars. Without it (or on
+  any upstream failure) the function logs the real reason server-side and
+  returns a **neutral, coded** error to the browser (never leaks
+  billing/credit/auth state); the rest of the app keeps working.
+- **Safe errors:** upstream Replicate failures (402 insufficient credit,
+  401/403 auth, 429, 5xx, generation failure) are mapped to a `code`
+  (`service_unavailable` / `rate_limited` / `failed`) which `app.js`
+  (`codedErrorMessage`) turns into a friendly localised message via the
+  shared `err.*` i18n keys. The raw upstream text only goes to
+  `console.error` (Vercel runtime logs). Same for `preview-design.js`.
 - **Privacy:** unlike measurement extraction (100 % client-side), VTO sends
   the photo to Replicate's US servers. The disclaimer below the button
   states this; the user opts in by clicking. The photo lives only in memory
