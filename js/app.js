@@ -1196,6 +1196,10 @@
   // since a render is text-only and cheaper to a brand than a wasted try-on.
   const PREVIEW_LIMIT = 30;
   const PREVIEW_STORAGE_KEY = "urev_preview_count";
+  // True while a render request is in flight. Lets a card rebuild (e.g. the
+  // pattern selector calls renderDesignResult mid-render) keep the loading
+  // state instead of snapping back to the button, and blocks a double-fire.
+  let previewGenerating = false;
 
   function getPreviewCount() {
     try {
@@ -1243,7 +1247,11 @@
     if (!slot) return;
     opts = opts || {};
 
-    if (opts.loading) {
+    // Keep the spinner up if a render is in flight but the card got rebuilt
+    // (the pattern selector re-renders the whole card), unless we already
+    // have a result or an explicit error to show.
+    if (opts.loading ||
+        (previewGenerating && !opts.error && !(design && design.previewImageUrl))) {
       slot.innerHTML =
         `<div class="design-preview-loading">` +
         `<span class="design-preview-spinner" aria-hidden="true"></span>` +
@@ -1282,8 +1290,10 @@
   async function generateDesignPreview() {
     const design = S.get("currentDesign");
     if (!design) return;
+    if (previewGenerating) return; // already rendering — ignore re-clicks
     if (getPreviewCount() >= PREVIEW_LIMIT) return; // belt-and-suspenders
 
+    previewGenerating = true;
     renderPreviewSlot(design, { loading: true });
 
     // The garment description is identical to what the VTO sends — it's the
@@ -1324,6 +1334,8 @@
       }
     } catch (err) {
       renderPreviewSlot(design, { error: t("dpreview.error_network", { msg: err.message }) });
+    } finally {
+      previewGenerating = false;
     }
   }
 
