@@ -157,6 +157,20 @@ Degrades gracefully: `prefers-reduced-motion` / no-WebGL → CSS shows
 static, readable acts. The reduced-motion and no-WebGL fallbacks are
 load-bearing; preserve them.
 
+## The true cost (fast-fashion evidence band)
+
+Directly after the `#mission` scroll story sits `<section class="cost">` — the
+**hard, cited evidence** behind the emotional film: the human cost (Public
+Eye's Shein investigation, a Swiss source), three sourced numbers (Ellen
+MacArthur Foundation / UNEP — fashion ≤ 8 % of global CO₂, a truckload of
+textiles dumped every second, < 1 % recycled into new clothing), a "worst
+emitters" carbon-intensity ranking (illustrative bars, attributed), then the
+turn to our model + CTA, closing with a linked sources line. Static markup,
+bilingual (`cost.*` i18n keys, DE + EN), entrance via the shared
+`[data-reveal]` pattern (reduced-motion shows everything immediately). The
+ranking bar widths are set inline via `--v`; keep numbers honest/illustrative
+and the sources line intact.
+
 ## 3D preview (`3d/controller.js` + `scene.js` / `avatars.js` / `garments.js`)
 
 `controller.js` lazy-mounts the Three.js scene when `#three-canvas` nears

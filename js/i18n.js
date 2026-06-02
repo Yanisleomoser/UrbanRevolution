@@ -89,6 +89,23 @@ const I18N = (() => {
       "story.counter_garments": "Kleidungsstücke produziert",
       "story.counter_trucks": "Lkw-Ladungen Textilien entsorgt",
 
+      // ── The true cost (fast-fashion evidence band) ──
+      "cost.kicker": "Der wahre Preis",
+      "cost.headline_html": "Irgendwo zahlt jemand den Preis für „billig“.",
+      "cost.lead": "Hinter jeder 5-Franken-Bluse steht ein Mensch. Recherchen der Schweizer NGO Public Eye zeigen: In Zulieferfabriken von Shein nähen Arbeiter:innen bis zu 75 Stunden pro Woche — für Löhne unter dem Existenzminimum.",
+      "cost.s1_num": "bis 8 %",
+      "cost.s1_label": "der globalen CO₂-Emissionen stammen aus der Mode — mehr als internationale Flüge und Schifffahrt zusammen.",
+      "cost.s2_num": "1 / Sekunde",
+      "cost.s2_label": "Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder deponiert.",
+      "cost.s3_num": "unter 1 %",
+      "cost.s3_label": "der Altkleider wird zu neuer Kleidung recycelt. Der Rest wird zu Abfall.",
+      "cost.chart_cap": "Wer treibt die Krise? Carbon-Intensität pro Umsatz — die Fast-Fashion-Riesen im Vergleich.",
+      "cost.chart_note": "Relative Carbon-Intensität pro Mrd. $ Umsatz (Rangfolge, illustrativ). Quelle: Commons.",
+      "cost.turn_html": "Fast Fashion funktioniert nur durch Masse, die niemand braucht.<br>Wir bauen das Gegenteil.",
+      "cost.turn_body": "Ein Stück. Für einen Menschen. Nach Maß, auf Bestellung, aus geretteter Faser. Keine Überproduktion, kein Lager, kein versteckter Preis.",
+      "cost.cta_html": 'Mach es anders — entwirf dein Stück <span aria-hidden="true">→</span>',
+      "cost.sources_html": 'Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a>',
+
       // ── Trust-Strip ──
       "trust.aria": "Markenmerkmale",
       "trust.t1_title": "Maßgefertigt",
@@ -510,6 +527,23 @@ const I18N = (() => {
       "story.counter_intro": "Since you arrived:",
       "story.counter_garments": "garments produced",
       "story.counter_trucks": "truckloads of textiles dumped",
+
+      // ── The true cost (fast-fashion evidence band) ──
+      "cost.kicker": "The true cost",
+      "cost.headline_html": "Somewhere, someone pays the price for “cheap.”",
+      "cost.lead": "Behind every five-franc blouse is a person. Investigations by the Swiss NGO Public Eye found workers in Shein’s supplier factories sewing up to 75 hours a week — for wages below a living wage.",
+      "cost.s1_num": "up to 8%",
+      "cost.s1_label": "of global CO₂ emissions come from fashion — more than international flights and shipping combined.",
+      "cost.s2_num": "1 / second",
+      "cost.s2_label": "Every second, a truckload of textiles is burned or sent to landfill.",
+      "cost.s3_num": "under 1%",
+      "cost.s3_label": "of used clothing is recycled into new clothing. The rest becomes waste.",
+      "cost.chart_cap": "Who drives the crisis? Carbon intensity per revenue — the fast-fashion giants compared.",
+      "cost.chart_note": "Relative carbon intensity per $bn revenue (ranking, illustrative). Source: Commons.",
+      "cost.turn_html": "Fast fashion only works through volume no one needs.<br>We’re building the opposite.",
+      "cost.turn_body": "One piece. For one person. Made to measure, on demand, from rescued fibre. No overproduction, no warehouse, no hidden price.",
+      "cost.cta_html": 'Do it differently — design your piece <span aria-hidden="true">→</span>',
+      "cost.sources_html": 'Sources: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a>',
 
       // ── Trust strip ──
       "trust.aria": "Brand highlights",

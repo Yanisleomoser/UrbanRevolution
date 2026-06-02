@@ -3761,6 +3761,173 @@ main { display: block; }
    Trust Strip — brand values band between hero and workflow
    ============================================================ */
 
+/* ── The true cost — fast-fashion evidence band (after the scroll story) ── */
+.cost {
+    position: relative;
+    padding: var(--space-12) 0 var(--space-11);
+    background:
+        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(236, 72, 153, 0.07), transparent 70%),
+        var(--bg);
+    border-top: 1px solid var(--border);
+}
+.cost-kicker {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wider, 0.18em);
+    text-transform: uppercase;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 var(--space-4);
+}
+.cost-headline {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: var(--text-3xl);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    max-width: 20ch;
+    margin: 0 0 var(--space-6);
+}
+.cost-lead {
+    font-size: var(--text-md);
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 62ch;
+    margin: 0 0 var(--space-10);
+}
+.cost-stats {
+    list-style: none;
+    margin: 0 0 var(--space-11);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+}
+.cost-stat {
+    padding: var(--space-7);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.cost-stat-num {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: var(--space-4);
+}
+.cost-stat-label {
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--text-dim);
+}
+.cost-chart {
+    margin: 0 0 var(--space-11);
+    padding: var(--space-8);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.cost-chart-cap {
+    font-family: 'Poppins', sans-serif;
+    font-size: var(--text-md);
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: var(--space-7);
+    max-width: 50ch;
+}
+.cost-bars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+.cost-bar {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    gap: var(--space-5);
+}
+.cost-bar-name {
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    font-weight: 500;
+    text-align: right;
+}
+.cost-bar-track {
+    height: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 100px;
+    overflow: hidden;
+}
+.cost-bar-fill {
+    display: block;
+    height: 100%;
+    width: var(--v, 0%);
+    border-radius: 100px;
+    background: var(--gradient);
+}
+.cost-chart-note {
+    margin-top: var(--space-6);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+.cost-turn {
+    text-align: center;
+    max-width: 60ch;
+    margin: 0 auto var(--space-9);
+}
+.cost-turn-head {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: var(--text-2xl);
+    line-height: 1.18;
+    color: var(--text);
+    margin-bottom: var(--space-5);
+}
+.cost-turn-body {
+    font-size: var(--text-md);
+    line-height: 1.7;
+    color: var(--text-dim);
+    margin-bottom: var(--space-7);
+}
+.cost-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-7);
+    border-radius: 100px;
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: none;
+    box-shadow: var(--shadow-glow);
+    transition: transform 0.2s var(--ease-out, ease);
+}
+.cost-cta:hover { transform: translateY(-2px); }
+.cost-sources {
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+.cost-sources a { color: var(--text-dim); text-decoration: underline; }
+@media (max-width: 720px) {
+    .cost-stats { grid-template-columns: 1fr; }
+    .cost-bar { grid-template-columns: 84px 1fr; gap: var(--space-4); }
+}
+
 .trust-strip {
     padding: var(--space-9) 0;
     background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.015) 50%, transparent 100%);
