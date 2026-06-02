@@ -44,6 +44,7 @@ js/
   export.js             # Builds spec data, downloads JSON/HTML, simulates orders
   preferences.js        # localStorage usage history → personalised suggestions
   library.js            # localStorage saved designs (max 20, + optional VTO url)
+  preview-fallback.js   # Client-side $0 studio SVG when the paid render is down
   animations.js         # IntersectionObserver scroll-reveal (side effect)
   flair.js              # Pointer/scroll micro-interactions + easter egg (side effect)
   app.js                # Main controller — wires DOM events to StateManager
@@ -86,6 +87,7 @@ window.Foo = Foo;
 | `export.js`       | `window.Export`         | classic         |
 | `preferences.js`  | `window.Preferences`    | classic         |
 | `library.js`      | `window.Library`        | classic         |
+| `preview-fallback.js`| `window.PreviewFallback` | classic      |
 | `animations.js`   | (none — side effect)    | classic         |
 | `flair.js`        | (none — side effect)    | classic         |
 | `app.js`          | (none — controller)     | classic         |
@@ -105,8 +107,8 @@ subscribe to its events). The bottom-of-body order is:
 
 ```
 config → i18n → state-manager → ai → measurements →
-pose → export → preferences → library → animations → app → hero → flair →
-3d/story-scene.js (module)
+pose → export → preferences → library → preview-fallback → animations → app →
+hero → flair → 3d/story-scene.js (module)
 ```
 
 Follow the IIFE-with-global pattern for new classic code; don't introduce a
@@ -246,6 +248,15 @@ e.g. Recraft V3). Same success/`pending`/`error` response shape and
   if the design is saved, on its `Library` entry (`previewImageUrl`,
   `Library.setPreviewImage`); library tiles fall back to it when there's no
   VTO image. Restored on recall so re-views are free.
+- **$0 fallback (`preview-fallback.js`):** if the paid render is unavailable
+  (no token/credit, rate-limited, network down, pending timeout), the slot
+  never dead-ends — `app.js` calls `PreviewFallback.svg({type, color,
+  material, pattern, name})` to draw a fully client-side **studio
+  illustration** of the garment (the six type silhouettes, filled with the
+  chosen colour + a volume gradient, material sheen and woven pattern
+  overlay). Free, instant, offline; carries a neutral "Stilvorschau" badge
+  and a retry button to re-attempt the photoreal render. No billable count is
+  charged for it.
 
 ## Waitlist (`waitlist.html` + `api/waitlist.js`)
 

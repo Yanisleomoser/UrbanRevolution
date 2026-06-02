@@ -248,6 +248,9 @@ const I18N = (() => {
       "dpreview.error_pending": "Render dauert länger als erwartet (>20 s). Bitte erneut versuchen.",
       "dpreview.error_unexpected": "Unerwartete Antwort vom Server.",
       "dpreview.error_network": "Netzwerkfehler: {msg}",
+      "dpreview.fallback_badge": "STILVORSCHAU",
+      "dpreview.fallback_caption": "Kostenlose Stilvorschau aus deinem Entwurf — der fotorealistische Render ist gerade nicht verfügbar.",
+      "dpreview.fallback_retry": "Fotorealistisch versuchen",
 
       // ── Produktion ──
       "prod.h2": "Produktions-Vorlage",
@@ -667,6 +670,9 @@ const I18N = (() => {
       "dpreview.error_pending": "Render is taking longer than expected (>20 s). Please try again.",
       "dpreview.error_unexpected": "Unexpected response from the server.",
       "dpreview.error_network": "Network error: {msg}",
+      "dpreview.fallback_badge": "STYLE PREVIEW",
+      "dpreview.fallback_caption": "Free style preview from your design — the photoreal render is unavailable right now.",
+      "dpreview.fallback_retry": "Try photoreal render",
 
       // ── Production ──
       "prod.h2": "Production spec",

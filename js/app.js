@@ -1264,12 +1264,36 @@
     // (the pattern selector re-renders the whole card), unless we already
     // have a result or an explicit error to show.
     if (opts.loading ||
-        (previewGenerating && !opts.error && !(design && design.previewImageUrl))) {
+        (previewGenerating && !opts.error && !opts.fallback && !(design && design.previewImageUrl))) {
       slot.innerHTML =
         `<div class="design-preview-loading">` +
         `<span class="design-preview-spinner" aria-hidden="true"></span>` +
         `<p role="status" aria-live="polite">${escapeHtml(t("dpreview.loading"))}</p>` +
         `</div>`;
+      return;
+    }
+
+    // Free $0 fallback: the paid photoreal render was unavailable, so show a
+    // client-side studio illustration instead of an error — the preview never
+    // dead-ends. A retry button still lets them re-attempt the photoreal one.
+    if (opts.fallback && window.PreviewFallback) {
+      const markup = window.PreviewFallback.svg({
+        type: S.get("currentType"),
+        color: S.get("currentColor"),
+        material: S.get("currentMaterial"),
+        pattern: design && design.pattern,
+        name: design && design.name,
+      });
+      slot.innerHTML =
+        `<figure class="design-preview-figure design-preview-figure--fallback">` +
+        markup +
+        `<figcaption class="design-preview-cap">` +
+        `<span class="design-preview-badge design-preview-badge--free">${escapeHtml(t("dpreview.fallback_badge"))}</span>` +
+        `${escapeHtml(t("dpreview.fallback_caption"))}` +
+        `</figcaption></figure>` +
+        previewSlotPrompt(t("dpreview.fallback_retry"));
+      document.getElementById("design-preview-btn")
+        ?.addEventListener("click", generateDesignPreview);
       return;
     }
 
@@ -1322,11 +1346,15 @@
       const body = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        renderPreviewSlot(design, { error: codedErrorMessage(body) || t("dpreview.error_prefix", { msg: body.error || res.statusText }) });
+        renderPreviewSlot(design, window.PreviewFallback
+          ? { fallback: true }
+          : { error: codedErrorMessage(body) || t("dpreview.error_prefix", { msg: body.error || res.statusText }) });
         return;
       }
       if (body.pending) {
-        renderPreviewSlot(design, { error: t("dpreview.error_pending") });
+        renderPreviewSlot(design, window.PreviewFallback
+          ? { fallback: true }
+          : { error: t("dpreview.error_pending") });
         return;
       }
       if (body.imageUrl) {
@@ -1343,10 +1371,14 @@
         incrementPreviewCount();
         renderPreviewSlot(design);
       } else {
-        renderPreviewSlot(design, { error: t("dpreview.error_unexpected") });
+        renderPreviewSlot(design, window.PreviewFallback
+          ? { fallback: true }
+          : { error: t("dpreview.error_unexpected") });
       }
     } catch (err) {
-      renderPreviewSlot(design, { error: t("dpreview.error_network", { msg: err.message }) });
+      renderPreviewSlot(design, window.PreviewFallback
+        ? { fallback: true }
+        : { error: t("dpreview.error_network", { msg: err.message }) });
     } finally {
       previewGenerating = false;
     }
