@@ -1095,7 +1095,12 @@
     const material = S.get("currentMaterial");
     const color = S.get("currentColor");
     parts.push(`${type} in ${color} (${material})`);
-    return parts.filter(Boolean).join(". ");
+    // Both /api/try-on and /api/preview-design reject a designPrompt over
+    // 1000 chars (400). A detailed prompt + a verbose AI description can
+    // exceed that, so cap the joined string with a small safety margin —
+    // the trailing type/colour/material clause is the least important to
+    // keep intact, so trimming the tail is fine.
+    return parts.filter(Boolean).join(". ").slice(0, 990);
   }
 
   // Last successful generation URL, kept so the download button can fetch it.
