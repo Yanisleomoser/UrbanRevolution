@@ -25,7 +25,7 @@ UI copy is **bilingual German/English** (`I18N`, default `de`,
 ```
 index.html              # The atelier app; sections + import map + script tags
 landing.html            # Marketing/pitch page (pre-launch)
-waitlist.html           # Email capture (in-memory counter, no backend)
+waitlist.html           # Pre-launch email capture → POSTs to /api/waitlist
 impressum.html          # German legal page (Impressum)
 datenschutz.html        # German privacy policy (DSGVO + Swiss)
 css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
@@ -33,6 +33,7 @@ api/
   generate-design.js    # Edge Function — Anthropic proxy for design JSON
   preview-design.js     # Edge Function — Replicate (FLUX 1.1 Pro) garment render
   try-on.js             # Edge Function — Replicate proxy for photoreal VTO
+  waitlist.js           # Edge Function — waitlist signups → Upstash Redis
 js/
   config.js             # Source of truth — constants, presets, validators (window.CONFIG)
   i18n.js               # Bilingual DE/EN dictionary + DOM hydration (window.I18N)
@@ -245,6 +246,28 @@ e.g. Recraft V3). Same success/`pending`/`error` response shape and
   if the design is saved, on its `Library` entry (`previewImageUrl`,
   `Library.setPreviewImage`); library tiles fall back to it when there's no
   VTO image. Restored on recall so re-views are free.
+
+## Waitlist (`waitlist.html` + `api/waitlist.js`)
+
+The pre-launch page (`waitlist.html`, standalone, English, not part of the
+`index.html` app) captures emails. `POST /api/waitlist { email, consent }`
+stores the (lowercased) email in an **Upstash Redis** set (`urev:waitlist`,
+auto-dedupes) plus a timestamp hash, and returns `{ ok, status:
+"joined" | "already", count }`. `GET /api/waitlist` returns the live
+`{ count }` (SCARD); the page only shows a number once it crosses
+`COUNT_THRESHOLD` (50), otherwise "Be among the first".
+
+- **Setup:** add the Upstash Redis integration in Vercel (Marketplace →
+  Upstash, free tier, **EU region** for DSGVO residency — the privacy page
+  states EU). It auto-injects `UPSTASH_REDIS_REST_URL` /
+  `UPSTASH_REDIS_REST_TOKEN`. Talked to over its REST API with `fetch` (no
+  npm package, edge-native).
+- **Graceful:** without the env vars `GET` returns `{ count: null }` (page
+  hides the number) and `POST` returns the neutral coded error
+  (`service_unavailable`) — same code pattern as the Replicate functions.
+- **DSGVO:** consent checkbox is required (server rejects
+  `consent !== true` with `consent_required`); only email + timestamp are
+  stored; covered in `datenschutz.html` §7.
 
 ## Persistence (`preferences.js`, `library.js`)
 
