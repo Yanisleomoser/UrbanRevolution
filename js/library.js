@@ -10,7 +10,8 @@
  *     designs: [
  *       {
  *         id, name, type, color, material, fit, tags, pattern,
- *         originalPrompt, constructionNotes, vtoImageUrl, savedAt
+ *         originalPrompt, constructionNotes, vtoImageUrl,
+ *         previewImageUrl, savedAt
  *       },
  *       ...
  *     ]
@@ -66,6 +67,7 @@ const Library = (() => {
         ? design.constructionNotes.slice(0, 6)
         : [],
       vtoImageUrl: ex.vtoImageUrl || null,
+      previewImageUrl: ex.previewImageUrl || design.previewImageUrl || null,
       savedAt: new Date().toISOString(),
     };
 
@@ -112,6 +114,15 @@ const Library = (() => {
     }
   }
 
+  function setPreviewImage(id, url) {
+    const state = loadState();
+    const entry = state.designs.find((d) => d.id === id);
+    if (entry) {
+      entry.previewImageUrl = url || null;
+      saveState(state);
+    }
+  }
+
   function clear() {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -120,7 +131,7 @@ const Library = (() => {
     }
   }
 
-  return { add, list, count, get, remove, setVtoImage, clear, MAX_ENTRIES };
+  return { add, list, count, get, remove, setVtoImage, setPreviewImage, clear, MAX_ENTRIES };
 })();
 
 window.Library = Library;

@@ -31,6 +31,7 @@ datenschutz.html        # German privacy policy (DSGVO + Swiss)
 css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
 api/
   generate-design.js    # Edge Function — Anthropic proxy for design JSON
+  preview-design.js     # Edge Function — Replicate (FLUX 1.1 Pro) garment render
   try-on.js             # Edge Function — Replicate proxy for photoreal VTO
 js/
   config.js             # Source of truth — constants, presets, validators (window.CONFIG)
@@ -212,6 +213,31 @@ generated image URL.
   states this; the user opts in by clicking. The photo lives only in memory
   (`StateManager.userPhoto`), never persisted.
 - **Cost:** ~$0.04 per generation; only on explicit click.
+
+## Design Preview / garment render (`api/preview-design.js`)
+
+The cheap "do I like it?" gate **before** the photo-based try-on. Inside
+the design card (`#design-preview-slot`, wired in `app.js`) the user can
+click "Entwurf visualisieren"; `app.js` `generateDesignPreview()` POSTs
+`{ designPrompt }` (the same garment description `buildVtoPrompt` builds,
+no user photo) to `/api/preview-design`. The Edge Function wraps it in a
+**ghost-mannequin studio brief** and calls Replicate's **FLUX 1.1 Pro**
+text-to-image (swap the single `MODEL_ENDPOINT` const to change engines,
+e.g. Recraft V3). Same success/`pending`/`error` response shape and
+`Prefer: wait=20` polling fallback as `try-on.js`.
+
+- **Why:** most users can judge a design from a no-photo studio render and
+  only reach for the (more expensive, photo-based) `/api/try-on` once the
+  piece appeals — saving wasted try-on runs and the privacy cost of sending
+  their photo.
+- **Setup:** reuses `REPLICATE_API_TOKEN` (no new env var).
+- **Rate limit:** client-side `urev_preview_count` in localStorage,
+  `PREVIEW_LIMIT = 30`/browser, charged only on a billable success (mirrors
+  the VTO limit). **Cost** ~$0.04/render, only on explicit click.
+- **Caching:** the render URL is stored on the in-memory design object and,
+  if the design is saved, on its `Library` entry (`previewImageUrl`,
+  `Library.setPreviewImage`); library tiles fall back to it when there's no
+  VTO image. Restored on recall so re-views are free.
 
 ## Persistence (`preferences.js`, `library.js`)
 
