@@ -1058,7 +1058,7 @@
         const body = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          setVtoError(t("vto.error_prefix", { msg: body.error || res.statusText }));
+          setVtoError(codedErrorMessage(body) || t("vto.error_prefix", { msg: body.error || res.statusText }));
           return;
         }
 
@@ -1083,6 +1083,19 @@
     });
 
     document.getElementById("vto-download")?.addEventListener("click", downloadVtoImage);
+  }
+
+  // Map a coded edge-function error (service_unavailable / rate_limited /
+  // failed) to a friendly, localised message. The edge functions never send
+  // the raw upstream reason (billing/credit/auth) to the browser — only a
+  // code. Returns null for unknown codes so callers keep their own fallback.
+  function codedErrorMessage(body) {
+    switch (body && body.code) {
+      case "service_unavailable": return t("err.service_unavailable");
+      case "rate_limited":        return t("err.rate_limited");
+      case "failed":              return t("err.failed");
+      default:                    return null;
+    }
   }
 
   function buildVtoPrompt(design) {
@@ -1309,7 +1322,7 @@
       const body = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        renderPreviewSlot(design, { error: t("dpreview.error_prefix", { msg: body.error || res.statusText }) });
+        renderPreviewSlot(design, { error: codedErrorMessage(body) || t("dpreview.error_prefix", { msg: body.error || res.statusText }) });
         return;
       }
       if (body.pending) {
