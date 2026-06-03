@@ -10,6 +10,8 @@ const StateManager = (() => {
         currentColor: '#1a1a1a',
         currentMaterial: 'cotton',
         currentFit: 0.5,
+        currentLength: 'regular',
+        currentPrint: '',
         measurements: null,
         avatar: 'male_regular',
         skinTone: '#d8d4cf',
@@ -68,6 +70,10 @@ const StateManager = (() => {
                     throw new Error('currentFit must be between 0 and 1');
                 }
                 validatedValue = fit;
+            } else if (key === 'currentLength') {
+                validatedValue = CONFIG.validateLength(value);
+            } else if (key === 'currentPrint') {
+                validatedValue = CONFIG.validatePrint(value);
             }
 
             state[key] = validatedValue;
@@ -113,6 +119,8 @@ const StateManager = (() => {
                 currentColor: '#1a1a1a',
                 currentMaterial: 'cotton',
                 currentFit: 0.5,
+                currentLength: 'regular',
+                currentPrint: '',
                 currentDesign: null,
                 measurements: null,
                 avatar: 'male_regular',

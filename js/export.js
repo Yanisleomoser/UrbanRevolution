@@ -5,6 +5,11 @@
 
 const Export = (() => {
   const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+  const esc = (s) =>
+    String(s).replace(
+      /[&<>"']/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
+    );
   const loc = () => (window.I18N ? window.I18N.locale() : "de-DE");
   const matLabel = (key) => (window.I18N ? window.I18N.material(key) : key);
   const typeLabel = (key) => (window.I18N ? window.I18N.typeLabel(key) : key);
@@ -21,8 +26,20 @@ const Export = (() => {
 
   function buildSpecData(design, measurements, garmentType) {
     const size = Measurements.calculateSize(measurements);
-    const fabric = Measurements.estimateFabric(measurements, garmentType);
     const seams = Measurements.estimateSeams(measurements, garmentType);
+
+    // Length scales the fabric estimate (cropped uses less, long more).
+    const lengthKey = design.length || "regular";
+    const lengthFactors =
+      (window.CONFIG &&
+        CONFIG.PRODUCTION_ESTIMATES.lengthFabricFactor) || {};
+    const lengthFactor = lengthFactors[lengthKey] || 1;
+    const fabric = (
+      parseFloat(Measurements.estimateFabric(measurements, garmentType)) *
+      lengthFactor
+    ).toFixed(2);
+
+    const printText = design.print ? String(design.print).trim() : "";
 
     return {
       metadata: {
@@ -42,6 +59,8 @@ const Export = (() => {
         color: design.color,
         material: design.material,
         fit: fitLabel(design.fit),
+        length: t(`length.${lengthKey}`),
+        print: printText,
         size,
       },
       measurements: {
@@ -152,6 +171,8 @@ const Export = (() => {
         <tr><td>${t("spec.material")}</td><td>${matLabel(spec.specifications.material)}</td></tr>
         <tr><td>${t("spec.color")}</td><td><span class="color-chip" style="background:${spec.specifications.color}"></span>${spec.specifications.color}</td></tr>
         <tr><td>${t("spec.fit")}</td><td>${spec.specifications.fit}</td></tr>
+        <tr><td>${t("spec.length")}</td><td>${esc(spec.specifications.length)}</td></tr>
+        <tr><td>${t("spec.print")}</td><td>${spec.specifications.print ? `&bdquo;${esc(spec.specifications.print)}&ldquo;` : "—"}</td></tr>
         <tr><td>${t("spec.size")}</td><td>${spec.specifications.size}</td></tr>
     </table>
 

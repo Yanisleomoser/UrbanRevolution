@@ -520,6 +520,19 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="length-select" data-i18n="design.length_label">Länge</label>
+                            <select id="length-select">
+                                <option value="cropped" data-i18n="length.cropped">Cropped</option>
+                                <option value="regular" data-i18n="length.regular" selected>Regular</option>
+                                <option value="long" data-i18n="length.long">Lang</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="print-input" data-i18n="design.print_label">Aufschrift</label>
+                            <input type="text" id="print-input" class="print-input" maxlength="24" autocomplete="off" data-i18n-placeholder="design.print_placeholder" placeholder="z. B. dein Name, ein Wort …">
+                            <p class="control-hint" data-i18n="design.print_hint">Erscheint vorne auf dem Stück · max. 24 Zeichen</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -750,6 +763,8 @@
                                 <tr><td data-i18n="spec.material">Material</td><td id="spec-material">––</td></tr>
                                 <tr><td data-i18n="spec.color">Primärfarbe</td><td id="spec-color">––</td></tr>
                                 <tr><td data-i18n="spec.fit">Passform</td><td id="spec-fit">––</td></tr>
+                                <tr><td data-i18n="spec.length">Länge</td><td id="spec-length">––</td></tr>
+                                <tr><td data-i18n="spec.print">Aufschrift</td><td id="spec-print">––</td></tr>
                                 <tr><td data-i18n="spec.size">Konfektionsgröße</td><td id="spec-size">––</td></tr>
                             </table>
                         </div>

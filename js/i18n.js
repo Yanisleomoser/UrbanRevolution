@@ -225,6 +225,10 @@ const I18N = (() => {
       "design.material_label": "Material",
       "design.pattern_label": "Muster",
       "design.fit_label": "Passform",
+      "design.length_label": "Länge",
+      "design.print_label": "Aufschrift",
+      "design.print_placeholder": "z. B. dein Name, ein Wort …",
+      "design.print_hint": "Erscheint vorne auf dem Stück · max. 24 Zeichen",
 
       // ── Kleidungstypen ──
       "type.tshirt": "T-Shirt",
@@ -247,6 +251,11 @@ const I18N = (() => {
       "fit.slim": "Slim",
       "fit.regular": "Regular",
       "fit.oversized": "Oversized",
+
+      // ── Länge ──
+      "length.cropped": "Cropped",
+      "length.regular": "Regular",
+      "length.long": "Lang",
 
       // ── VTO ──
       "vto.btn": "Fotorealistische Vorschau generieren",
@@ -363,6 +372,8 @@ const I18N = (() => {
       "spec.material": "Material",
       "spec.color": "Primärfarbe",
       "spec.fit": "Passform",
+      "spec.length": "Länge",
+      "spec.print": "Aufschrift",
       "spec.size": "Konfektionsgröße",
       "spec.measures_h4": "Maße (cm)",
       "spec.notes_h4": "Schnitt-Notizen für den Schneider",
@@ -749,6 +760,10 @@ const I18N = (() => {
       "design.material_label": "Material",
       "design.pattern_label": "Pattern",
       "design.fit_label": "Fit",
+      "design.length_label": "Length",
+      "design.print_label": "Print",
+      "design.print_placeholder": "e.g. your name, a word …",
+      "design.print_hint": "Appears on the front of the piece · max. 24 characters",
 
       // ── Garment types ──
       "type.tshirt": "T-Shirt",
@@ -771,6 +786,11 @@ const I18N = (() => {
       "fit.slim": "Slim",
       "fit.regular": "Regular",
       "fit.oversized": "Oversized",
+
+      // ── Length ──
+      "length.cropped": "Cropped",
+      "length.regular": "Regular",
+      "length.long": "Long",
 
       // ── VTO ──
       "vto.btn": "Generate photorealistic preview",
@@ -887,6 +907,8 @@ const I18N = (() => {
       "spec.material": "Material",
       "spec.color": "Primary color",
       "spec.fit": "Fit",
+      "spec.length": "Length",
+      "spec.print": "Print",
       "spec.size": "Size",
       "spec.measures_h4": "Measurements (cm)",
       "spec.notes_h4": "Construction notes for the tailor",

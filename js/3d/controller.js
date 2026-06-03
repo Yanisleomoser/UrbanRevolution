@@ -6,8 +6,8 @@
  *
  * Lifecycle rules:
  *   - Mannequin rebuilds on measurements / skinTone / hairColor changes
- *   - Garment rebuilds on type / fit / measurements changes
- *   - Garment color and material props update in-place (no rebuild)
+ *   - Garment rebuilds on type / fit / length / measurements changes
+ *   - Garment color, material props and print update in-place (no rebuild)
  *
  * Graceful degradation: any failure during mount is caught here. The
  * rest of the app (design generation, measurements, spec export) keeps
@@ -106,6 +106,8 @@ function rebuildGarment() {
         material: readState("currentMaterial"),
         measurements: readState("measurements"),
         fit: readState("currentFit"),
+        length: readState("currentLength"),
+        print: readState("currentPrint"),
     });
     Scene.add(currentGarment);
 }
@@ -119,6 +121,12 @@ function patchGarmentColor() {
 function patchGarmentMaterial() {
     if (!currentGarment) return;
     Garments.setMaterialProps(currentGarment, readState("currentMaterial"));
+    Scene.requestRender();
+}
+
+function patchGarmentPrint() {
+    if (!currentGarment) return;
+    Garments.setPrint(currentGarment, readState("currentPrint"));
     Scene.requestRender();
 }
 
@@ -139,6 +147,7 @@ function subscribeToState() {
     const onGarmentRebuild = () => safeRun(rebuildGarment, "garment rebuild");
     const onColor = () => safeRun(patchGarmentColor, "garment color");
     const onMaterial = () => safeRun(patchGarmentMaterial, "garment material");
+    const onPrint = () => safeRun(patchGarmentPrint, "garment print");
     const onMeasurements = () => {
         safeRun(rebuildMannequin, "mannequin rebuild");
         safeRun(rebuildGarment, "garment rebuild");
@@ -149,8 +158,10 @@ function subscribeToState() {
     sm.subscribe("hairColor:change", onMannequinChange);
     sm.subscribe("currentType:change", onGarmentRebuild);
     sm.subscribe("currentFit:change", onGarmentRebuild);
+    sm.subscribe("currentLength:change", onGarmentRebuild);
     sm.subscribe("currentColor:change", onColor);
     sm.subscribe("currentMaterial:change", onMaterial);
+    sm.subscribe("currentPrint:change", onPrint);
 }
 
 function safeRun(fn, label) {

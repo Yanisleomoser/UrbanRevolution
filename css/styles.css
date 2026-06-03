@@ -1494,6 +1494,13 @@ input[aria-invalid="true"] {
     margin-bottom: 24px;
 }
 
+.control-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.2px;
+}
+
 .color-palette {
     display: flex;
     gap: 8px;

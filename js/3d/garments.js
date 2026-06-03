@@ -10,14 +10,17 @@
  * Public API:
  *   buildGarment(type, options) → THREE.Group | null
  *     type: one of CONFIG.GARMENT_TYPES
- *     options: { color, material, measurements, fit }
+ *     options: { color, material, measurements, fit, length, print }
  *       color: hex string
  *       material: one of CONFIG.MATERIALS keys
  *       measurements: same shape as Avatars.buildMannequin's measurements
  *       fit: 0..1, 0=slim, 1=oversized
+ *       length: one of CONFIG.LENGTHS ('cropped' | 'regular' | 'long')
+ *       print: optional custom Aufschrift drawn as a chest decal
  *
  *   setColor(group, hex)
  *   setMaterialProps(group, materialKey)
+ *   setPrint(group, text)
  *     In-place updates without rebuilding geometry. Cheap.
  */
 
@@ -98,12 +101,19 @@ function fitFactor(fit, slimAdd = 0.04, looseAdd = 0.35) {
     return 1 + slimAdd + f * (looseAdd - slimAdd);
 }
 
+// Length → a -1 / 0 / +1 step the builders apply to their hem / leg / skirt.
+// cropped pulls the hem up, long drops it down.
+const LENGTH_STEP = { cropped: -1, regular: 0, long: 1 };
+function lengthStep(length) {
+    return LENGTH_STEP[length] ?? 0;
+}
+
 function buildGarment(type, options) {
     const opt = options || {};
     const builder = BUILDERS[type] || BUILDERS.tshirt;
     const mat = makeMaterial(opt.color, opt.material);
     const lm = computeBodyLandmarks(opt.measurements);
-    const group = builder(mat, lm, opt.fit);
+    const group = builder(mat, lm, opt.fit, opt.length);
     group.name = `garment:${type}`;
     group.traverse((o) => {
         if (o.isMesh) {
@@ -111,6 +121,11 @@ function buildGarment(type, options) {
             o.receiveShadow = true;
         }
     });
+    // Stash where a chest print sits so it can be added/removed in-place
+    // (setPrint) without rebuilding the whole garment. Added after the
+    // shadow traverse so the unlit decal plane doesn't cast shadows.
+    group.userData.printAnchor = printAnchor(type, lm);
+    applyPrint(group, opt.print);
     return group;
 }
 
@@ -118,7 +133,11 @@ function setColor(group, hex) {
     if (!group) return;
     const color = hexToInt(hex);
     group.traverse((o) => {
-        if (o.isMesh && o.material) o.material.color.setHex(color);
+        // Skip the print decal — its colour is fixed (white + dark outline)
+        // so it stays legible regardless of the garment colour.
+        if (o.isMesh && o.material && !o.userData.isPrint) {
+            o.material.color.setHex(color);
+        }
     });
 }
 
@@ -126,11 +145,76 @@ function setMaterialProps(group, materialKey) {
     if (!group) return;
     const props = MATERIAL_PROPS[materialKey] || MATERIAL_PROPS.cotton;
     group.traverse((o) => {
-        if (o.isMesh && o.material) {
+        if (o.isMesh && o.material && !o.userData.isPrint) {
             o.material.roughness = props.roughness;
             o.material.metalness = props.metalness;
         }
     });
+}
+
+/* ============================================================
+   PRINT / AUFSCHRIFT — a chest decal drawn from a canvas texture
+   ============================================================ */
+
+// Where the decal plane sits per garment type (world units, +Z front).
+// Pants have no torso surface → no anchor (print is skipped).
+function printAnchor(type, lm) {
+    if (type === "pants") return null;
+    const w = lm.chestR * 1.55;
+    const h = w * 0.5;
+    const z = lm.chestR * TORSO_DEPTH_SCALE + 0.02;
+    const frac = type === "dress" ? 0.70 : 0.62;
+    const y = lm.torsoBottomY + lm.torsoH * frac;
+    return { x: 0, y, z, w, h };
+}
+
+function makePrintDecal(text, anchor) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 512, 256);
+    ctx.font = "700 110px Georgia, 'Times New Roman', serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    // White fill + dark outline reads on any garment colour, so the decal
+    // never needs recolouring when setColor runs.
+    ctx.lineWidth = 16;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.strokeText(text, 256, 132, 472);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(text, 256, 132, 472);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.anisotropy = 4;
+    const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(anchor.w, anchor.h), mat);
+    mesh.name = "print-decal";
+    mesh.userData.isPrint = true;
+    mesh.renderOrder = 2;
+    mesh.position.set(anchor.x, anchor.y, anchor.z);
+    return mesh;
+}
+
+// Add / replace / remove the chest decal in place. text "" removes it.
+function applyPrint(group, text) {
+    if (!group) return;
+    const existing = group.getObjectByName("print-decal");
+    if (existing) {
+        if (existing.material && existing.material.map) existing.material.map.dispose();
+        if (existing.material) existing.material.dispose();
+        if (existing.geometry) existing.geometry.dispose();
+        group.remove(existing);
+    }
+    const anchor = group.userData.printAnchor;
+    const clean = (text || "").trim();
+    if (!anchor || !clean) return;
+    group.add(makePrintDecal(clean, anchor));
 }
 
 /* ============================================================
@@ -161,7 +245,7 @@ function buildSleeve(mat, side, anchorY, anchorX, length, baseR, tipR) {
    T-SHIRT
    ============================================================ */
 
-function buildTshirt(mat, lm, fit) {
+function buildTshirt(mat, lm, fit, length) {
     const group = new THREE.Group();
     const f = fitFactor(fit, 0.06, 0.34);
     const hipsR = lm.hipsR * f;
@@ -170,7 +254,8 @@ function buildTshirt(mat, lm, fit) {
     const shoulderHalfW = lm.shoulderHalfW * fitFactor(fit, 0.04, 0.18);
     const neckOpening = lm.neckR * 1.35;
 
-    const hemY = lm.torsoBottomY + lm.torsoH * 0.05;
+    // Length nudges the hem: cropped pulls it up, long drops it past the hips.
+    const hemY = lm.torsoBottomY + lm.torsoH * 0.05 - lm.torsoH * 0.30 * lengthStep(length);
     const topY = lm.torsoTopY;
     const torsoTotalH = topY - hemY;
 
@@ -212,7 +297,7 @@ function buildTshirt(mat, lm, fit) {
    HOODIE
    ============================================================ */
 
-function buildHoodie(mat, lm, fit) {
+function buildHoodie(mat, lm, fit, length) {
     const group = new THREE.Group();
     const f = fitFactor(fit, 0.10, 0.40);
     const hipsR = lm.hipsR * f;
@@ -221,7 +306,7 @@ function buildHoodie(mat, lm, fit) {
     const shoulderHalfW = lm.shoulderHalfW * fitFactor(fit, 0.08, 0.22);
     const neckOpening = lm.neckR * 1.5;
 
-    const hemY = lm.torsoBottomY - lm.torsoH * 0.05;
+    const hemY = lm.torsoBottomY - lm.torsoH * 0.05 - lm.torsoH * 0.30 * lengthStep(length);
     const topY = lm.torsoTopY + 0.02;
     const torsoTotalH = topY - hemY;
 
@@ -270,7 +355,7 @@ function buildHoodie(mat, lm, fit) {
    SHIRT (button-down style — with stand collar)
    ============================================================ */
 
-function buildShirt(mat, lm, fit) {
+function buildShirt(mat, lm, fit, length) {
     const group = new THREE.Group();
     const f = fitFactor(fit, 0.05, 0.28);
     const hipsR = lm.hipsR * f;
@@ -279,7 +364,7 @@ function buildShirt(mat, lm, fit) {
     const shoulderHalfW = lm.shoulderHalfW * fitFactor(fit, 0.04, 0.16);
     const neckOpening = lm.neckR * 1.25;
 
-    const hemY = lm.torsoBottomY + lm.torsoH * 0.05;
+    const hemY = lm.torsoBottomY + lm.torsoH * 0.05 - lm.torsoH * 0.30 * lengthStep(length);
     const topY = lm.torsoTopY;
     const torsoTotalH = topY - hemY;
 
@@ -328,11 +413,13 @@ function buildShirt(mat, lm, fit) {
    PANTS
    ============================================================ */
 
-function buildPants(mat, lm, fit) {
+function buildPants(mat, lm, fit, length) {
     const group = new THREE.Group();
     const f = fitFactor(fit, 0.03, 0.22);
     const waistR = lm.waistR * f;
     const hipsR = lm.hipsR * f;
+    // cropped = capri (hem lifts off the floor); regular/long reach the ankle.
+    const legBottomY = length === "cropped" ? lm.legH * 0.18 : 0;
 
     // Bund: schmaler Ring direkt unter dem Torso
     const waistY = lm.torsoBottomY + 0.02;
@@ -361,12 +448,13 @@ function buildPants(mat, lm, fit) {
     // Zwei Hosenbeine — Zylinder mit leichter Verjüngung
     const thighR = lm.totalH * 0.062 * fitFactor(fit, 0.0, 0.25);
     const ankleR = lm.totalH * 0.034 * fitFactor(fit, 0.0, 0.3);
+    const legSpan = crotchY - legBottomY;
     [-1, 1].forEach((side) => {
         const leg = new THREE.Mesh(
-            new THREE.CylinderGeometry(thighR, ankleR, crotchY, 24, 1, true),
+            new THREE.CylinderGeometry(thighR, ankleR, legSpan, 24, 1, true),
             mat
         );
-        leg.position.set(side * hipsR * 0.42, crotchY / 2, 0);
+        leg.position.set(side * hipsR * 0.42, legBottomY + legSpan / 2, 0);
         group.add(leg);
     });
 
@@ -377,7 +465,7 @@ function buildPants(mat, lm, fit) {
    JACKET (closed-front, structured)
    ============================================================ */
 
-function buildJacket(mat, lm, fit) {
+function buildJacket(mat, lm, fit, length) {
     const group = new THREE.Group();
     const f = fitFactor(fit, 0.12, 0.35);
     const hipsR = lm.hipsR * f;
@@ -386,7 +474,7 @@ function buildJacket(mat, lm, fit) {
     const shoulderHalfW = lm.shoulderHalfW * fitFactor(fit, 0.12, 0.22);
     const neckOpening = lm.neckR * 1.4;
 
-    const hemY = lm.torsoBottomY - 0.01;
+    const hemY = lm.torsoBottomY - 0.01 - lm.torsoH * 0.30 * lengthStep(length);
     const topY = lm.torsoTopY + 0.025;
     const torsoTotalH = topY - hemY;
 
@@ -436,7 +524,7 @@ function buildJacket(mat, lm, fit) {
    DRESS (fitted top + flared skirt)
    ============================================================ */
 
-function buildDress(mat, lm, fit) {
+function buildDress(mat, lm, fit, length) {
     const group = new THREE.Group();
     const f = fitFactor(fit, 0.03, 0.22);
     const waistR = lm.waistR * f;
@@ -460,8 +548,10 @@ function buildDress(mat, lm, fit) {
     top.scale.z = TORSO_DEPTH_SCALE;
     group.add(top);
 
-    // Rock: von Taille bogenförmig nach außen + unten zum Knie
-    const kneeY = lm.legH * 0.55;
+    // Rock: von Taille bogenförmig nach außen + unten zum Saum. Länge steuert
+    // den Saum: cropped = Mini, regular = Knie, long = Maxi (knapp über Boden).
+    const hemFrac = length === "cropped" ? 0.70 : length === "long" ? 0.18 : 0.55;
+    const kneeY = lm.legH * hemFrac;
     const skirtFlare = fitFactor(fit, 1.4, 2.2);
     const hemR = hipsR * skirtFlare;
     const skirtProfile = [
@@ -487,4 +577,8 @@ const BUILDERS = {
     dress: buildDress,
 };
 
-export const Garments = { buildGarment, setColor, setMaterialProps };
+function setPrint(group, text) {
+    applyPrint(group, text);
+}
+
+export const Garments = { buildGarment, setColor, setMaterialProps, setPrint };
