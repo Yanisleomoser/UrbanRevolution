@@ -5026,7 +5026,6 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .hero--begin { min-height: 90vh; display: flex; align-items: center; position: relative; }
 .hero--begin .hero-inner {
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    grid-template-columns: none;
     max-width: 760px; width: 100%; margin: 0 auto; text-align: center;
     padding: var(--space-12) var(--space-6) var(--space-10); /* top pad clears the fixed navbar */
 }

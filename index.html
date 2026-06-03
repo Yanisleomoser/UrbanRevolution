@@ -333,7 +333,7 @@
                 var d = new Date();
                 var s = Math.floor((Date.now() - t0) / 1000);
                 var en = document.documentElement.lang === "en";
-                var tail = en ? " trucks dumped since you arrived ]" : " Lkw entsorgt, seit du hier bist ]";
+                var tail = en ? " trucks of clothing dumped since you arrived ]" : " Lkw Kleidung entsorgt, seit du hier bist ]";
                 el.textContent = "[ " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " · " + s + tail;
             }
             tick();
