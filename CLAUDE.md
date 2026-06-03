@@ -436,12 +436,22 @@ every push).
 Before asking the user to verify something you can verify yourself, check it.
 The tools are available — use them instead of delegating the lookup back:
 
+- **Always surface the Vercel preview link directly (standing instruction).**
+  Whenever you push a branch / open or update a PR, put the branch's preview
+  URL right in your reply — don't make the user dig for it. **Don't hand-build
+  the URL from the branch name:** Vercel truncates + hashes long slugs (e.g.
+  branch `claude/docs-preview-link` → `…-git-claude-do-75851c-…`). Get the exact
+  alias from Vercel `list_deployments` → the deployment's `meta.branchAlias`
+  (or copy it from the Vercel bot's PR comment), and verify HTTP 200 before
+  quoting it.
 - **Deploy status / live URL:** the Vercel MCP tools (`list_deployments`,
   `get_deployment`, `get_deployment_build_logs`, `get_runtime_logs`). Team
   `jack's projects` (`team_6vAACRftikFNNglCvAGxBRku`), project
-  `urban-revolution-3ugz` (`prj_nByd8AePhWuduPtx0HQCTiIyxX7N`), production
-  domain `urban-revolution-3ugz.vercel.app`. Confirm a commit is live by
-  matching `meta.githubCommitSha` + `state: READY`.
+  `urban-revolution-3ugz` (`prj_nByd8AePhWuduPtx0HQCTiIyxX7N`). The live
+  production domains are **`revolveurban.com`** (+ `www.`) and the alias
+  `urban-revolution-3ugz-jack-s-projectsfutur.vercel.app` — note the bare
+  `urban-revolution-3ugz.vercel.app` is **not** aliased (404). Confirm a commit
+  is live by matching `meta.githubCommitSha` + `state: READY`.
 - **CI / PR / review status:** the GitHub MCP tools (`pull_request_read`
   with `get_check_runs` / `get` / `get_diff`, etc.).
 - **Visual rendering:** the SessionStart hook installs headless Chromium;
