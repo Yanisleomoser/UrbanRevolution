@@ -50,8 +50,8 @@ let inView = true;          // false once the hero scrolls out of view
 
 let currentType = "hoodie";
 // Colours are mutated in place (set/lerp/copy), never rebound → const.
-const currentColor = new THREE.Color("#8b5cf6");
-const targetColor = new THREE.Color("#8b5cf6");
+const currentColor = new THREE.Color("#1f3bff");
+const targetColor = new THREE.Color("#1f3bff");
 let pendingType = null;     // set when a look wants a different garment
 let morphFlash = 0;         // 0..1 brief emissive pulse on change
 

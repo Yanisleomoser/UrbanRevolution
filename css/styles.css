@@ -485,7 +485,7 @@ html.is-touch .navbar {
     --story-card: #121214;
     --story-elevated: #161614;
     --pure: #FFFFFF;
-    --story-gradient: linear-gradient(115deg, #EC4899 0%, #A855F7 52%, #3B82F6 100%);
+    --story-gradient: linear-gradient(115deg, #1f3bff 0%, #4b63ff 52%, #3B82F6 100%);
     position: relative;
     background: var(--void);
 }
@@ -1891,18 +1891,18 @@ input[aria-invalid="true"] {
 }
 
 .annotation.is-active line {
-    stroke: #f9a8d4;
+    stroke: #1f3bff;
     stroke-width: 5;
     stroke-dasharray: none;
 }
 
 .annotation.is-active circle {
-    fill: #f9a8d4;
+    fill: #1f3bff;
     r: 11;
 }
 
 .annotation.is-active text {
-    fill: #f9a8d4;
+    fill: #1f3bff;
 }
 
 /* Tappable markers (wired in app.js) — the figure doubles as a legend that
