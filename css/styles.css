@@ -3761,6 +3761,127 @@ main { display: block; }
    Trust Strip — brand values band between hero and workflow
    ============================================================ */
 
+/* ── Manifesto — compact thesis band right after the hero ── */
+.manifesto {
+    position: relative;
+    padding: var(--space-12) 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(139, 92, 246, 0.10), transparent 70%),
+        var(--bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.manifesto-inner {
+    max-width: 940px;
+    text-align: center;
+}
+.manifesto-eyebrow {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wider, 0.18em);
+    text-transform: uppercase;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 var(--space-5);
+}
+.manifesto-headline {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: var(--text-3xl);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    color: var(--text);
+    max-width: 18ch;
+    margin: 0 auto var(--space-6);
+}
+.manifesto-headline em {
+    font-style: italic;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.manifesto-problem {
+    font-size: var(--text-md);
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 56ch;
+    margin: 0 auto var(--space-9);
+}
+.manifesto-stats {
+    list-style: none;
+    margin: 0 auto var(--space-9);
+    padding: var(--space-7) 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.manifesto-stat-num {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: var(--space-3);
+}
+.manifesto-stat-label {
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    color: var(--text-dim);
+}
+.manifesto-vision {
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 60ch;
+    margin: 0 auto var(--space-9);
+}
+.manifesto-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+}
+.manifesto-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-8);
+    border-radius: 100px;
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: none;
+    box-shadow: var(--shadow-glow);
+    transition: transform 0.2s var(--ease-out, ease);
+}
+.manifesto-cta:hover { transform: translateY(-2px); }
+.manifesto-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-dim);
+    font-size: var(--text-base);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.manifesto-link:hover { color: var(--text); }
+@media (max-width: 720px) {
+    .manifesto-stats { grid-template-columns: 1fr; gap: var(--space-5); text-align: center; }
+    .manifesto-vision { font-size: var(--text-md); }
+}
+
 /* ── The true cost — fast-fashion evidence band (after the scroll story) ── */
 .cost {
     position: relative;

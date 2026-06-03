@@ -269,6 +269,40 @@
         </div>
     </header>
 
+    <!-- Manifesto — the whole thesis (fashion waste + PET + our answer) on a
+         single compact screen, right after the hero so the "why" lands before
+         the long cinematic story (which becomes optional depth). Static markup,
+         bilingual (manifesto.* keys), entrance via the shared [data-reveal]. -->
+    <section class="manifesto" id="why" aria-labelledby="manifesto-heading">
+        <div class="container manifesto-inner">
+            <p class="manifesto-eyebrow" data-reveal data-i18n="manifesto.eyebrow">Warum es uns gibt</p>
+            <h2 id="manifesto-heading" class="manifesto-headline" data-reveal data-i18n-html="manifesto.headline_html">Wir machen aus dem Abfall der Mode <em>Couture für Einen</em>.</h2>
+            <p class="manifesto-problem" data-reveal data-i18n="manifesto.problem">Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.</p>
+
+            <ul class="manifesto-stats" data-reveal-stagger>
+                <li class="manifesto-stat" data-reveal>
+                    <b class="manifesto-stat-num" data-i18n="manifesto.stat1_num">92 Mio. t</b>
+                    <span class="manifesto-stat-label" data-i18n="manifesto.stat1_label">Kleidung landen jährlich im Müll</span>
+                </li>
+                <li class="manifesto-stat" data-reveal>
+                    <b class="manifesto-stat-num" data-i18n="manifesto.stat2_num">450 Jahre</b>
+                    <span class="manifesto-stat-label" data-i18n="manifesto.stat2_label">braucht eine PET-Flasche zum Zerfallen</span>
+                </li>
+                <li class="manifesto-stat" data-reveal>
+                    <b class="manifesto-stat-num" data-i18n="manifesto.stat3_num">1 Stück</b>
+                    <span class="manifesto-stat-label" data-i18n="manifesto.stat3_label">produzieren wir — für einen Menschen, ohne Überproduktion</span>
+                </li>
+            </ul>
+
+            <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution rettet genau diese Faser — auch das PET aus weggeworfenen Flaschen — und spinnt sie zu Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich. Keine Überproduktion, keine Deponie.</p>
+
+            <div class="manifesto-actions" data-reveal>
+                <a href="#design" class="manifesto-cta" data-i18n-html="manifesto.cta_html">Entwirf dein Stück <span aria-hidden="true">→</span></a>
+                <a href="#mission" class="manifesto-link" data-i18n-html="manifesto.link_html">Sieh die ganze Geschichte <span aria-hidden="true">↓</span></a>
+            </div>
+        </div>
+    </section>
+
     <!-- Visual Scroll Story — pinned WebGL stage (js/3d/story-scene.js).
          One particle system morphs through three formations across the
          scroll track: waste heap → flowing silk threads → tailored figure.
