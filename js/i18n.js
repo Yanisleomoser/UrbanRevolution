@@ -257,6 +257,17 @@ const I18N = (() => {
       "length.regular": "Regular",
       "length.long": "Lang",
 
+      // ── Design Engine (Reise) ──
+      "engine.back": "Zurück",
+      "engine.skip": "Überspringen",
+      "engine.finish_early": "Fertig",
+      "engine.confirm": "Weiter",
+      "engine.scheme_mono": "Uni",
+      "engine.scheme_duo": "Verlauf",
+      "engine.done_title": "Dein Design",
+      "engine.generate": "Design generieren",
+      "engine.generating": "Generiere …",
+
       // ── VTO ──
       "vto.btn": "Fotorealistische Vorschau generieren",
       "vto.disclaimer": "Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.",
@@ -791,6 +802,17 @@ const I18N = (() => {
       "length.cropped": "Cropped",
       "length.regular": "Regular",
       "length.long": "Long",
+
+      // ── Design Engine (journey) ──
+      "engine.back": "Back",
+      "engine.skip": "Skip",
+      "engine.finish_early": "Done",
+      "engine.confirm": "Next",
+      "engine.scheme_mono": "Solid",
+      "engine.scheme_duo": "Gradient",
+      "engine.done_title": "Your design",
+      "engine.generate": "Generate design",
+      "engine.generating": "Generating …",
 
       // ── VTO ──
       "vto.btn": "Generate photorealistic preview",

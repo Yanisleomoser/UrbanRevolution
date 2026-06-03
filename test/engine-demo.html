@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<!-- Standalone QA harness for the Design Engine journey. NOT shipped / not
+     linked from the site — lets us drive + screenshot the flow before it is
+     wired into index.html (integration stage). Served from repo root. -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Engine — Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>body { background: var(--bg); color: var(--text); font-family: 'Poppins', system-ui, sans-serif; }</style>
+</head>
+<body>
+  <main id="engine-host"></main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/state-manager.js"></script>
+  <script src="../js/ai.js"></script>
+  <script src="../js/design-engine/dna.js"></script>
+  <script src="../js/design-engine/condition.js"></script>
+  <script src="../js/design-engine/engine.js"></script>
+  <script src="../js/design-engine/summary.js"></script>
+  <script src="../js/design-engine/modalities/visuals.js"></script>
+  <script src="../js/design-engine/modalities/cards.js"></script>
+  <script src="../js/design-engine/modalities/thisOrThat.js"></script>
+  <script src="../js/design-engine/modalities/slider.js"></script>
+  <script src="../js/design-engine/modalities/colorGradient.js"></script>
+  <script src="../js/design-engine/flow.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      DesignFlow.mount(document.getElementById("engine-host"), {
+        contentBase: "../js/design-engine/content/",
+        onDesign: (d) => console.log("[demo] design:", d && d.name),
+      }).catch((e) => console.error("[demo] mount failed:", e));
+    });
+  </script>
+</body>
+</html>
