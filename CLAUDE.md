@@ -24,8 +24,6 @@ UI copy is **bilingual German/English** (`I18N`, default `de`,
 
 ```
 index.html              # The atelier app; sections + import map + script tags
-landing.html            # Marketing/pitch page (pre-launch)
-waitlist.html           # Pre-launch email capture → POSTs to /api/waitlist
 impressum.html          # German legal page (Impressum)
 datenschutz.html        # German privacy policy (DSGVO + Swiss)
 css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
@@ -272,10 +270,11 @@ e.g. Recraft V3). Same success/`pending`/`error` response shape and
   and a retry button to re-attempt the photoreal render. No billable count is
   charged for it.
 
-## Waitlist (`waitlist.html` + `api/waitlist.js`)
+## Waitlist backend (`api/waitlist.js`) — frontend retired
 
-The pre-launch page (`waitlist.html`, standalone, English, not part of the
-`index.html` app) captures emails. `POST /api/waitlist { email, consent }`
+The standalone pre-launch page (`waitlist.html`) was **removed**; the backend
+Edge Function + Upstash store are **kept** for a possible relaunch (re-add a
+frontend that POSTs to it). `POST /api/waitlist { email, consent }`
 stores the (lowercased) email in an **Upstash Redis** set (`urev:waitlist`,
 auto-dedupes) plus a timestamp hash, and returns `{ ok, status:
 "joined" | "already", count }`. `GET /api/waitlist` returns the live

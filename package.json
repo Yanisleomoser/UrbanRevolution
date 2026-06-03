@@ -8,7 +8,7 @@
     "build": "echo 'Static site - no build needed'",
     "lint": "echo 'No linter configured'",
     "validate:css": "node scripts/validate-css.mjs css/styles.css",
-    "validate:html": "htmlhint index.html impressum.html datenschutz.html waitlist.html"
+    "validate:html": "htmlhint index.html impressum.html datenschutz.html"
   },
   "keywords": ["fashion", "ai", "3d"],
   "author": "",
