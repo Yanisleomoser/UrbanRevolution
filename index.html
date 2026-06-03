@@ -73,7 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260603-1">
+    <link rel="stylesheet" href="css/styles.css?v=20260603-funnel">
 
     <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
          Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
@@ -192,7 +192,7 @@
                 <span class="nav-toggle-bar"></span>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
+                <li><a href="#cost" data-i18n="nav.mission">Problem</a></li>
                 <li><a href="#design" data-i18n="nav.design">Design</a></li>
                 <li><a href="#measure" data-i18n="nav.measure">Maße</a></li>
                 <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
@@ -210,12 +210,12 @@
     </nav>
 
     <main id="main-content">
-    <header class="hero">
+    <header class="hero hero--begin">
+        <!-- ambient: the real-time cost simply exists, like a clock — not a pitch -->
+        <p class="ambient-ticker mono-label" id="ambient-ticker" aria-hidden="true"></p>
         <div class="hero-inner">
         <div class="hero-content" data-reveal-stagger>
-            <p class="hero-eyebrow" data-reveal data-i18n="hero.eyebrow">GERETTETE FASER · KI-DESIGN · NACH MASS</p>
-            <h1 class="hero-title" data-reveal data-i18n-html="hero.title_html">Aus Abfall.<br>Nach deinen Maßen.<br><span class="gradient-text">Couture für Einen.</span></h1>
-            <p class="hero-subtitle" data-reveal data-i18n="hero.subtitle">Ein Satz genügt: Die KI entwirft dein Stück, ein Schweizer Schneider näht es aus geretteter PET-Faser — nach deinen Maßen, nur für dich.</p>
+            <h1 class="begin-line" data-reveal data-i18n-html="begin.line">Beschreibe das eine Stück,<br>das du wirklich willst.</h1>
 
             <!-- Lebende Prompt-Konsole (Konzept A): tippt sich selbst durch
                  Beispiel-Prompts; die Hero-Galerie rechts blendet synchron
@@ -234,32 +234,14 @@
                     <span class="hero-prompt-go-arrow" aria-hidden="true">→</span>
                 </button>
             </form>
-            <p class="hero-microcopy" data-reveal data-i18n-html="hero.microcopy_html">Tippe los — oder sieh zu, wie aus Worten ein Kleidungsstück wird.</p>
-
-            <!-- Vision-first path (A2): the emotional story sits between the
-                 hero and the design tool. Make entering it the prominent
-                 move so visitors don't skip straight past the "why". The
-                 prompt console above remains the direct-design shortcut. -->
-            <div class="hero-actions">
-                <a href="#mission" class="hero-vision-link" data-i18n-html="hero.vision_cta_html">Warum das wichtig ist <span aria-hidden="true">↓</span></a>
-            </div>
+            <button type="button" id="funnel-trigger" class="begin-funnel-cta" data-reveal>
+                <span data-i18n="funnel.cta">Weißt du noch nicht genau, was? Lass dich führen</span>
+                <span class="begin-funnel-arrow" aria-hidden="true">→</span>
+            </button>
+            <p class="begin-hint mono-label" data-reveal data-i18n="begin.hint">Eins. Für einen. Deins.</p>
+            <a class="begin-scroll mono-label" href="#cost" data-i18n="begin.scroll" aria-label="Mehr erfahren">[ oder scroll, um zu verstehen ↓ ]</a>
         </div>
 
-        <!-- Brand asset slot — currently shows a stylized SVG fashion-figure
-             with brand-gradient garment. Swap-ready for real photography:
-             replace the <svg> contents inside <picture> with <source srcset="...">
-             and an <img>; the surrounding layout will adapt. -->
-        <figure class="hero-asset" data-reveal>
-            <picture class="hero-asset-picture" id="hero-gallery">
-                <img class="hero-asset-img is-visible" src="assets/hero-1.jpg" width="768" height="1376" loading="eager" fetchpriority="high" decoding="async" data-i18n-alt="hero.asset_alt" alt="Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt">
-                <img class="hero-asset-img" data-src="assets/hero-2.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-3.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-4.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-5.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-6.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-            </picture>
-            <figcaption class="hero-asset-caption" data-i18n-html="hero.caption_html">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
-        </figure>
         </div>
 
         <div class="hero-visual" aria-hidden="true">
@@ -268,6 +250,23 @@
             <div class="orb orb-3"></div>
         </div>
     </header>
+    <script>
+    (function () {
+        var el = document.getElementById("ambient-ticker");
+        if (!el) return;
+        var t0 = Date.now();
+        function p(n) { return n < 10 ? "0" + n : "" + n; }
+        function tick() {
+            var d = new Date();
+            var s = Math.floor((Date.now() - t0) / 1000);
+            var en = document.documentElement.lang === "en";
+            var tail = en ? " trucks of clothing dumped since you arrived ]" : " Lkw Kleidung entsorgt, seit du hier bist ]";
+            el.textContent = "[ " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " · " + s + tail;
+        }
+        tick();
+        setInterval(tick, 1000);
+    })();
+    </script>
 
     <!-- Manifesto — the whole thesis (fashion waste + PET + our answer) on a
          single compact screen, right after the hero so the "why" lands before
@@ -275,124 +274,14 @@
          bilingual (manifesto.* keys), entrance via the shared [data-reveal]. -->
     <section class="manifesto" id="why" aria-labelledby="manifesto-heading">
         <div class="container manifesto-inner">
-            <p class="manifesto-eyebrow" data-reveal data-i18n="manifesto.eyebrow">Warum es uns gibt</p>
+            <p class="manifesto-eyebrow mono-label section-label" data-reveal data-i18n="manifesto.eyebrow">[ Warum es uns gibt ]</p>
             <h2 id="manifesto-heading" class="manifesto-headline" data-reveal data-i18n-html="manifesto.headline_html">Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.</h2>
-            <p class="manifesto-problem" data-reveal data-i18n="manifesto.problem">Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.</p>
-
-            <ul class="manifesto-stats" data-reveal-stagger>
-                <li class="manifesto-stat" data-reveal>
-                    <b class="manifesto-stat-num" data-i18n="manifesto.stat1_num">92 Mio. t</b>
-                    <span class="manifesto-stat-label" data-i18n="manifesto.stat1_label">Kleidung landen jährlich im Müll</span>
-                </li>
-                <li class="manifesto-stat" data-reveal>
-                    <b class="manifesto-stat-num" data-i18n="manifesto.stat2_num">450 Jahre</b>
-                    <span class="manifesto-stat-label" data-i18n="manifesto.stat2_label">braucht eine PET-Flasche zum Zerfallen</span>
-                </li>
-                <li class="manifesto-stat" data-reveal>
-                    <b class="manifesto-stat-num" data-i18n="manifesto.stat3_num">1 Stück</b>
-                    <span class="manifesto-stat-label" data-i18n="manifesto.stat3_label">produzieren wir — für einen Menschen, ohne Überproduktion</span>
-                </li>
-            </ul>
 
             <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution rettet genau diese Faser — auch das PET aus weggeworfenen Flaschen — und spinnt sie zu Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich. Keine Überproduktion, keine Deponie.</p>
 
             <div class="manifesto-actions" data-reveal>
                 <a href="#design" class="manifesto-cta" data-i18n-html="manifesto.cta_html">Entwirf dein Stück <span aria-hidden="true">→</span></a>
-                <a href="#mission" class="manifesto-link" data-i18n-html="manifesto.link_html">Sieh die ganze Geschichte <span aria-hidden="true">↓</span></a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Visual Scroll Story — pinned WebGL stage (js/3d/story-scene.js).
-         One particle system morphs through three formations across the
-         scroll track: waste heap → flowing silk threads → tailored figure.
-         Text acts are source-ordered <article>s (linear, readable) and
-         fully bilingual via data-i18n; the WebGL is a visual enhancement
-         that degrades gracefully. -->
-    <section id="mission" class="story" aria-labelledby="story-heading">
-        <h2 id="story-heading" class="visually-hidden" data-i18n="story.heading">Von Abfall zu Couture für Einen</h2>
-        <div class="story-track" data-story>
-            <div class="story-stage">
-                <!-- Documentary photos for the dark acts I–IV (CC, see
-                     assets/story/CREDITS.md). The WebGL canvas carries the
-                     hopeful transformation (acts V–VI). -->
-                <div class="story-photos" aria-hidden="true">
-                    <picture class="story-photo" data-photo="0">
-                        <source type="image/avif" srcset="assets/story/act1-sm.avif 800w, assets/story/act1.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act1.jpg" srcset="assets/story/act1-sm.jpg 800w, assets/story/act1.jpg 1600w" sizes="100vw" alt="" decoding="async">
-                    </picture>
-                    <picture class="story-photo" data-photo="1">
-                        <source type="image/avif" srcset="assets/story/act2-sm.avif 800w, assets/story/act2.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act2.jpg" srcset="assets/story/act2-sm.jpg 800w, assets/story/act2.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
-                    </picture>
-                    <picture class="story-photo" data-photo="2">
-                        <source type="image/avif" srcset="assets/story/act3-sm.avif 800w, assets/story/act3.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act3.jpg" srcset="assets/story/act3-sm.jpg 800w, assets/story/act3.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
-                    </picture>
-                    <picture class="story-photo" data-photo="3">
-                        <source type="image/avif" srcset="assets/story/act4-sm.avif 800w, assets/story/act4.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act4.jpg" srcset="assets/story/act4-sm.jpg 800w, assets/story/act4.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
-                    </picture>
-                </div>
-                <canvas id="story-canvas" class="story-canvas" aria-hidden="true"></canvas>
-                <div class="story-scrim" aria-hidden="true"></div>
-
-                <!-- Live counter — runs through the problem acts (I–IV),
-                     making the global scale personal and present. -->
-                <div class="story-counter" data-counter aria-hidden="true">
-                    <span class="story-counter-intro" data-i18n="story.counter_intro">Seit du hier bist:</span>
-                    <span class="story-counter-row"><b data-count-garments>0</b> <span data-i18n="story.counter_garments">Kleidungsstücke produziert</span></span>
-                    <span class="story-counter-row"><b data-count-trucks>0</b> <span data-i18n="story.counter_trucks">Lkw-Ladungen Textilien entsorgt</span></span>
-                </div>
-
-                <div class="story-acts">
-                    <article class="story-act is-active" data-act="0">
-                        <p class="story-kicker" data-i18n="story.a0_kicker">Akt I</p>
-                        <h3 class="story-headline" data-i18n-html="story.a0_headline_html">Eine Flasche. Achtlos weggeworfen.</h3>
-                        <p class="story-statement" data-i18n="story.a0_statement">Sie überlebt deine Urenkel.</p>
-                    </article>
-
-                    <article class="story-act" data-act="1">
-                        <p class="story-kicker" data-i18n="story.a1_kicker">Akt II</p>
-                        <h3 class="story-headline" data-i18n-html="story.a1_headline_html">Dein altes Shirt verschwindet nicht.</h3>
-                        <p class="story-statement" data-i18n="story.a1_statement">Es wird zu diesem Berg.</p>
-                    </article>
-
-                    <article class="story-act" data-act="2">
-                        <p class="story-kicker" data-i18n="story.a2_kicker">Akt III</p>
-                        <h3 class="story-headline" data-i18n-html="story.a2_headline_html">Es reist weiter — an Orte, die du nie siehst.</h3>
-                        <p class="story-statement" data-i18n="story.a2_statement">Aber es bleibt nicht dort.</p>
-                    </article>
-
-                    <article class="story-act" data-act="3">
-                        <p class="story-kicker" data-i18n="story.a3_kicker">Akt IV</p>
-                        <h3 class="story-headline" data-i18n-html="story.a3_headline_html">Es kommt zurück. Als Staub, so fein, dass er die Haut durchdringt.</h3>
-                        <p class="story-statement" data-i18n="story.a3_statement">Im Blut von 4 aus 5 Menschen. Auch in deinem.</p>
-                    </article>
-
-                    <article class="story-act" data-act="4">
-                        <p class="story-kicker" data-i18n="story.a4_kicker">Akt V</p>
-                        <h3 class="story-headline" data-i18n-html="story.a4_headline_html">Es muss nicht so enden.<br>Dieselbe Faser kann etwas anderes werden.</h3>
-                        <p class="story-statement is-gradient" data-i18n="story.a4_statement">Wenn Technologie nichts mehr fertigt, das niemand will.</p>
-                    </article>
-
-                    <article class="story-act" data-act="5">
-                        <p class="story-kicker" data-i18n="story.a5_kicker">Akt VI</p>
-                        <h3 class="story-headline" data-i18n-html="story.a5_headline_html">Aus geretteter Faser wird Couture — KI-entworfen, nach deinen Maßen.</h3>
-                        <p class="story-statement is-gradient" data-i18n="story.a5_statement">Für einen gemacht. Deiner.</p>
-                        <a href="#design" class="story-cta" data-i18n-html="story.cta_html">Mach dein erstes Stück <span aria-hidden="true">→</span></a>
-                    </article>
-                </div>
-
-                <footer class="story-foot" aria-hidden="true">
-                    <span class="story-mono">UR</span>
-                    <span class="story-page"><span data-act-num>01</span> / <span data-act-total>06</span></span>
-                </footer>
-
-                <a href="#design" class="story-skip">
-                    <span data-i18n="story.skip">Direkt zum Design</span>
-                    <span aria-hidden="true">→</span>
-                </a>
+                <a href="#cost" class="manifesto-link" data-i18n-html="manifesto.link_html">Sieh die Fakten <span aria-hidden="true">↓</span></a>
             </div>
         </div>
     </section>
@@ -401,95 +290,69 @@
     <!-- The true cost — the hard, cited evidence behind the emotional story.
          Human cost (Public Eye / Shein), the numbers (Ellen MacArthur
          Foundation, UNEP), and the worst emitters, then the turn to our model. -->
-    <section class="cost" id="cost" aria-labelledby="cost-heading">
-        <div class="container">
-            <p class="cost-kicker" data-reveal data-i18n="cost.kicker">Der wahre Preis</p>
-            <h2 id="cost-heading" class="cost-headline" data-reveal data-i18n-html="cost.headline_html">Irgendwo zahlt jemand den Preis für „billig".</h2>
-            <p class="cost-lead" data-reveal data-i18n="cost.lead">Hinter jeder 5-Franken-Bluse steht ein Mensch. Recherchen der Schweizer NGO Public Eye zeigen: In Zulieferfabriken von Shein nähen Arbeiter:innen bis zu 75 Stunden pro Woche — für Löhne unter dem Existenzminimum.</p>
+    <!-- [ 01 / DAS PROBLEM ] — consolidated facts (one fast-scan block):
+         mono section label + live ticker, LABEL:VALUE list, the model turn,
+         emitter ranking, sources. Dark theme, brand gradient accents. -->
+    <section class="facts" id="cost" aria-labelledby="facts-heading">
+        <div class="container facts-inner">
+            <div class="facts-top">
+                <p class="mono-label section-label" data-i18n="facts.eyebrow">[ 01 / Das Problem ]</p>
+                <p class="mono-label facts-live" id="facts-live" aria-hidden="true"></p>
+            </div>
+            <h2 id="facts-heading" class="facts-headline" data-reveal data-i18n-html="facts.headline_html">Die Mode produziert<br><em>für die Tonne</em>.</h2>
 
-            <ul class="cost-stats" data-reveal-stagger>
-                <li class="cost-stat" data-reveal>
-                    <b class="cost-stat-num" data-i18n="cost.s1_num">bis 8 %</b>
-                    <span class="cost-stat-label" data-i18n="cost.s1_label">der globalen CO₂-Emissionen stammen aus der Mode — mehr als internationale Flüge und Schifffahrt zusammen.</span>
-                </li>
-                <li class="cost-stat" data-reveal>
-                    <b class="cost-stat-num" data-i18n="cost.s2_num">1 / Sekunde</b>
-                    <span class="cost-stat-label" data-i18n="cost.s2_label">Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder deponiert.</span>
-                </li>
-                <li class="cost-stat" data-reveal>
-                    <b class="cost-stat-num" data-i18n="cost.s3_num">unter 1 %</b>
-                    <span class="cost-stat-label" data-i18n="cost.s3_label">der Altkleider wird zu neuer Kleidung recycelt. Der Rest wird zu Abfall.</span>
-                </li>
-            </ul>
+            <dl class="facts-list" data-reveal-stagger>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r1_k">Jede Sekunde</dt><dd data-i18n="facts.r1_v">1 Lastwagen Textilien — verbrannt oder vergraben</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r2_k">Recycelt</dt><dd data-i18n="facts.r2_v">unter 1 % zurück in neue Kleidung</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r3_k">Eine PET-Flasche</dt><dd data-i18n="facts.r3_v">450 Jahre bis zum Zerfall</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r4_k">CO₂ der Mode</dt><dd data-i18n="facts.r4_v">bis 8 % global — mehr als Flüge und Schifffahrt zusammen</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r5_k">Der Mensch</dt><dd data-i18n="facts.r5_v">75-Stunden-Wochen, unter Existenzlohn (Public Eye)</dd></div>
+            </dl>
 
-            <figure class="cost-chart" aria-labelledby="cost-chart-cap">
-                <figcaption id="cost-chart-cap" class="cost-chart-cap" data-reveal data-i18n="cost.chart_cap">Wer treibt die Krise? Carbon-Intensität pro Umsatz — die Fast-Fashion-Riesen im Vergleich.</figcaption>
-                <ul class="cost-bars" data-reveal-stagger>
-                    <li class="cost-bar" data-reveal style="--v: 100%;"><span class="cost-bar-name">Shein</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 82%;"><span class="cost-bar-name">H&amp;M</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 64%;"><span class="cost-bar-name">ASOS</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 50%;"><span class="cost-bar-name">Primark</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 38%;"><span class="cost-bar-name">Inditex / Zara</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
+            <div class="facts-turn" data-reveal>
+                <p class="mono-label" data-i18n="facts.model_k">[ Unser Modell ]</p>
+                <p class="facts-model" data-i18n="facts.model_v">1 Stück · nach Maß · aus geretteter PET-Faser · 0 Überproduktion</p>
+            </div>
+
+            <figure class="facts-chart">
+                <figcaption class="mono-label" data-reveal data-i18n="facts.chart_cap">[ Carbon-Intensität pro Umsatz — die Treiber ]</figcaption>
+                <ul class="facts-bars" data-reveal-stagger>
+                    <li class="facts-bar" data-reveal style="--v: 100%;"><span class="facts-bar-name">Shein</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 82%;"><span class="facts-bar-name">H&amp;M</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 64%;"><span class="facts-bar-name">ASOS</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 50%;"><span class="facts-bar-name">Primark</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 38%;"><span class="facts-bar-name">Zara</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
                 </ul>
-                <p class="cost-chart-note" data-i18n="cost.chart_note">Relative Carbon-Intensität pro Mrd. $ Umsatz (Rangfolge, illustrativ). Quelle: Commons.</p>
             </figure>
 
-            <p class="cost-close" data-reveal data-i18n="cost.close">Das ist das System, das wir ersetzen.</p>
-
-            <p class="cost-sources" data-i18n-html="cost.sources_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a></p>
+            <p class="facts-sources mono-label" data-i18n-html="facts.sources_html">[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons</p>
         </div>
+        <script>
+        (function () {
+            var el = document.getElementById("facts-live");
+            if (!el) return;
+            var t0 = Date.now();
+            function p(n) { return n < 10 ? "0" + n : "" + n; }
+            function tick() {
+                var d = new Date();
+                var s = Math.floor((Date.now() - t0) / 1000);
+                var en = document.documentElement.lang === "en";
+                var tail = en ? " trucks of clothing dumped since you arrived ]" : " Lkw Kleidung entsorgt, seit du hier bist ]";
+                el.textContent = "[ " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " · " + s + tail;
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+        </script>
     </section>
 
-
-    <section class="trust-strip" data-i18n-aria-label="trust.aria" aria-label="Markenmerkmale">
-        <div class="container">
-            <ul class="trust-list" data-reveal-stagger>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L4 6 L4 12 C4 17 8 21 12 22 C16 21 20 17 20 12 L20 6 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12 L11 14 L15 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t1_title">Maßgefertigt</h4>
-                        <p data-i18n="trust.t1_body">Jedes Stück nach deinen 9 Körpermaßen — keine Standardgrößen, kein Kompromiss</p>
-                    </div>
-                </li>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3 C15 6 15 18 12 21 M12 3 C9 6 9 18 12 21 M3 12 L21 12" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t2_title">Designed in Zürich</h4>
-                        <p data-i18n="trust.t2_body">Schweizer Atelier, transparente Produktion in CHF, faire Lieferzeit unter 14 Tagen</p>
-                    </div>
-                </li>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L14 8 L20 9 L15.5 13 L17 19 L12 16 L7 19 L8.5 13 L4 9 L10 8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t3_title">KI + Handwerk</h4>
-                        <p data-i18n="trust.t3_body">Generative Designs treffen auf echte Schneider — kein Print-on-Demand, kein Fast-Fashion</p>
-                    </div>
-                </li>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10 L21 10 M8 14 L11 14 M8 17 L13 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t4_title">100 % Privatsphäre</h4>
-                        <p data-i18n="trust.t4_body">Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in</p>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </section>
 
     <!-- How it works — the vision made concrete: 3 compact steps that bridge
          the "why" into the tool, foregrounding rescued rPET + made-to-measure
          + no overproduction. Bilingual (howto.*), entrance via [data-reveal]. -->
     <section class="howto" id="how" aria-labelledby="howto-heading">
         <div class="container">
-            <p class="howto-eyebrow" data-reveal data-i18n="howto.eyebrow">So entsteht dein Stück</p>
+            <p class="howto-eyebrow mono-label section-label" data-reveal data-i18n="howto.eyebrow">[ 02 / Das Modell ]</p>
             <h2 id="howto-heading" class="howto-heading" data-reveal data-i18n="howto.heading">Vom Satz zum Einzelstück — in drei Schritten.</h2>
             <ol class="howto-steps" data-reveal-stagger>
                 <li class="howto-step" data-reveal>
@@ -530,7 +393,7 @@
     <section id="design" class="section design-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number" aria-hidden="true">01</span>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.design">[ 03 / Dein Entwurf ]</span>
                 <h2 data-i18n="design.h2">Beschreibe dein Design</h2>
                 <p data-i18n="design.intro">Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.</p>
             </div>
@@ -657,6 +520,19 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label for="length-select" data-i18n="design.length_label">Länge</label>
+                            <select id="length-select">
+                                <option value="cropped" data-i18n="length.cropped">Cropped</option>
+                                <option value="regular" data-i18n="length.regular" selected>Regular</option>
+                                <option value="long" data-i18n="length.long">Lang</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="print-input" data-i18n="design.print_label">Aufschrift</label>
+                            <input type="text" id="print-input" class="print-input" maxlength="24" autocomplete="off" data-i18n-placeholder="design.print_placeholder" placeholder="z. B. dein Name, ein Wort …">
+                            <p class="control-hint" data-i18n="design.print_hint">Erscheint vorne auf dem Stück · max. 24 Zeichen</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -679,7 +555,7 @@
     <section id="measure" class="section measure-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number" aria-hidden="true">02</span>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.measure">[ 04 / Deine Maße ]</span>
                 <h2 data-i18n="measure.h2">Deine Körpermaße</h2>
                 <p data-i18n="measure.intro">Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Maße.</p>
             </div>
@@ -810,7 +686,7 @@
     <section id="preview" class="section preview-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number" aria-hidden="true">03</span>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.preview">[ 05 / Vorschau ]</span>
                 <h2 data-i18n="preview.h2">Fotorealistische Vorschau</h2>
                 <p data-i18n="preview.intro">Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.</p>
             </div>
@@ -859,7 +735,7 @@
     <section id="production" class="section production-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number" aria-hidden="true">04</span>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.production">[ 06 / Produktion ]</span>
                 <h2 data-i18n="prod.h2">Produktions-Vorlage</h2>
                 <p data-i18n="prod.intro">Alle Daten, die der Schneider und die Produktion benötigen, in einem Dokument.</p>
             </div>
@@ -887,6 +763,8 @@
                                 <tr><td data-i18n="spec.material">Material</td><td id="spec-material">––</td></tr>
                                 <tr><td data-i18n="spec.color">Primärfarbe</td><td id="spec-color">––</td></tr>
                                 <tr><td data-i18n="spec.fit">Passform</td><td id="spec-fit">––</td></tr>
+                                <tr><td data-i18n="spec.length">Länge</td><td id="spec-length">––</td></tr>
+                                <tr><td data-i18n="spec.print">Aufschrift</td><td id="spec-print">––</td></tr>
                                 <tr><td data-i18n="spec.size">Konfektionsgröße</td><td id="spec-size">––</td></tr>
                             </table>
                         </div>
@@ -927,10 +805,53 @@
         </div>
     </section>
 
+    <section class="trust-strip" data-i18n-aria-label="trust.aria" aria-label="Markenmerkmale">
+        <div class="container">
+            <ul class="trust-list" data-reveal-stagger>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L4 6 L4 12 C4 17 8 21 12 22 C16 21 20 17 20 12 L20 6 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12 L11 14 L15 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <h4 data-i18n="trust.t1_title">Maßgefertigt</h4>
+                        <p data-i18n="trust.t1_body">Jedes Stück nach deinen 9 Körpermaßen — keine Standardgrößen, kein Kompromiss</p>
+                    </div>
+                </li>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3 C15 6 15 18 12 21 M12 3 C9 6 9 18 12 21 M3 12 L21 12" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                    </span>
+                    <div>
+                        <h4 data-i18n="trust.t2_title">Designed in Zürich</h4>
+                        <p data-i18n="trust.t2_body">Schweizer Atelier, transparente Produktion in CHF, faire Lieferzeit unter 14 Tagen</p>
+                    </div>
+                </li>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L14 8 L20 9 L15.5 13 L17 19 L12 16 L7 19 L8.5 13 L4 9 L10 8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div>
+                        <h4 data-i18n="trust.t3_title">KI + Handwerk</h4>
+                        <p data-i18n="trust.t3_body">Generative Designs treffen auf echte Schneider — kein Print-on-Demand, kein Fast-Fashion</p>
+                    </div>
+                </li>
+                <li class="trust-item" data-reveal>
+                    <span class="trust-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10 L21 10 M8 14 L11 14 M8 17 L13 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </span>
+                    <div>
+                        <h4 data-i18n="trust.t4_title">100 % Privatsphäre</h4>
+                        <p data-i18n="trust.t4_body">Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+
     <section id="faq" class="section faq-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number" aria-hidden="true">FAQ</span>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.faq">[ FAQ ]</span>
                 <h2 data-i18n="faq.h2">Häufige Fragen</h2>
                 <p data-i18n="faq.intro">Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
             </div>
@@ -977,7 +898,7 @@
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_atelier" aria-label="Atelier">
                     <h5 data-i18n="footer.col_atelier">Atelier</h5>
                     <ul>
-                        <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
+                        <li><a href="#cost" data-i18n="nav.mission">Problem</a></li>
                         <li><a href="#design" data-i18n="footer.design_start">Design starten</a></li>
                         <li><a href="#measure" data-i18n="footer.measure">Körpermaße</a></li>
                         <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
@@ -1031,6 +952,6 @@
     <script src="js/app.js"></script>
     <script src="js/hero.js"></script>
     <script src="js/flair.js"></script>
-    <script type="module" src="js/3d/story-scene.js"></script>
+    <script src="js/funnel.js"></script>
 </body>
 </html>

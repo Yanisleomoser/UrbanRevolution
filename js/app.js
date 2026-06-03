@@ -316,6 +316,34 @@
     });
   }
 
+  function initLengthSelector() {
+    const select = document.getElementById("length-select");
+    if (!select) return;
+    select.addEventListener("change", () => {
+      if (!S.set("currentLength", select.value)) return;
+      const design = S.get("currentDesign");
+      if (design) {
+        design.length = select.value;
+        updateProductionPreview();
+      }
+    });
+  }
+
+  function initPrintInput() {
+    const input = document.getElementById("print-input");
+    if (!input) return;
+    input.addEventListener("input", () => {
+      // validatePrint sanitises (strips markup, caps length) and never throws,
+      // so S.set always succeeds; the 3D decal patches in via subscription.
+      S.set("currentPrint", input.value);
+      const design = S.get("currentDesign");
+      if (design) {
+        design.print = S.get("currentPrint");
+        updateProductionPreview();
+      }
+    });
+  }
+
   function initGenerateButton() {
     const btn = document.getElementById("generate-btn");
     btn.addEventListener("click", async () => {
@@ -417,6 +445,10 @@
     return t("fit.regular");
   }
 
+  function lengthLabel(key) {
+    return t(`length.${key || "regular"}`);
+  }
+
   function escapeHtml(str) {
     return String(str).replace(
       /[&<>"']/g,
@@ -513,6 +545,12 @@
     if (fitSlider && design.fit !== undefined) {
       fitSlider.value = Math.round(design.fit * 100);
     }
+
+    const lengthSelect = document.getElementById("length-select");
+    if (lengthSelect) lengthSelect.value = design.length || "regular";
+
+    const printInput = document.getElementById("print-input");
+    if (printInput) printInput.value = design.print || "";
   }
 
   function applyDesignToState(design) {
@@ -522,6 +560,10 @@
     if (design.color) S.set("currentColor", design.color);
     if (design.material) S.set("currentMaterial", design.material);
     if (design.fit !== undefined) S.set("currentFit", design.fit);
+    // Length & print are user studio choices, not AI-generated; reset them to
+    // their defaults for each fresh design so the preview starts clean.
+    S.set("currentLength", design.length || "regular");
+    S.set("currentPrint", design.print || "");
     if (design.type && design.type !== S.get("currentType")) {
       if (S.set("currentType", design.type)) setActiveType(design.type);
     }
@@ -846,6 +888,8 @@
     const currentMaterial = S.get("currentMaterial");
     const currentFit = S.get("currentFit");
     const currentType = S.get("currentType");
+    const currentLength = S.get("currentLength");
+    const currentPrint = S.get("currentPrint");
 
     const design = S.get("currentDesign") || {
       name: t("prod.placeholder_name"),
@@ -855,6 +899,8 @@
       color: currentColor,
       material: currentMaterial,
       fit: currentFit,
+      length: currentLength,
+      print: currentPrint,
       tags: [],
       constructionNotes: [t("prod.placeholder_note")],
       generatedAt: new Date().toISOString(),
@@ -878,6 +924,10 @@
 
     document.getElementById("spec-fit").textContent =
       specData.specifications.fit;
+    document.getElementById("spec-length").textContent =
+      lengthLabel(currentLength);
+    document.getElementById("spec-print").textContent =
+      currentPrint ? `„${currentPrint}"` : "—";
     document.getElementById("spec-size").textContent =
       specData.specifications.size;
 
@@ -1681,6 +1731,8 @@
     initMaterialSelector();
     initPatternSelector();
     initFitSlider();
+    initLengthSelector();
+    initPrintInput();
     initGenerateButton();
     initMeasurements();
     initExportButtons();

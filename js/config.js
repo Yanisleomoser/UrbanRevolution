@@ -31,6 +31,14 @@ const CONFIG = (() => {
 
     const PATTERNS = ['solid', 'stripes_h', 'stripes_v', 'dots', 'plaid', 'camo', 'gradient', 'heather', 'floral'];
 
+    // Garment length presets. Keys are stable identifiers; visible labels
+    // come from i18n (`length.*`). Geometry impact lives in 3d/garments.js,
+    // fabric impact in PRODUCTION_ESTIMATES.lengthFabricFactor below.
+    const LENGTHS = ['cropped', 'regular', 'long'];
+
+    // Max characters for a custom garment print/Aufschrift.
+    const PRINT_MAX_LENGTH = 24;
+
     const MEASUREMENT_PRESETS = {
         S: { height: 168, weight: 60, chest: 88, waist: 74, hips: 90, shoulder: 41, arm: 58, inseam: 76, neck: 36 },
         M: { height: 175, weight: 70, chest: 96, waist: 82, hips: 98, shoulder: 44, arm: 62, inseam: 82, neck: 38 },
@@ -68,7 +76,10 @@ const CONFIG = (() => {
             dress: (m) => 2 * m.chest + 2 * m.hips + 2 * 90 + 60
         },
         days: 14,
-        priceRange: { min: 145, max: 220, currency: 'CHF' }
+        priceRange: { min: 145, max: 220, currency: 'CHF' },
+        // Length scales the fabric estimate — a cropped piece uses less
+        // cloth, a long one more. Applied in export.buildSpecData.
+        lengthFabricFactor: { cropped: 0.82, regular: 1, long: 1.22 }
     };
 
     // Validation functions
@@ -109,18 +120,40 @@ const CONFIG = (() => {
         return hexColor;
     }
 
+    function validateLength(length) {
+        if (!LENGTHS.includes(length)) {
+            throw new Error(`Invalid length: ${length}. Allowed: ${LENGTHS.join(', ')}`);
+        }
+        return length;
+    }
+
+    // Custom print/Aufschrift: free text, trimmed, capped, no markup. Empty
+    // is valid (no print). Returns the sanitised string.
+    function validatePrint(text) {
+        if (text === null || text === undefined) return '';
+        const str = String(text).replace(/[<>]/g, '').trim();
+        if (str.length > PRINT_MAX_LENGTH) {
+            return str.slice(0, PRINT_MAX_LENGTH);
+        }
+        return str;
+    }
+
     return {
         GARMENT_TYPES,
         MATERIALS,
         COLORS,
         PATTERNS,
+        LENGTHS,
+        PRINT_MAX_LENGTH,
         MEASUREMENT_PRESETS,
         MEASUREMENT_CONSTRAINTS,
         PRODUCTION_ESTIMATES,
         validateMeasurement,
         validateGarmentType,
         validateMaterial,
-        validateColor
+        validateColor,
+        validateLength,
+        validatePrint
     };
 })();
 
