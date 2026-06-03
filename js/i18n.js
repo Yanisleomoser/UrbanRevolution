@@ -106,7 +106,7 @@ const I18N = (() => {
       "manifesto.stat2_label": "braucht eine PET-Flasche zum Zerfallen",
       "manifesto.stat3_num": "1 Stück",
       "manifesto.stat3_label": "produzieren wir — für einen Menschen, ohne Überproduktion",
-      "manifesto.vision": "Urban Revolution rettet genau diese Faser — auch das PET aus weggeworfenen Flaschen — und spinnt sie zu Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich. Keine Überproduktion, keine Deponie.",
+      "manifesto.vision": "Urban Revolution macht aus weggeworfenen Kleidern neuen Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich — aus genau dem, was die Branche wegwirft. Kein neuer Rohstoff, keine Überproduktion, keine Deponie.",
       "manifesto.cta_html": 'Entwirf dein Stück <span aria-hidden="true">→</span>',
       "manifesto.link_html": 'Sieh die Fakten <span aria-hidden="true">↓</span>',
 
@@ -131,7 +131,7 @@ const I18N = (() => {
       "facts.r5_k": "Der Mensch",
       "facts.r5_v": "75-Stunden-Wochen, unter Existenzlohn (Public Eye)",
       "facts.model_k": "[ Unser Modell ]",
-      "facts.model_v": "1 Stück · nach Maß · aus geretteter PET-Faser · 0 Überproduktion",
+      "facts.model_v": "1 Stück · nach Maß · aus Stoff aus recycelten Kleidern · 0 Überproduktion",
       "facts.chart_cap": "[ Carbon-Intensität pro Umsatz — die Treiber ]",
       "facts.sources_html": '[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
@@ -196,9 +196,9 @@ const I18N = (() => {
       "howto.s1_body": "Ein Satz genügt. Aus deinen Worten macht die KI ein konkretes Design — mit Studio-Vorschau, sofort.",
       "howto.s2_title": "Deine Maße, dein Schnitt",
       "howto.s2_body": "Neun Körpermaße — per Foto geschätzt oder manuell. Keine Standardgröße, kein Kompromiss.",
-      "howto.s3_title": "Ein Schneider näht es aus geretteter Faser",
-      "howto.s3_body": "Gefertigt aus recyceltem PET, auf Bestellung, in rund 14 Tagen bei dir. Kein Lager, keine Überproduktion.",
-      "howto.p1": "Recyceltes rPET",
+      "howto.s3_title": "Ein Schneider näht es aus recyceltem Stoff",
+      "howto.s3_body": "Gefertigt aus Stoff aus recycelten Kleidern, auf Bestellung, in rund 14 Tagen bei dir. Kein Lager, keine Überproduktion.",
+      "howto.p1": "Aus alten Kleidern",
       "howto.p2": "Maßanfertigung",
       "howto.p3": "Null Überproduktion",
 
@@ -630,7 +630,7 @@ const I18N = (() => {
       "manifesto.stat2_label": "for one PET bottle to break down",
       "manifesto.stat3_num": "1 piece",
       "manifesto.stat3_label": "is all we make — for one person, no overproduction",
-      "manifesto.vision": "Urban Revolution rescues that fibre — including the PET from discarded bottles — and spins it into fabric. You describe a piece, our AI designs it, a Swiss tailor cuts it to your nine measurements. One garment, made once, for you. No overproduction, no landfill.",
+      "manifesto.vision": "Urban Revolution turns discarded clothes into new fabric. You describe a piece, our AI designs it, a Swiss tailor cuts it to your nine measurements. One garment, made once, for you — from exactly what the industry throws away. No virgin material, no overproduction, no landfill.",
       "manifesto.cta_html": 'Design your piece <span aria-hidden="true">→</span>',
       "manifesto.link_html": 'See the facts <span aria-hidden="true">↓</span>',
 
@@ -655,7 +655,7 @@ const I18N = (() => {
       "facts.r5_k": "The human cost",
       "facts.r5_v": "75-hour weeks, below a living wage (Public Eye)",
       "facts.model_k": "[ Our model ]",
-      "facts.model_v": "1 piece · made to measure · from rescued PET fibre · 0 overproduction",
+      "facts.model_v": "1 piece · made to measure · from fabric made of old clothes · 0 overproduction",
       "facts.chart_cap": "[ Carbon intensity per revenue — the drivers ]",
       "facts.sources_html": '[ Sources ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
@@ -720,9 +720,9 @@ const I18N = (() => {
       "howto.s1_body": "One sentence is enough. The AI turns your words into a real design — with an instant studio preview.",
       "howto.s2_title": "Your measurements, your cut",
       "howto.s2_body": "Nine body measurements — estimated from a photo or entered by hand. No standard size, no compromise.",
-      "howto.s3_title": "A tailor sews it from rescued fibre",
-      "howto.s3_body": "Made from recycled PET, on demand, at your door in about 14 days. No warehouse, no overproduction.",
-      "howto.p1": "Recycled rPET",
+      "howto.s3_title": "A tailor sews it from recycled fabric",
+      "howto.s3_body": "Made from fabric of recycled clothes, on demand, at your door in about 14 days. No warehouse, no overproduction.",
+      "howto.p1": "From old clothes",
       "howto.p2": "Made to measure",
       "howto.p3": "Zero overproduction",
 

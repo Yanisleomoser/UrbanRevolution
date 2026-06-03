@@ -93,7 +93,7 @@ const Funnel = (() => {
     const typeBtn = selection.type &&
       document.querySelector('.type-btn[data-type="' + selection.type.key + '"], [data-type="' + selection.type.key + '"]');
     if (typeBtn && typeof typeBtn.click === "function") {
-      try { typeBtn.click(); } catch (e) { /* noop */ }
+      try { typeBtn.click(); } catch { /* noop */ }
     }
     if (ta && prompt) {
       ta.value = prompt;
@@ -103,7 +103,7 @@ const Funnel = (() => {
     const section = document.getElementById("design");
     if (section) section.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     const gen = document.getElementById("generate-btn");
-    if (gen) window.setTimeout(() => { try { gen.click(); } catch (e) { /* noop */ } }, reduce ? 0 : 650);
+    if (gen) window.setTimeout(() => { try { gen.click(); } catch { /* noop */ } }, reduce ? 0 : 650);
   }
 
   function close() {
