@@ -73,7 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260603-1">
+    <link rel="stylesheet" href="css/styles.css?v=20260603-ovyon">
 
     <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
          Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
@@ -192,7 +192,7 @@
                 <span class="nav-toggle-bar"></span>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
+                <li><a href="#cost" data-i18n="nav.mission">Fakten</a></li>
                 <li><a href="#design" data-i18n="nav.design">Design</a></li>
                 <li><a href="#measure" data-i18n="nav.measure">Maße</a></li>
                 <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
@@ -241,7 +241,7 @@
                  move so visitors don't skip straight past the "why". The
                  prompt console above remains the direct-design shortcut. -->
             <div class="hero-actions">
-                <a href="#mission" class="hero-vision-link" data-i18n-html="hero.vision_cta_html">Warum das wichtig ist <span aria-hidden="true">↓</span></a>
+                <a href="#cost" class="hero-vision-link" data-i18n-html="hero.vision_cta_html">Warum das wichtig ist <span aria-hidden="true">↓</span></a>
             </div>
         </div>
 
@@ -277,167 +277,73 @@
         <div class="container manifesto-inner">
             <p class="manifesto-eyebrow" data-reveal data-i18n="manifesto.eyebrow">Warum es uns gibt</p>
             <h2 id="manifesto-heading" class="manifesto-headline" data-reveal data-i18n-html="manifesto.headline_html">Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.</h2>
-            <p class="manifesto-problem" data-reveal data-i18n="manifesto.problem">Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.</p>
-
-            <ul class="manifesto-stats" data-reveal-stagger>
-                <li class="manifesto-stat" data-reveal>
-                    <b class="manifesto-stat-num" data-i18n="manifesto.stat1_num">92 Mio. t</b>
-                    <span class="manifesto-stat-label" data-i18n="manifesto.stat1_label">Kleidung landen jährlich im Müll</span>
-                </li>
-                <li class="manifesto-stat" data-reveal>
-                    <b class="manifesto-stat-num" data-i18n="manifesto.stat2_num">450 Jahre</b>
-                    <span class="manifesto-stat-label" data-i18n="manifesto.stat2_label">braucht eine PET-Flasche zum Zerfallen</span>
-                </li>
-                <li class="manifesto-stat" data-reveal>
-                    <b class="manifesto-stat-num" data-i18n="manifesto.stat3_num">1 Stück</b>
-                    <span class="manifesto-stat-label" data-i18n="manifesto.stat3_label">produzieren wir — für einen Menschen, ohne Überproduktion</span>
-                </li>
-            </ul>
 
             <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution rettet genau diese Faser — auch das PET aus weggeworfenen Flaschen — und spinnt sie zu Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich. Keine Überproduktion, keine Deponie.</p>
 
             <div class="manifesto-actions" data-reveal>
                 <a href="#design" class="manifesto-cta" data-i18n-html="manifesto.cta_html">Entwirf dein Stück <span aria-hidden="true">→</span></a>
-                <a href="#mission" class="manifesto-link" data-i18n-html="manifesto.link_html">Sieh die ganze Geschichte <span aria-hidden="true">↓</span></a>
+                <a href="#cost" class="manifesto-link" data-i18n-html="manifesto.link_html">Sieh die Fakten <span aria-hidden="true">↓</span></a>
             </div>
         </div>
     </section>
-
-    <!-- Visual Scroll Story — pinned WebGL stage (js/3d/story-scene.js).
-         One particle system morphs through three formations across the
-         scroll track: waste heap → flowing silk threads → tailored figure.
-         Text acts are source-ordered <article>s (linear, readable) and
-         fully bilingual via data-i18n; the WebGL is a visual enhancement
-         that degrades gracefully. -->
-    <section id="mission" class="story" aria-labelledby="story-heading">
-        <h2 id="story-heading" class="visually-hidden" data-i18n="story.heading">Von Abfall zu Couture für Einen</h2>
-        <div class="story-track" data-story>
-            <div class="story-stage">
-                <!-- Documentary photos for the dark acts I–IV (CC, see
-                     assets/story/CREDITS.md). The WebGL canvas carries the
-                     hopeful transformation (acts V–VI). -->
-                <div class="story-photos" aria-hidden="true">
-                    <picture class="story-photo" data-photo="0">
-                        <source type="image/avif" srcset="assets/story/act1-sm.avif 800w, assets/story/act1.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act1.jpg" srcset="assets/story/act1-sm.jpg 800w, assets/story/act1.jpg 1600w" sizes="100vw" alt="" decoding="async">
-                    </picture>
-                    <picture class="story-photo" data-photo="1">
-                        <source type="image/avif" srcset="assets/story/act2-sm.avif 800w, assets/story/act2.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act2.jpg" srcset="assets/story/act2-sm.jpg 800w, assets/story/act2.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
-                    </picture>
-                    <picture class="story-photo" data-photo="2">
-                        <source type="image/avif" srcset="assets/story/act3-sm.avif 800w, assets/story/act3.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act3.jpg" srcset="assets/story/act3-sm.jpg 800w, assets/story/act3.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
-                    </picture>
-                    <picture class="story-photo" data-photo="3">
-                        <source type="image/avif" srcset="assets/story/act4-sm.avif 800w, assets/story/act4.avif 1600w" sizes="100vw">
-                        <img src="assets/story/act4.jpg" srcset="assets/story/act4-sm.jpg 800w, assets/story/act4.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
-                    </picture>
-                </div>
-                <canvas id="story-canvas" class="story-canvas" aria-hidden="true"></canvas>
-                <div class="story-scrim" aria-hidden="true"></div>
-
-                <!-- Live counter — runs through the problem acts (I–IV),
-                     making the global scale personal and present. -->
-                <div class="story-counter" data-counter aria-hidden="true">
-                    <span class="story-counter-intro" data-i18n="story.counter_intro">Seit du hier bist:</span>
-                    <span class="story-counter-row"><b data-count-garments>0</b> <span data-i18n="story.counter_garments">Kleidungsstücke produziert</span></span>
-                    <span class="story-counter-row"><b data-count-trucks>0</b> <span data-i18n="story.counter_trucks">Lkw-Ladungen Textilien entsorgt</span></span>
-                </div>
-
-                <div class="story-acts">
-                    <article class="story-act is-active" data-act="0">
-                        <p class="story-kicker" data-i18n="story.a0_kicker">Akt I</p>
-                        <h3 class="story-headline" data-i18n-html="story.a0_headline_html">Eine Flasche. Achtlos weggeworfen.</h3>
-                        <p class="story-statement" data-i18n="story.a0_statement">Sie überlebt deine Urenkel.</p>
-                    </article>
-
-                    <article class="story-act" data-act="1">
-                        <p class="story-kicker" data-i18n="story.a1_kicker">Akt II</p>
-                        <h3 class="story-headline" data-i18n-html="story.a1_headline_html">Dein altes Shirt verschwindet nicht.</h3>
-                        <p class="story-statement" data-i18n="story.a1_statement">Es wird zu diesem Berg.</p>
-                    </article>
-
-                    <article class="story-act" data-act="2">
-                        <p class="story-kicker" data-i18n="story.a2_kicker">Akt III</p>
-                        <h3 class="story-headline" data-i18n-html="story.a2_headline_html">Es reist weiter — an Orte, die du nie siehst.</h3>
-                        <p class="story-statement" data-i18n="story.a2_statement">Aber es bleibt nicht dort.</p>
-                    </article>
-
-                    <article class="story-act" data-act="3">
-                        <p class="story-kicker" data-i18n="story.a3_kicker">Akt IV</p>
-                        <h3 class="story-headline" data-i18n-html="story.a3_headline_html">Es kommt zurück. Als Staub, so fein, dass er die Haut durchdringt.</h3>
-                        <p class="story-statement" data-i18n="story.a3_statement">Im Blut von 4 aus 5 Menschen. Auch in deinem.</p>
-                    </article>
-
-                    <article class="story-act" data-act="4">
-                        <p class="story-kicker" data-i18n="story.a4_kicker">Akt V</p>
-                        <h3 class="story-headline" data-i18n-html="story.a4_headline_html">Es muss nicht so enden.<br>Dieselbe Faser kann etwas anderes werden.</h3>
-                        <p class="story-statement is-gradient" data-i18n="story.a4_statement">Wenn Technologie nichts mehr fertigt, das niemand will.</p>
-                    </article>
-
-                    <article class="story-act" data-act="5">
-                        <p class="story-kicker" data-i18n="story.a5_kicker">Akt VI</p>
-                        <h3 class="story-headline" data-i18n-html="story.a5_headline_html">Aus geretteter Faser wird Couture — KI-entworfen, nach deinen Maßen.</h3>
-                        <p class="story-statement is-gradient" data-i18n="story.a5_statement">Für einen gemacht. Deiner.</p>
-                        <a href="#design" class="story-cta" data-i18n-html="story.cta_html">Mach dein erstes Stück <span aria-hidden="true">→</span></a>
-                    </article>
-                </div>
-
-                <footer class="story-foot" aria-hidden="true">
-                    <span class="story-mono">UR</span>
-                    <span class="story-page"><span data-act-num>01</span> / <span data-act-total>06</span></span>
-                </footer>
-
-                <a href="#design" class="story-skip">
-                    <span data-i18n="story.skip">Direkt zum Design</span>
-                    <span aria-hidden="true">→</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
 
     <!-- The true cost — the hard, cited evidence behind the emotional story.
          Human cost (Public Eye / Shein), the numbers (Ellen MacArthur
          Foundation, UNEP), and the worst emitters, then the turn to our model. -->
-    <section class="cost" id="cost" aria-labelledby="cost-heading">
-        <div class="container">
-            <p class="cost-kicker" data-reveal data-i18n="cost.kicker">Der wahre Preis</p>
-            <h2 id="cost-heading" class="cost-headline" data-reveal data-i18n-html="cost.headline_html">Irgendwo zahlt jemand den Preis für „billig".</h2>
-            <p class="cost-lead" data-reveal data-i18n="cost.lead">Hinter jeder 5-Franken-Bluse steht ein Mensch. Recherchen der Schweizer NGO Public Eye zeigen: In Zulieferfabriken von Shein nähen Arbeiter:innen bis zu 75 Stunden pro Woche — für Löhne unter dem Existenzminimum.</p>
+    <!-- The facts, consolidated (Ovyon style): every mission/problem number in
+         one fast-scan block — mono [ ] labels, a LABEL : VALUE list, a live
+         ticker on the "1 truck/second" fact, the emitter ranking, sources. -->
+    <section class="facts" id="cost" aria-labelledby="facts-heading">
+        <div class="container facts-inner">
+            <div class="facts-top">
+                <p class="mono-label" data-i18n="facts.eyebrow">[ Der wahre Preis ]</p>
+                <p class="mono-label facts-live" id="facts-live" aria-hidden="true"></p>
+            </div>
+            <h2 id="facts-heading" class="facts-headline" data-reveal data-i18n-html="facts.headline_html">Die Mode produziert<br><em>für die Tonne</em>.</h2>
 
-            <ul class="cost-stats" data-reveal-stagger>
-                <li class="cost-stat" data-reveal>
-                    <b class="cost-stat-num" data-i18n="cost.s1_num">bis 8 %</b>
-                    <span class="cost-stat-label" data-i18n="cost.s1_label">der globalen CO₂-Emissionen stammen aus der Mode — mehr als internationale Flüge und Schifffahrt zusammen.</span>
-                </li>
-                <li class="cost-stat" data-reveal>
-                    <b class="cost-stat-num" data-i18n="cost.s2_num">1 / Sekunde</b>
-                    <span class="cost-stat-label" data-i18n="cost.s2_label">Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder deponiert.</span>
-                </li>
-                <li class="cost-stat" data-reveal>
-                    <b class="cost-stat-num" data-i18n="cost.s3_num">unter 1 %</b>
-                    <span class="cost-stat-label" data-i18n="cost.s3_label">der Altkleider wird zu neuer Kleidung recycelt. Der Rest wird zu Abfall.</span>
-                </li>
-            </ul>
+            <dl class="facts-list" data-reveal-stagger>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r1_k">Jede Sekunde</dt><dd data-i18n="facts.r1_v">1 Lastwagen Textilien — verbrannt oder vergraben</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r2_k">Recycelt</dt><dd data-i18n="facts.r2_v">unter 1 % zurück in neue Kleidung</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r3_k">Eine PET-Flasche</dt><dd data-i18n="facts.r3_v">450 Jahre bis zum Zerfall</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r4_k">CO₂ der Mode</dt><dd data-i18n="facts.r4_v">bis 8 % global — mehr als Flüge und Schifffahrt zusammen</dd></div>
+                <div class="facts-row" data-reveal><dt data-i18n="facts.r5_k">Der Mensch</dt><dd data-i18n="facts.r5_v">75-Stunden-Wochen, unter Existenzlohn (Public Eye)</dd></div>
+            </dl>
 
-            <figure class="cost-chart" aria-labelledby="cost-chart-cap">
-                <figcaption id="cost-chart-cap" class="cost-chart-cap" data-reveal data-i18n="cost.chart_cap">Wer treibt die Krise? Carbon-Intensität pro Umsatz — die Fast-Fashion-Riesen im Vergleich.</figcaption>
-                <ul class="cost-bars" data-reveal-stagger>
-                    <li class="cost-bar" data-reveal style="--v: 100%;"><span class="cost-bar-name">Shein</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 82%;"><span class="cost-bar-name">H&amp;M</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 64%;"><span class="cost-bar-name">ASOS</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 50%;"><span class="cost-bar-name">Primark</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
-                    <li class="cost-bar" data-reveal style="--v: 38%;"><span class="cost-bar-name">Inditex / Zara</span><span class="cost-bar-track"><span class="cost-bar-fill"></span></span></li>
+            <div class="facts-turn" data-reveal>
+                <p class="mono-label" data-i18n="facts.model_k">[ Unser Modell ]</p>
+                <p class="facts-model" data-i18n="facts.model_v">1 Stück · nach Maß · aus geretteter PET-Faser · 0 Überproduktion</p>
+            </div>
+
+            <figure class="facts-chart">
+                <figcaption class="mono-label" data-reveal data-i18n="facts.chart_cap">[ Carbon-Intensität pro Umsatz — die Treiber ]</figcaption>
+                <ul class="facts-bars" data-reveal-stagger>
+                    <li class="facts-bar" data-reveal style="--v: 100%;"><span class="facts-bar-name">Shein</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 82%;"><span class="facts-bar-name">H&amp;M</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 64%;"><span class="facts-bar-name">ASOS</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 50%;"><span class="facts-bar-name">Primark</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
+                    <li class="facts-bar" data-reveal style="--v: 38%;"><span class="facts-bar-name">Zara</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
                 </ul>
-                <p class="cost-chart-note" data-i18n="cost.chart_note">Relative Carbon-Intensität pro Mrd. $ Umsatz (Rangfolge, illustrativ). Quelle: Commons.</p>
             </figure>
 
-            <p class="cost-close" data-reveal data-i18n="cost.close">Das ist das System, das wir ersetzen.</p>
-
-            <p class="cost-sources" data-i18n-html="cost.sources_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a></p>
+            <p class="facts-sources mono-label" data-i18n-html="facts.sources_html">[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons</p>
         </div>
+        <script>
+        (function () {
+            var el = document.getElementById("facts-live");
+            if (!el) return;
+            var t0 = Date.now();
+            function p(n) { return n < 10 ? "0" + n : "" + n; }
+            function tick() {
+                var d = new Date();
+                var s = Math.floor((Date.now() - t0) / 1000);
+                var en = document.documentElement.lang === "en";
+                var tail = en ? " trucks dumped since you arrived ]" : " Lkw entsorgt, seit du hier bist ]";
+                el.textContent = "[ " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " · " + s + tail;
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+        </script>
     </section>
 
 
@@ -977,7 +883,7 @@
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_atelier" aria-label="Atelier">
                     <h5 data-i18n="footer.col_atelier">Atelier</h5>
                     <ul>
-                        <li><a href="#mission" data-i18n="nav.mission">Mission</a></li>
+                        <li><a href="#cost" data-i18n="nav.mission">Fakten</a></li>
                         <li><a href="#design" data-i18n="footer.design_start">Design starten</a></li>
                         <li><a href="#measure" data-i18n="footer.measure">Körpermaße</a></li>
                         <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
@@ -1031,6 +937,5 @@
     <script src="js/app.js"></script>
     <script src="js/hero.js"></script>
     <script src="js/flair.js"></script>
-    <script type="module" src="js/3d/story-scene.js"></script>
 </body>
 </html>
