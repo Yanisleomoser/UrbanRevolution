@@ -4008,40 +4008,17 @@ main { display: block; }
     font-size: var(--text-xs);
     color: var(--text-muted);
 }
-.cost-turn {
+.cost-close {
     text-align: center;
-    max-width: 60ch;
-    margin: 0 auto var(--space-9);
-}
-.cost-turn-head {
+    max-width: 32ch;
+    margin: 0 auto var(--space-8);
     font-family: 'Playfair Display', serif;
     font-weight: 700;
+    font-style: italic;
     font-size: var(--text-2xl);
-    line-height: 1.18;
+    line-height: 1.2;
     color: var(--text);
-    margin-bottom: var(--space-5);
 }
-.cost-turn-body {
-    font-size: var(--text-md);
-    line-height: 1.7;
-    color: var(--text-dim);
-    margin-bottom: var(--space-7);
-}
-.cost-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-7);
-    border-radius: 100px;
-    background: var(--gradient);
-    color: #fff;
-    font-weight: 600;
-    font-size: var(--text-base);
-    text-decoration: none;
-    box-shadow: var(--shadow-glow);
-    transition: transform 0.2s var(--ease-out, ease);
-}
-.cost-cta:hover { transform: translateY(-2px); }
 .cost-sources {
     text-align: center;
     font-size: var(--text-xs);
