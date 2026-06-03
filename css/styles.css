@@ -489,16 +489,20 @@ html.is-touch .navbar {
 
 /* Tall track = scroll distance. ~133vh per act across 3 acts. */
 .story-track {
-    /* ~200vh of dwell per act across 6 acts — Instagram-like swipe
-       resistance so one flick doesn't fly past several acts. */
-    height: 1200vh;
-    height: 1200svh;
+    /* ~107vh of dwell per act across 6 acts — enough swipe resistance to read
+       each beat, but roughly half the old 1200vh so the cinematic story is a
+       tight scroll, not a wall (the manifesto carries the message up top). */
+    height: 640vh;
+    height: 640svh;
     /* JS-pinned px unit (--svh, set in index.html) is the load-bearing one:
        svh is stable in Safari but in-app browsers (Instagram) recompute it as
-       their toolbar toggles, and ×1200 that flung the whole page. --svh is
-       frozen in px and only changes on rotation, so this 12×-tall track never
-       reflows on a toolbar toggle. Falls back to svh/vh where --svh is unset. */
-    height: calc(var(--svh, 1svh) * 1200);
+       their toolbar toggles, and ×640 that flung the whole page. --svh is
+       frozen in px and only changes on rotation, so this tall track never
+       reflows on a toolbar toggle. Falls back to svh/vh where --svh is unset.
+       Act mapping in story-scene.js is proportional to the rendered track
+       height, so changing this multiplier only changes pacing, not which act
+       shows. */
+    height: calc(var(--svh, 1svh) * 640);
 }
 
 /* Pinned stage holds the WebGL canvas in view while the track scrolls. */
@@ -510,7 +514,7 @@ html.is-touch .navbar {
     height: calc(var(--svh, 1svh) * 100); /* JS-pinned px fallback — see .story-track */
     /* Fill the *dynamic* viewport so no dark gap opens at the bottom when the
        iOS Safari toolbar collapses on scroll-down. Only the 1× sticky stage
-       uses dvh; the 1200×-tall .story-track stays --svh-frozen, so the page
+       uses dvh; the tall .story-track stays --svh-frozen, so the page
        never reflows/flings on a toolbar toggle. */
     height: 100dvh;
     overflow: hidden;
@@ -2691,7 +2695,7 @@ input[aria-invalid="true"] {
 
     /* Scroll story — shorter track + tighter editorial padding on mobile.
        svh keeps it stable against the iOS Safari toolbar (see desktop rule). */
-    .story-track { height: 960vh; height: 960svh; height: calc(var(--svh, 1svh) * 960); }
+    .story-track { height: 520vh; height: 520svh; height: calc(var(--svh, 1svh) * 520); }
     .story-acts { padding: 0 var(--space-5) clamp(40px, 8vh, 80px); }
     .story-act { left: var(--space-5); right: auto; bottom: clamp(40px, 8vh, 80px); width: calc(100% - var(--space-5) * 2); }
     .story-foot { padding: clamp(16px, 3vh, 24px) var(--space-5); }
