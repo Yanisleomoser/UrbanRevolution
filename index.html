@@ -73,7 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260603-begin">
+    <link rel="stylesheet" href="css/styles.css?v=20260603-funnel">
 
     <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
          Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
@@ -234,6 +234,10 @@
                     <span class="hero-prompt-go-arrow" aria-hidden="true">→</span>
                 </button>
             </form>
+            <button type="button" id="funnel-trigger" class="begin-funnel-cta" data-reveal>
+                <span data-i18n="funnel.cta">Weißt du noch nicht genau, was? Lass dich führen</span>
+                <span class="begin-funnel-arrow" aria-hidden="true">→</span>
+            </button>
             <p class="begin-hint mono-label" data-reveal data-i18n="begin.hint">Eins. Für einen. Deins.</p>
             <a class="begin-scroll mono-label" href="#cost" data-i18n="begin.scroll" aria-label="Mehr erfahren">[ oder scroll, um zu verstehen ↓ ]</a>
         </div>
@@ -933,5 +937,6 @@
     <script src="js/app.js"></script>
     <script src="js/hero.js"></script>
     <script src="js/flair.js"></script>
+    <script src="js/funnel.js"></script>
 </body>
 </html>

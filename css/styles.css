@@ -5054,3 +5054,75 @@ html.is-touch .lang-toggle { min-height: 38px; }
     .ambient-ticker { position: static; display: block; text-align: center; margin: 0 0 var(--space-6); opacity: 0.6; }
     .hero--begin { min-height: auto; padding: var(--space-10) 0; }
 }
+
+/* ============================================================
+   GUIDED FUNNEL — "Hilf mir entscheiden" (für Besucher ohne klare Idee)
+   ============================================================ */
+.begin-funnel-cta {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    margin: var(--space-5) auto 0;
+    padding: 10px 20px; border-radius: 100px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); font-size: var(--text-sm); font-weight: 500;
+    cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out), transform .2s var(--ease-out);
+}
+.begin-funnel-cta:hover, .begin-funnel-cta:focus-visible {
+    border-color: var(--accent); color: var(--text); transform: translateY(-1px);
+}
+.begin-funnel-arrow { transition: transform .2s var(--ease-out); }
+.begin-funnel-cta:hover .begin-funnel-arrow { transform: translateX(3px); }
+
+.funnel-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--space-5);
+    background: rgba(6, 6, 8, 0.72);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    animation: funnelFade .25s var(--ease-out) both;
+}
+.funnel-overlay.no-anim, .funnel-overlay.no-anim .funnel-card { animation: none; }
+@keyframes funnelFade { from { opacity: 0; } to { opacity: 1; } }
+.funnel-card {
+    width: 100%; max-width: 560px;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: var(--space-7) var(--space-7) var(--space-6);
+    box-shadow: var(--shadow-soft);
+    animation: funnelRise .35s var(--ease-out) both;
+}
+@keyframes funnelRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.funnel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5); }
+.funnel-step { color: var(--accent); }
+.funnel-close {
+    background: none; border: 0; color: var(--text-muted); cursor: pointer;
+    font-size: 26px; line-height: 1; padding: 0 4px; transition: color .2s var(--ease-out);
+}
+.funnel-close:hover { color: var(--text); }
+.funnel-q {
+    font-family: 'Playfair Display', serif; font-size: var(--text-2xl); font-weight: 700;
+    letter-spacing: var(--tracking-tight); line-height: var(--leading-tight);
+    margin: 0 0 var(--space-6); color: var(--text);
+}
+.funnel-opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.funnel-opt {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: var(--space-4) var(--space-5); text-align: left;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-size: var(--text-base); font-weight: 500; cursor: pointer;
+    transition: border-color .2s var(--ease-out), background .2s var(--ease-out), transform .15s var(--ease-out);
+}
+.funnel-opt:hover, .funnel-opt:focus-visible { border-color: var(--accent); transform: translateY(-1px); }
+.funnel-opt.is-selected { border-color: transparent; background: var(--gradient-dim); box-shadow: inset 0 0 0 1px var(--accent); }
+.funnel-swatch { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.18); flex: none; }
+.funnel-opt-label { flex: 1; }
+.funnel-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-6); }
+.funnel-dots { display: flex; gap: 6px; }
+.funnel-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--surface); transition: background .2s var(--ease-out); }
+.funnel-dot.is-active { background: var(--accent); }
+.funnel-dot.is-done { background: var(--text-muted); }
+.funnel-back, .funnel-skip { background: none; border: 0; color: var(--text-muted); cursor: pointer; transition: color .2s var(--ease-out); }
+.funnel-back:hover, .funnel-skip:hover { color: var(--accent); }
+@media (max-width: 520px) {
+    .funnel-opts { grid-template-columns: 1fr; }
+    .funnel-card { padding: var(--space-6) var(--space-5) var(--space-5); }
+    .funnel-foot { flex-wrap: wrap; gap: var(--space-3); }
+}
