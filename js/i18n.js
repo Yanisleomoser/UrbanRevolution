@@ -63,7 +63,7 @@ const I18N = (() => {
 
       // ── Manifesto (compact thesis after the hero) ──
       "manifesto.eyebrow": "Warum es uns gibt",
-      "manifesto.headline_html": "Wir machen aus dem Abfall der Mode <em>Couture für Einen</em>.",
+      "manifesto.headline_html": "Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.",
       "manifesto.problem": "Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.",
       "manifesto.stat1_num": "92 Mio. t",
       "manifesto.stat1_label": "Kleidung landen jährlich im Müll",
@@ -527,7 +527,7 @@ const I18N = (() => {
 
       // ── Manifesto (compact thesis after the hero) ──
       "manifesto.eyebrow": "Why we exist",
-      "manifesto.headline_html": "We turn fashion's waste into <em>couture made for one</em>.",
+      "manifesto.headline_html": "Millions of pieces no one needs.<br>We make <em>one — yours</em>.",
       "manifesto.problem": "Every second, a truckload of textiles is burned or buried. Less than 1% is ever recycled. The fibre is still good — the system just throws it away.",
       "manifesto.stat1_num": "92M tonnes",
       "manifesto.stat1_label": "of clothing wasted every year",
