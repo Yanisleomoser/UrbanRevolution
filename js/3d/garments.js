@@ -124,7 +124,7 @@ function buildGarment(type, options) {
     // Stash where a chest print sits so it can be added/removed in-place
     // (setPrint) without rebuilding the whole garment. Added after the
     // shadow traverse so the unlit decal plane doesn't cast shadows.
-    group.userData.printAnchor = printAnchor(type, lm);
+    group.userData.printAnchor = printAnchor(type, lm, opt.fit);
     applyPrint(group, opt.print);
     return group;
 }
@@ -158,11 +158,16 @@ function setMaterialProps(group, materialKey) {
 
 // Where the decal plane sits per garment type (world units, +Z front).
 // Pants have no torso surface → no anchor (print is skipped).
-function printAnchor(type, lm) {
+function printAnchor(type, lm, fit) {
     if (type === "pants") return null;
     const w = lm.chestR * 1.55;
     const h = w * 0.5;
-    const z = lm.chestR * TORSO_DEPTH_SCALE + 0.02;
+    // Sit proud of the garment's chest surface for ANY fit. The builders push
+    // the chest radius out by fitFactor (up to ~+40 % loose) × ~1.06; using the
+    // loosest expansion here guarantees the decal never sinks into the cloth
+    // (which would hide it behind the lathe — worst at oversized fits).
+    const frontR = lm.chestR * fitFactor(fit, 0.06, 0.40) * 1.06;
+    const z = frontR * TORSO_DEPTH_SCALE + 0.015;
     const frac = type === "dress" ? 0.70 : 0.62;
     const y = lm.torsoBottomY + lm.torsoH * frac;
     return { x: 0, y, z, w, h };
