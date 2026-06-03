@@ -61,6 +61,20 @@ const I18N = (() => {
       "hero.asset_alt": "Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt",
       "hero.caption_html": "AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.",
 
+      // ── Manifesto (compact thesis after the hero) ──
+      "manifesto.eyebrow": "Warum es uns gibt",
+      "manifesto.headline_html": "Wir machen aus dem Abfall der Mode <em>Couture für Einen</em>.",
+      "manifesto.problem": "Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.",
+      "manifesto.stat1_num": "92 Mio. t",
+      "manifesto.stat1_label": "Kleidung landen jährlich im Müll",
+      "manifesto.stat2_num": "450 Jahre",
+      "manifesto.stat2_label": "braucht eine PET-Flasche zum Zerfallen",
+      "manifesto.stat3_num": "1 Stück",
+      "manifesto.stat3_label": "produzieren wir — für einen Menschen, ohne Überproduktion",
+      "manifesto.vision": "Urban Revolution rettet genau diese Faser — auch das PET aus weggeworfenen Flaschen — und spinnt sie zu Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich. Keine Überproduktion, keine Deponie.",
+      "manifesto.cta_html": 'Entwirf dein Stück <span aria-hidden="true">→</span>',
+      "manifesto.link_html": 'Sieh die ganze Geschichte <span aria-hidden="true">↓</span>',
+
       // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Warum wir dieses System ändern müssen",
       "story.a0_kicker": "Akt I",
@@ -499,6 +513,20 @@ const I18N = (() => {
       ],
       "hero.asset_alt": "Model in an AI-designed outfit, wrapped in pink and cyan neon light trails",
       "hero.caption_html": "AI-generated. Made to measure. At your door in <strong>14 days</strong>.",
+
+      // ── Manifesto (compact thesis after the hero) ──
+      "manifesto.eyebrow": "Why we exist",
+      "manifesto.headline_html": "We turn fashion's waste into <em>couture made for one</em>.",
+      "manifesto.problem": "Every second, a truckload of textiles is burned or buried. Less than 1% is ever recycled. The fibre is still good — the system just throws it away.",
+      "manifesto.stat1_num": "92M tonnes",
+      "manifesto.stat1_label": "of clothing wasted every year",
+      "manifesto.stat2_num": "450 years",
+      "manifesto.stat2_label": "for one PET bottle to break down",
+      "manifesto.stat3_num": "1 piece",
+      "manifesto.stat3_label": "is all we make — for one person, no overproduction",
+      "manifesto.vision": "Urban Revolution rescues that fibre — including the PET from discarded bottles — and spins it into fabric. You describe a piece, our AI designs it, a Swiss tailor cuts it to your nine measurements. One garment, made once, for you. No overproduction, no landfill.",
+      "manifesto.cta_html": 'Design your piece <span aria-hidden="true">→</span>',
+      "manifesto.link_html": 'See the full story <span aria-hidden="true">↓</span>',
 
       // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Why this system has to change",
