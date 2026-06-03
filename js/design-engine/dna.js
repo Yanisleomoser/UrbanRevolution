@@ -1,0 +1,143 @@
+/**
+ * Urban Revolution — Design Engine · DesignDNA model
+ *
+ * The "genome" of a design: a nested object across all design dimensions,
+ * plus a parallel `_confidence` tree (same shape) holding 0..1 per attribute.
+ * Pure data — no DOM, no globals beyond the exposed factory.
+ *
+ *   create()                       → empty DNA (archetype weights zeroed)
+ *   get(dna, "silhouette.fit")     → value (nested walk, arrays by index)
+ *   set(dna, path, value, conf)    → set value + confidence
+ *   applyEffects(dna, effects)     → { set:{path:val}, weight:{arch:delta} }
+ *   confidence(dna, path)          → 0..1 (0 if unset)
+ *   topArchetype(dna)              → archetype id with highest weight
+ *   completeFrom(dna, archetypes, required) → fill missing required attrs
+ *   maturity(dna, required, threshold)      → 0..1 readiness score
+ */
+const DesignDNA = (() => {
+  const ARCHETYPE_IDS = [
+    "quietMinimal", "techAvant", "y2kStreet", "softCouture", "utility", "sport",
+  ];
+
+  function create() {
+    const weights = {};
+    ARCHETYPE_IDS.forEach((id) => (weights[id] = 0));
+    return { archetypeWeights: weights, _confidence: {} };
+  }
+
+  function walk(obj, parts, build) {
+    let cur = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const p = parts[i];
+      if (cur[p] == null || typeof cur[p] !== "object") {
+        if (!build) return undefined;
+        cur[p] = {};
+      }
+      cur = cur[p];
+    }
+    return cur;
+  }
+
+  function get(dna, path) {
+    const parts = String(path).split(".");
+    let cur = dna;
+    for (const p of parts) {
+      if (cur == null) return undefined;
+      cur = Array.isArray(cur) ? cur[parseInt(p, 10)] : cur[p];
+    }
+    return cur;
+  }
+
+  function set(dna, path, value, conf) {
+    const parts = String(path).split(".");
+    const parent = walk(dna, parts, true);
+    parent[parts[parts.length - 1]] = value;
+    if (conf !== undefined) setConfidence(dna, path, conf);
+    return dna;
+  }
+
+  function setConfidence(dna, path, conf) {
+    const parts = ("_confidence." + path).split(".");
+    const parent = walk(dna, parts, true);
+    parent[parts[parts.length - 1]] = Math.max(0, Math.min(1, conf));
+  }
+
+  function confidence(dna, path) {
+    const v = get(dna, "_confidence." + path);
+    return typeof v === "number" ? v : 0;
+  }
+
+  // effects: { set: { path: value }, weight: { archetypeId: delta } }
+  // `setConf` is the confidence stamped on hard-set attributes (default 1).
+  function applyEffects(dna, effects, setConf) {
+    if (!effects) return dna;
+    if (effects.set) {
+      for (const [path, value] of Object.entries(effects.set)) {
+        set(dna, path, value, setConf == null ? 1 : setConf);
+      }
+    }
+    if (effects.weight) {
+      for (const [arch, delta] of Object.entries(effects.weight)) {
+        if (dna.archetypeWeights[arch] == null) dna.archetypeWeights[arch] = 0;
+        dna.archetypeWeights[arch] += delta;
+      }
+    }
+    return dna;
+  }
+
+  function topArchetype(dna) {
+    let best = null;
+    let bestW = -Infinity;
+    for (const [id, w] of Object.entries(dna.archetypeWeights || {})) {
+      if (w > bestW) { bestW = w; best = id; }
+    }
+    return best;
+  }
+
+  function archetypeById(archetypes, id) {
+    return (archetypes || []).find((a) => a.id === id) || null;
+  }
+
+  // Fill every required attribute still below threshold with the top
+  // archetype's default (stamped as inferred → confidence 0.45). Guarantees a
+  // complete design from even a short path.
+  function completeFrom(dna, archetypes, required, threshold) {
+    const top = archetypeById(archetypes, topArchetype(dna));
+    if (!top) return dna;
+    const th = threshold == null ? 0.5 : threshold;
+    (required || []).forEach((path) => {
+      if (confidence(dna, path) < th && top.defaults[path] !== undefined) {
+        set(dna, path, clone(top.defaults[path]), 0.45);
+      }
+    });
+    // Also pull any other archetype defaults for still-empty attrs (soft fill).
+    for (const [path, value] of Object.entries(top.defaults)) {
+      if (get(dna, path) === undefined) set(dna, path, clone(value), 0.4);
+    }
+    return dna;
+  }
+
+  function maturity(dna, required, threshold) {
+    const list = required || [];
+    if (!list.length) return 0;
+    const th = threshold == null ? 0.5 : threshold;
+    let sum = 0;
+    list.forEach((path) => {
+      sum += Math.min(1, confidence(dna, path) / th);
+    });
+    return sum / list.length;
+  }
+
+  function clone(v) {
+    return Array.isArray(v) ? v.slice() : v;
+  }
+
+  return {
+    ARCHETYPE_IDS,
+    create, get, set, setConfidence, confidence,
+    applyEffects, topArchetype, completeFrom, maturity,
+  };
+})();
+
+if (typeof window !== "undefined") window.DesignDNA = DesignDNA;
+if (typeof module !== "undefined" && module.exports) module.exports = DesignDNA;

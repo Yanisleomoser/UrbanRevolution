@@ -1,0 +1,30 @@
+{
+  "_comment": "Attribute model for the Design Engine. `required` lists the attribute paths a finished DesignDNA must carry (set or inferred). `stateMap` maps DNA paths onto existing StateManager keys so the live 3D preview + spec sheet react. `confidenceThreshold` is the level above which an attribute counts as 'decided' for the maturity ring.",
+  "confidenceThreshold": 0.5,
+  "required": [
+    "category",
+    "silhouette.fit",
+    "length",
+    "fabric.material",
+    "color.scheme",
+    "color.stops"
+  ],
+  "stateMap": {
+    "category": "currentType",
+    "fabric.material": "currentMaterial",
+    "silhouette.fit": "currentFit",
+    "length": "currentLength",
+    "color.stops.0": "currentColor"
+  },
+  "enums": {
+    "category": ["tshirt", "hoodie", "shirt", "pants", "jacket", "dress"],
+    "length": ["cropped", "regular", "long"],
+    "silhouette.volume": ["low", "mid", "high"],
+    "fabric.finish": ["matte", "sheen"],
+    "color.scheme": ["mono", "duo-gradient", "multi"],
+    "pattern.type": ["none", "stripe", "check", "camo", "graphic", "abstract"],
+    "hardware.finish": ["tonal", "matte", "metal"],
+    "construction.closure": ["zip", "button", "none"],
+    "construction.collar": ["stand", "notched", "hood", "crew", "none"]
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "_comment": "Jacket branch — phases B (form), C (fabric), D (colour), E (details). Every node is gated by `when` on category=='jacket' plus a confidence check on the attribute it resolves, so answered/irrelevant nodes drop out automatically.",
+  "nodes": [
+    {
+      "id": "jacket_subarch",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'jacket' && _confidence.subArchetype < 0.6",
+      "priority": 0.9,
+      "question": { "de": "Welche Art Jacke?", "en": "What kind of jacket?" },
+      "choices": [
+        { "id": "puffer", "label": { "de": "Puffer", "en": "Puffer" }, "effects": { "set": { "subArchetype": "puffer", "silhouette.volume": "high" }, "weight": { "techAvant": 0.2, "sport": 0.15 } } },
+        { "id": "bomber", "label": { "de": "Bomber", "en": "Bomber" }, "effects": { "set": { "subArchetype": "bomber" }, "weight": { "y2kStreet": 0.15, "utility": 0.1 } } },
+        { "id": "trench", "label": { "de": "Trench", "en": "Trench" }, "effects": { "set": { "subArchetype": "trench", "length": "long" }, "weight": { "quietMinimal": 0.2, "softCouture": 0.15 } } },
+        { "id": "blazer", "label": { "de": "Blazer", "en": "Blazer" }, "effects": { "set": { "subArchetype": "blazer", "construction.closure": "button" }, "weight": { "softCouture": 0.2, "quietMinimal": 0.15 } } },
+        { "id": "work", "label": { "de": "Workwear", "en": "Work" }, "effects": { "set": { "subArchetype": "work" }, "weight": { "utility": 0.3 } } }
+      ]
+    },
+    {
+      "id": "jacket_fit",
+      "phase": "B",
+      "modality": "slider",
+      "when": "category == 'jacket' && _confidence.silhouette.fit < 0.7",
+      "priority": 0.85,
+      "question": { "de": "Wie sitzt sie?", "en": "How does it sit?" },
+      "bind": "silhouette.fit",
+      "axis": { "de": ["Schmal", "Oversized"], "en": ["Slim", "Oversized"] },
+      "weightAt": { "low": { "softCouture": 0.1, "quietMinimal": 0.1 }, "high": { "y2kStreet": 0.2, "techAvant": 0.1 } }
+    },
+    {
+      "id": "jacket_length",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'jacket' && _confidence.length < 0.6",
+      "priority": 0.7,
+      "question": { "de": "Wie lang?", "en": "How long?" },
+      "choices": [
+        { "id": "cropped", "label": { "de": "Cropped", "en": "Cropped" }, "effects": { "set": { "length": "cropped" }, "weight": { "y2kStreet": 0.15 } } },
+        { "id": "regular", "label": { "de": "Hüfte", "en": "Hip" }, "effects": { "set": { "length": "regular" } } },
+        { "id": "long", "label": { "de": "Lang", "en": "Long" }, "effects": { "set": { "length": "long" }, "weight": { "quietMinimal": 0.15 } } }
+      ]
+    },
+    {
+      "id": "jacket_material",
+      "phase": "C",
+      "modality": "cards",
+      "when": "category == 'jacket' && _confidence.fabric.material < 0.6",
+      "priority": 0.75,
+      "question": { "de": "Aus welchem Stoff?", "en": "What fabric?" },
+      "choices": [
+        { "id": "polyester", "label": { "de": "Recycled Nylon", "en": "Recycled Nylon" }, "effects": { "set": { "fabric.material": "polyester", "fabric.finish": "matte" }, "weight": { "techAvant": 0.2, "sport": 0.1 } } },
+        { "id": "denim", "label": { "de": "Denim", "en": "Denim" }, "effects": { "set": { "fabric.material": "denim" }, "weight": { "y2kStreet": 0.2, "utility": 0.1 } } },
+        { "id": "wool", "label": { "de": "Wolle", "en": "Wool" }, "effects": { "set": { "fabric.material": "wool" }, "weight": { "quietMinimal": 0.2, "softCouture": 0.1 } } },
+        { "id": "cotton", "label": { "de": "Canvas", "en": "Canvas" }, "effects": { "set": { "fabric.material": "cotton" }, "weight": { "utility": 0.2 } } }
+      ]
+    },
+    {
+      "id": "jacket_finish",
+      "phase": "C",
+      "modality": "slider",
+      "when": "category == 'jacket' && _confidence.fabric.finishWeight < 0.6",
+      "priority": 0.5,
+      "question": { "de": "Matt oder glänzend?", "en": "Matte or sheen?" },
+      "bind": "fabric.finishWeight",
+      "axis": { "de": ["Matt", "Glanz"], "en": ["Matte", "Sheen"] },
+      "weightAt": { "high": { "softCouture": 0.15, "y2kStreet": 0.1 } }
+    },
+    {
+      "id": "jacket_color",
+      "phase": "D",
+      "modality": "colorGradient",
+      "when": "category == 'jacket' && _confidence.color.scheme < 0.7",
+      "priority": 0.8,
+      "question": { "de": "Welche Farbwelt?", "en": "Which colourway?" }
+    },
+    {
+      "id": "jacket_closure",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'jacket' && subArchetype != 'blazer' && _confidence.construction.closure < 0.6",
+      "priority": 0.6,
+      "question": { "de": "Wie schließt sie?", "en": "How does it close?" },
+      "choices": [
+        { "id": "zip", "label": { "de": "Reißverschluss", "en": "Zip" }, "effects": { "set": { "construction.closure": "zip" }, "weight": { "techAvant": 0.1 } } },
+        { "id": "button", "label": { "de": "Knöpfe", "en": "Buttons" }, "effects": { "set": { "construction.closure": "button" }, "weight": { "softCouture": 0.1 } } },
+        { "id": "open", "label": { "de": "Offen", "en": "Open" }, "effects": { "set": { "construction.closure": "none" }, "weight": { "quietMinimal": 0.1 } } }
+      ]
+    },
+    {
+      "id": "jacket_collar",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'jacket' && _confidence.construction.collar < 0.6",
+      "priority": 0.55,
+      "question": { "de": "Kragen?", "en": "Collar?" },
+      "choices": [
+        { "id": "stand", "label": { "de": "Stehkragen", "en": "Stand" }, "effects": { "set": { "construction.collar": "stand" } } },
+        { "id": "notched", "label": { "de": "Revers", "en": "Notched" }, "effects": { "set": { "construction.collar": "notched" }, "weight": { "softCouture": 0.1 } } },
+        { "id": "hood", "label": { "de": "Kapuze", "en": "Hood" }, "effects": { "set": { "construction.collar": "hood" }, "weight": { "sport": 0.1, "techAvant": 0.1 } } }
+      ]
+    },
+    {
+      "id": "jacket_hardware",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'jacket' && intent.energy > 0.6 && _confidence.hardware.finish < 0.6",
+      "priority": 0.4,
+      "question": { "de": "Hardware-Finish?", "en": "Hardware finish?" },
+      "choices": [
+        { "id": "tonal", "label": { "de": "Tonal", "en": "Tonal" }, "effects": { "set": { "hardware.finish": "tonal" } } },
+        { "id": "matte", "label": { "de": "Matt-Metall", "en": "Matte metal" }, "effects": { "set": { "hardware.finish": "matte" }, "weight": { "utility": 0.1 } } },
+        { "id": "metal", "label": { "de": "Glanz-Metall", "en": "Shiny metal" }, "effects": { "set": { "hardware.finish": "metal" }, "weight": { "y2kStreet": 0.15 } } }
+      ]
+    }
+  ]
+}
