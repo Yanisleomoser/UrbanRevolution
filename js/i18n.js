@@ -115,9 +115,7 @@ const I18N = (() => {
       "cost.s3_label": "der Altkleider wird zu neuer Kleidung recycelt. Der Rest wird zu Abfall.",
       "cost.chart_cap": "Wer treibt die Krise? Carbon-Intensität pro Umsatz — die Fast-Fashion-Riesen im Vergleich.",
       "cost.chart_note": "Relative Carbon-Intensität pro Mrd. $ Umsatz (Rangfolge, illustrativ). Quelle: Commons.",
-      "cost.turn_html": "Fast Fashion funktioniert nur durch Masse, die niemand braucht.<br>Wir bauen das Gegenteil.",
-      "cost.turn_body": "Ein Stück. Für einen Menschen. Nach Maß, auf Bestellung, aus geretteter Faser. Keine Überproduktion, kein Lager, kein versteckter Preis.",
-      "cost.cta_html": 'Mach es anders — entwirf dein Stück <span aria-hidden="true">→</span>',
+      "cost.close": "Das ist das System, das wir ersetzen.",
       "cost.sources_html": 'Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a>',
 
       // ── Trust-Strip ──
@@ -568,9 +566,7 @@ const I18N = (() => {
       "cost.s3_label": "of used clothing is recycled into new clothing. The rest becomes waste.",
       "cost.chart_cap": "Who drives the crisis? Carbon intensity per revenue — the fast-fashion giants compared.",
       "cost.chart_note": "Relative carbon intensity per $bn revenue (ranking, illustrative). Source: Commons.",
-      "cost.turn_html": "Fast fashion only works through volume no one needs.<br>We’re building the opposite.",
-      "cost.turn_body": "One piece. For one person. Made to measure, on demand, from rescued fibre. No overproduction, no warehouse, no hidden price.",
-      "cost.cta_html": 'Do it differently — design your piece <span aria-hidden="true">→</span>',
+      "cost.close": "This is the system we replace.",
       "cost.sources_html": 'Sources: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a>',
 
       // ── Trust strip ──
