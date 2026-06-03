@@ -438,10 +438,12 @@ The tools are available — use them instead of delegating the lookup back:
 
 - **Always surface the Vercel preview link directly (standing instruction).**
   Whenever you push a branch / open or update a PR, put the branch's preview
-  URL right in your reply — don't make the user dig for it. The pattern is
-  `urban-revolution-3ugz-git-<branch-slug>-jack-s-projectsfutur.vercel.app`
-  (the Vercel bot also posts it on the PR). Verify it (HTTP 200 / screenshot)
-  before quoting it when you can.
+  URL right in your reply — don't make the user dig for it. **Don't hand-build
+  the URL from the branch name:** Vercel truncates + hashes long slugs (e.g.
+  branch `claude/docs-preview-link` → `…-git-claude-do-75851c-…`). Get the exact
+  alias from Vercel `list_deployments` → the deployment's `meta.branchAlias`
+  (or copy it from the Vercel bot's PR comment), and verify HTTP 200 before
+  quoting it.
 - **Deploy status / live URL:** the Vercel MCP tools (`list_deployments`,
   `get_deployment`, `get_deployment_build_logs`, `get_runtime_logs`). Team
   `jack's projects` (`team_6vAACRftikFNNglCvAGxBRku`), project
