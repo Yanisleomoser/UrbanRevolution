@@ -129,6 +129,19 @@ const I18N = (() => {
       "trust.t4_title": "100 % Privatsphäre",
       "trust.t4_body": "Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in",
 
+      // ── How it works (3-step) ──
+      "howto.eyebrow": "So entsteht dein Stück",
+      "howto.heading": "Vom Satz zum Einzelstück — in drei Schritten.",
+      "howto.s1_title": "Du beschreibst, die KI entwirft",
+      "howto.s1_body": "Ein Satz genügt. Aus deinen Worten macht die KI ein konkretes Design — mit Studio-Vorschau, sofort.",
+      "howto.s2_title": "Deine Maße, dein Schnitt",
+      "howto.s2_body": "Neun Körpermaße — per Foto geschätzt oder manuell. Keine Standardgröße, kein Kompromiss.",
+      "howto.s3_title": "Ein Schneider näht es aus geretteter Faser",
+      "howto.s3_body": "Gefertigt aus recyceltem PET, auf Bestellung, in rund 14 Tagen bei dir. Kein Lager, keine Überproduktion.",
+      "howto.p1": "Recyceltes rPET",
+      "howto.p2": "Maßanfertigung",
+      "howto.p3": "Null Überproduktion",
+
       // ── Workflow ──
       "workflow.s1_html": "<span>1</span> Design",
       "workflow.s2_html": "<span>2</span> Maße",
@@ -579,6 +592,19 @@ const I18N = (() => {
       "trust.t3_body": "Generative designs meet real tailors — no print-on-demand, no fast fashion",
       "trust.t4_title": "100% privacy",
       "trust.t4_body": "Measurement detection runs client-side — your photo never leaves your device unless you opt in",
+
+      // ── How it works (3-step) ──
+      "howto.eyebrow": "How your piece is made",
+      "howto.heading": "From a sentence to a one-of-one — in three steps.",
+      "howto.s1_title": "You describe it, the AI designs it",
+      "howto.s1_body": "One sentence is enough. The AI turns your words into a real design — with an instant studio preview.",
+      "howto.s2_title": "Your measurements, your cut",
+      "howto.s2_body": "Nine body measurements — estimated from a photo or entered by hand. No standard size, no compromise.",
+      "howto.s3_title": "A tailor sews it from rescued fibre",
+      "howto.s3_body": "Made from recycled PET, on demand, at your door in about 14 days. No warehouse, no overproduction.",
+      "howto.p1": "Recycled rPET",
+      "howto.p2": "Made to measure",
+      "howto.p3": "Zero overproduction",
 
       // ── Workflow ──
       "workflow.s1_html": "<span>1</span> Design",
