@@ -5196,3 +5196,16 @@ html.is-touch .lang-toggle { min-height: 38px; }
 @media (prefers-reduced-motion: reduce) {
     .de-card, .de-tot-panel, .de-confirm, .de-palette-swatch, .de-visual-img, .de-ring circle:last-of-type { transition: none !important; }
 }
+
+/* Design Engine integration — Reise als Hauptfokus, Prompt als optionales <details> */
+.design-grid > .design-journey,
+.design-grid > .prompt-fallback,
+.design-grid > .result-panel { grid-column: 1 / -1; }
+.design-journey { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); }
+.prompt-fallback { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elevated); overflow: hidden; }
+.prompt-fallback-summary { cursor: pointer; padding: var(--space-4) var(--space-5); color: var(--text-dim); font-size: var(--text-sm); list-style: none; user-select: none; transition: color .2s var(--ease-out); }
+.prompt-fallback-summary:hover { color: var(--text); }
+.prompt-fallback-summary::-webkit-details-marker { display: none; }
+.prompt-fallback-summary::before { content: "+ "; color: var(--accent); font-weight: 600; }
+.prompt-fallback[open] .prompt-fallback-summary::before { content: "\2013 "; }
+.prompt-fallback .prompt-panel { padding: 0 var(--space-5) var(--space-5); }
