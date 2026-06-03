@@ -23,7 +23,7 @@ const I18N = (() => {
   const dict = {
     de: {
       // ── <head> ──
-      "head.title": "Urban Revolution — Maßgeschneiderte AI-Couture aus Zürich",
+      "head.title": "Urban Revolution — Aus Abfall wird Couture für Einen",
 
       // ── Navigation ──
       "nav.skip": "Zum Inhalt springen",
@@ -487,7 +487,7 @@ const I18N = (() => {
 
     en: {
       // ── <head> ──
-      "head.title": "Urban Revolution — Made-to-measure AI couture from Zurich",
+      "head.title": "Urban Revolution — From waste to couture for one",
 
       // ── Navigation ──
       "nav.skip": "Skip to content",
