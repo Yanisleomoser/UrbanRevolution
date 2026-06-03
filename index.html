@@ -73,7 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260603-ia">
+    <link rel="stylesheet" href="css/styles.css?v=20260603-begin">
 
     <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
          Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
@@ -210,12 +210,12 @@
     </nav>
 
     <main id="main-content">
-    <header class="hero">
+    <header class="hero hero--begin">
+        <!-- ambient: the real-time cost simply exists, like a clock — not a pitch -->
+        <p class="ambient-ticker mono-label" id="ambient-ticker" aria-hidden="true"></p>
         <div class="hero-inner">
         <div class="hero-content" data-reveal-stagger>
-            <p class="hero-eyebrow" data-reveal data-i18n="hero.eyebrow">GERETTETE FASER · KI-DESIGN · NACH MASS</p>
-            <h1 class="hero-title" data-reveal data-i18n-html="hero.title_html">Aus Abfall.<br>Nach deinen Maßen.<br><span class="gradient-text">Couture für Einen.</span></h1>
-            <p class="hero-subtitle" data-reveal data-i18n="hero.subtitle">Ein Satz genügt: Die KI entwirft dein Stück, ein Schweizer Schneider näht es aus geretteter PET-Faser — nach deinen Maßen, nur für dich.</p>
+            <h1 class="begin-line" data-reveal data-i18n-html="begin.line">Beschreibe das eine Stück,<br>das du wirklich willst.</h1>
 
             <!-- Lebende Prompt-Konsole (Konzept A): tippt sich selbst durch
                  Beispiel-Prompts; die Hero-Galerie rechts blendet synchron
@@ -234,32 +234,10 @@
                     <span class="hero-prompt-go-arrow" aria-hidden="true">→</span>
                 </button>
             </form>
-            <p class="hero-microcopy" data-reveal data-i18n-html="hero.microcopy_html">Tippe los — oder sieh zu, wie aus Worten ein Kleidungsstück wird.</p>
-
-            <!-- Vision-first path (A2): the emotional story sits between the
-                 hero and the design tool. Make entering it the prominent
-                 move so visitors don't skip straight past the "why". The
-                 prompt console above remains the direct-design shortcut. -->
-            <div class="hero-actions">
-                <a href="#cost" class="hero-vision-link" data-i18n-html="hero.vision_cta_html">Warum das wichtig ist <span aria-hidden="true">↓</span></a>
-            </div>
+            <p class="begin-hint mono-label" data-reveal data-i18n="begin.hint">Eins. Für einen. Deins.</p>
+            <a class="begin-scroll mono-label" href="#cost" data-i18n="begin.scroll" aria-label="Mehr erfahren">[ oder scroll, um zu verstehen ↓ ]</a>
         </div>
 
-        <!-- Brand asset slot — currently shows a stylized SVG fashion-figure
-             with brand-gradient garment. Swap-ready for real photography:
-             replace the <svg> contents inside <picture> with <source srcset="...">
-             and an <img>; the surrounding layout will adapt. -->
-        <figure class="hero-asset" data-reveal>
-            <picture class="hero-asset-picture" id="hero-gallery">
-                <img class="hero-asset-img is-visible" src="assets/hero-1.jpg" width="768" height="1376" loading="eager" fetchpriority="high" decoding="async" data-i18n-alt="hero.asset_alt" alt="Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt">
-                <img class="hero-asset-img" data-src="assets/hero-2.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-3.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-4.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-5.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-                <img class="hero-asset-img" data-src="assets/hero-6.jpg" width="768" height="1376" decoding="async" alt="" aria-hidden="true">
-            </picture>
-            <figcaption class="hero-asset-caption" data-i18n-html="hero.caption_html">AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.</figcaption>
-        </figure>
         </div>
 
         <div class="hero-visual" aria-hidden="true">
@@ -268,6 +246,23 @@
             <div class="orb orb-3"></div>
         </div>
     </header>
+    <script>
+    (function () {
+        var el = document.getElementById("ambient-ticker");
+        if (!el) return;
+        var t0 = Date.now();
+        function p(n) { return n < 10 ? "0" + n : "" + n; }
+        function tick() {
+            var d = new Date();
+            var s = Math.floor((Date.now() - t0) / 1000);
+            var en = document.documentElement.lang === "en";
+            var tail = en ? " trucks of clothing dumped since you arrived ]" : " Lkw Kleidung entsorgt, seit du hier bist ]";
+            el.textContent = "[ " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " · " + s + tail;
+        }
+        tick();
+        setInterval(tick, 1000);
+    })();
+    </script>
 
     <!-- Manifesto — the whole thesis (fashion waste + PET + our answer) on a
          single compact screen, right after the hero so the "why" lands before

@@ -5017,3 +5017,41 @@ html.is-touch .lang-toggle { min-height: 38px; }
     .facts-row { grid-template-columns: 1fr; gap: 2px; }
     .facts-bar { grid-template-columns: 88px 1fr; gap: var(--space-4); }
 }
+
+/* ============================================================
+   BEGIN EXPERIENCE — cursor-first opening ("doesn't sell, lets you begin")
+   No headline-wall, no photo gallery: a quiet invitation + the live prompt
+   console as the focal point; the belief is whispered, the cost is ambient.
+   ============================================================ */
+.hero--begin { min-height: 90vh; display: flex; align-items: center; position: relative; }
+.hero--begin .hero-inner {
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    grid-template-columns: none;
+    max-width: 760px; width: 100%; margin: 0 auto; text-align: center;
+    padding: var(--space-12) var(--space-6) var(--space-10); /* top pad clears the fixed navbar */
+}
+.hero--begin .hero-content { max-width: none; }
+/* the cost simply exists, like a clock in the corner — not a pitch */
+.ambient-ticker {
+    position: absolute; bottom: var(--space-7); left: var(--space-7);
+    color: var(--text-muted); opacity: 0.65; pointer-events: none;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.08em; margin: 0;
+}
+.begin-line {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(34px, 5vw, 64px); font-weight: 700;
+    line-height: 1.08; letter-spacing: var(--tracking-tight);
+    color: var(--text); margin: 0 0 var(--space-8); text-wrap: balance;
+}
+.begin-prompt { margin: 0 auto var(--space-5); max-width: 640px; }
+.begin-hint { color: var(--text-muted); letter-spacing: 0.18em; margin: var(--space-6) 0 0; }
+.begin-scroll {
+    display: inline-block; margin-top: var(--space-8);
+    color: var(--text-muted); text-decoration: none; letter-spacing: 0.1em;
+    transition: color 0.25s var(--ease-out);
+}
+.begin-scroll:hover, .begin-scroll:focus-visible { color: var(--accent); }
+@media (max-width: 720px) {
+    .ambient-ticker { position: static; display: block; text-align: center; margin: 0 0 var(--space-6); opacity: 0.6; }
+    .hero--begin { min-height: auto; padding: var(--space-10) 0; }
+}

@@ -61,6 +61,11 @@ const I18N = (() => {
       "hero.asset_alt": "Model in einem KI-designten Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt",
       "hero.caption_html": "AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.",
 
+      // ── Begin experience (cursor-first opening — no selling, just begin) ──
+      "begin.line": "Beschreibe das eine Stück,<br>das du wirklich willst.",
+      "begin.hint": "Eins. Für einen. Deins.",
+      "begin.scroll": "[ oder scroll, um zu verstehen ↓ ]",
+
       // ── Manifesto (compact thesis after the hero) ──
       "manifesto.eyebrow": "[ Warum es uns gibt ]",
       "manifesto.headline_html": "Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.",
@@ -549,6 +554,11 @@ const I18N = (() => {
       ],
       "hero.asset_alt": "Model in an AI-designed outfit, wrapped in pink and cyan neon light trails",
       "hero.caption_html": "AI-generated. Made to measure. At your door in <strong>14 days</strong>.",
+
+      // ── Begin experience (cursor-first opening — no selling, just begin) ──
+      "begin.line": "Describe the one piece<br>you actually want.",
+      "begin.hint": "One. For one. Yours.",
+      "begin.scroll": "[ or scroll to understand ↓ ]",
 
       // ── Manifesto (compact thesis after the hero) ──
       "manifesto.eyebrow": "[ Why we exist ]",
