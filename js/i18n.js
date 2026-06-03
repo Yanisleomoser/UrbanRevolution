@@ -39,9 +39,9 @@ const I18N = (() => {
       "nav.lang_aria": "Sprache wechseln",
 
       // ── Hero ──
-      "hero.eyebrow": "AI · ATELIER · COUTURE",
-      "hero.title_html": 'Deine Vision.<br>Deine Maße.<br><span class="gradient-text">Deine Kleidung.</span>',
-      "hero.subtitle": "Ein Satz genügt. Die KI entwirft dein Stück, eine fotorealistische Vorschau zeigt es an dir — Schneider bekommen die fertige Spec.",
+      "hero.eyebrow": "GERETTETE FASER · KI-DESIGN · NACH MASS",
+      "hero.title_html": 'Aus Abfall.<br>Nach deinen Maßen.<br><span class="gradient-text">Couture für Einen.</span>',
+      "hero.subtitle": "Ein Satz genügt: Die KI entwirft dein Stück, ein Schweizer Schneider näht es aus geretteter PET-Faser — nach deinen Maßen, nur für dich.",
       "hero.cta_html": 'Jetzt designen <span aria-hidden="true">→</span>',
       "hero.prompt_form_aria": "Kleidungsstück beschreiben und Design starten",
       "hero.prompt_aria": "Beschreibe dein Wunschkleidungsstück",
@@ -490,9 +490,9 @@ const I18N = (() => {
       "nav.lang_aria": "Switch language",
 
       // ── Hero ──
-      "hero.eyebrow": "AI · ATELIER · COUTURE",
-      "hero.title_html": 'Your vision.<br>Your measurements.<br><span class="gradient-text">Your clothing.</span>',
-      "hero.subtitle": "One sentence is enough. The AI designs your piece, a photorealistic preview shows it on you — tailors get the finished spec.",
+      "hero.eyebrow": "RESCUED FIBRE · AI DESIGN · MADE TO MEASURE",
+      "hero.title_html": 'From waste.<br>To your measure.<br><span class="gradient-text">Couture for one.</span>',
+      "hero.subtitle": "One sentence is enough: the AI designs your piece, a Swiss tailor sews it from rescued PET fibre — to your measurements, for you alone.",
       "hero.cta_html": 'Start designing <span aria-hidden="true">→</span>',
       "hero.prompt_form_aria": "Describe a garment and start designing",
       "hero.prompt_aria": "Describe the garment you want",
