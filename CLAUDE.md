@@ -376,6 +376,12 @@ if you wrap the spec sheet in a new container.
 
 ## Conventions
 
+- **Ask before assuming (standing instruction from the user).** When a request
+  is ambiguous — scope, target value, which file/feature, delete vs. keep —
+  ask a focused multiple-choice question (`AskUserQuestion`) *before* acting,
+  instead of guessing and proceeding. The user prefers a quick clarifying
+  question over a wrong assumption. (Doesn't apply to obvious defaults you can
+  verify in the code yourself.)
 - **Bilingual user-facing copy.** Code identifiers English; visible strings
   go through `i18n.js` (DE + EN keys); HTML comments and legal pages German.
 - **No frameworks.** Direct DOM (`document.getElementById`,
