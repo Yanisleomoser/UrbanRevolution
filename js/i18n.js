@@ -30,7 +30,7 @@ const I18N = (() => {
       "nav.aria": "Hauptnavigation",
       "nav.toggle_open": "Menü öffnen",
       "nav.toggle_close": "Menü schließen",
-      "nav.mission": "Mission",
+      "nav.mission": "Problem",
       "nav.design": "Design",
       "nav.measure": "Maße",
       "nav.preview": "Vorschau",
@@ -62,7 +62,7 @@ const I18N = (() => {
       "hero.caption_html": "AI-generiert. Maßgeschneidert. In <strong>14 Tagen</strong> bei dir.",
 
       // ── Manifesto (compact thesis after the hero) ──
-      "manifesto.eyebrow": "Warum es uns gibt",
+      "manifesto.eyebrow": "[ Warum es uns gibt ]",
       "manifesto.headline_html": "Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.",
       "manifesto.problem": "Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.",
       "manifesto.stat1_num": "92 Mio. t",
@@ -73,7 +73,32 @@ const I18N = (() => {
       "manifesto.stat3_label": "produzieren wir — für einen Menschen, ohne Überproduktion",
       "manifesto.vision": "Urban Revolution rettet genau diese Faser — auch das PET aus weggeworfenen Flaschen — und spinnt sie zu Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich. Keine Überproduktion, keine Deponie.",
       "manifesto.cta_html": 'Entwirf dein Stück <span aria-hidden="true">→</span>',
-      "manifesto.link_html": 'Sieh die ganze Geschichte <span aria-hidden="true">↓</span>',
+      "manifesto.link_html": 'Sieh die Fakten <span aria-hidden="true">↓</span>',
+
+      // ── Section labels (Ovyon-style [ NN / Titel ] kicker) ──
+      "sec.design": "[ 03 / Dein Entwurf ]",
+      "sec.measure": "[ 04 / Deine Maße ]",
+      "sec.preview": "[ 05 / Vorschau ]",
+      "sec.production": "[ 06 / Produktion ]",
+      "sec.faq": "[ FAQ ]",
+
+      // ── Facts block (consolidated [ 01 / Das Problem ]) ──
+      "facts.eyebrow": "[ 01 / Das Problem ]",
+      "facts.headline_html": "Die Mode produziert<br><em>für die Tonne</em>.",
+      "facts.r1_k": "Jede Sekunde",
+      "facts.r1_v": "1 Lastwagen Textilien — verbrannt oder vergraben",
+      "facts.r2_k": "Recycelt",
+      "facts.r2_v": "unter 1 % zurück in neue Kleidung",
+      "facts.r3_k": "Eine PET-Flasche",
+      "facts.r3_v": "450 Jahre bis zum Zerfall",
+      "facts.r4_k": "CO₂ der Mode",
+      "facts.r4_v": "bis 8 % global — mehr als Flüge und Schifffahrt zusammen",
+      "facts.r5_k": "Der Mensch",
+      "facts.r5_v": "75-Stunden-Wochen, unter Existenzlohn (Public Eye)",
+      "facts.model_k": "[ Unser Modell ]",
+      "facts.model_v": "1 Stück · nach Maß · aus geretteter PET-Faser · 0 Überproduktion",
+      "facts.chart_cap": "[ Carbon-Intensität pro Umsatz — die Treiber ]",
+      "facts.sources_html": '[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
       // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Warum wir dieses System ändern müssen",
@@ -130,7 +155,7 @@ const I18N = (() => {
       "trust.t4_body": "Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in",
 
       // ── How it works (3-step) ──
-      "howto.eyebrow": "So entsteht dein Stück",
+      "howto.eyebrow": "[ 02 / Das Modell ]",
       "howto.heading": "Vom Satz zum Einzelstück — in drei Schritten.",
       "howto.s1_title": "Du beschreibst, die KI entwirft",
       "howto.s1_body": "Ein Satz genügt. Aus deinen Worten macht die KI ein konkretes Design — mit Studio-Vorschau, sofort.",
@@ -494,7 +519,7 @@ const I18N = (() => {
       "nav.aria": "Main navigation",
       "nav.toggle_open": "Open menu",
       "nav.toggle_close": "Close menu",
-      "nav.mission": "Mission",
+      "nav.mission": "Problem",
       "nav.design": "Design",
       "nav.measure": "Measurements",
       "nav.preview": "Preview",
@@ -526,7 +551,7 @@ const I18N = (() => {
       "hero.caption_html": "AI-generated. Made to measure. At your door in <strong>14 days</strong>.",
 
       // ── Manifesto (compact thesis after the hero) ──
-      "manifesto.eyebrow": "Why we exist",
+      "manifesto.eyebrow": "[ Why we exist ]",
       "manifesto.headline_html": "Millions of pieces no one needs.<br>We make <em>one — yours</em>.",
       "manifesto.problem": "Every second, a truckload of textiles is burned or buried. Less than 1% is ever recycled. The fibre is still good — the system just throws it away.",
       "manifesto.stat1_num": "92M tonnes",
@@ -537,7 +562,32 @@ const I18N = (() => {
       "manifesto.stat3_label": "is all we make — for one person, no overproduction",
       "manifesto.vision": "Urban Revolution rescues that fibre — including the PET from discarded bottles — and spins it into fabric. You describe a piece, our AI designs it, a Swiss tailor cuts it to your nine measurements. One garment, made once, for you. No overproduction, no landfill.",
       "manifesto.cta_html": 'Design your piece <span aria-hidden="true">→</span>',
-      "manifesto.link_html": 'See the full story <span aria-hidden="true">↓</span>',
+      "manifesto.link_html": 'See the facts <span aria-hidden="true">↓</span>',
+
+      // ── Section labels (Ovyon-style [ NN / Title ] kicker) ──
+      "sec.design": "[ 03 / Your Design ]",
+      "sec.measure": "[ 04 / Your Measurements ]",
+      "sec.preview": "[ 05 / Preview ]",
+      "sec.production": "[ 06 / Production ]",
+      "sec.faq": "[ FAQ ]",
+
+      // ── Facts block (consolidated [ 01 / The Problem ]) ──
+      "facts.eyebrow": "[ 01 / The Problem ]",
+      "facts.headline_html": "Fashion makes clothes<br><em>for the bin</em>.",
+      "facts.r1_k": "Every second",
+      "facts.r1_v": "1 truckload of textiles — burned or buried",
+      "facts.r2_k": "Recycled",
+      "facts.r2_v": "under 1% back into new clothing",
+      "facts.r3_k": "One PET bottle",
+      "facts.r3_v": "450 years to break down",
+      "facts.r4_k": "Fashion's CO₂",
+      "facts.r4_v": "up to 8% globally — more than flights and shipping combined",
+      "facts.r5_k": "The human cost",
+      "facts.r5_v": "75-hour weeks, below a living wage (Public Eye)",
+      "facts.model_k": "[ Our model ]",
+      "facts.model_v": "1 piece · made to measure · from rescued PET fibre · 0 overproduction",
+      "facts.chart_cap": "[ Carbon intensity per revenue — the drivers ]",
+      "facts.sources_html": '[ Sources ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
       // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Why this system has to change",
@@ -594,7 +644,7 @@ const I18N = (() => {
       "trust.t4_body": "Measurement detection runs client-side — your photo never leaves your device unless you opt in",
 
       // ── How it works (3-step) ──
-      "howto.eyebrow": "How your piece is made",
+      "howto.eyebrow": "[ 02 / The Model ]",
       "howto.heading": "From a sentence to a one-of-one — in three steps.",
       "howto.s1_title": "You describe it, the AI designs it",
       "howto.s1_body": "One sentence is enough. The AI turns your words into a real design — with an instant studio preview.",
