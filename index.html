@@ -399,7 +399,13 @@
             </div>
 
             <div class="design-grid" data-reveal-stagger>
-                <div class="prompt-panel" data-reveal>
+                <div class="design-journey" data-reveal>
+                    <div id="engine-host"></div>
+                </div>
+
+                <details class="prompt-fallback" data-reveal>
+                    <summary class="prompt-fallback-summary" data-i18n="engine.fallback_summary">Lieber direkt in Worten beschreiben?</summary>
+                    <div class="prompt-panel">
                     <label for="ai-prompt" data-i18n="design.prompt_label">Dein Prompt für die KI</label>
                     <textarea id="ai-prompt" rows="6" data-i18n-placeholder="design.prompt_placeholder" placeholder="z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze..."></textarea>
 
@@ -452,7 +458,8 @@
                         <span class="btn-text" data-i18n="design.generate_btn">Design generieren</span>
                         <span class="btn-spinner"></span>
                     </button>
-                </div>
+                    </div>
+                </details>
 
                 <div class="result-panel" data-reveal>
                     <div id="ai-output" class="ai-output" aria-live="polite" aria-busy="false">
@@ -949,6 +956,17 @@
     <script src="js/library.js"></script>
     <script src="js/preview-fallback.js"></script>
     <script src="js/animations.js"></script>
+    <!-- Design Engine (adaptive Reise) — datengetrieben, klassische Skripte -->
+    <script src="js/design-engine/dna.js"></script>
+    <script src="js/design-engine/condition.js"></script>
+    <script src="js/design-engine/engine.js"></script>
+    <script src="js/design-engine/summary.js"></script>
+    <script src="js/design-engine/modalities/visuals.js"></script>
+    <script src="js/design-engine/modalities/cards.js"></script>
+    <script src="js/design-engine/modalities/thisOrThat.js"></script>
+    <script src="js/design-engine/modalities/slider.js"></script>
+    <script src="js/design-engine/modalities/colorGradient.js"></script>
+    <script src="js/design-engine/flow.js"></script>
     <script src="js/app.js"></script>
     <script src="js/hero.js"></script>
     <script src="js/flair.js"></script>

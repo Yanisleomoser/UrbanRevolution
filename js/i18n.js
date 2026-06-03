@@ -209,8 +209,8 @@ const I18N = (() => {
       "workflow.s4_html": "<span>4</span> Produktion",
 
       // ── Design-Sektion ──
-      "design.h2": "Beschreibe dein Design",
-      "design.intro": "Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.",
+      "design.h2": "Triff ein paar Entscheidungen",
+      "design.intro": "Kein Formular. Du wählst, vergleichst, schiebst — wir lesen dein Stück aus deinen Entscheidungen ab. Worte nicht nötig.",
       "design.prompt_label": "Dein Prompt für die KI",
       "design.prompt_placeholder": "z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze...",
       "design.suggestions_inspiration": "Inspiration",
@@ -256,6 +256,18 @@ const I18N = (() => {
       "length.cropped": "Cropped",
       "length.regular": "Regular",
       "length.long": "Lang",
+
+      // ── Design Engine (Reise) ──
+      "engine.back": "Zurück",
+      "engine.skip": "Überspringen",
+      "engine.finish_early": "Fertig",
+      "engine.confirm": "Weiter",
+      "engine.scheme_mono": "Uni",
+      "engine.scheme_duo": "Verlauf",
+      "engine.done_title": "Dein Design",
+      "engine.generate": "Design generieren",
+      "engine.generating": "Generiere …",
+      "engine.fallback_summary": "Lieber direkt in Worten beschreiben?",
 
       // ── VTO ──
       "vto.btn": "Fotorealistische Vorschau generieren",
@@ -744,8 +756,8 @@ const I18N = (() => {
       "workflow.s4_html": "<span>4</span> Production",
 
       // ── Design section ──
-      "design.h2": "Describe your design",
-      "design.intro": "Tell the AI what you want to wear. Style, color, material, occasion — anything goes.",
+      "design.h2": "Make a few choices",
+      "design.intro": "No form. You choose, compare, nudge — we read your piece from your decisions. No words needed.",
       "design.prompt_label": "Your prompt for the AI",
       "design.prompt_placeholder": "e.g.: An oversized streetwear hoodie in heavy organic cotton fleece, in a dark olive tone with graphic embroidery on the chest, wide sleeves, kangaroo pocket and a lined hood...",
       "design.suggestions_inspiration": "Inspiration",
@@ -791,6 +803,18 @@ const I18N = (() => {
       "length.cropped": "Cropped",
       "length.regular": "Regular",
       "length.long": "Long",
+
+      // ── Design Engine (journey) ──
+      "engine.back": "Back",
+      "engine.skip": "Skip",
+      "engine.finish_early": "Done",
+      "engine.confirm": "Next",
+      "engine.scheme_mono": "Solid",
+      "engine.scheme_duo": "Gradient",
+      "engine.done_title": "Your design",
+      "engine.generate": "Generate design",
+      "engine.generating": "Generating …",
+      "engine.fallback_summary": "Rather describe it in words?",
 
       // ── VTO ──
       "vto.btn": "Generate photorealistic preview",

@@ -389,6 +389,41 @@
     });
   }
 
+  // Mounts the adaptive Design Engine journey (the primary entry) and hands
+  // its finished design into the existing render pipeline. The journey already
+  // mirrors the user's concrete choices (type/colour/material/fit/length) into
+  // StateManager live, so we make those authoritative over anything the AI
+  // re-interpreted, then reuse renderDesignResult + updateProductionPreview.
+  function applyJourneyDesign(design) {
+    if (!design) return;
+    design.type = S.get("currentType") || design.type;
+    const color = S.get("currentColor"); if (color) design.color = color;
+    const material = S.get("currentMaterial"); if (material) design.material = material;
+    const fit = S.get("currentFit"); if (fit !== null && fit !== undefined) design.fit = fit;
+    const length = S.get("currentLength"); if (length) design.length = length;
+    design.print = S.get("currentPrint") || "";
+    S.set("currentDesign", design);
+    renderDesignResult(design);
+    updateProductionPreview();
+    if (window.Preferences) {
+      window.Preferences.track("type", design.type);
+      window.Preferences.track("color", design.color);
+      window.Preferences.track("material", design.material);
+      renderSuggestions();
+    }
+    showToast(t("toast.generated", { name: design.name }), "success");
+    const out = document.getElementById("ai-output");
+    if (out && out.scrollIntoView) out.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function initDesignJourney() {
+    const host = document.getElementById("engine-host");
+    if (!host || !window.DesignFlow) return;
+    window.DesignFlow.mount(host, {
+      onDesign: (design) => applyJourneyDesign(design),
+    }).catch((err) => console.error("[app] journey mount failed:", err));
+  }
+
   // Inline outline paths for the 6 garment types, mirrored from the
   // .type-btn SVGs in index.html. Used inside the design-result card so
   // the user sees a visual cue for the garment type they generated.
@@ -1734,6 +1769,7 @@
     initLengthSelector();
     initPrintInput();
     initGenerateButton();
+    initDesignJourney();
     initMeasurements();
     initExportButtons();
     initVtoButton();

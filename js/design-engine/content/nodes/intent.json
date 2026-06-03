@@ -1,0 +1,60 @@
+{
+  "_comment": "Phase A (mood + intent) and the category pivot. Soft thisOrThat/slider nodes only nudge archetype weights; the category node is the first hard attribute. Image paths are placeholders — modalities fall back to on-brand SVG until real assets land in content/img/.",
+  "nodes": [
+    {
+      "id": "mood_calm_bold",
+      "phase": "A",
+      "modality": "thisOrThat",
+      "when": "true",
+      "priority": 0.95,
+      "question": { "de": "Was zieht dich mehr an?", "en": "Which pulls you in?" },
+      "pair": [
+        { "id": "calm", "label": { "de": "Ruhig", "en": "Calm" }, "image": "content/img/mood/calm-mono.jpg",
+          "effects": { "set": { "intent.energy": 0.25 }, "weight": { "quietMinimal": 0.4, "softCouture": 0.2 } } },
+        { "id": "bold", "label": { "de": "Laut", "en": "Bold" }, "image": "content/img/mood/bold-neon.jpg",
+          "effects": { "set": { "intent.energy": 0.8 }, "weight": { "techAvant": 0.35, "y2kStreet": 0.3 } } }
+      ]
+    },
+    {
+      "id": "mood_soft_sharp",
+      "phase": "A",
+      "modality": "thisOrThat",
+      "when": "true",
+      "priority": 0.9,
+      "question": { "de": "Weich oder kantig?", "en": "Soft or sharp?" },
+      "pair": [
+        { "id": "soft", "label": { "de": "Weich", "en": "Soft" }, "image": "content/img/mood/soft-drape.jpg",
+          "effects": { "set": { "silhouette.structure": 0.3 }, "weight": { "softCouture": 0.35, "quietMinimal": 0.15 } } },
+        { "id": "sharp", "label": { "de": "Kantig", "en": "Sharp" }, "image": "content/img/mood/sharp-structure.jpg",
+          "effects": { "set": { "silhouette.structure": 0.75 }, "weight": { "techAvant": 0.3, "utility": 0.2 } } }
+      ]
+    },
+    {
+      "id": "intent_formality",
+      "phase": "A",
+      "modality": "slider",
+      "when": "true",
+      "priority": 0.7,
+      "question": { "de": "Wie förmlich?", "en": "How formal?" },
+      "bind": "intent.formality",
+      "axis": { "de": ["Alltag", "Anlass"], "en": ["Everyday", "Occasion"] },
+      "weightAt": { "low": { "y2kStreet": 0.15, "sport": 0.15 }, "high": { "softCouture": 0.2, "quietMinimal": 0.1 } }
+    },
+    {
+      "id": "category_select",
+      "phase": "B",
+      "modality": "cards",
+      "when": "_confidence.category < 0.6",
+      "priority": 1.0,
+      "question": { "de": "Was entsteht?", "en": "What are we making?" },
+      "choices": [
+        { "id": "jacket", "label": { "de": "Jacke", "en": "Jacket" }, "effects": { "set": { "category": "jacket" } } },
+        { "id": "hoodie", "label": { "de": "Hoodie", "en": "Hoodie" }, "effects": { "set": { "category": "hoodie" } } },
+        { "id": "tshirt", "label": { "de": "T-Shirt", "en": "T-Shirt" }, "effects": { "set": { "category": "tshirt" } } },
+        { "id": "shirt", "label": { "de": "Hemd", "en": "Shirt" }, "effects": { "set": { "category": "shirt" } } },
+        { "id": "pants", "label": { "de": "Hose", "en": "Pants" }, "effects": { "set": { "category": "pants" } } },
+        { "id": "dress", "label": { "de": "Kleid", "en": "Dress" }, "effects": { "set": { "category": "dress" } } }
+      ]
+    }
+  ]
+}
