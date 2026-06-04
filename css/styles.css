@@ -158,6 +158,8 @@ html.is-touch .navbar {
     max-width: 1280px;
     margin: 0 auto;
     padding: 18px 24px;
+    /* Randlose iPhones: Inhalt unter die Notch schieben (0 auf allen anderen Geräten). */
+    padding-top: max(18px, env(safe-area-inset-top));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -5030,7 +5032,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
    No headline-wall, no photo gallery: a quiet invitation + the live prompt
    console as the focal point; the belief is whispered, the cost is ambient.
    ============================================================ */
-.hero--begin { min-height: 90vh; display: flex; align-items: center; position: relative; }
+.hero--begin { min-height: 90svh; min-height: calc(var(--svh, 1svh) * 90); display: flex; align-items: center; position: relative; }
 .hero--begin .hero-inner {
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     max-width: 760px; width: 100%; margin: 0 auto; text-align: center;
@@ -5138,10 +5140,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
    DESIGN ENGINE — die adaptive "Design-Reise" (js/design-engine/)
    Ruhig, cineastisch: eine Frage groß, viel Negativraum. Nur :root-Tokens.
    ============================================================ */
-.de-stage { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; gap: var(--space-7); }
-.de-head { display: flex; align-items: center; gap: var(--space-5); }
-.de-ring-wrap { flex: none; width: 64px; height: 64px; }
-.de-ring { width: 64px; height: 64px; }
+.de-stage { max-width: 1120px; margin: 0 auto; padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; gap: var(--space-7); }
 .de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); }
 .de-ring-pct { fill: var(--text); font-size: 16px; font-weight: 700; }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
@@ -5210,12 +5209,8 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .prompt-fallback[open] .prompt-fallback-summary::before { content: "\2013 "; }
 .prompt-fallback .prompt-panel { padding: 0 var(--space-5) var(--space-5); }
 
-/* Design Engine — Live-Proxy, Mikro-Feedback, Phase F (Inferenz & Wärmer/Kälter) */
-.de-head { position: relative; align-items: center; }
-.de-preview { flex: none; width: 96px; height: 96px; border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
-.de-preview svg { width: 100%; height: 100%; }
-.de-head-meta { display: flex; align-items: center; gap: var(--space-4); flex: 1; }
-.de-flash { position: absolute; top: 0; right: 0; font-size: var(--text-sm); color: var(--accent-3); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 4px var(--space-3); opacity: 0; transform: translateY(-4px); transition: opacity .25s var(--ease-out), transform .25s var(--ease-out); pointer-events: none; }
+/* Design Engine — Mikro-Feedback (Flash) am Rand der Vorschau, Phase F */
+.de-flash { position: absolute; top: var(--space-4); right: var(--space-4); z-index: 2; font-size: var(--text-sm); color: var(--accent-3); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 4px var(--space-3); opacity: 0; transform: translateY(-4px); transition: opacity .25s var(--ease-out), transform .25s var(--ease-out); pointer-events: none; }
 .de-flash.is-on { opacity: 1; transform: translateY(0); }
 
 .de-inferred { margin: var(--space-5) 0; }
@@ -5232,10 +5227,6 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-refine-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-6); flex-wrap: wrap; }
 .de-refine-actions .de-confirm { margin-top: 0; }
 
-@media (max-width: 560px) {
-    .de-preview { width: 72px; height: 72px; }
-    .de-head-meta { gap: var(--space-3); }
-}
 @media (prefers-reduced-motion: reduce) {
     .de-flash, .de-nudge { transition: none !important; }
 }
@@ -5272,7 +5263,6 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-swatch { position: relative; overflow: hidden; }
 .de-swatch::before { content: ""; position: absolute; inset: 0; background: radial-gradient(130% 90% at 28% 18%, rgba(255,255,255,0.22), rgba(255,255,255,0) 55%); pointer-events: none; }
 .de-swatch::after { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 140px 140px; mix-blend-mode: overlay; opacity: 0.16; pointer-events: none; }
-.de-preview { position: relative; }
 .de-preview::after { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E"); background-size: 140px 140px; mix-blend-mode: overlay; opacity: 0.1; pointer-events: none; border-radius: inherit; }
 
 /* ============================================================
@@ -5280,41 +5270,91 @@ html.is-touch .lang-toggle { min-height: 38px; }
    Überschreibt die frühere 96px-Thumbnail-Box. 2-spaltig auf Desktop,
    große sticky Vorschau; mobil Vorschau oben sticky, Frage darunter.
    ============================================================ */
-.de-stage { max-width: 1120px; }
 .de-stage-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-7); align-items: start; }
 .de-preview-col { position: relative; }
 .de-ask-col { display: flex; flex-direction: column; gap: var(--space-5); }
 
-/* Vorschau dominant */
-.de-preview { width: 100%; height: 56vh; min-height: 300px; max-height: 70vh; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(120% 90% at 50% 30%, #17171a, #0a0a0b 75%); display: flex; align-items: center; justify-content: center; }
+/* Vorschau dominant. Höhen in svh + JS-gepinntem --svh (wie Hero/Story), damit
+   nichts springt, wenn die iOS-Adressleiste ein-/ausfährt. */
+.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(120% 90% at 50% 30%, #17171a, #0a0a0b 75%); display: flex; align-items: center; justify-content: center; }
 .de-preview svg { width: 100%; height: 100%; object-fit: contain; }
 .de-preview.is-fade { animation: deCross .24s var(--ease-out); }
 @keyframes deCross { from { opacity: .4; } to { opacity: 1; } }
 
 /* Reife-Ring + Mikro-Feedback an den RAND der Vorschau (nicht darüber) */
-.de-ring-wrap { position: absolute; left: var(--space-4); bottom: var(--space-4); width: 54px; height: 54px; padding: 4px; border-radius: 50%; background: rgba(10,10,11,0.55); backdrop-filter: blur(8px); }
+.de-ring-wrap { position: absolute; left: var(--space-4); bottom: var(--space-4); width: 54px; height: 54px; padding: 4px; border-radius: 50%; background: rgba(10,10,11,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .de-ring { width: 100%; height: 100%; }
-.de-flash { position: absolute; top: var(--space-4); right: var(--space-4); left: auto; }
 
 /* Frage groß, ruhig */
 .de-ask-col .de-question { margin-top: 0; }
 
 @media (min-width: 900px) {
     .de-stage-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: var(--space-9); }
-    .de-preview-col { position: sticky; top: 84px; }
-    .de-preview { height: 64vh; }
-    .de-ask-col { min-height: 60vh; justify-content: center; }
+    .de-preview-col { position: sticky; top: calc(84px + env(safe-area-inset-top)); }
+    .de-preview { height: 64svh; height: calc(var(--svh, 1svh) * 64); }
+    .de-ask-col { min-height: 60svh; min-height: calc(var(--svh, 1svh) * 60); justify-content: center; }
 }
-@media (max-width: 899px) {
-    .de-preview-col { position: sticky; top: 64px; z-index: 2; }
-    .de-preview { height: 46vh; min-height: 260px; }
+/* iPad-Hochformat (481–899): große sticky Vorschau bleibt — sieht dort gut aus */
+@media (max-width: 899px) and (min-width: 481px) {
+    .de-preview-col { position: sticky; top: calc(64px + env(safe-area-inset-top)); z-index: 2; }
+    .de-preview { height: 46svh; height: calc(var(--svh, 1svh) * 46); min-height: 260px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .de-preview.is-fade { animation: none; }
 }
 
+/* ============================================================
+   iPhone-Layout-Pass (≤480px) — iPad/Desktop bleiben unangetastet.
+   Kein sticky (eine halbe Bildschirmhöhe konkurriert sonst mit der Frage):
+   kompaktes Vorschau-Banner oben, Frage fließt normal darunter. svh-Höhen,
+   Safe-Area, kein backdrop-filter (iOS-Scroll-Ruckeln).
+   ============================================================ */
+@media (max-width: 480px) {
+    /* 1 — Sticky entschärfen: Vorschau als kompaktes Banner mit moderater Höhe */
+    .de-preview-col { position: static; }
+    .de-preview {
+        height: 34svh;
+        height: calc(var(--svh, 1svh) * 34);
+        min-height: 200px;
+        max-height: 300px;
+    }
+
+    /* 5 — Vertikale Enge lösen: Stage/Grid enger; Safe-Area unten (Home-Indicator) */
+    .de-stage {
+        gap: var(--space-4);
+        padding: var(--space-6) var(--space-4);
+        padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+    }
+    .de-stage-grid { gap: var(--space-4); }
+    .de-ask-col { gap: var(--space-4); }
+    .de-preview-chips { margin-top: var(--space-2); }
+
+    /* 4 — iOS-Ruckeln: backdrop-filter der Overlays durch solide Fläche ersetzen */
+    .de-ring-wrap {
+        width: 48px; height: 48px;
+        left: var(--space-3); bottom: var(--space-3);
+        background: rgba(10,10,11,0.82);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .de-preview-badge {
+        background: rgba(10,10,11,0.82);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    /* 5 — This-or-That + Cards kompakter, damit beides ohne Riesen-Scroll passt */
+    .de-tot { gap: var(--space-3); }
+    .de-tot-panel { min-height: 150px; }
+    .de-cards { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .de-card { padding: var(--space-2); }
+
+    /* Intro enger */
+    .de-intro { min-height: calc(var(--svh, 1svh) * 60); padding: var(--space-6) var(--space-4); }
+}
+
 /* §2 — Intro-Screen + optionaler Freitext am Schluss */
-.de-intro { min-height: 68vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-8) var(--space-5); }
+.de-intro { min-height: 68svh; min-height: calc(var(--svh, 1svh) * 68); display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-8) var(--space-5); }
 .de-intro-inner { max-width: 620px; display: flex; flex-direction: column; gap: var(--space-6); align-items: center; }
 .de-intro-title { font-family: 'Lora', Georgia, serif; font-size: var(--text-3xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); margin: 0; color: var(--text); }
 .de-intro-sub { color: var(--text-dim); font-size: var(--text-md); line-height: var(--leading-normal); margin: 0; max-width: 52ch; }
