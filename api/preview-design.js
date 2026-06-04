@@ -147,3 +147,7 @@ function upstreamError(tag, status, detail) {
 function jsonError(status, message, code) {
     return Response.json(code ? { error: message, code } : { error: message }, { status });
 }
+
+// Exported for unit tests (test/api-test.mjs). Not used by the edge runtime,
+// which only invokes the default handler export.
+export { upstreamError, jsonError };

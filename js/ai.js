@@ -425,4 +425,5 @@ Antworte NUR mit JSON:
   };
 })();
 
-window.AI = AI;
+if (typeof window !== "undefined") window.AI = AI;
+if (typeof module !== "undefined" && module.exports) module.exports = AI;
