@@ -134,4 +134,5 @@ const Library = (() => {
   return { add, list, count, get, remove, setVtoImage, setPreviewImage, clear, MAX_ENTRIES };
 })();
 
-window.Library = Library;
+if (typeof window !== "undefined") window.Library = Library;
+if (typeof module !== "undefined" && module.exports) module.exports = Library;
