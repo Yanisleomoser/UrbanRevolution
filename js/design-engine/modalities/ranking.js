@@ -11,7 +11,7 @@
   function render(host, node, ctx) {
     host.innerHTML = "";
     const lang = ctx.lang;
-    let order = (node.options || []).map((o) => o.id);
+    const order = (node.options || []).map((o) => o.id);
 
     const q = V.el("h2", { class: "de-question" });
     q.textContent = node.question ? node.question[lang] : "";
