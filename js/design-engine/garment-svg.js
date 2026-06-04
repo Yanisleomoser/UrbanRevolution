@@ -1,171 +1,296 @@
 /**
- * Urban Revolution — Design Engine · Parametric garment silhouette (brief §7)
+ * Urban Revolution — Design Engine · Parametric technical fashion flats
  *
- * Draws the piece as a vector silhouette that MORPHS from the DesignDNA, so it
- * visibly changes with every form decision — fit, volume, structure, length,
- * collar, sleeve, closure, pockets, cuffs, hem — plus colour/gradient, pattern
- * and material sheen. This is the primary, evolving preview during the journey;
- * the curated hero photo is the calm realism layer behind it, the AI render is
- * on demand.
+ * A clean technical fashion DRAWING that morphs from the DesignDNA — light
+ * stroke on the dark stage, precise proportions, subtle seam/fold lines. This
+ * is the primary, evolving preview during the journey; the recoloured hero
+ * photo / AI render is the realism layer that only appears at convergence.
+ *
+ * Architecture (brief §3): per category an authored base flat whose proportions
+ * are fixed, morphed through PARAMETERS — shoulder width, length, waist
+ * suppression, volume — with sleeves / collar / closure as swappable components.
+ * The correct base shape is authored once and never re-derived from raw path
+ * maths, so it can't collapse into blobs / cones / leg-stumps.
+ *
+ * Geometry invariants (brief §2) enforced for every top:
+ *   1. Shoulder is the widest point; chest = shoulder · lerp(0.80,0.99,fit),
+ *      never wider than the shoulder.
+ *   2. slim → waist < chest, hem ≈ chest; oversized → straight boxy column,
+ *      hem never wider than chest (no bell).
+ *   3. Sleeves are their own ALWAYS-VISIBLE limbs anchored at the shoulder,
+ *      length from the sleeve attribute (NOT the hem), tapering to the wrist.
+ *   4. Drop-shoulder widens the shoulder line and lowers the armscye.
+ *   5. Collar / lapel / hood are integrated shapes on the neckline.
  *
  *   GarmentSVG.build(category, params) → inline SVG markup (string)
- *
- * `params` (all optional, sensible defaults):
- *   fit 0..1 · structure 0..1 · volume low|mid|high · length cropped|regular|long
- *   collar stand|notched|hood|crew|none · sleeve set-in|raglan|drop
- *   closure zip|button|none · pockets none|side|flap|cargo
- *   cuffs plain|ribbed|button · hem straight|drawcord|ribbed
- *   pattern none|stripe|check|camo|graphic|abstract
- *   scheme mono|duo-gradient|multi · stops [hex…] · material <key>
  */
 const GarmentSVG = (() => {
-  const VB = 240, CX = 120;
+  const VB = 240, VH = 340, CX = 120;
+  const INK = "#ECECF0";          // main outline stroke (light)
+  const SEAM = "#CFCFD8";         // seam / fold lines (dimmer)
   let uid = 0;
+
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const num = (v, d) => (typeof v === "number" && isFinite(v) ? v : d);
   const lerp = (a, b, t) => a + (b - a) * t;
   const r = (n) => Math.round(n * 10) / 10;
+  const L = (x) => r(CX - x);
+  const R = (x) => r(CX + x);
+  const Y = (y) => r(y);
 
-  function fillDefs(id, p) {
-    const stops = Array.isArray(p.stops) && p.stops.length ? p.stops : ["#8b8f96"];
-    const base = stops[0];
-    let fill = base;
+  // Per-category construction constants (brief §4). sleeveLen is the limb's own
+  // length so cropped bodies keep full sleeves; hem maps the length attribute.
+  const CFG = {
+    jacket: { sleeveLen: 176, hem: { cropped: 208, regular: 286, long: 316 }, defCollar: "notched", closure: "zip", splay: 15, cuffW: 18, armDepth: 52, neckHalf: 18 },
+    hoodie: { sleeveLen: 172, hem: { cropped: 214, regular: 288, long: 312 }, defCollar: "hood", closure: "none", splay: 17, cuffW: 20, armDepth: 58, drop: true, neckHalf: 19 },
+    shirt: { sleeveLen: 174, hem: { cropped: 210, regular: 268, long: 300 }, defCollar: "shirt", closure: "button", splay: 13, cuffW: 16, armDepth: 50, neckHalf: 17 },
+    tshirt: { sleeveLen: 56, hem: { cropped: 206, regular: 252, long: 286 }, defCollar: "crew", closure: "none", splay: 16, cuffW: 24, armDepth: 50, neckHalf: 20 },
+  };
+
+  // ---- recolour ------------------------------------------------------------
+  // Light stroke always; the chosen colour fills as a SOFT tonal wash (low
+  // opacity), never a solid block. No scheme chosen → faint neutral fill.
+  function fillSpec(id, p) {
+    const stops = Array.isArray(p.stops) && p.stops.length ? p.stops : null;
     let defs = "";
-    if (p.scheme === "duo-gradient" && stops.length >= 2) {
-      defs += `<linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${stops[0]}"/><stop offset="1" stop-color="${stops[1]}"/></linearGradient>`;
-      fill = `url(#${id}g)`;
+    let fill = "rgba(255,255,255,0.05)";
+    let opacity = 1;
+    if (stops) {
+      if (p.scheme === "duo-gradient" && stops.length >= 2) {
+        defs += `<linearGradient id="${id}g" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="${stops[0]}"/><stop offset="1" stop-color="${stops[1]}"/></linearGradient>`;
+        fill = `url(#${id}g)`;
+      } else {
+        fill = stops[0];
+      }
+      opacity = 0.42;
     }
-    // material sheen → soft diagonal highlight; matte → faint
-    const sheen = ({ silk: 0.5, polyester: 0.34, fleece: 0.14, denim: 0.16, wool: 0.12, cotton: 0.12, linen: 0.1 })[p.material] != null
-      ? ({ silk: 0.5, polyester: 0.34, fleece: 0.14, denim: 0.16, wool: 0.12, cotton: 0.12, linen: 0.1 })[p.material] : 0.18;
-    defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${sheen}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.18"/></linearGradient>`;
-    if (p.pattern && p.pattern !== "none") defs += patternDef(id + "p", p.pattern);
-    return { defs, fill, hasPattern: !!(p.pattern && p.pattern !== "none") };
+    let pat = "";
+    if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern); pat = `url(#${id}p)`; }
+    return { defs, fill, opacity, pat };
   }
 
   function patternDef(id, type) {
-    const ink = "rgba(0,0,0,0.28)";
-    const lite = "rgba(255,255,255,0.22)";
-    if (type === "stripe") return `<pattern id="${id}" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="6" height="12" fill="${ink}"/></pattern>`;
-    if (type === "check") return `<pattern id="${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="${ink}"/><rect x="8" y="8" width="8" height="8" fill="${ink}"/></pattern>`;
-    if (type === "camo") return `<pattern id="${id}" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="${ink}"/><ellipse cx="10" cy="12" rx="11" ry="8" fill="${lite}"/><ellipse cx="30" cy="28" rx="13" ry="9" fill="${lite}"/><ellipse cx="24" cy="6" rx="7" ry="5" fill="${lite}"/></pattern>`;
-    if (type === "graphic") return `<pattern id="${id}" width="48" height="48" patternUnits="userSpaceOnUse"><circle cx="24" cy="24" r="9" fill="none" stroke="${lite}" stroke-width="4"/><circle cx="0" cy="0" r="6" fill="${ink}"/><circle cx="48" cy="48" r="6" fill="${ink}"/></pattern>`;
-    return `<pattern id="${id}" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><path d="M0 17 Q8 4 17 17 T34 17" fill="none" stroke="${lite}" stroke-width="3"/></pattern>`;
+    const ink = "rgba(236,236,240,0.22)";
+    if (type === "stripe") return `<pattern id="${id}" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="5.5" height="11" fill="${ink}"/></pattern>`;
+    if (type === "check") return `<pattern id="${id}" width="15" height="15" patternUnits="userSpaceOnUse"><rect width="7.5" height="7.5" fill="${ink}"/><rect x="7.5" y="7.5" width="7.5" height="7.5" fill="${ink}"/></pattern>`;
+    if (type === "camo") return `<pattern id="${id}" width="42" height="42" patternUnits="userSpaceOnUse"><ellipse cx="12" cy="13" rx="11" ry="8" fill="${ink}"/><ellipse cx="32" cy="30" rx="12" ry="9" fill="${ink}"/><ellipse cx="26" cy="6" rx="7" ry="5" fill="${ink}"/></pattern>`;
+    if (type === "graphic") return `<pattern id="${id}" width="46" height="46" patternUnits="userSpaceOnUse"><circle cx="23" cy="23" r="8" fill="none" stroke="${ink}" stroke-width="3"/></pattern>`;
+    return `<pattern id="${id}" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><path d="M0 17 Q8 5 17 17 T34 17" fill="none" stroke="${ink}" stroke-width="2.4"/></pattern>`;
   }
 
-  function jacket(p) {
+  // ---- shared width model (tops) ------------------------------------------
+  function topWidths(p, cfg) {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
     const structure = clamp(num(p.structure, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
-
-    const neckY = 58;
-    const shoulderY = 78 - structure * 6;
-    const shoulderHalf = 52 + structure * 16 + vol * 9;
-    const armpitY = shoulderY + 50;
-    const chestHalf = lerp(38, 82, fit) + vol * 8;
-    const hemY = { cropped: 218, regular: 270, long: 312 }[p.length] || 270;
-    const waistY = (armpitY + hemY) / 2;
-    // slim nips the waist; oversized/high-vol keeps it straight/boxy
-    const waistHalf = lerp(chestHalf * 0.82, chestHalf * 1.04, fit) + vol * 5;
-    const hemHalf = chestHalf + (fit > 0.6 ? 8 : 1) + (vol > 0 ? 8 : 0);
-    const neckHalf = p.collar === "crew" ? 26 : p.collar === "notched" ? 22 : p.collar === "hood" ? 22 : p.collar === "none" ? 18 : 17;
-    const neckDip = p.collar === "crew" ? 18 : p.collar === "none" ? 8 : 5;
-
-    const L = (x) => r(CX - x), R = (x) => r(CX + x), Y = (y) => r(y);
-
-    // Torso outline (one closed path), shoulders → armpit → waist → hem.
-    const body =
-      `M ${L(neckHalf)} ${Y(neckY + neckDip)} ` +
-      `L ${L(shoulderHalf)} ${Y(shoulderY)} ` +
-      `C ${L(shoulderHalf + 2)} ${Y(shoulderY + 18)} ${L(chestHalf + 4)} ${Y(armpitY - 12)} ${L(chestHalf)} ${Y(armpitY)} ` +
-      `C ${L(waistHalf + 2)} ${Y(waistY - 8)} ${L(waistHalf)} ${Y(waistY)} ${L(hemHalf)} ${Y(hemY - 6)} ` +
-      `L ${L(hemHalf)} ${Y(hemY)} L ${R(hemHalf)} ${Y(hemY)} L ${R(hemHalf)} ${Y(hemY - 6)} ` +
-      `C ${R(waistHalf)} ${Y(waistY)} ${R(waistHalf + 2)} ${Y(waistY - 8)} ${R(chestHalf)} ${Y(armpitY)} ` +
-      `C ${R(chestHalf + 4)} ${Y(armpitY - 12)} ${R(shoulderHalf + 2)} ${Y(shoulderY + 18)} ${R(shoulderHalf)} ${Y(shoulderY)} ` +
-      `L ${R(neckHalf)} ${Y(neckY + neckDip)} ` +
-      neckline(p, neckHalf, neckY, neckDip) + " Z";
-
-    // Sleeves hang from the shoulder; drop-shoulder sits wider/lower.
-    const drop = p.sleeve === "drop";
-    const sTop = shoulderHalf + (drop ? 4 : 0);
-    const sTopY = shoulderY + (drop ? 10 : 0);
-    const sleeveW = 22 + (drop ? 10 : 0) + vol * 4;
-    const wristY = hemY - (p.length === "cropped" ? 2 : 10);
-    const wristIn = sTop - sleeveW + (p.cuffs === "ribbed" ? 4 : 0);
-    const arm = (side) => {
-      const o = side < 0 ? L : R;
-      return `M ${o(sTop)} ${Y(sTopY)} L ${o(sTop + 2)} ${Y(wristY)} L ${o(wristIn)} ${Y(wristY)} L ${o(chestHalf - 2)} ${Y(armpitY + 2)} Z`;
-    };
-
-    return { defs: "", body, arms: arm(-1) + arm(1), meta: { hemY, wristY, sTop, wristIn, neckHalf, neckY, neckDip, chestHalf, armpitY, shoulderHalf, shoulderY } };
+    const drop = p.sleeve === "drop" || cfg.drop;
+    // Shoulder is the widest point.
+    const shoulderHalf = 58 + structure * 5 + vol * 6 + (drop ? 9 : 0);
+    // Chest derived FROM the shoulder, always narrower.
+    const chestHalf = shoulderHalf * lerp(0.80, 0.99, fit) + Math.max(0, vol) * 3;
+    // slim nips the waist; oversized keeps it straight.
+    const waistHalf = chestHalf * lerp(0.84, 1.0, fit);
+    // hem never wider than the chest (no bell), boxy when oversized.
+    const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.92, 1.0, fit)) + (vol > 0 ? 3 : 0);
+    return { shoulderHalf, chestHalf, waistHalf, hemHalf, fit, vol, drop };
   }
 
-  function neckline(p, neckHalf, neckY, neckDip) {
-    if (p.collar === "crew") return `Q ${CX} ${neckY + neckDip + 14} ${CX - neckHalf} ${neckY + neckDip}`;
-    if (p.collar === "notched") return `L ${CX} ${neckY + 30} L ${CX - neckHalf} ${neckY + neckDip}`;
-    return `L ${CX - neckHalf} ${neckY + neckDip}`;
+  function geometry(p, cfg) {
+    const w = topWidths(p, cfg);
+    const neckY = 60;
+    const shoulderY = 66 + (w.drop ? 4 : 0);
+    const armpitY = shoulderY + cfg.armDepth + (w.drop ? 12 : 0);
+    const length = (cfg.hem[p.length] != null) ? p.length : "regular";
+    const hemY = cfg.hem[length];
+    const waistY = armpitY + (hemY - armpitY) * 0.42;
+    const splay = cfg.splay + (w.drop ? 5 : 0);
+    const coX = w.shoulderHalf + splay;                 // outer cuff edge
+    const ciX = Math.max(w.chestHalf + 1, coX - cfg.cuffW); // inner cuff edge
+    const wristY = shoulderY + cfg.sleeveLen + (w.drop ? 6 : 0);
+    const collar = p.collar || cfg.defCollar;
+    const neckHalf = neckHalfFor(collar, cfg);
+    return Object.assign(w, { neckY, shoulderY, armpitY, hemY, waistY, coX, ciX, wristY, collar, neckHalf, length });
   }
 
-  function details(p, m, fill) {
-    const parts = [];
-    const cy0 = m.neckY + m.neckDip;
-    // Collar overlays
-    if (p.collar === "stand") parts.push(`<path d="M ${m.neckLeft = CX - m.neckHalf} ${cy0} L ${CX - m.neckHalf - 3} ${cy0 - 12} L ${CX + m.neckHalf + 3} ${cy0 - 12} L ${CX + m.neckHalf} ${cy0} Z" fill="${fill}" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>`);
-    if (p.collar === "notched") parts.push(`<path d="M ${CX - m.neckHalf} ${cy0} L ${CX - 6} ${m.neckY + 30} L ${CX - m.neckHalf - 10} ${cy0 + 26} Z M ${CX + m.neckHalf} ${cy0} L ${CX + 6} ${m.neckY + 30} L ${CX + m.neckHalf + 10} ${cy0 + 26} Z" fill="rgba(0,0,0,0.14)"/>`);
-    if (p.collar === "hood") parts.push(`<path d="M ${CX - m.neckHalf - 6} ${cy0 + 2} Q ${CX} ${m.neckY - 34} ${CX + m.neckHalf + 6} ${cy0 + 2}" fill="rgba(0,0,0,0.18)" stroke="rgba(0,0,0,0.22)" stroke-width="1.5"/>`);
-    // Closure (centre front)
-    if (p.closure === "zip") parts.push(`<line x1="${CX}" y1="${cy0 + 4}" x2="${CX}" y2="${m.hemY - 4}" stroke="rgba(0,0,0,0.4)" stroke-width="2.5" stroke-dasharray="3 2"/>`);
-    else if (p.closure === "button") {
-      const n = 5; for (let i = 0; i < n; i++) { const y = cy0 + 14 + (i * (m.hemY - cy0 - 20)) / (n - 1); parts.push(`<circle cx="${CX}" cy="${r(y)}" r="2.6" fill="rgba(0,0,0,0.42)"/>`); }
-    } else if (p.closure === "none") {
-      parts.push(`<path d="M ${CX} ${cy0 + 2} L ${CX - 10} ${m.hemY} M ${CX} ${cy0 + 2} L ${CX + 10} ${m.hemY}" stroke="rgba(0,0,0,0.22)" stroke-width="1.5" fill="none"/>`);
+  function neckHalfFor(collar, cfg) {
+    if (collar === "crew") return 22;
+    if (collar === "vneck") return 20;
+    if (collar === "hood") return 19;
+    if (collar === "shirt") return 17;
+    if (collar === "none") return 18;
+    return cfg.neckHalf || 18;
+  }
+
+  // Neckline piece: drawn from R(neckHalf),neckY across the top to L(neckHalf),neckY.
+  function neckline(g) {
+    if (g.collar === "crew") return `Q ${CX} ${Y(g.neckY + 15)} ${L(g.neckHalf)} ${Y(g.neckY)}`;
+    if (g.collar === "vneck") return `L ${CX} ${Y(g.neckY + 30)} L ${L(g.neckHalf)} ${Y(g.neckY)}`;
+    if (g.collar === "notched") return `L ${CX} ${Y(g.neckY + 22)} L ${L(g.neckHalf)} ${Y(g.neckY)}`;
+    return `Q ${CX} ${Y(g.neckY + 7)} ${L(g.neckHalf)} ${Y(g.neckY)}`;
+  }
+
+  // Closed outline incl. always-visible sleeves; armpit is a deliberate notch.
+  function outline(g) {
+    return (
+      `M ${L(g.neckHalf)} ${Y(g.neckY)} ` +
+      `L ${L(g.shoulderHalf)} ${Y(g.shoulderY)} ` +
+      `L ${L(g.coX)} ${Y(g.wristY)} ` +
+      `L ${L(g.ciX)} ${Y(g.wristY)} ` +
+      `L ${L(g.chestHalf)} ${Y(g.armpitY)} ` +
+      `C ${L(g.waistHalf)} ${Y(g.waistY - 8)} ${L(g.waistHalf)} ${Y(g.waistY)} ${L(g.hemHalf)} ${Y(g.hemY - 8)} ` +
+      `L ${L(g.hemHalf)} ${Y(g.hemY)} ` +
+      `L ${R(g.hemHalf)} ${Y(g.hemY)} ` +
+      `L ${R(g.hemHalf)} ${Y(g.hemY - 8)} ` +
+      `C ${R(g.waistHalf)} ${Y(g.waistY)} ${R(g.waistHalf)} ${Y(g.waistY - 8)} ${R(g.chestHalf)} ${Y(g.armpitY)} ` +
+      `L ${R(g.ciX)} ${Y(g.wristY)} ` +
+      `L ${R(g.coX)} ${Y(g.wristY)} ` +
+      `L ${R(g.shoulderHalf)} ${Y(g.shoulderY)} ` +
+      `L ${R(g.neckHalf)} ${Y(g.neckY)} ` +
+      neckline(g) + " Z"
+    );
+  }
+
+  // Internal seam + component lines (armscye, closure, collar, cuffs, hem…).
+  function seams(g, p, cfg) {
+    const s = [];
+    const line = (d, sw, op) => s.push(`<path d="${d}" fill="none" stroke="${SEAM}" stroke-width="${sw || 2}" stroke-linejoin="round" stroke-linecap="round"${op ? ` opacity="${op}"` : ""}/>`);
+
+    // Armscye seam — sleeve separated from torso (raglan runs to the neck).
+    if (p.sleeve === "raglan") {
+      line(`M ${L(g.neckHalf + 4)} ${Y(g.neckY + 6)} L ${L(g.chestHalf - 2)} ${Y(g.armpitY)}`, 2);
+      line(`M ${R(g.neckHalf + 4)} ${Y(g.neckY + 6)} L ${R(g.chestHalf - 2)} ${Y(g.armpitY)}`, 2);
+    } else {
+      line(`M ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.chestHalf)} ${Y(g.armpitY)}`, 2);
+      line(`M ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.chestHalf)} ${Y(g.armpitY)}`, 2);
     }
-    // Pockets
-    const py = m.hemY - 46;
-    if (p.pockets === "side") parts.push(`<line x1="${CX - m.chestHalf + 8}" y1="${py}" x2="${CX - m.chestHalf + 30}" y2="${py + 6}" stroke="rgba(0,0,0,0.3)" stroke-width="2"/><line x1="${CX + m.chestHalf - 8}" y1="${py}" x2="${CX + m.chestHalf - 30}" y2="${py + 6}" stroke="rgba(0,0,0,0.3)" stroke-width="2"/>`);
-    if (p.pockets === "flap") parts.push(`<rect x="${CX - m.chestHalf + 6}" y="${py}" width="26" height="14" rx="2" fill="rgba(0,0,0,0.16)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/><rect x="${CX + m.chestHalf - 32}" y="${py}" width="26" height="14" rx="2" fill="rgba(0,0,0,0.16)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>`);
-    if (p.pockets === "cargo") parts.push(`<rect x="${CX - m.chestHalf + 4}" y="${py - 4}" width="30" height="26" rx="2" fill="rgba(0,0,0,0.14)" stroke="rgba(0,0,0,0.32)" stroke-width="1.5"/><rect x="${CX + m.chestHalf - 34}" y="${py - 4}" width="30" height="26" rx="2" fill="rgba(0,0,0,0.14)" stroke="rgba(0,0,0,0.32)" stroke-width="1.5"/>`);
-    // Cuffs
-    if (p.cuffs === "ribbed") parts.push(cuffRib(m, -1) + cuffRib(m, 1));
-    else if (p.cuffs === "button") parts.push(`<circle cx="${CX - (m.sTop + m.wristIn) / 2}" cy="${m.wristY - 6}" r="1.8" fill="rgba(0,0,0,0.4)"/><circle cx="${CX + (m.sTop + m.wristIn) / 2}" cy="${m.wristY - 6}" r="1.8" fill="rgba(0,0,0,0.4)"/>`);
-    // Hem
-    if (p.hem === "ribbed") parts.push(`<rect x="${CX - m.chestHalf}" y="${m.hemY - 10}" width="${m.chestHalf * 2}" height="10" fill="rgba(0,0,0,0.12)"/>`);
-    else if (p.hem === "drawcord") parts.push(`<line x1="${CX - m.chestHalf}" y1="${m.hemY - 5}" x2="${CX + m.chestHalf}" y2="${m.hemY - 5}" stroke="rgba(0,0,0,0.26)" stroke-width="1.5" stroke-dasharray="5 3"/><circle cx="${CX - 6}" cy="${m.hemY - 5}" r="2" fill="rgba(0,0,0,0.34)"/><circle cx="${CX + 6}" cy="${m.hemY - 5}" r="2" fill="rgba(0,0,0,0.34)"/>`);
-    return parts.join("");
+
+    // Collar overlays.
+    const cy0 = g.neckY;
+    if (g.collar === "stand") s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0 + 2)} L ${L(g.neckHalf + 3)} ${Y(cy0 - 11)} L ${R(g.neckHalf + 3)} ${Y(cy0 - 11)} L ${R(g.neckHalf)} ${Y(cy0 + 2)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+    if (g.collar === "shirt") {
+      s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0 + 1)} L ${L(g.neckHalf + 11)} ${Y(cy0 + 20)} L ${L(2)} ${Y(cy0 + 8)} Z" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+      s.push(`<path d="M ${R(g.neckHalf)} ${Y(cy0 + 1)} L ${R(g.neckHalf + 11)} ${Y(cy0 + 20)} L ${R(2)} ${Y(cy0 + 8)} Z" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+    }
+    if (g.collar === "notched") {
+      s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0 + 1)} L ${L(6)} ${Y(cy0 + 22)} L ${L(g.neckHalf + 13)} ${Y(cy0 + 30)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+      s.push(`<path d="M ${R(g.neckHalf)} ${Y(cy0 + 1)} L ${R(6)} ${Y(cy0 + 22)} L ${R(g.neckHalf + 13)} ${Y(cy0 + 30)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+    }
+    if (g.collar === "hood") {
+      s.push(`<path d="M ${L(g.neckHalf + 2)} ${Y(cy0 + 3)} C ${L(g.shoulderHalf - 4)} ${Y(cy0 - 30)} ${R(g.shoulderHalf - 4)} ${Y(cy0 - 30)} ${R(g.neckHalf + 2)} ${Y(cy0 + 3)}" fill="rgba(255,255,255,0.04)" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>`);
+      // drawcord
+      line(`M ${L(6)} ${Y(cy0 + 18)} L ${L(5)} ${Y(cy0 + 40)} M ${R(6)} ${Y(cy0 + 18)} L ${R(5)} ${Y(cy0 + 40)}`, 1.8);
+    }
+    if (g.collar === "crew") line(`M ${L(g.neckHalf - 2)} ${Y(g.neckY + 1)} Q ${CX} ${Y(g.neckY + 19)} ${R(g.neckHalf - 2)} ${Y(g.neckY + 1)}`, 1.6, 0.7);
+
+    // Centre-front closure.
+    const top = g.neckY + (g.collar === "crew" || g.collar === "vneck" ? 26 : 12);
+    if (p.closure === "zip" || (cfg.closure === "zip" && p.closure == null)) {
+      s.push(`<path d="M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="2.4" stroke-dasharray="3 2.4"/>`);
+    } else if (p.closure === "button" || (cfg.closure === "button" && p.closure == null)) {
+      const n = 6; for (let i = 0; i < n; i++) { const y = top + 8 + (i * (g.hemY - top - 16)) / (n - 1); s.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`); }
+      line(`M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}`, 1.4, 0.5);
+    } else if (p.closure === "none" && cfg.closure !== "none") {
+      line(`M ${CX} ${Y(top)} L ${L(8)} ${Y(g.hemY)} M ${CX} ${Y(top)} L ${R(8)} ${Y(g.hemY)}`, 1.6, 0.7);
+    }
+
+    // Pockets.
+    const py = g.hemY - 50;
+    if (p.pockets === "kangaroo" || g.collar === "hood") line(`M ${L(g.chestHalf - 6)} ${Y(py + 6)} L ${L(g.chestHalf - 6)} ${Y(py + 30)} L ${R(g.chestHalf - 6)} ${Y(py + 30)} L ${R(g.chestHalf - 6)} ${Y(py + 6)}`, 1.8, 0.8);
+    if (p.pockets === "flap") { s.push(`<rect x="${L(g.chestHalf - 4)}" y="${Y(py)}" width="26" height="13" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`); s.push(`<rect x="${R(g.chestHalf - 4) - 26}" y="${Y(py)}" width="26" height="13" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`); }
+    if (p.pockets === "cargo") { s.push(`<rect x="${L(g.chestHalf - 2)}" y="${Y(py - 4)}" width="28" height="24" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`); s.push(`<rect x="${R(g.chestHalf - 2) - 28}" y="${Y(py - 4)}" width="28" height="24" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`); }
+    if (p.pockets === "side") line(`M ${L(g.waistHalf - 4)} ${Y(py + 4)} l 18 5 M ${R(g.waistHalf - 4)} ${Y(py + 4)} l -18 5`, 1.8);
+
+    // Cuffs.
+    if (p.cuffs === "ribbed" || (g.collar === "hood")) { line(`M ${L(g.coX)} ${Y(g.wristY - 11)} L ${L(g.ciX)} ${Y(g.wristY - 11)} M ${R(g.coX)} ${Y(g.wristY - 11)} L ${R(g.ciX)} ${Y(g.wristY - 11)}`, 1.6, 0.8); }
+    else if (p.cuffs === "button") { s.push(`<circle cx="${L((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/><circle cx="${R((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`); }
+
+    // Hem treatment.
+    if (p.hem === "ribbed" || g.collar === "hood") line(`M ${L(g.hemHalf)} ${Y(g.hemY - 9)} L ${R(g.hemHalf)} ${Y(g.hemY - 9)}`, 1.6, 0.7);
+    else if (p.hem === "drawcord") line(`M ${L(g.hemHalf)} ${Y(g.hemY - 6)} L ${R(g.hemHalf)} ${Y(g.hemY - 6)}`, 1.6, 0.6);
+    else line(`M ${L(g.hemHalf)} ${Y(g.hemY - 5)} L ${R(g.hemHalf)} ${Y(g.hemY - 5)}`, 1.2, 0.4);
+
+    return s.join("");
   }
 
-  function cuffRib(m, side) {
-    const a = side < 0 ? CX - m.sTop : CX + (m.wristIn);
-    const b = side < 0 ? CX - m.wristIn : CX + m.sTop;
-    const x = Math.min(a, b);
-    return `<rect x="${r(x)}" y="${m.wristY - 12}" width="${r(Math.abs(b - a))}" height="12" fill="rgba(0,0,0,0.14)"/>`;
+  function topFlat(category, p) {
+    const cfg = CFG[category] || CFG.jacket;
+    const g = geometry(p, cfg);
+    const path = outline(g);
+    return renderFlat(p, [path], seams(g, p, cfg));
   }
 
-  function jacketSvg(p) {
+  // ---- pants (different topology: waistband + two legs, no torso) ----------
+  function pantsFlat(p) {
+    const fit = clamp(num(p.fit, 0.5), 0, 1);
+    const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
+    const topY = 70, hemY = { cropped: 250, regular: 300, long: 318 }[p.length] || 300;
+    const hipHalf = 46 + vol * 6;
+    const legTop = hipHalf;
+    const thighHalf = 21 + (fit < 0.4 ? -3 : 0) + (fit > 0.66 ? 9 : 0) + vol * 5;
+    const ankleHalf = clamp(lerp(9, thighHalf, fit > 0.66 ? 0.9 : 0.45), 7, thighHalf);
+    const crotchY = topY + 96;
+    const path =
+      `M ${L(legTop)} ${Y(topY)} L ${R(legTop)} ${Y(topY)} ` +
+      `L ${R(ankleHalf + thighHalf * 0.0)} ${Y(hemY)} L ${R(thighHalf * 0.05)} ${Y(hemY)} ` +
+      `L ${R(2)} ${Y(crotchY)} L ${L(2)} ${Y(crotchY)} ` +
+      `L ${L(thighHalf * 0.05)} ${Y(hemY)} L ${L(ankleHalf + thighHalf * 0.0)} ${Y(hemY)} Z`;
+    const seam = [];
+    seam.push(`<path d="M ${L(legTop)} ${Y(topY)} L ${R(legTop)} ${Y(topY)} L ${R(legTop - 1)} ${Y(topY + 16)} L ${L(legTop - 1)} ${Y(topY + 16)} Z" fill="rgba(255,255,255,0.05)" stroke="${SEAM}" stroke-width="1.8"/>`);
+    seam.push(`<path d="M ${CX} ${Y(topY + 16)} L ${CX} ${Y(crotchY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+    seam.push(`<path d="M ${L(thighHalf * 0.5)} ${Y(topY + 22)} L ${L(ankleHalf * 0.7)} ${Y(hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="1.1" opacity="0.45"/>`);
+    seam.push(`<path d="M ${R(thighHalf * 0.5)} ${Y(topY + 22)} L ${R(ankleHalf * 0.7)} ${Y(hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="1.1" opacity="0.45"/>`);
+    if (p.pockets && p.pockets !== "none") { seam.push(`<path d="M ${L(legTop - 4)} ${Y(topY + 20)} l -10 12 M ${R(legTop - 4)} ${Y(topY + 20)} l 10 12" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`); }
+    return renderFlat(p, [path], seam.join(""));
+  }
+
+  // ---- dress (bodice → skirt) ---------------------------------------------
+  function dressFlat(p) {
+    const cfg = { sleeveLen: 58, hem: { cropped: 250, regular: 300, long: 322 }, defCollar: "vneck", closure: "none", splay: 14, cuffW: 22, armDepth: 50, neckHalf: 18 };
+    const w = topWidths(p, cfg);
+    const neckY = 60, shoulderY = 66;
+    const armpitY = shoulderY + cfg.armDepth;
+    const waistY = armpitY + 34;
+    const hemY = cfg.hem[p.length] != null ? cfg.hem[p.length] : 300;
+    const aLine = w.fit < 0.5; // slim → straight, else A-line skirt
+    const skirtHalf = aLine ? w.chestHalf * 1.55 : w.chestHalf * 1.02;
+    const coX = w.shoulderHalf + cfg.splay, ciX = Math.max(w.chestHalf + 1, coX - cfg.cuffW);
+    const wristY = shoulderY + cfg.sleeveLen;
+    const collar = p.collar || cfg.defCollar;
+    const neckHalf = neckHalfFor(collar, cfg);
+    const g = { neckHalf, neckY, shoulderHalf: w.shoulderHalf, shoulderY, coX, ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf: w.chestHalf * 0.84, waistY, hemHalf: skirtHalf, hemY, collar };
+    const path =
+      `M ${L(neckHalf)} ${Y(neckY)} ` +
+      `L ${L(w.shoulderHalf)} ${Y(shoulderY)} L ${L(coX)} ${Y(wristY)} L ${L(ciX)} ${Y(wristY)} L ${L(w.chestHalf)} ${Y(armpitY)} ` +
+      `L ${L(g.waistHalf)} ${Y(waistY)} L ${L(skirtHalf)} ${Y(hemY)} L ${R(skirtHalf)} ${Y(hemY)} L ${R(g.waistHalf)} ${Y(waistY)} ` +
+      `L ${R(w.chestHalf)} ${Y(armpitY)} L ${R(ciX)} ${Y(wristY)} L ${R(coX)} ${Y(wristY)} L ${R(w.shoulderHalf)} ${Y(shoulderY)} L ${R(neckHalf)} ${Y(neckY)} ` +
+      neckline(g) + " Z";
+    const seam = [];
+    seam.push(`<path d="M ${L(w.shoulderHalf)} ${Y(shoulderY)} L ${L(w.chestHalf)} ${Y(armpitY)} M ${R(w.shoulderHalf)} ${Y(shoulderY)} L ${R(w.chestHalf)} ${Y(armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
+    seam.push(`<path d="M ${L(g.waistHalf)} ${Y(waistY)} L ${R(g.waistHalf)} ${Y(waistY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+    return renderFlat(p, [path], seam.join(""));
+  }
+
+  // ---- assemble the SVG ----------------------------------------------------
+  function renderFlat(p, paths, seamMarkup) {
     const id = "g" + (++uid);
-    const f = fillDefs(id, p);
-    const j = jacket(p);
-    const fillRef = f.fill;
-    const shapes =
-      `<path d="${j.arms}" fill="${fillRef}"/>` +
-      `<path d="${j.body}" fill="${fillRef}"/>` +
-      (f.hasPattern ? `<path d="${j.body}" fill="url(#${id}p)"/><path d="${j.arms}" fill="url(#${id}p)"/>` : "") +
-      `<path d="${j.body}" fill="url(#${id}s)"/>` +
-      details(p, j.meta, fillRef);
-    return `<svg class="de-garment" viewBox="0 0 ${VB} 340" aria-hidden="true"><defs>${f.defs}</defs>${shapes}</svg>`;
+    const f = fillSpec(id, p);
+    const body = paths.map((d) =>
+      `<path d="${d}" fill="${f.fill}" fill-opacity="${f.opacity}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
+      (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none"/>` : "")
+    ).join("");
+    return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}</defs>${body}${seamMarkup}</svg>`;
   }
 
   function build(category, params) {
     const p = params || {};
-    // Jacket is fully parametric; other categories reuse the studio fallback.
-    if ((category || "").toLowerCase() === "jacket") return jacketSvg(p);
-    if (window.PreviewFallback && typeof window.PreviewFallback.svg === "function") {
-      return window.PreviewFallback.svg({ type: category, color: (p.stops && p.stops[0]) || "#8b8f96", material: p.material, pattern: p.scheme === "duo-gradient" ? "gradient" : (p.pattern && p.pattern !== "none" ? p.pattern : "solid") });
-    }
-    return jacketSvg(p);
+    const cat = (category || "jacket").toLowerCase();
+    if (cat === "pants") return pantsFlat(p);
+    if (cat === "dress") return dressFlat(p);
+    if (CFG[cat]) return topFlat(cat, p);
+    return topFlat("tshirt", p); // sensible generic top
   }
 
-  return { build, jacketSvg };
+  return { build, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

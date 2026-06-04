@@ -129,6 +129,9 @@ const DesignFlow = (() => {
     let content = null;
     let currentNode = null;
     let generated = false;
+    // True only on the Phase-F refine screen → the preview crossfades from the
+    // morphing flat to the recoloured hero photo (realism layer, brief §1).
+    let atRefine = false;
     const T = (event, props) => { if (window.DesignTelemetry) window.DesignTelemetry.track(event, props); };
 
     hostEl.classList.add("de-stage");
@@ -173,7 +176,7 @@ const DesignFlow = (() => {
       DesignEngine.finalize(previewDna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
       if (window.DesignPreview) {
         if (animate) { previewEl.classList.remove("is-fade"); void previewEl.offsetWidth; previewEl.classList.add("is-fade"); }
-        window.DesignPreview.renderInto(previewEl, previewDna);
+        window.DesignPreview.renderInto(previewEl, previewDna, { realism: atRefine });
       }
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
       // sichtbares Feedback (Subarch/Fit/Länge/Material/Muster), nicht ins Foto.
@@ -250,6 +253,7 @@ const DesignFlow = (() => {
     };
 
     function renderModality(node) {
+      atRefine = false; // back to the morphing flat for any question
       currentNode = node;
       T("node_shown", { id: node.id, phase: node.phase, modality: node.modality, lang: lang() });
       const renderer = window.DEModalities && window.DEModalities[node.modality];
@@ -274,6 +278,7 @@ const DesignFlow = (() => {
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
+      atRefine = true; // Phase F → crossfade the flat to the realism photo
       refreshChrome();
       finishBtn.hidden = true;
       const l = lang();
