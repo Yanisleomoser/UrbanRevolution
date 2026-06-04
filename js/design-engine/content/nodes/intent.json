@@ -58,6 +58,38 @@
       ]
     },
     {
+      "id": "mood_rank",
+      "phase": "A",
+      "modality": "ranking",
+      "bind": "intent.aesthetic",
+      "when": "_confidence.intent.aesthetic < 0.6",
+      "priority": 0.88,
+      "question": { "de": "Ordne nach Gefühl — was bist am ehesten du?", "en": "Rank by feel — most you first" },
+      "options": [
+        { "id": "minimal", "label": { "de": "Still & reduziert", "en": "Quiet & reduced" }, "effects": { "weight": { "quietMinimal": 0.4, "softCouture": 0.1 } } },
+        { "id": "tech", "label": { "de": "Technisch & futuristisch", "en": "Technical & future" }, "effects": { "weight": { "techAvant": 0.4, "sport": 0.1 } } },
+        { "id": "street", "label": { "de": "Laut & Street", "en": "Loud & street" }, "effects": { "weight": { "y2kStreet": 0.4 } } },
+        { "id": "couture", "label": { "de": "Weich & Couture", "en": "Soft & couture" }, "effects": { "weight": { "softCouture": 0.4, "quietMinimal": 0.1 } } }
+      ]
+    },
+    {
+      "id": "inspo_multi",
+      "phase": "A",
+      "modality": "cards",
+      "multi": true,
+      "bind": "intent.inspo",
+      "when": "_confidence.intent.inspo < 0.6",
+      "priority": 0.74,
+      "question": { "de": "Was inspiriert dich? (mehrere)", "en": "What inspires you? (multiple)" },
+      "choices": [
+        { "id": "concrete", "label": { "de": "Beton", "en": "Concrete" }, "effects": { "weight": { "quietMinimal": 0.2, "utility": 0.15 } } },
+        { "id": "nature", "label": { "de": "Natur", "en": "Nature" }, "effects": { "weight": { "softCouture": 0.2 } } },
+        { "id": "neon", "label": { "de": "Neon", "en": "Neon" }, "effects": { "weight": { "y2kStreet": 0.25 } } },
+        { "id": "atelier", "label": { "de": "Atelier", "en": "Atelier" }, "effects": { "weight": { "softCouture": 0.15, "quietMinimal": 0.15 } } },
+        { "id": "sportcore", "label": { "de": "Sport", "en": "Sport" }, "effects": { "weight": { "sport": 0.25 } } }
+      ]
+    },
+    {
       "id": "intent_occasion",
       "phase": "A",
       "modality": "cards",
