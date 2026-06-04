@@ -1,17 +1,16 @@
 /**
  * Urban Revolution — Design Engine · Live preview (brief §7 + §3.1)
  *
- * Primary layer: a PARAMETRIC garment silhouette (GarmentSVG) that morphs from
- * the DNA — fit, volume, structure, length, collar, sleeve, closure, pockets,
- * cuffs, hem, pattern, colour, material — so the piece visibly takes shape with
- * every decision. Realism layer behind it: the curated hero photo, dimmed and
- * tinted. The hero photo keeps its NATIVE colour until the user actively picks a
- * colour scheme (then a duotone follows the chosen stops). The photoreal AI
- * render stays on "Generieren". Falls back to the studio SVG if GarmentSVG is
- * missing.
+ * Primary layer during the journey: a clean technical fashion FLAT (GarmentSVG)
+ * that morphs from the DNA — it stands ALONE on the dark stage (brief §1: never
+ * laid over a blurred photo). The recoloured hero photo / AI render is the
+ * REALISM layer that only crossfades in at convergence (Phase F) or on
+ * "Generieren" — pass { realism: true }. The hero photo keeps its native colour
+ * until the user actively picks a colour scheme (then a duotone follows the
+ * chosen stops). Falls back to the studio SVG if GarmentSVG is missing.
  *
  *   DesignPreview.params(dna) · DesignPreview.heroCandidates(dna)
- *   DesignPreview.renderInto(el, dna)
+ *   DesignPreview.renderInto(el, dna, opts?)   // opts.realism → show photo
  */
 const DesignPreview = (() => {
   const PREVIEW_DIR = "js/design-engine/content/img/preview/";
@@ -69,8 +68,9 @@ const DesignPreview = (() => {
     return "";
   }
 
-  function renderInto(el, dna) {
+  function renderInto(el, dna, opts) {
     if (!el) return;
+    const realism = !!(opts && opts.realism);
     const p = params(dna);
     const badge = window.I18N ? window.I18N.t("dpreview.fallback_badge") : "STILVORSCHAU";
     const schemeChosen = DesignDNA.confidence(dna, "color.scheme") > SCHEME_THRESHOLD;
@@ -83,22 +83,29 @@ const DesignPreview = (() => {
     const duo = el.querySelector(".de-preview-duo");
     if (duo) duo.style.background = schemeChosen ? duoBackground(dna) : "transparent";
 
-    // Realism layer: dim, tinted hero photo behind the morphing silhouette.
+    // Realism layer (brief §1): the curated hero photo only appears at
+    // convergence / on generate — it crossfades OVER the flat, never sits
+    // dimmed behind it during the journey. No photo is even loaded mid-journey.
+    if (!realism) return;
     const cands = heroCandidates(dna);
-    if (cands.length) {
-      const photoWrap = el.querySelector(".de-preview-photo");
-      const img = el.querySelector(".de-preview-photo img");
-      let i = 0;
-      const tryNext = () => {
-        if (i >= cands.length || !photoWrap || !img) return;
-        const src = cands[i++];
-        const probe = new Image();
-        probe.onload = () => { img.src = src; photoWrap.hidden = false; };
-        probe.onerror = tryNext;
-        probe.src = src;
+    if (!cands.length) return;
+    const photoWrap = el.querySelector(".de-preview-photo");
+    const img = el.querySelector(".de-preview-photo img");
+    let i = 0;
+    const tryNext = () => {
+      if (i >= cands.length || !photoWrap || !img) return;
+      const src = cands[i++];
+      const probe = new Image();
+      probe.onload = () => {
+        img.src = src;
+        photoWrap.hidden = false;
+        // next frame → transition kicks in; flat fades under the photo
+        requestAnimationFrame(() => { photoWrap.classList.add("is-shown"); el.classList.add("is-realism"); });
       };
-      tryNext();
-    }
+      probe.onerror = tryNext;
+      probe.src = src;
+    };
+    tryNext();
   }
 
   // Kept for compatibility (descriptor was used by older callers/tests).
