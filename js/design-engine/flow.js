@@ -131,20 +131,22 @@ const DesignFlow = (() => {
 
     hostEl.classList.add("de-stage");
     hostEl.innerHTML = `
-      <div class="de-head">
-        <div class="de-preview" id="de-preview" aria-hidden="true"></div>
-        <div class="de-head-meta">
+      <div class="de-stage-grid">
+        <div class="de-preview-col">
+          <div class="de-preview" id="de-preview" aria-hidden="true"></div>
           <div class="de-ring-wrap" id="de-ring"></div>
-          <p class="de-live" id="de-live"></p>
+          <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
         </div>
-        <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
-      </div>
-      <div class="de-body" id="de-body"></div>
-      <div class="de-controls">
-        <button type="button" class="de-nav" id="de-back" disabled>${t("engine.back")}</button>
-        <button type="button" class="de-nav" id="de-skip">${t("engine.skip")}</button>
-        <button type="button" class="de-nav" id="de-restart">${t("engine.restart")}</button>
-        <button type="button" class="de-nav de-finish" id="de-finish" hidden>${t("engine.finish_early")}</button>
+        <div class="de-ask-col">
+          <div class="de-body" id="de-body"></div>
+          <p class="de-live" id="de-live"></p>
+          <div class="de-controls">
+            <button type="button" class="de-nav" id="de-back" disabled>${t("engine.back")}</button>
+            <button type="button" class="de-nav" id="de-skip">${t("engine.skip")}</button>
+            <button type="button" class="de-nav" id="de-restart">${t("engine.restart")}</button>
+            <button type="button" class="de-nav de-finish" id="de-finish" hidden>${t("engine.finish_early")}</button>
+          </div>
+        </div>
       </div>`;
 
     const body = hostEl.querySelector("#de-body");
@@ -159,13 +161,16 @@ const DesignFlow = (() => {
 
     const maturity = () => DesignDNA.maturity(dna, content.attributes.required, content.attributes.confidenceThreshold);
 
-    function updatePreview() {
-      if (window.DesignPreview) window.DesignPreview.renderInto(previewEl, dna);
+    function updatePreview(animate) {
+      if (window.DesignPreview) {
+        if (animate) { previewEl.classList.remove("is-fade"); void previewEl.offsetWidth; previewEl.classList.add("is-fade"); }
+        window.DesignPreview.renderInto(previewEl, dna);
+      }
       live.textContent = DesignSummary.toSentence(dna, lang());
     }
     function refreshChrome() {
       ringWrap.innerHTML = ring(maturity());
-      updatePreview();
+      updatePreview(true);
       backBtn.disabled = history.length === 0;
       finishBtn.hidden = maturity() < 0.6;
     }
