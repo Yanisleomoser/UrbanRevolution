@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!-- Urban Revolution — Design-Engine Insights (admin). Hinter ?key=<TELEMETRY_KEY>.
+     Liest Aggregate von /api/track (Upstash). Keine PII. On-brand über styles.css. -->
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Design Engine — Insights</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body { background: var(--bg); color: var(--text); font-family: 'Poppins', system-ui, sans-serif; padding: var(--space-8) var(--space-5); }
+    .ins { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8); }
+    .ins h1 { font-family: 'Lora', Georgia, serif; font-size: var(--text-2xl); margin: 0; }
+    .ins h2 { font-size: var(--text-sm); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-muted); margin: 0 0 var(--space-4); }
+    .ins-note { color: var(--text-dim); font-size: var(--text-sm); margin: 0; }
+    .ins-row { display: grid; grid-template-columns: 220px 1fr 64px; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); font-size: var(--text-sm); }
+    .ins-label { color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ins-bar { height: 14px; border-radius: 999px; background: var(--surface); overflow: hidden; }
+    .ins-bar > span { display: block; height: 100%; background: var(--gradient); }
+    .ins-val { text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+    .ins-skip > span { background: linear-gradient(90deg, var(--text-muted), var(--accent)); }
+    .ins-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-6); }
+    .ins-msg { color: var(--text-dim); }
+    code { background: var(--surface); padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <main class="ins">
+    <div>
+      <h1>Design Engine — Insights</h1>
+      <p class="ins-note">Aggregierte Node-Signale (keine personenbezogenen Daten). Die Fragelogik lernt nicht von selbst — diese Daten dienen der manuellen Pflege.</p>
+    </div>
+    <div id="out" class="ins-card"><p class="ins-msg">Lade …</p></div>
+  </main>
+
+  <script>
+    (function () {
+      const out = document.getElementById("out");
+      const key = new URLSearchParams(location.search).get("key") || "";
+      const bar = (label, value, max, cls) => {
+        const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+        return `<div class="ins-row"><span class="ins-label">${label}</span>`
+          + `<span class="ins-bar ${cls || ""}"><span style="width:${pct}%"></span></span>`
+          + `<span class="ins-val">${value}</span></div>`;
+      };
+      const esc = (s) => String(s).replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
+
+      if (!key) {
+        out.innerHTML = '<p class="ins-msg">Zugang nur mit <code>?key=…</code> (Wert von <code>TELEMETRY_KEY</code>).</p>';
+        return;
+      }
+      fetch("/api/track?key=" + encodeURIComponent(key))
+        .then((r) => r.status === 403 ? Promise.reject(new Error("forbidden")) : r.json())
+        .then((data) => {
+          if (data.configured === false) {
+            out.innerHTML = '<p class="ins-msg">KV-Store nicht eingerichtet — Upstash-Integration in Vercel hinzufügen (UPSTASH_REDIS_REST_URL/_TOKEN).</p>';
+            return;
+          }
+          const ev = data.events || {};
+          const nodes = data.nodes || {};
+          // Funnel
+          const funnelKeys = [["node_shown", "Fragen gezeigt"], ["journey_refine", "Verfeinern erreicht"], ["generate", "Generieren geklickt"], ["generate_ok", "Design erzeugt"], ["abandon", "Abbrüche"]];
+          const fmax = Math.max(1, ...funnelKeys.map(([k]) => ev[k] || 0));
+          const funnel = funnelKeys.map(([k, label]) => bar(label, ev[k] || 0, fmax)).join("");
+          // Per node: group id → {shown,choice,skip}
+          const byId = {};
+          Object.entries(nodes).forEach(([k, v]) => {
+            const idx = k.lastIndexOf(":");
+            const id = k.slice(0, idx), suffix = k.slice(idx + 1);
+            (byId[id] = byId[id] || {})[suffix] = v;
+          });
+          const ids = Object.keys(byId).sort((a, b) => (byId[b].shown || 0) - (byId[a].shown || 0));
+          const smax = Math.max(1, ...ids.map((id) => byId[id].shown || 0));
+          const rows = ids.map((id) => {
+            const n = byId[id];
+            const shown = n.shown || 0, skip = n.skip || 0;
+            const skipRate = shown ? Math.round((skip / shown) * 100) : 0;
+            return `<div style="margin-bottom:var(--space-5)"><div class="ins-label" style="color:var(--text);margin-bottom:var(--space-2)">${esc(id)}</div>`
+              + bar("Impressionen", shown, smax)
+              + bar("Wahl", n.choice || 0, smax)
+              + bar("Skip (" + skipRate + "%)", skip, smax, "ins-skip")
+              + "</div>";
+          }).join("") || '<p class="ins-msg">Noch keine Node-Daten.</p>';
+
+          out.innerHTML = `<h2>Trichter</h2>${funnel}`
+            + `<h2 style="margin-top:var(--space-7)">Pro Frage</h2>${rows}`;
+        })
+        .catch(() => { out.innerHTML = '<p class="ins-msg">Zugang verweigert oder Fehler. Stimmt der <code>?key=</code>?</p>'; });
+    })();
+  </script>
+</body>
+</html>
