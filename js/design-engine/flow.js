@@ -134,6 +134,7 @@ const DesignFlow = (() => {
       <div class="de-stage-grid">
         <div class="de-preview-col">
           <div class="de-preview" id="de-preview" aria-hidden="true"></div>
+          <div class="de-preview-chips" id="de-preview-chips"></div>
           <div class="de-ring-wrap" id="de-ring"></div>
           <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
         </div>
@@ -161,10 +162,20 @@ const DesignFlow = (() => {
 
     const maturity = () => DesignDNA.maturity(dna, content.attributes.required, content.attributes.confidenceThreshold);
 
+    const chipsEl = hostEl.querySelector("#de-preview-chips");
     function updatePreview(animate) {
       if (window.DesignPreview) {
         if (animate) { previewEl.classList.remove("is-fade"); void previewEl.offsetWidth; previewEl.classList.add("is-fade"); }
         window.DesignPreview.renderInto(previewEl, dna);
+      }
+      // Material + Muster als Chips unter der Vorschau (brief §3.1 — nicht ins Foto).
+      if (chipsEl) {
+        const mat = DesignDNA.get(dna, "fabric.material");
+        const pat = DesignDNA.get(dna, "pattern.type");
+        const chips = [];
+        if (mat) chips.push(window.I18N ? window.I18N.material(mat) : mat);
+        if (pat && pat !== "none") chips.push(window.I18N ? window.I18N.pattern(pat) : pat);
+        chipsEl.innerHTML = chips.map((c) => `<span class="de-preview-chip">${c}</span>`).join("");
       }
       live.textContent = DesignSummary.toSentence(dna, lang());
     }

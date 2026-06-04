@@ -5327,3 +5327,15 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-freetext-input::placeholder { color: var(--text-muted); }
 
 @media (prefers-reduced-motion: reduce) { .de-freetext-input { transition: none; } }
+
+/* §3.1 — Hero-Foto + Live-Recolor (Duotone) in der Vorschau + Material/Muster-Chips */
+.de-preview-proxy, .de-preview-photo { position: absolute; inset: 0; }
+.de-preview-proxy { display: flex; align-items: center; justify-content: center; }
+.de-preview-proxy svg { width: 100%; height: 100%; object-fit: contain; }
+.de-preview-photo { isolation: isolate; }
+.de-preview-photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1) contrast(1.08) brightness(0.96); }
+.de-preview-duo { position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.9; transition: background .24s var(--ease-out); }
+.de-preview-badge { position: absolute; top: var(--space-4); left: var(--space-4); z-index: 2; font-size: var(--text-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); background: rgba(10,10,11,0.55); backdrop-filter: blur(8px); padding: 4px var(--space-3); border-radius: 999px; }
+.de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
+.de-preview-chip { font-size: var(--text-xs); color: var(--text-dim); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 3px var(--space-3); }
+@media (prefers-reduced-motion: reduce) { .de-preview-duo { transition: none; } }
