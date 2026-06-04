@@ -166,17 +166,30 @@ const DesignFlow = (() => {
 
     const chipsEl = hostEl.querySelector("#de-preview-chips");
     function updatePreview(animate) {
+      // Render the COMPLETED design (chosen + inferred-from-archetype) so the
+      // preview takes shape early and evolves with every mood/colour choice —
+      // not a static placeholder until the last question.
+      const previewDna = JSON.parse(JSON.stringify(dna));
+      DesignEngine.finalize(previewDna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
       if (window.DesignPreview) {
         if (animate) { previewEl.classList.remove("is-fade"); void previewEl.offsetWidth; previewEl.classList.add("is-fade"); }
-        window.DesignPreview.renderInto(previewEl, dna);
+        window.DesignPreview.renderInto(previewEl, previewDna);
       }
-      // Material + Muster als Chips unter der Vorschau (brief §3.1 — nicht ins Foto).
+      // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
+      // sichtbares Feedback (Subarch/Fit/Länge/Material/Muster), nicht ins Foto.
       if (chipsEl) {
-        const mat = DesignDNA.get(dna, "fabric.material");
-        const pat = DesignDNA.get(dna, "pattern.type");
+        const l = lang();
+        const g = (p) => DesignDNA.get(previewDna, p);
+        const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : "");
         const chips = [];
-        if (mat) chips.push(window.I18N ? window.I18N.material(mat) : mat);
-        if (pat && pat !== "none") chips.push(window.I18N ? window.I18N.pattern(pat) : pat);
+        if (DesignDNA.get(dna, "category")) {
+          const sub = g("subArchetype"); if (sub) chips.push(cap(sub));
+          const fit = g("silhouette.fit");
+          if (typeof fit === "number") chips.push(fit < 0.34 ? (l === "en" ? "Slim" : "Schmal") : fit > 0.66 ? "Oversized" : (l === "en" ? "Regular" : "Regular"));
+          const len = g("length"); if (len) chips.push(window.I18N ? window.I18N.t("length." + len) : len);
+          const mat = g("fabric.material"); if (mat) chips.push(window.I18N ? window.I18N.material(mat) : mat);
+          const pat = g("pattern.type"); if (pat && pat !== "none") chips.push(window.I18N ? window.I18N.pattern(pat) : pat);
+        }
         chipsEl.innerHTML = chips.map((c) => `<span class="de-preview-chip">${c}</span>`).join("");
       }
       live.textContent = DesignSummary.toSentence(dna, lang());

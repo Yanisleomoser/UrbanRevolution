@@ -24,8 +24,12 @@ const DesignEngine = (() => {
   // Gentle "general → specific" bias so Phase A (mood) tends to come before B
   // (form) before … E (details), without hard-coding an order — gain can still
   // override it. The branching stays emergent; this only breaks near-ties.
-  const PHASE_BIAS = { A: 1.0, B: 0.72, C: 0.58, D: 0.48, E: 0.4, F: 0.34, G: 0.3 };
-  const phaseBias = (node) => PHASE_BIAS[node.phase] == null ? 0.45 : PHASE_BIAS[node.phase];
+  // Gentle "general → specific" bias. Soft enough that the high-priority
+  // category node (Phase B) surfaces right after the first couple of mood
+  // signals — so the user sees their garment (and its live preview) early
+  // instead of after a long intent intro.
+  const PHASE_BIAS = { A: 1.0, B: 0.9, C: 0.8, D: 0.7, E: 0.6, F: 0.5, G: 0.45 };
+  const phaseBias = (node) => PHASE_BIAS[node.phase] == null ? 0.6 : PHASE_BIAS[node.phase];
   // Below this normalised archetype entropy the style is "decided", so we stop
   // offering the remaining pure-soft mood signals (they'd otherwise resurface
   // late, between specific detail questions — brief §7 Bug 2).
@@ -94,24 +98,17 @@ const DesignEngine = (() => {
   function nextNode(nodes, dna, answered, minGain) {
     const floor = minGain == null ? MIN_GAIN : minGain;
     const entropy = archetypeEntropy(dna);
-    const elig = eligible(nodes, dna, answered).filter(
-      (n) => !(isPureSoftMood(n) && entropy < SOFT_RETRACT_ENTROPY)
-    );
-
-    const pick = (pool) => {
-      let best = null;
-      let bestScore = floor;
-      pool.forEach((n) => {
-        const score = (n.priority == null ? 0.5 : n.priority) * informationGain(dna, n) * phaseBias(n);
-        if (score > bestScore) { bestScore = score; best = n; }
-      });
-      return best;
-    };
-
-    // General → specific (brief §6): keep resolving Phase A (mood & intent)
-    // before any later phase. Only once no Phase-A node still scores above the
-    // floor do we open Phase B+.
-    return pick(elig.filter((n) => n.phase === "A")) || pick(elig.filter((n) => n.phase !== "A"));
+    let best = null;
+    let bestScore = floor;
+    eligible(nodes, dna, answered).forEach((n) => {
+      // Retract pure-soft mood signals once the style is decided OR the garment
+      // category is chosen (brief §7 Bug 2) — so an abstract "this or that" mood
+      // pair never resurfaces between specific detail questions.
+      if (isPureSoftMood(n) && (entropy < SOFT_RETRACT_ENTROPY || DesignDNA.get(dna, "category") != null)) return;
+      const score = (n.priority == null ? 0.5 : n.priority) * informationGain(dna, n) * phaseBias(n);
+      if (score > bestScore) { bestScore = score; best = n; }
+    });
+    return best;
   }
 
   function choiceEffects(node, choiceId) {

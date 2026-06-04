@@ -241,7 +241,7 @@
         <div class="container facts-inner">
             <div class="facts-top">
                 <p class="mono-label section-label" data-i18n="facts.eyebrow">[ 01 / Das Problem ]</p>
-                <p class="mono-label facts-live" id="facts-live" aria-hidden="true"></p>
+                <p class="mono-label facts-live section-live" id="facts-live" aria-hidden="true"></p>
             </div>
             <h2 id="facts-heading" class="facts-headline" data-reveal data-i18n-html="facts.headline_html">Die Mode produziert<br><em>für die Tonne</em>.</h2>
 
@@ -271,23 +271,8 @@
 
             <p class="facts-sources mono-label" data-i18n-html="facts.sources_html">[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons</p>
         </div>
-        <script>
-        (function () {
-            var el = document.getElementById("facts-live");
-            if (!el) return;
-            var t0 = Date.now();
-            function p(n) { return n < 10 ? "0" + n : "" + n; }
-            function tick() {
-                var d = new Date();
-                var s = Math.floor((Date.now() - t0) / 1000);
-                var en = document.documentElement.lang === "en";
-                var tail = en ? " trucks of clothing dumped since you arrived ]" : " Lkw Kleidung entsorgt, seit du hier bist ]";
-                el.textContent = "[ " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " · " + s + tail;
-            }
-            tick();
-            setInterval(tick, 1000);
-        })();
-        </script>
+        <!-- Der Live-Timer (#facts-live) wird zusammen mit allen Sektions-Tickern
+             zentral von js/ambient-ticker.js getrieben (einheitliche t0). -->
     </section>
 
 
@@ -919,5 +904,6 @@
     <script src="js/design-engine/flow.js"></script>
     <script src="js/app.js"></script>
     <script src="js/flair.js"></script>
+    <script src="js/ambient-ticker.js"></script>
 </body>
 </html>

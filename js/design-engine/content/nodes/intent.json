@@ -7,12 +7,45 @@
       "modality": "thisOrThat",
       "when": "true",
       "priority": 0.95,
-      "question": { "de": "Was zieht dich mehr an?", "en": "Which pulls you in?" },
+      "question": {
+        "de": "Was zieht dich mehr an?",
+        "en": "Which pulls you in?"
+      },
       "pair": [
-        { "id": "calm", "label": { "de": "Ruhig", "en": "Calm" }, "image": "js/design-engine/content/img/mood/calm-mono.jpg",
-          "effects": { "set": { "intent.energy": 0.25 }, "weight": { "quietMinimal": 0.4, "softCouture": 0.2 } } },
-        { "id": "bold", "label": { "de": "Laut", "en": "Bold" }, "image": "js/design-engine/content/img/mood/bold-neon.jpg",
-          "effects": { "set": { "intent.energy": 0.8 }, "weight": { "techAvant": 0.35, "y2kStreet": 0.3 } } }
+        {
+          "id": "calm",
+          "label": {
+            "de": "Ruhig",
+            "en": "Calm"
+          },
+          "image": "js/design-engine/content/img/mood/calm-mono.jpg",
+          "effects": {
+            "set": {
+              "intent.energy": 0.25
+            },
+            "weight": {
+              "quietMinimal": 0.4,
+              "softCouture": 0.2
+            }
+          }
+        },
+        {
+          "id": "bold",
+          "label": {
+            "de": "Laut",
+            "en": "Bold"
+          },
+          "image": "js/design-engine/content/img/mood/bold-neon.jpg",
+          "effects": {
+            "set": {
+              "intent.energy": 0.8
+            },
+            "weight": {
+              "techAvant": 0.35,
+              "y2kStreet": 0.3
+            }
+          }
+        }
       ]
     },
     {
@@ -21,12 +54,45 @@
       "modality": "thisOrThat",
       "when": "true",
       "priority": 0.9,
-      "question": { "de": "Weich oder kantig?", "en": "Soft or sharp?" },
+      "question": {
+        "de": "Weich oder kantig?",
+        "en": "Soft or sharp?"
+      },
       "pair": [
-        { "id": "soft", "label": { "de": "Weich", "en": "Soft" }, "image": "js/design-engine/content/img/mood/soft-drape.jpg",
-          "effects": { "set": { "silhouette.structure": 0.3 }, "weight": { "softCouture": 0.35, "quietMinimal": 0.15 } } },
-        { "id": "sharp", "label": { "de": "Kantig", "en": "Sharp" }, "image": "js/design-engine/content/img/mood/sharp-structure.jpg",
-          "effects": { "set": { "silhouette.structure": 0.75 }, "weight": { "techAvant": 0.3, "utility": 0.2 } } }
+        {
+          "id": "soft",
+          "label": {
+            "de": "Weich",
+            "en": "Soft"
+          },
+          "image": "js/design-engine/content/img/mood/soft-drape.jpg",
+          "effects": {
+            "set": {
+              "silhouette.structure": 0.3
+            },
+            "weight": {
+              "softCouture": 0.35,
+              "quietMinimal": 0.15
+            }
+          }
+        },
+        {
+          "id": "sharp",
+          "label": {
+            "de": "Kantig",
+            "en": "Sharp"
+          },
+          "image": "js/design-engine/content/img/mood/sharp-structure.jpg",
+          "effects": {
+            "set": {
+              "silhouette.structure": 0.75
+            },
+            "weight": {
+              "techAvant": 0.3,
+              "utility": 0.2
+            }
+          }
+        }
       ]
     },
     {
@@ -34,13 +100,43 @@
       "phase": "A",
       "modality": "thisOrThat",
       "when": "true",
-      "priority": 0.86,
-      "question": { "de": "Clean oder ausdrucksstark?", "en": "Clean or expressive?" },
+      "priority": 0.46,
+      "question": {
+        "de": "Clean oder ausdrucksstark?",
+        "en": "Clean or expressive?"
+      },
       "pair": [
-        { "id": "clean", "label": { "de": "Clean", "en": "Clean" }, "image": "js/design-engine/content/img/mood/clean.jpg",
-          "effects": { "set": { "pattern.type": "none" }, "weight": { "quietMinimal": 0.3, "techAvant": 0.15 } } },
-        { "id": "expressive", "label": { "de": "Ausdrucksstark", "en": "Expressive" }, "image": "js/design-engine/content/img/mood/expressive.jpg",
-          "effects": { "weight": { "y2kStreet": 0.35, "softCouture": 0.1 } } }
+        {
+          "id": "clean",
+          "label": {
+            "de": "Clean",
+            "en": "Clean"
+          },
+          "image": "js/design-engine/content/img/mood/clean.jpg",
+          "effects": {
+            "set": {
+              "pattern.type": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.3,
+              "techAvant": 0.15
+            }
+          }
+        },
+        {
+          "id": "expressive",
+          "label": {
+            "de": "Ausdrucksstark",
+            "en": "Expressive"
+          },
+          "image": "js/design-engine/content/img/mood/expressive.jpg",
+          "effects": {
+            "weight": {
+              "y2kStreet": 0.35,
+              "softCouture": 0.1
+            }
+          }
+        }
       ]
     },
     {
@@ -48,13 +144,40 @@
       "phase": "A",
       "modality": "thisOrThat",
       "when": "true",
-      "priority": 0.82,
-      "question": { "de": "Vintage oder Zukunft?", "en": "Vintage or future?" },
+      "priority": 0.44,
+      "question": {
+        "de": "Vintage oder Zukunft?",
+        "en": "Vintage or future?"
+      },
       "pair": [
-        { "id": "vintage", "label": { "de": "Vintage", "en": "Vintage" }, "image": "js/design-engine/content/img/mood/vintage.jpg",
-          "effects": { "weight": { "utility": 0.25, "softCouture": 0.15 } } },
-        { "id": "future", "label": { "de": "Zukunft", "en": "Future" }, "image": "js/design-engine/content/img/mood/future.jpg",
-          "effects": { "weight": { "techAvant": 0.35, "sport": 0.1 } } }
+        {
+          "id": "vintage",
+          "label": {
+            "de": "Vintage",
+            "en": "Vintage"
+          },
+          "image": "js/design-engine/content/img/mood/vintage.jpg",
+          "effects": {
+            "weight": {
+              "utility": 0.25,
+              "softCouture": 0.15
+            }
+          }
+        },
+        {
+          "id": "future",
+          "label": {
+            "de": "Zukunft",
+            "en": "Future"
+          },
+          "image": "js/design-engine/content/img/mood/future.jpg",
+          "effects": {
+            "weight": {
+              "techAvant": 0.35,
+              "sport": 0.1
+            }
+          }
+        }
       ]
     },
     {
@@ -63,13 +186,63 @@
       "modality": "ranking",
       "bind": "intent.aesthetic",
       "when": "_confidence.intent.aesthetic < 0.6",
-      "priority": 0.88,
-      "question": { "de": "Ordne nach Gefühl — was bist am ehesten du?", "en": "Rank by feel — most you first" },
+      "priority": 0.45,
+      "question": {
+        "de": "Ordne nach Gefühl — was bist am ehesten du?",
+        "en": "Rank by feel — most you first"
+      },
       "options": [
-        { "id": "minimal", "label": { "de": "Still & reduziert", "en": "Quiet & reduced" }, "effects": { "weight": { "quietMinimal": 0.4, "softCouture": 0.1 } } },
-        { "id": "tech", "label": { "de": "Technisch & futuristisch", "en": "Technical & future" }, "effects": { "weight": { "techAvant": 0.4, "sport": 0.1 } } },
-        { "id": "street", "label": { "de": "Laut & Street", "en": "Loud & street" }, "effects": { "weight": { "y2kStreet": 0.4 } } },
-        { "id": "couture", "label": { "de": "Weich & Couture", "en": "Soft & couture" }, "effects": { "weight": { "softCouture": 0.4, "quietMinimal": 0.1 } } }
+        {
+          "id": "minimal",
+          "label": {
+            "de": "Still & reduziert",
+            "en": "Quiet & reduced"
+          },
+          "effects": {
+            "weight": {
+              "quietMinimal": 0.4,
+              "softCouture": 0.1
+            }
+          }
+        },
+        {
+          "id": "tech",
+          "label": {
+            "de": "Technisch & futuristisch",
+            "en": "Technical & future"
+          },
+          "effects": {
+            "weight": {
+              "techAvant": 0.4,
+              "sport": 0.1
+            }
+          }
+        },
+        {
+          "id": "street",
+          "label": {
+            "de": "Laut & Street",
+            "en": "Loud & street"
+          },
+          "effects": {
+            "weight": {
+              "y2kStreet": 0.4
+            }
+          }
+        },
+        {
+          "id": "couture",
+          "label": {
+            "de": "Weich & Couture",
+            "en": "Soft & couture"
+          },
+          "effects": {
+            "weight": {
+              "softCouture": 0.4,
+              "quietMinimal": 0.1
+            }
+          }
+        }
       ]
     },
     {
@@ -79,14 +252,79 @@
       "multi": true,
       "bind": "intent.inspo",
       "when": "_confidence.intent.inspo < 0.6",
-      "priority": 0.74,
-      "question": { "de": "Was inspiriert dich? (mehrere)", "en": "What inspires you? (multiple)" },
+      "priority": 0.4,
+      "question": {
+        "de": "Was inspiriert dich? (mehrere)",
+        "en": "What inspires you? (multiple)"
+      },
       "choices": [
-        { "id": "concrete", "label": { "de": "Beton", "en": "Concrete" }, "image": "js/design-engine/content/img/mood/concrete.jpg", "effects": { "weight": { "quietMinimal": 0.2, "utility": 0.15 } } },
-        { "id": "nature", "label": { "de": "Natur", "en": "Nature" }, "image": "js/design-engine/content/img/mood/nature.jpg", "effects": { "weight": { "softCouture": 0.2 } } },
-        { "id": "neon", "label": { "de": "Neon", "en": "Neon" }, "image": "js/design-engine/content/img/mood/neon.jpg", "effects": { "weight": { "y2kStreet": 0.25 } } },
-        { "id": "atelier", "label": { "de": "Atelier", "en": "Atelier" }, "image": "js/design-engine/content/img/mood/atelier.jpg", "effects": { "weight": { "softCouture": 0.15, "quietMinimal": 0.15 } } },
-        { "id": "sportcore", "label": { "de": "Sport", "en": "Sport" }, "image": "js/design-engine/content/img/mood/sportcore.jpg", "effects": { "weight": { "sport": 0.25 } } }
+        {
+          "id": "concrete",
+          "label": {
+            "de": "Beton",
+            "en": "Concrete"
+          },
+          "image": "js/design-engine/content/img/mood/concrete.jpg",
+          "effects": {
+            "weight": {
+              "quietMinimal": 0.2,
+              "utility": 0.15
+            }
+          }
+        },
+        {
+          "id": "nature",
+          "label": {
+            "de": "Natur",
+            "en": "Nature"
+          },
+          "image": "js/design-engine/content/img/mood/nature.jpg",
+          "effects": {
+            "weight": {
+              "softCouture": 0.2
+            }
+          }
+        },
+        {
+          "id": "neon",
+          "label": {
+            "de": "Neon",
+            "en": "Neon"
+          },
+          "image": "js/design-engine/content/img/mood/neon.jpg",
+          "effects": {
+            "weight": {
+              "y2kStreet": 0.25
+            }
+          }
+        },
+        {
+          "id": "atelier",
+          "label": {
+            "de": "Atelier",
+            "en": "Atelier"
+          },
+          "image": "js/design-engine/content/img/mood/atelier.jpg",
+          "effects": {
+            "weight": {
+              "softCouture": 0.15,
+              "quietMinimal": 0.15
+            }
+          }
+        },
+        {
+          "id": "sportcore",
+          "label": {
+            "de": "Sport",
+            "en": "Sport"
+          },
+          "image": "js/design-engine/content/img/mood/sportcore.jpg",
+          "effects": {
+            "weight": {
+              "sport": 0.25
+            }
+          }
+        }
       ]
     },
     {
@@ -94,13 +332,74 @@
       "phase": "A",
       "modality": "cards",
       "when": "_confidence.intent.occasion < 0.6",
-      "priority": 0.78,
-      "question": { "de": "Wofür ist es?", "en": "What's it for?" },
+      "priority": 0.55,
+      "question": {
+        "de": "Wofür ist es?",
+        "en": "What's it for?"
+      },
       "choices": [
-        { "id": "everyday", "label": { "de": "Alltag", "en": "Everyday" }, "effects": { "set": { "intent.occasion": "everyday", "intent.formality": 0.3 } } },
-        { "id": "work", "label": { "de": "Arbeit", "en": "Work" }, "effects": { "set": { "intent.occasion": "work", "intent.formality": 0.6 }, "weight": { "quietMinimal": 0.15, "utility": 0.1 } } },
-        { "id": "event", "label": { "de": "Anlass", "en": "Event" }, "effects": { "set": { "intent.occasion": "event", "intent.formality": 0.85 }, "weight": { "softCouture": 0.25 } } },
-        { "id": "active", "label": { "de": "Aktiv", "en": "Active" }, "effects": { "set": { "intent.occasion": "active", "intent.formality": 0.2 }, "weight": { "sport": 0.3 } } }
+        {
+          "id": "everyday",
+          "label": {
+            "de": "Alltag",
+            "en": "Everyday"
+          },
+          "effects": {
+            "set": {
+              "intent.occasion": "everyday",
+              "intent.formality": 0.3
+            }
+          }
+        },
+        {
+          "id": "work",
+          "label": {
+            "de": "Arbeit",
+            "en": "Work"
+          },
+          "effects": {
+            "set": {
+              "intent.occasion": "work",
+              "intent.formality": 0.6
+            },
+            "weight": {
+              "quietMinimal": 0.15,
+              "utility": 0.1
+            }
+          }
+        },
+        {
+          "id": "event",
+          "label": {
+            "de": "Anlass",
+            "en": "Event"
+          },
+          "effects": {
+            "set": {
+              "intent.occasion": "event",
+              "intent.formality": 0.85
+            },
+            "weight": {
+              "softCouture": 0.25
+            }
+          }
+        },
+        {
+          "id": "active",
+          "label": {
+            "de": "Aktiv",
+            "en": "Active"
+          },
+          "effects": {
+            "set": {
+              "intent.occasion": "active",
+              "intent.formality": 0.2
+            },
+            "weight": {
+              "sport": 0.3
+            }
+          }
+        }
       ]
     },
     {
@@ -108,23 +407,82 @@
       "phase": "A",
       "modality": "slider",
       "when": "_confidence.intent.formality < 0.5",
-      "priority": 0.6,
-      "question": { "de": "Wie förmlich?", "en": "How formal?" },
+      "priority": 0.4,
+      "question": {
+        "de": "Wie förmlich?",
+        "en": "How formal?"
+      },
       "bind": "intent.formality",
-      "axis": { "de": ["Alltag", "Anlass"], "en": ["Everyday", "Occasion"] },
-      "weightAt": { "low": { "y2kStreet": 0.15, "sport": 0.15 }, "high": { "softCouture": 0.2, "quietMinimal": 0.1 } }
+      "axis": {
+        "de": [
+          "Alltag",
+          "Anlass"
+        ],
+        "en": [
+          "Everyday",
+          "Occasion"
+        ]
+      },
+      "weightAt": {
+        "low": {
+          "y2kStreet": 0.15,
+          "sport": 0.15
+        },
+        "high": {
+          "softCouture": 0.2,
+          "quietMinimal": 0.1
+        }
+      }
     },
     {
       "id": "intent_season",
       "phase": "A",
       "modality": "cards",
       "when": "_confidence.intent.season < 0.6",
-      "priority": 0.5,
-      "question": { "de": "Für welche Jahreszeit?", "en": "Which season?" },
+      "priority": 0.35,
+      "question": {
+        "de": "Für welche Jahreszeit?",
+        "en": "Which season?"
+      },
       "choices": [
-        { "id": "all", "label": { "de": "Ganzjährig", "en": "All-year" }, "effects": { "set": { "intent.season": "all" } } },
-        { "id": "warm", "label": { "de": "Warm", "en": "Warm" }, "effects": { "set": { "intent.season": "warm", "fabric.weight": 0.3 } } },
-        { "id": "cold", "label": { "de": "Kalt", "en": "Cold" }, "effects": { "set": { "intent.season": "cold", "fabric.weight": 0.75 } } }
+        {
+          "id": "all",
+          "label": {
+            "de": "Ganzjährig",
+            "en": "All-year"
+          },
+          "effects": {
+            "set": {
+              "intent.season": "all"
+            }
+          }
+        },
+        {
+          "id": "warm",
+          "label": {
+            "de": "Warm",
+            "en": "Warm"
+          },
+          "effects": {
+            "set": {
+              "intent.season": "warm",
+              "fabric.weight": 0.3
+            }
+          }
+        },
+        {
+          "id": "cold",
+          "label": {
+            "de": "Kalt",
+            "en": "Cold"
+          },
+          "effects": {
+            "set": {
+              "intent.season": "cold",
+              "fabric.weight": 0.75
+            }
+          }
+        }
       ]
     },
     {
@@ -132,15 +490,84 @@
       "phase": "B",
       "modality": "cards",
       "when": "_confidence.category < 0.6",
-      "priority": 1.0,
-      "question": { "de": "Was entsteht?", "en": "What are we making?" },
+      "priority": 1,
+      "question": {
+        "de": "Was entsteht?",
+        "en": "What are we making?"
+      },
       "choices": [
-        { "id": "jacket", "label": { "de": "Jacke", "en": "Jacket" }, "effects": { "set": { "category": "jacket" } } },
-        { "id": "hoodie", "label": { "de": "Hoodie", "en": "Hoodie" }, "effects": { "set": { "category": "hoodie" } } },
-        { "id": "tshirt", "label": { "de": "T-Shirt", "en": "T-Shirt" }, "effects": { "set": { "category": "tshirt" } } },
-        { "id": "shirt", "label": { "de": "Hemd", "en": "Shirt" }, "effects": { "set": { "category": "shirt" } } },
-        { "id": "pants", "label": { "de": "Hose", "en": "Pants" }, "effects": { "set": { "category": "pants" } } },
-        { "id": "dress", "label": { "de": "Kleid", "en": "Dress" }, "effects": { "set": { "category": "dress" } } }
+        {
+          "id": "jacket",
+          "label": {
+            "de": "Jacke",
+            "en": "Jacket"
+          },
+          "effects": {
+            "set": {
+              "category": "jacket"
+            }
+          }
+        },
+        {
+          "id": "hoodie",
+          "label": {
+            "de": "Hoodie",
+            "en": "Hoodie"
+          },
+          "effects": {
+            "set": {
+              "category": "hoodie"
+            }
+          }
+        },
+        {
+          "id": "tshirt",
+          "label": {
+            "de": "T-Shirt",
+            "en": "T-Shirt"
+          },
+          "effects": {
+            "set": {
+              "category": "tshirt"
+            }
+          }
+        },
+        {
+          "id": "shirt",
+          "label": {
+            "de": "Hemd",
+            "en": "Shirt"
+          },
+          "effects": {
+            "set": {
+              "category": "shirt"
+            }
+          }
+        },
+        {
+          "id": "pants",
+          "label": {
+            "de": "Hose",
+            "en": "Pants"
+          },
+          "effects": {
+            "set": {
+              "category": "pants"
+            }
+          }
+        },
+        {
+          "id": "dress",
+          "label": {
+            "de": "Kleid",
+            "en": "Dress"
+          },
+          "effects": {
+            "set": {
+              "category": "dress"
+            }
+          }
+        }
       ]
     }
   ]
