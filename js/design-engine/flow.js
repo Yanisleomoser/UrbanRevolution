@@ -314,7 +314,13 @@ const DesignFlow = (() => {
         if (window.StateManager) S("currentDesign", design);
         clearSaved();
         if (typeof options.onDesign === "function") options.onDesign(design);
-        btn.textContent = design.name || t("engine.generate");
+        if (design && design.name) flash(design.name);
+        // Per click kein Render (brief §4): die KI läuft nur auf explizites
+        // Generieren. Danach lädt der Button zum "Neu generieren — mehr
+        // individualisieren" ein; das Ergebnis ersetzt die Stilvorschau über
+        // den onDesign-Handoff in die bestehende Render-Pipeline.
+        btn.disabled = false;
+        btn.textContent = t("engine.regenerate");
       } catch (e) {
         console.error("[DesignFlow] generate failed:", e);
         btn.disabled = false;
