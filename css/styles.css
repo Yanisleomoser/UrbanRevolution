@@ -5281,7 +5281,11 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-preview.is-fade { animation: deCross .24s var(--ease-out); }
 @keyframes deCross { from { opacity: .4; } to { opacity: 1; } }
 
-/* Reife-Ring + Mikro-Feedback an den RAND der Vorschau (nicht darüber) */
+/* Reife-Ring + Mikro-Feedback an den RAND der VORSCHAU (Banner), nicht an der
+   Spalte: .de-preview-stage umschließt nur den Banner und ist der Bezugsrahmen
+   für Ring/Flash. Sonst verankern sie am Spalten-Boden — dort sitzen aber die
+   Chips, die der Ring dann überlagert (Desktop wie Mobile). */
+.de-preview-stage { position: relative; }
 .de-ring-wrap { position: absolute; left: var(--space-4); bottom: var(--space-4); width: 54px; height: 54px; padding: 4px; border-radius: 50%; background: rgba(10,10,11,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .de-ring { width: 100%; height: 100%; }
 
@@ -5311,10 +5315,9 @@ html.is-touch .lang-toggle { min-height: 38px; }
    ============================================================ */
 @media (max-width: 480px) {
     /* 1 — Sticky entschärfen: Vorschau als kompaktes Banner mit moderater Höhe.
-       `relative` (nicht `static`): killt das sticky genauso, hält aber den lokalen
-       Bezugsrahmen für den absolut positionierten Reife-Ring — sonst verankert er
-       sich an einem höheren Vorfahren und rutscht über den „Zurück"-Button. */
-    .de-preview-col { position: relative; }
+       (Ring/Flash hängen am .de-preview-stage, nicht an der Spalte, daher reicht
+       hier `static`, um das sticky zu killen.) */
+    .de-preview-col { position: static; }
     .de-preview {
         height: 34svh;
         height: calc(var(--svh, 1svh) * 34);
