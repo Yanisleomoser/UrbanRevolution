@@ -39,11 +39,11 @@ const GarmentSVG = (() => {
     const sheen = ({ silk: 0.5, polyester: 0.34, fleece: 0.14, denim: 0.16, wool: 0.12, cotton: 0.12, linen: 0.1 })[p.material] != null
       ? ({ silk: 0.5, polyester: 0.34, fleece: 0.14, denim: 0.16, wool: 0.12, cotton: 0.12, linen: 0.1 })[p.material] : 0.18;
     defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${sheen}"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.18"/></linearGradient>`;
-    if (p.pattern && p.pattern !== "none") defs += patternDef(id + "p", p.pattern, base);
+    if (p.pattern && p.pattern !== "none") defs += patternDef(id + "p", p.pattern);
     return { defs, fill, hasPattern: !!(p.pattern && p.pattern !== "none") };
   }
 
-  function patternDef(id, type, base) {
+  function patternDef(id, type) {
     const ink = "rgba(0,0,0,0.28)";
     const lite = "rgba(255,255,255,0.22)";
     if (type === "stripe") return `<pattern id="${id}" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="6" height="12" fill="${ink}"/></pattern>`;
