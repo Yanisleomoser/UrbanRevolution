@@ -4,6 +4,7 @@
       "id": "quietMinimal",
       "label": { "de": "Quiet Minimal", "en": "Quiet Minimal" },
       "defaults": {
+        "length": "regular",
         "silhouette.fit": 0.45,
         "silhouette.structure": 0.45,
         "silhouette.volume": "mid",
@@ -23,6 +24,7 @@
       "id": "techAvant",
       "label": { "de": "Tech Avant-Garde", "en": "Tech Avant-Garde" },
       "defaults": {
+        "length": "regular",
         "silhouette.fit": 0.8,
         "silhouette.structure": 0.7,
         "silhouette.volume": "high",
@@ -42,6 +44,7 @@
       "id": "y2kStreet",
       "label": { "de": "Y2K Street", "en": "Y2K Street" },
       "defaults": {
+        "length": "cropped",
         "silhouette.fit": 0.9,
         "silhouette.structure": 0.4,
         "silhouette.volume": "high",
@@ -62,6 +65,7 @@
       "id": "softCouture",
       "label": { "de": "Soft Couture", "en": "Soft Couture" },
       "defaults": {
+        "length": "regular",
         "silhouette.fit": 0.35,
         "silhouette.structure": 0.3,
         "silhouette.volume": "mid",
@@ -81,6 +85,7 @@
       "id": "utility",
       "label": { "de": "Utility", "en": "Utility" },
       "defaults": {
+        "length": "long",
         "silhouette.fit": 0.65,
         "silhouette.structure": 0.6,
         "silhouette.volume": "mid",
@@ -100,6 +105,7 @@
       "id": "sport",
       "label": { "de": "Sport", "en": "Sport" },
       "defaults": {
+        "length": "cropped",
         "silhouette.fit": 0.7,
         "silhouette.structure": 0.5,
         "silhouette.volume": "mid",
