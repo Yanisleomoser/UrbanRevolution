@@ -22,10 +22,17 @@ const nodes = [
 ];
 
 const phaseOf = (id) => (nodes.find((n) => n.id === id) || {}).phase;
-function phaseAneverAfterE(order) {
-  let lastA = -1, firstE = Infinity;
-  order.forEach((id, i) => { const ph = phaseOf(id); if (ph === "A") lastA = i; if (ph === "E" && i < firstE) firstE = i; });
-  return lastA < firstE;
+// The mood "spine": the two core This-or-That pairs come first, the garment
+// category lands by ~the 3rd question (so the preview shows the piece early),
+// and neither core mood pair resurfaces afterwards.
+const CORE_MOOD = ["mood_calm_bold", "mood_soft_sharp"];
+function moodSpineOk(order) {
+  const catIdx = order.indexOf("category_select");
+  if (catIdx === -1 || catIdx > 2) return false;
+  return CORE_MOOD.every((id) => {
+    const idx = order.indexOf(id);
+    return idx !== -1 && idx < catIdx && order.lastIndexOf(id) === idx;
+  });
 }
 
 let failures = 0;
@@ -133,7 +140,7 @@ assert(!C.order.includes("jacket_hardware"), "calm path SKIPS jacket_hardware (e
 assert(new Set(C.order).size === C.order.length, "no node offered twice");
 assert(DNA.maturity(C.dna, attributes.required, attributes.confidenceThreshold) > 0.9, "maturity > 0.9 after finalize");
 assert(["quietMinimal", "softCouture"].includes(DNA.topArchetype(C.dna)), "calm → quiet/soft archetype");
-assert(phaseAneverAfterE(C.order), "Bug 2: no Phase-A (mood) node surfaces after a Phase-E detail node (calm)");
+assert(moodSpineOk(C.order), "Reihenfolge: 2 Mood-Paare -> Kategorie <=Frage 3, kein Kern-Mood danach (calm)");
 
 console.log("\n— Persona: BOLD / Y2K —");
 const B = run("bold", bold);
@@ -147,7 +154,7 @@ assert(JSON.stringify(C.order) !== JSON.stringify(B.order), "the two personas ta
 assert(B.order.includes("jacket_pattern"), "bold reaches Phase-D pattern node (deep branch)");
 assert(B.order.includes("jacket_pockets") && B.order.includes("jacket_cuffs") && B.order.includes("jacket_signature"), "bold reaches deep Phase-E detail nodes");
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
-assert(phaseAneverAfterE(B.order), "Bug 2: no Phase-A node after a Phase-E node (bold)");
+assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
 
 console.log("\n— Bug 1: pure express (only category) → 100% —");
 const pe = DNA.create();
