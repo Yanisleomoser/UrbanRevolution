@@ -279,6 +279,8 @@ const I18N = (() => {
       "engine.rank_up": "nach oben",
       "engine.rank_down": "nach unten",
       "engine.changed_details": "Details",
+      "engine.share": "Teilen",
+      "engine.share_copied": "Link kopiert",
 
       // ── VTO ──
       "vto.btn": "Fotorealistische Vorschau generieren",
@@ -837,6 +839,8 @@ const I18N = (() => {
       "engine.rank_up": "move up",
       "engine.rank_down": "move down",
       "engine.changed_details": "Details",
+      "engine.share": "Share",
+      "engine.share_copied": "Link copied",
 
       // ── VTO ──
       "vto.btn": "Generate photorealistic preview",
