@@ -5310,8 +5310,11 @@ html.is-touch .lang-toggle { min-height: 38px; }
    Safe-Area, kein backdrop-filter (iOS-Scroll-Ruckeln).
    ============================================================ */
 @media (max-width: 480px) {
-    /* 1 — Sticky entschärfen: Vorschau als kompaktes Banner mit moderater Höhe */
-    .de-preview-col { position: static; }
+    /* 1 — Sticky entschärfen: Vorschau als kompaktes Banner mit moderater Höhe.
+       `relative` (nicht `static`): killt das sticky genauso, hält aber den lokalen
+       Bezugsrahmen für den absolut positionierten Reife-Ring — sonst verankert er
+       sich an einem höheren Vorfahren und rutscht über den „Zurück"-Button. */
+    .de-preview-col { position: relative; }
     .de-preview {
         height: 34svh;
         height: calc(var(--svh, 1svh) * 34);
