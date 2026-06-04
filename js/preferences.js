@@ -97,4 +97,5 @@ const Preferences = (() => {
   return { track, trackPrompt, topValues, totalDesigns, getAll, clear };
 })();
 
-window.Preferences = Preferences;
+if (typeof window !== "undefined") window.Preferences = Preferences;
+if (typeof module !== "undefined" && module.exports) module.exports = Preferences;

@@ -159,4 +159,5 @@ const StateManager = (() => {
     };
 })();
 
-window.StateManager = StateManager;
+if (typeof window !== "undefined") window.StateManager = StateManager;
+if (typeof module !== "undefined" && module.exports) module.exports = StateManager;
