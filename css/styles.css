@@ -5402,3 +5402,28 @@ footer.footer {
     .manifesto-actions .manifesto-cta,
     .manifesto-actions .manifesto-link { justify-content: center; text-align: center; }
 }
+
+/* Ambient-Kosten-Timer — durchgehend sichtbar, unten links (auf jeder Seite) */
+.ambient-ticker-fixed {
+    position: fixed;
+    left: var(--space-5);
+    bottom: var(--space-5);
+    z-index: 60;
+    pointer-events: none;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-muted);
+    background: rgba(10, 10, 11, 0.55);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px var(--space-4);
+    max-width: calc(100vw - var(--space-8));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+@media (max-width: 600px) {
+    .ambient-ticker-fixed { left: var(--space-3); bottom: var(--space-3); font-size: 10px; padding: 5px var(--space-3); }
+}
