@@ -120,4 +120,5 @@ const Measurements = (() => {
   };
 })();
 
-window.Measurements = Measurements;
+if (typeof window !== "undefined") window.Measurements = Measurements;
+if (typeof module !== "undefined" && module.exports) module.exports = Measurements;

@@ -25,3 +25,6 @@ jobs:
       run: |
         echo "✓ Static site validated - no build needed"
         npm run build
+
+    - name: Run unit tests
+      run: npm test
