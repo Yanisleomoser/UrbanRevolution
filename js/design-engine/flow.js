@@ -128,6 +128,8 @@ const DesignFlow = (() => {
     const history = [];
     let content = null;
     let currentNode = null;
+    let generated = false;
+    const T = (event, props) => { if (window.DesignTelemetry) window.DesignTelemetry.track(event, props); };
 
     hostEl.classList.add("de-stage");
     hostEl.innerHTML = `
@@ -224,6 +226,7 @@ const DesignFlow = (() => {
       },
       commit(payload) {
         const { eff, conf } = resolveEffects(currentNode, payload);
+        if (currentNode) T("node_choice", { id: currentNode.id, modality: currentNode.modality });
         snapshot();
         flash("✓ " + changeLabel(currentNode, payload, lang()));
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
@@ -235,6 +238,7 @@ const DesignFlow = (() => {
 
     function renderModality(node) {
       currentNode = node;
+      T("node_shown", { id: node.id, phase: node.phase, modality: node.modality, lang: lang() });
       const renderer = window.DEModalities && window.DEModalities[node.modality];
       if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
       renderer(body, node, ctx);
@@ -252,6 +256,7 @@ const DesignFlow = (() => {
     // in words + the inferred fills, let the user nudge warmer/colder, or dive
     // deeper, then generate.
     function renderRefine() {
+      T("journey_refine", { archetype: DesignDNA.topArchetype(dna), maturity: Math.round(maturity() * 100) });
       DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
       mirror(dna, content.attributes);
       persist();
@@ -320,10 +325,13 @@ const DesignFlow = (() => {
       if (!window.AI) return;
       btn.disabled = true;
       btn.textContent = t("engine.generating");
+      T("generate", { type: type || "jacket", archetype: DesignDNA.topArchetype(dna) });
       try {
         const design = await window.AI.generateDesign(prompt, type || "jacket");
         if (window.StateManager) S("currentDesign", design);
         clearSaved();
+        generated = true;
+        T("generate_ok", { type: type || "jacket" });
         if (typeof options.onDesign === "function") options.onDesign(design);
         if (design && design.name) flash(design.name);
         // Per click kein Render (brief §4): die KI läuft nur auf explizites
@@ -334,6 +342,7 @@ const DesignFlow = (() => {
         btn.textContent = t("engine.regenerate");
       } catch (e) {
         console.error("[DesignFlow] generate failed:", e);
+        T("generate_fail");
         btn.disabled = false;
         btn.textContent = t("engine.generate");
       }
@@ -371,6 +380,7 @@ const DesignFlow = (() => {
 
     backBtn.addEventListener("click", () => {
       if (!history.length) return;
+      T("node_back", { id: currentNode && currentNode.id });
       const snap = history.pop();
       dna = JSON.parse(JSON.stringify(snap.dna));
       answered = new Set(snap.answered);
@@ -378,11 +388,18 @@ const DesignFlow = (() => {
       renderNext();
     });
     skipBtn.addEventListener("click", () => {
-      if (currentNode) { snapshot(); answered.add(currentNode.id); persist(); }
+      if (currentNode) { T("node_skip", { id: currentNode.id }); snapshot(); answered.add(currentNode.id); persist(); }
       renderNext();
     });
     restartBtn.addEventListener("click", resetJourney);
     finishBtn.addEventListener("click", renderRefine);
+
+    // Abbruch-Signal: verlässt die Seite mit begonnener, aber nicht generierter Reise.
+    if (typeof window !== "undefined") {
+      window.addEventListener("pagehide", () => {
+        if (answered.size > 0 && !generated) T("abandon", { last: currentNode && currentNode.id, answered: answered.size });
+      });
+    }
 
     return loadContent(base).then((c) => {
       content = c;
