@@ -5423,3 +5423,7 @@ footer.footer {
     -webkit-backdrop-filter: blur(3px);
     backdrop-filter: blur(3px);
 }
+
+/* Timer auf der Landing ("Warum es uns gibt") — mittig unter dem Eyebrow */
+.manifesto--lead .manifesto-eyebrow { margin-bottom: var(--space-2); }
+.manifesto-live { margin: 0 0 var(--space-6); }
