@@ -5312,3 +5312,18 @@ html.is-touch .lang-toggle { min-height: 38px; }
 @media (prefers-reduced-motion: reduce) {
     .de-preview.is-fade { animation: none; }
 }
+
+/* §2 — Intro-Screen + optionaler Freitext am Schluss */
+.de-intro { min-height: 68vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-8) var(--space-5); }
+.de-intro-inner { max-width: 620px; display: flex; flex-direction: column; gap: var(--space-6); align-items: center; }
+.de-intro-title { font-family: 'Lora', Georgia, serif; font-size: var(--text-3xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); margin: 0; color: var(--text); }
+.de-intro-sub { color: var(--text-dim); font-size: var(--text-md); line-height: var(--leading-normal); margin: 0; max-width: 52ch; }
+.de-intro-start { margin-top: var(--space-2); }
+
+.de-freetext { margin: var(--space-6) 0 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.de-freetext-label { font-size: var(--text-sm); color: var(--text-dim); }
+.de-freetext-input { width: 100%; box-sizing: border-box; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: var(--space-3) var(--space-4); font-family: inherit; font-size: var(--text-base); resize: vertical; transition: border-color .2s var(--ease-out); }
+.de-freetext-input:focus { outline: none; border-color: var(--accent); }
+.de-freetext-input::placeholder { color: var(--text-muted); }
+
+@media (prefers-reduced-motion: reduce) { .de-freetext-input { transition: none; } }
