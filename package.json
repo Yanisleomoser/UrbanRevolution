@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npx serve .",
     "build": "echo 'Static site - no build needed'",
+    "test": "node test/engine-test.cjs && node test/core-test.cjs",
     "lint": "echo 'No linter configured'",
     "validate:css": "node scripts/validate-css.mjs css/styles.css",
     "validate:html": "htmlhint index.html impressum.html datenschutz.html"
