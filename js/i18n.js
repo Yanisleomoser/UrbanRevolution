@@ -268,6 +268,14 @@ const I18N = (() => {
       "engine.generate": "Design generieren",
       "engine.generating": "Generiere …",
       "engine.fallback_summary": "Lieber direkt in Worten beschreiben?",
+      "engine.restart": "Neu starten",
+      "engine.refine_title": "Dein Design",
+      "engine.refine_inferred": "Aus deinem Stil ergänzt",
+      "engine.refine_adjust": "Justieren — wärmer / kälter",
+      "engine.deeper": "Tiefer verfeinern",
+      "engine.nudge_down": "weniger",
+      "engine.nudge_up": "mehr",
+      "engine.changed_color": "Farbwelt",
 
       // ── VTO ──
       "vto.btn": "Fotorealistische Vorschau generieren",
@@ -815,6 +823,14 @@ const I18N = (() => {
       "engine.generate": "Generate design",
       "engine.generating": "Generating …",
       "engine.fallback_summary": "Rather describe it in words?",
+      "engine.restart": "Start over",
+      "engine.refine_title": "Your design",
+      "engine.refine_inferred": "Filled in from your style",
+      "engine.refine_adjust": "Adjust — warmer / colder",
+      "engine.deeper": "Refine deeper",
+      "engine.nudge_down": "less",
+      "engine.nudge_up": "more",
+      "engine.changed_color": "Colourway",
 
       // ── VTO ──
       "vto.btn": "Generate photorealistic preview",

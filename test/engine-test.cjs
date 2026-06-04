@@ -10,6 +10,7 @@ global.DesignDNA = require(path.join(ROOT, "dna.js"));
 global.DesignCondition = require(path.join(ROOT, "condition.js"));
 const Engine = require(path.join(ROOT, "engine.js"));
 global.DesignSummary = require(path.join(ROOT, "summary.js"));
+const Inference = require(path.join(ROOT, "inference.js"));
 const DNA = global.DesignDNA;
 
 const readJSON = (p) => JSON.parse(fs.readFileSync(path.join(ROOT, p), "utf8"));
@@ -60,6 +61,10 @@ function run(label, persona) {
 const calm = {
   mood_calm_bold: "calm",
   mood_soft_sharp: "soft",
+  mood_clean_expressive: "clean",
+  mood_vintage_future: "vintage",
+  intent_occasion: "work",
+  intent_season: "all",
   intent_formality: 0.7,
   category_select: "jacket",
   jacket_subarch: "trench",
@@ -75,6 +80,10 @@ const calm = {
 const bold = {
   mood_calm_bold: "bold",
   mood_soft_sharp: "sharp",
+  mood_clean_expressive: "expressive",
+  mood_vintage_future: "future",
+  intent_occasion: "active",
+  intent_season: "cold",
   intent_formality: 0.2,
   category_select: "jacket",
   jacket_subarch: "puffer",
@@ -83,9 +92,16 @@ const bold = {
   jacket_material: "polyester",
   jacket_finish: 0.5,
   jacket_color: { set: { "color.scheme": "duo-gradient", "color.stops": ["#ec4899", "#06b6d4"], "color.value": 0.4, "color.saturation": 0.85 } },
+  jacket_pattern: "graphic",
+  jacket_pattern_scale: 0.7,
   jacket_closure: "zip",
   jacket_collar: "hood",
+  jacket_sleeve: "drop",
+  jacket_pockets: "cargo",
+  jacket_cuffs: "ribbed",
+  jacket_hem: "drawcord",
   jacket_hardware: "metal",
+  jacket_signature: "branding",
   _default: () => "regular",
 };
 
@@ -120,6 +136,20 @@ console.log("  prompt:", DesignSummary.toPrompt(B.dna, "de"));
 assert(B.order.includes("jacket_hardware"), "bold path INCLUDES jacket_hardware (energy > 0.6)");
 assert(["y2kStreet", "techAvant", "sport"].includes(DNA.topArchetype(B.dna)), "bold → y2k/tech/sport archetype");
 assert(JSON.stringify(C.order) !== JSON.stringify(B.order), "the two personas take DIFFERENT paths (emergent branching)");
+assert(B.order.includes("jacket_pattern"), "bold reaches Phase-D pattern node (deep branch)");
+assert(B.order.includes("jacket_pockets") && B.order.includes("jacket_cuffs") && B.order.includes("jacket_signature"), "bold reaches deep Phase-E detail nodes");
+assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
+
+console.log("\n— Inference layer (Phase F) —");
+const vec = Inference.styleVector(B.dna);
+assert(Object.keys(vec).length === 6 && Math.abs(Object.values(vec).reduce((a, b) => a + b, 0) - 1) < 1e-6, "styleVector is a normalised distribution");
+assert(Array.isArray(Inference.suggestions(B.dna, attributes, "de")), "suggestions() returns inferred fills");
+const beforeColor = DNA.get(B.dna, "color.stops")[0];
+Inference.adjust(B.dna, "brightness", 1, "de");
+assert(DNA.get(B.dna, "color.stops")[0] !== beforeColor, "warmer/colder visibly repaints colour stops");
+const beforeEnergy = DNA.get(B.dna, "intent.energy");
+Inference.adjust(B.dna, "energy", -1, "de");
+assert(DNA.get(B.dna, "intent.energy") < beforeEnergy, "energy nudge lowers intent.energy");
 
 console.log("\n— Short path completion (express) —");
 const S = run("express", { mood_calm_bold: "calm", category_select: "jacket", _default: () => "regular" });
