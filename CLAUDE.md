@@ -105,8 +105,8 @@ subscribe to its events). The bottom-of-body order is:
 
 ```
 config → i18n → state-manager → ai → measurements →
-pose → export → preferences → library → preview-fallback → animations → app →
-hero → flair → 3d/story-scene.js (module)
+pose → export → preferences → library → preview-fallback → animations →
+design-engine/* (dna … flow) → app → flair → 3d/story-scene.js (module)
 ```
 
 Follow the IIFE-with-global pattern for new classic code; don't introduce a

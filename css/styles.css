@@ -5339,3 +5339,66 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
 .de-preview-chip { font-size: var(--text-xs); color: var(--text-dim); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 3px var(--space-3); }
 @media (prefers-reduced-motion: reduce) { .de-preview-duo { transition: none; } }
+
+/* ============================================================
+   Startseiten-Umbau: Manifest = Hero-Landing, durchgehender Marken-Verlauf
+   (oben kräftig, unten ruhiger), Textsektionen als halbtransparente Panels.
+   ============================================================ */
+
+/* Durchgehender, fester Marken-Schimmer hinter ALLEM (dezent → unten ruhiger) */
+body { background: var(--bg); }
+body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+        radial-gradient(70vw 60vh at 86% -6%, rgba(236, 72, 153, 0.16), transparent 60%),
+        radial-gradient(58vw 52vh at 106% 46%, rgba(139, 92, 246, 0.11), transparent 64%),
+        radial-gradient(64vw 56vh at 8% 116%, rgba(6, 182, 212, 0.10), transparent 62%);
+}
+
+/* Manifest als Hero-Landing — oben kräftiger Verlauf (wie Bild 1) */
+.manifesto--lead {
+    min-height: 100svh;
+    min-height: calc(var(--svh, 1svh) * 100);
+    display: grid;
+    place-items: center;
+    padding: calc(var(--space-10) + var(--space-2)) 0 var(--space-8);
+    border-top: 0;
+    border-bottom: 1px solid var(--border);
+    background:
+        radial-gradient(58vw 54vh at 82% 6%, rgba(236, 72, 153, 0.34), transparent 58%),
+        radial-gradient(52vw 50vh at 108% 30%, rgba(139, 92, 246, 0.30), transparent 60%),
+        radial-gradient(48vw 46vh at 68% 18%, rgba(6, 182, 212, 0.24), transparent 62%);
+}
+.manifesto--lead .manifesto-inner { position: relative; z-index: 1; }
+.manifesto--lead .manifesto-headline { font-size: clamp(40px, 5.6vw, 68px); max-width: 17ch; margin-bottom: var(--space-5); }
+.manifesto--lead .manifesto-vision { margin-bottom: var(--space-7); max-width: 60ch; }
+
+/* Textsektionen als halbtransparente dunkle Panels über dem Verlauf
+   → der Schimmer peekt an den Rändern, Text bleibt voll lesbar */
+.facts,
+.howto,
+.workflow,
+.design-section,
+.measure-section,
+.preview-section,
+.production-section,
+.trust-strip,
+.faq-section,
+.site-footer,
+footer.footer {
+    background-color: rgba(10, 10, 11, 0.85);
+}
+
+/* iPhone-Feinschliff der Landing */
+@media (max-width: 600px) {
+    .manifesto--lead {
+        padding-top: calc(var(--space-10) + var(--space-5));
+        padding-bottom: var(--space-9);
+        min-height: calc(var(--svh, 1svh) * 100);
+    }
+    .manifesto--lead .manifesto-headline { font-size: clamp(32px, 8.4vw, 50px); max-width: 20ch; line-height: 1.1; }
+    .manifesto-vision { font-size: var(--text-base); }
+    .manifesto-actions { flex-direction: column; align-items: stretch; gap: var(--space-4); }
+    .manifesto-actions .manifesto-cta,
+    .manifesto-actions .manifesto-link { justify-content: center; text-align: center; }
+}

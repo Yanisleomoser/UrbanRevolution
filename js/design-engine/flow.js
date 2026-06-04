@@ -357,7 +357,7 @@ const DesignFlow = (() => {
       intro.className = "de-intro";
       intro.innerHTML = `
         <div class="de-intro-inner">
-          <h1 class="de-intro-title">${t("engine.intro_title")}</h1>
+          <h2 class="de-intro-title">${t("engine.intro_title")}</h2>
           <p class="de-intro-sub">${t("engine.intro_sub")}</p>
           <button type="button" class="de-confirm de-intro-start">${t("engine.intro_start")}</button>
         </div>`;
