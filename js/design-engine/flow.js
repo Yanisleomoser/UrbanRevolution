@@ -138,10 +138,12 @@ const DesignFlow = (() => {
     hostEl.innerHTML = `
       <div class="de-stage-grid">
         <div class="de-preview-col">
-          <div class="de-preview" id="de-preview" aria-hidden="true"></div>
+          <div class="de-preview-stage">
+            <div class="de-preview" id="de-preview" aria-hidden="true"></div>
+            <div class="de-ring-wrap" id="de-ring"></div>
+            <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
+          </div>
           <div class="de-preview-chips" id="de-preview-chips"></div>
-          <div class="de-ring-wrap" id="de-ring"></div>
-          <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
         </div>
         <div class="de-ask-col">
           <div class="de-body" id="de-body"></div>
