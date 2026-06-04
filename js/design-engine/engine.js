@@ -24,8 +24,12 @@ const DesignEngine = (() => {
   // Gentle "general → specific" bias so Phase A (mood) tends to come before B
   // (form) before … E (details), without hard-coding an order — gain can still
   // override it. The branching stays emergent; this only breaks near-ties.
-  const PHASE_BIAS = { A: 1.0, B: 0.9, C: 0.82, D: 0.76, E: 0.7, F: 0.66, G: 0.62 };
-  const phaseBias = (node) => PHASE_BIAS[node.phase] == null ? 0.8 : PHASE_BIAS[node.phase];
+  const PHASE_BIAS = { A: 1.0, B: 0.72, C: 0.58, D: 0.48, E: 0.4, F: 0.34, G: 0.3 };
+  const phaseBias = (node) => PHASE_BIAS[node.phase] == null ? 0.45 : PHASE_BIAS[node.phase];
+  // Below this normalised archetype entropy the style is "decided", so we stop
+  // offering the remaining pure-soft mood signals (they'd otherwise resurface
+  // late, between specific detail questions — brief §7 Bug 2).
+  const SOFT_RETRACT_ENTROPY = 0.55;
 
   function targetPaths(node) {
     if (node.bind) return [node.bind];
@@ -81,15 +85,33 @@ const DesignEngine = (() => {
     );
   }
 
+  // A phase-A node that resolves no concrete attribute (pure archetype-weight
+  // mood signal). Once the style is decided, these are retracted.
+  function isPureSoftMood(node) {
+    return node.phase === "A" && targetPaths(node).length === 0;
+  }
+
   function nextNode(nodes, dna, answered, minGain) {
     const floor = minGain == null ? MIN_GAIN : minGain;
-    let best = null;
-    let bestScore = floor;
-    eligible(nodes, dna, answered).forEach((n) => {
-      const score = (n.priority == null ? 0.5 : n.priority) * informationGain(dna, n) * phaseBias(n);
-      if (score > bestScore) { bestScore = score; best = n; }
-    });
-    return best;
+    const entropy = archetypeEntropy(dna);
+    const elig = eligible(nodes, dna, answered).filter(
+      (n) => !(isPureSoftMood(n) && entropy < SOFT_RETRACT_ENTROPY)
+    );
+
+    const pick = (pool) => {
+      let best = null;
+      let bestScore = floor;
+      pool.forEach((n) => {
+        const score = (n.priority == null ? 0.5 : n.priority) * informationGain(dna, n) * phaseBias(n);
+        if (score > bestScore) { bestScore = score; best = n; }
+      });
+      return best;
+    };
+
+    // General → specific (brief §6): keep resolving Phase A (mood & intent)
+    // before any later phase. Only once no Phase-A node still scores above the
+    // floor do we open Phase B+.
+    return pick(elig.filter((n) => n.phase === "A")) || pick(elig.filter((n) => n.phase !== "A"));
   }
 
   function choiceEffects(node, choiceId) {

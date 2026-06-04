@@ -99,15 +99,17 @@ const DesignDNA = (() => {
   }
 
   // Fill every required attribute still below threshold with the top
-  // archetype's default (stamped as inferred → confidence 0.45). Guarantees a
-  // complete design from even a short path.
+  // archetype's default. Inferred required attrs are stamped AT the threshold
+  // so a fully-inferred (express) design reads as 100% mature, yet still counts
+  // as "inferred" for the Phase-F suggestions (conf <= threshold). Guarantees a
+  // complete design from even a short path (brief §7 Bug 1).
   function completeFrom(dna, archetypes, required, threshold) {
     const top = archetypeById(archetypes, topArchetype(dna));
     if (!top) return dna;
     const th = threshold == null ? 0.5 : threshold;
     (required || []).forEach((path) => {
       if (confidence(dna, path) < th && top.defaults[path] !== undefined) {
-        set(dna, path, clone(top.defaults[path]), 0.45);
+        set(dna, path, clone(top.defaults[path]), th);
       }
     });
     // Also pull any other archetype defaults for still-empty attrs (soft fill).
