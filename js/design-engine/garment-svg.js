@@ -84,14 +84,18 @@ const GarmentSVG = (() => {
     const structure = clamp(num(p.structure, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
     const drop = p.sleeve === "drop" || cfg.drop;
-    // Shoulder is the widest point.
-    const shoulderHalf = 58 + structure * 5 + vol * 6 + (drop ? 9 : 0);
-    // Chest derived FROM the shoulder, always narrower.
-    const chestHalf = shoulderHalf * lerp(0.80, 0.99, fit) + Math.max(0, vol) * 3;
-    // slim nips the waist; oversized keeps it straight.
-    const waistHalf = chestHalf * lerp(0.84, 1.0, fit);
-    // hem never wider than the chest (no bell), boxy when oversized.
-    const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.92, 1.0, fit)) + (vol > 0 ? 3 : 0);
+    // Shoulder is the widest point. The fit/structure/volume influence is wide
+    // on purpose (was a near-flat 58 ± ~11 → now ~42..82) so slim ↔ oversized
+    // is unmistakable rather than a few pixels nobody notices.
+    const shoulderHalf = 50 + structure * 9 + vol * 8 + fit * 13 + (drop ? 12 : 0);
+    // Chest derived FROM the shoulder, ALWAYS narrower (capped so the invariant
+    // "shoulder is widest" holds). Slim tapers hard from the shoulder line;
+    // oversized fills almost to it.
+    const chestHalf = Math.min(shoulderHalf - 2, shoulderHalf * lerp(0.74, 0.985, fit) + Math.max(0, vol) * 3);
+    // slim nips the waist hard; oversized keeps it straight (boxy column).
+    const waistHalf = chestHalf * lerp(0.74, 1.0, fit);
+    // hem never wider than the chest (no bell). slim tapers in; oversized = column.
+    const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.82, 1.0, fit)) + (vol > 0 ? 4 : 0);
     return { shoulderHalf, chestHalf, waistHalf, hemHalf, fit, vol, drop };
   }
 
@@ -212,23 +216,29 @@ const GarmentSVG = (() => {
     return s.join("");
   }
 
+  function paintTop(p, cfg, g) {
+    return renderFlat(p, [outline(g)], seams(g, p, cfg));
+  }
   function topFlat(category, p) {
     const cfg = CFG[category] || CFG.jacket;
-    const g = geometry(p, cfg);
-    const path = outline(g);
-    return renderFlat(p, [path], seams(g, p, cfg));
+    return paintTop(p, cfg, geometry(p, cfg));
   }
 
   // ---- pants (different topology: waistband + two legs, no torso) ----------
-  function pantsFlat(p) {
+  function pantsGeom(p) {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
     const topY = 70, hemY = { cropped: 250, regular: 300, long: 318 }[p.length] || 300;
-    const hipHalf = 46 + vol * 6;
+    const hipHalf = 44 + vol * 7;
     const legTop = hipHalf;
-    const thighHalf = 21 + (fit < 0.4 ? -3 : 0) + (fit > 0.66 ? 9 : 0) + vol * 5;
-    const ankleHalf = clamp(lerp(9, thighHalf, fit > 0.66 ? 0.9 : 0.45), 7, thighHalf);
+    // Wider slim↔wide spread: skinny clearly tapers, wide-leg is clearly full.
+    const thighHalf = 19 + (fit < 0.4 ? -5 : 0) + (fit > 0.66 ? 13 : 0) + vol * 6;
+    const ankleHalf = clamp(lerp(7, thighHalf, fit > 0.66 ? 0.95 : 0.4), 6, thighHalf);
     const crotchY = topY + 96;
+    return { fit, vol, topY, hemY, hipHalf, legTop, thighHalf, ankleHalf, crotchY };
+  }
+  function paintPants(p, g) {
+    const { topY, hemY, legTop, thighHalf, ankleHalf, crotchY } = g;
     const path =
       `M ${L(legTop)} ${Y(topY)} L ${R(legTop)} ${Y(topY)} ` +
       `L ${R(ankleHalf + thighHalf * 0.0)} ${Y(hemY)} L ${R(thighHalf * 0.05)} ${Y(hemY)} ` +
@@ -244,30 +254,33 @@ const GarmentSVG = (() => {
   }
 
   // ---- dress (bodice → skirt) ---------------------------------------------
-  function dressFlat(p) {
-    const cfg = { sleeveLen: 58, hem: { cropped: 250, regular: 300, long: 322 }, defCollar: "vneck", closure: "none", splay: 14, cuffW: 22, armDepth: 50, neckHalf: 18 };
+  const DRESS_CFG = { sleeveLen: 58, hem: { cropped: 250, regular: 300, long: 322 }, defCollar: "vneck", closure: "none", splay: 14, cuffW: 22, armDepth: 50, neckHalf: 18 };
+  function dressGeom(p) {
+    const cfg = DRESS_CFG;
     const w = topWidths(p, cfg);
     const neckY = 60, shoulderY = 66;
     const armpitY = shoulderY + cfg.armDepth;
     const waistY = armpitY + 34;
     const hemY = cfg.hem[p.length] != null ? cfg.hem[p.length] : 300;
-    const aLine = w.fit < 0.5; // slim → straight, else A-line skirt
-    const skirtHalf = aLine ? w.chestHalf * 1.55 : w.chestHalf * 1.02;
+    const aLine = w.fit < 0.5; // slim → straight column, else a strong A-line flare
+    const skirtHalf = aLine ? w.chestHalf * 1.7 : w.chestHalf * 1.0;
     const coX = w.shoulderHalf + cfg.splay, ciX = Math.max(w.chestHalf + 1, coX - cfg.cuffW);
     const wristY = shoulderY + cfg.sleeveLen;
     const collar = p.collar || cfg.defCollar;
     const neckHalf = neckHalfFor(collar, cfg);
-    const g = { neckHalf, neckY, shoulderHalf: w.shoulderHalf, shoulderY, coX, ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf: w.chestHalf * 0.84, waistY, hemHalf: skirtHalf, hemY, collar };
-    const path =
-      `M ${L(neckHalf)} ${Y(neckY)} ` +
-      `L ${L(w.shoulderHalf)} ${Y(shoulderY)} L ${L(coX)} ${Y(wristY)} L ${L(ciX)} ${Y(wristY)} L ${L(w.chestHalf)} ${Y(armpitY)} ` +
-      `L ${L(g.waistHalf)} ${Y(waistY)} L ${L(skirtHalf)} ${Y(hemY)} L ${R(skirtHalf)} ${Y(hemY)} L ${R(g.waistHalf)} ${Y(waistY)} ` +
-      `L ${R(w.chestHalf)} ${Y(armpitY)} L ${R(ciX)} ${Y(wristY)} L ${R(coX)} ${Y(wristY)} L ${R(w.shoulderHalf)} ${Y(shoulderY)} L ${R(neckHalf)} ${Y(neckY)} ` +
+    return { neckHalf, neckY, shoulderHalf: w.shoulderHalf, shoulderY, coX, ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf: w.chestHalf * 0.84, waistY, hemHalf: skirtHalf, hemY, collar };
+  }
+  function paintDress(p, g) {
+    const d =
+      `M ${L(g.neckHalf)} ${Y(g.neckY)} ` +
+      `L ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.coX)} ${Y(g.wristY)} L ${L(g.ciX)} ${Y(g.wristY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} ` +
+      `L ${L(g.waistHalf)} ${Y(g.waistY)} L ${L(g.hemHalf)} ${Y(g.hemY)} L ${R(g.hemHalf)} ${Y(g.hemY)} L ${R(g.waistHalf)} ${Y(g.waistY)} ` +
+      `L ${R(g.chestHalf)} ${Y(g.armpitY)} L ${R(g.ciX)} ${Y(g.wristY)} L ${R(g.coX)} ${Y(g.wristY)} L ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.neckHalf)} ${Y(g.neckY)} ` +
       neckline(g) + " Z";
     const seam = [];
-    seam.push(`<path d="M ${L(w.shoulderHalf)} ${Y(shoulderY)} L ${L(w.chestHalf)} ${Y(armpitY)} M ${R(w.shoulderHalf)} ${Y(shoulderY)} L ${R(w.chestHalf)} ${Y(armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
-    seam.push(`<path d="M ${L(g.waistHalf)} ${Y(waistY)} L ${R(g.waistHalf)} ${Y(waistY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
-    return renderFlat(p, [path], seam.join(""));
+    seam.push(`<path d="M ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} M ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.chestHalf)} ${Y(g.armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
+    seam.push(`<path d="M ${L(g.waistHalf)} ${Y(g.waistY)} L ${R(g.waistHalf)} ${Y(g.waistY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+    return renderFlat(p, [d], seam.join(""));
   }
 
   // ---- assemble the SVG ----------------------------------------------------
@@ -281,16 +294,49 @@ const GarmentSVG = (() => {
     return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}</defs>${body}${seamMarkup}</svg>`;
   }
 
-  function build(category, params) {
+  // ---- morph model -------------------------------------------------------
+  // A "model" snapshots the resolved geometry for a category. Because the
+  // numeric fields of two models of the SAME category can be interpolated,
+  // render-preview can lerp from the previous design to the new one frame by
+  // frame, so each decision visibly RESHAPES the garment instead of swapping.
+  // Discrete choices (collar/closure/pockets) snap to the target; only the
+  // shape (widths, lengths, hems) tweens.
+  function model(category, params) {
     const p = params || {};
     const cat = (category || "jacket").toLowerCase();
-    if (cat === "pants") return pantsFlat(p);
-    if (cat === "dress") return dressFlat(p);
-    if (CFG[cat]) return topFlat(cat, p);
-    return topFlat("tshirt", p); // sensible generic top
+    if (cat === "pants") return { cat, kind: "pants", p, g: pantsGeom(p) };
+    if (cat === "dress") return { cat, kind: "dress", p, g: dressGeom(p) };
+    const realCat = CFG[cat] ? cat : "tshirt";
+    const cfg = CFG[realCat];
+    return { cat: realCat, kind: "top", p, cfg, g: geometry(p, cfg) };
   }
 
-  return { build, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  function paint(m) {
+    if (!m) return "";
+    if (m.kind === "pants") return paintPants(m.p, m.g);
+    if (m.kind === "dress") return paintDress(m.p, m.g);
+    return paintTop(m.p, m.cfg, m.g);
+  }
+
+  // Interpolated model: numeric geometry fields lerp a→b; everything else
+  // (discrete params, collar/length strings, cfg) takes the target b. If the
+  // models aren't the same category/kind the shapes aren't comparable, so we
+  // just return the target (caller crossfades / snaps).
+  function lerpModel(a, b, t) {
+    if (!a || !b || a.cat !== b.cat || a.kind !== b.kind) return b;
+    const g = {};
+    for (const k in b.g) {
+      const bv = b.g[k], av = a.g[k];
+      g[k] = (typeof bv === "number" && typeof av === "number") ? lerp(av, bv, t) : bv;
+    }
+    return { cat: b.cat, kind: b.kind, p: b.p, cfg: b.cfg, g };
+  }
+
+  function build(category, params) {
+    return paint(model(category, params));
+  }
+
+  return { build, model, paint, lerpModel, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

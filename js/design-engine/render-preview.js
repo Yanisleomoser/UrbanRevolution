@@ -16,6 +16,40 @@ const DesignPreview = (() => {
   const PREVIEW_DIR = "js/design-engine/content/img/preview/";
   const SCHEME_THRESHOLD = 0.6; // above the inferred 0.5 → user actively chose
 
+  // --- silhouette morph ----------------------------------------------------
+  // The flat doesn't just swap on each decision — it ANIMATES from the previous
+  // shape to the new one (GarmentSVG.lerpModel), so the user SEES the garment
+  // reshape (shoulder widening, hem dropping, waist nipping). This is the fix
+  // for "the morph works but is so minimal it feels like nothing happens".
+  const MORPH_MS = 440;
+  const lastModel = new WeakMap(); // preview el → last GarmentSVG model
+  const tweenId = new WeakMap();   // preview el → running rAF id
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const reduceMotion = () =>
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
+
+  function morph(el, wrap, fromM, toM) {
+    const prev = tweenId.get(el);
+    if (prev) cancelAnimationFrame(prev);
+    // Start painted at t=0 (the previous shape) so there's no flash of the
+    // target before the animation runs.
+    wrap.innerHTML = window.GarmentSVG.paint(window.GarmentSVG.lerpModel(fromM, toM, 0));
+    const start = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / MORPH_MS);
+      wrap.innerHTML = window.GarmentSVG.paint(window.GarmentSVG.lerpModel(fromM, toM, easeOut(t)));
+      if (t < 1) {
+        tweenId.set(el, requestAnimationFrame(step));
+      } else {
+        tweenId.delete(el);
+        wrap.innerHTML = window.GarmentSVG.paint(toM); // clean final frame
+      }
+    };
+    tweenId.set(el, requestAnimationFrame(step));
+  }
+
   function params(dna) {
     const g = (p) => DesignDNA.get(dna, p);
     return {
@@ -75,13 +109,30 @@ const DesignPreview = (() => {
     const badge = window.I18N ? window.I18N.t("dpreview.fallback_badge") : "STILVORSCHAU";
     const schemeChosen = DesignDNA.confidence(dna, "color.scheme") > SCHEME_THRESHOLD;
 
+    // Resolve the new silhouette as a morph model when GarmentSVG is present so
+    // we can animate from the previous shape; fall back to the static studio SVG.
+    const toModel = window.GarmentSVG ? window.GarmentSVG.model(p.category || "tshirt", p) : null;
+    const targetSvg = toModel ? window.GarmentSVG.paint(toModel) : silhouette(p);
+
     el.innerHTML = `
       <div class="de-preview-photo${schemeChosen ? " is-duo" : ""}" hidden><img alt="" /><div class="de-preview-duo"></div></div>
-      <div class="de-garment-wrap">${silhouette(p)}</div>
+      <div class="de-garment-wrap">${targetSvg}</div>
       <span class="de-preview-badge">${badge}</span>`;
 
     const duo = el.querySelector(".de-preview-duo");
     if (duo) duo.style.background = schemeChosen ? duoBackground(dna) : "transparent";
+
+    // Animate the reshape when we have a previous model of the SAME category
+    // (cross-category switches snap — the shapes aren't comparable). First
+    // render and reduced-motion users get the target immediately.
+    if (toModel) {
+      const fromModel = lastModel.get(el);
+      const wrap = el.querySelector(".de-garment-wrap");
+      if (wrap && fromModel && fromModel.cat === toModel.cat && !reduceMotion()) {
+        morph(el, wrap, fromModel, toModel);
+      }
+      lastModel.set(el, toModel);
+    }
 
     // Realism layer (brief §1): the curated hero photo only appears at
     // convergence / on generate — it crossfades OVER the flat, never sits
