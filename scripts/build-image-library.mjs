@@ -33,6 +33,8 @@ const ARGS = process.argv.slice(2);
 const DRY = ARGS.includes("--dry");
 const FORCE = ARGS.includes("--force");
 const ONLY = (ARGS.find((a) => a.startsWith("--only=")) || "").split("=")[1] || null;
+// Restrict to jobs whose output path contains this substring (e.g. one motif).
+const MATCH = (ARGS.find((a) => a.startsWith("--match=")) || "").split("=")[1] || null;
 const TOKEN = process.env.REPLICATE_API_TOKEN;
 // Optional: generate via the deployed key-gated /api/gen-image route, so the
 // Replicate token never leaves Vercel (no local token needed).
@@ -114,8 +116,8 @@ const generate = (prompt) => (ENDPOINT ? generateViaEndpoint(prompt) : generateV
 async function main() {
   if (!fs.existsSync(CONFIG)) die("Config fehlt: " + CONFIG);
   const cfg = JSON.parse(fs.readFileSync(CONFIG, "utf8"));
-  const jobs = plan(cfg);
-  console.log(`→ ${jobs.length} Bilder geplant${ONLY ? " (--only=" + ONLY + ")" : ""}${DRY ? " [DRY]" : ""}\n`);
+  const jobs = plan(cfg).filter((j) => !MATCH || j.rel.includes(MATCH));
+  console.log(`→ ${jobs.length} Bilder geplant${ONLY ? " (--only=" + ONLY + ")" : ""}${MATCH ? " (--match=" + MATCH + ")" : ""}${DRY ? " [DRY]" : ""}\n`);
 
   if (DRY) {
     jobs.forEach((j) => console.log(`· ${j.rel}\n    ${j.prompt}\n`));
