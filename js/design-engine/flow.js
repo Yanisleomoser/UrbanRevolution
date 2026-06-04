@@ -265,6 +265,10 @@ const DesignFlow = (() => {
         <p class="de-summary" id="de-refine-summary">${DesignSummary.toSentence(dna, l)}</p>
         ${chips}
         ${axisRows ? `<div class="de-refine-axes"><p class="de-inferred-h">${t("engine.refine_adjust")}</p>${axisRows}</div>` : ""}
+        <div class="de-freetext">
+          <label class="de-freetext-label" for="de-freetext-input">${t("engine.refine_freetext_label")}</label>
+          <textarea id="de-freetext-input" class="de-freetext-input" rows="2" placeholder="${t("engine.refine_freetext_ph")}"></textarea>
+        </div>
         <div class="de-refine-actions">
           <button type="button" class="de-nav" id="de-deeper">${t("engine.deeper")}</button>
           <button type="button" class="de-nav" id="de-share">${t("engine.share")}</button>
@@ -290,8 +294,11 @@ const DesignFlow = (() => {
           navigator.clipboard.writeText(url).then(() => flash(t("engine.share_copied")), () => window.prompt(t("engine.share"), url));
         } else { window.prompt(t("engine.share"), url); }
       });
-      body.querySelector("#de-generate").addEventListener("click", (e) =>
-        handoff(DesignSummary.toPrompt(dna, lang()), DesignDNA.get(dna, "category"), e.currentTarget));
+      body.querySelector("#de-generate").addEventListener("click", (e) => {
+        const ftEl = body.querySelector("#de-freetext-input");
+        const extra = ftEl && ftEl.value.trim() ? " " + ftEl.value.trim() : "";
+        handoff(DesignSummary.toPrompt(dna, lang()) + extra, DesignDNA.get(dna, "category"), e.currentTarget);
+      });
 
       if (typeof options.onFinish === "function") {
         options.onFinish({ dna, sentence: DesignSummary.toSentence(dna, l), prompt: DesignSummary.toPrompt(dna, l) });
@@ -315,13 +322,34 @@ const DesignFlow = (() => {
       }
     }
 
+    // Calm intro screen (brief §2): one statement, lots of negative space,
+    // announces the ritual + that the AI does the final touch from one sentence.
+    function showIntro() {
+      const grid = hostEl.querySelector(".de-stage-grid");
+      if (grid) grid.style.display = "none";
+      const intro = document.createElement("div");
+      intro.className = "de-intro";
+      intro.innerHTML = `
+        <div class="de-intro-inner">
+          <h1 class="de-intro-title">${t("engine.intro_title")}</h1>
+          <p class="de-intro-sub">${t("engine.intro_sub")}</p>
+          <button type="button" class="de-confirm de-intro-start">${t("engine.intro_start")}</button>
+        </div>`;
+      hostEl.appendChild(intro);
+      intro.querySelector(".de-intro-start").addEventListener("click", () => {
+        intro.remove();
+        if (grid) grid.style.display = "";
+        renderNext();
+      });
+    }
+
     function resetJourney() {
       clearSaved();
       dna = DesignDNA.create();
       answered = new Set();
       history.length = 0;
       currentNode = null;
-      renderNext();
+      showIntro();
     }
 
     backBtn.addEventListener("click", () => {
@@ -355,8 +383,9 @@ const DesignFlow = (() => {
         if (!dna.archetypeWeights) dna.archetypeWeights = DesignDNA.create().archetypeWeights;
         if (!dna._confidence) dna._confidence = {};
         answered = new Set(saved.answered);
+        return renderNext();
       }
-      renderNext();
+      return showIntro();
     });
   }
 
