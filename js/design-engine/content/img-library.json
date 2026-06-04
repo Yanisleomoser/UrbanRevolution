@@ -1,6 +1,6 @@
 {
   "_comment": "Bild-Bibliothek-Config für scripts/build-image-library.mjs (Umsetzungs-Brief §5). Datengetrieben: Marke editiert Looks/Prompts/Kombinationen ohne Code. Globale Bild-DNA (`style`) liegt über ALLEN Bildern, damit die Bibliothek aus einem Guss wirkt. Dateinamen exakt nach §3.1/§3.2, damit render-preview.js + die Auswahl-Nodes sie finden.",
-  "style": "single subject, near-black seamless studio backdrop #0a0a0b, cohesive cool color grade, fine film grain, vertical 4:5, no logo, no text, pink-violet-cyan only as a subtle accent where natural, never tinting the whole frame",
+  "style": "a real photograph with genuine depth, texture and detail — never a flat colour block or solid colour field, near-black seamless studio backdrop #0a0a0b, cohesive cool color grade, fine film grain, vertical 4:5, no logo, no text, pink-violet-cyan only as a subtle accent where natural, never tinting the whole frame",
 
   "hero_template": "Editorial fashion photograph of a {category}, {look}, single-garment focus on a ghost / invisible mannequin against a near-black seamless studio backdrop, no logo, no text, photorealistic, ultra-detailed fabric, cohesive cool color grade with fine film grain, vertical 4:5.",
   "categories": ["jacket"],
@@ -37,6 +37,6 @@
     "nature": "soft organic foliage and natural linen in diffuse daylight, earthy and tactile",
     "neon": "glossy neon reflections on wet black asphalt, magenta and cyan, night energy",
     "atelier": "a tailor's atelier worktable with shears, chalk and fabric bolts, warm focused light",
-    "sportcore": "clean performance-fabric surface with one energetic accent stripe, fresh and dynamic"
+    "sportcore": "photograph of a sunlit running track with painted lane lines and the woven texture of performance fabric caught mid-motion, shallow depth of field, dynamic, fresh and precise"
   }
 }
