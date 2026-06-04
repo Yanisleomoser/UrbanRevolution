@@ -16,10 +16,20 @@
     // Put a live ticker beside each section number, mirroring .facts-top.
     function buildSlots() {
         document.querySelectorAll(".section-label").forEach((label) => {
-            // The landing eyebrow is centred, not a numbered section → skip.
-            if (label.classList.contains("manifesto-eyebrow")) return;
             const parent = label.parentNode;
             if (!parent) return;
+            // The landing ("Warum es uns gibt") is centred → put the ticker
+            // centred right under the eyebrow instead of in a left/right row.
+            if (label.classList.contains("manifesto-eyebrow")) {
+                const next = label.nextElementSibling;
+                if (!next || !next.classList.contains("section-live")) {
+                    const liveC = document.createElement("p");
+                    liveC.className = "section-live mono-label manifesto-live";
+                    liveC.setAttribute("aria-hidden", "true");
+                    parent.insertBefore(liveC, label.nextSibling);
+                }
+                return;
+            }
             // Facts already has its row (.facts-top + .facts-live) → reuse it.
             if (parent.classList.contains("facts-top")) {
                 const fl = parent.querySelector(".facts-live");
