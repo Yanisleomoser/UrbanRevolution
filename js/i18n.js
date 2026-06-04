@@ -1268,7 +1268,11 @@ const I18N = (() => {
     colorName,
     pattern,
     apply,
+    // Exposed for the DE/EN key-parity test (read-only data); harmless in the
+    // browser. Lets tooling diff the two language tables without re-parsing.
+    dict,
   };
 })();
 
-window.I18N = I18N;
+if (typeof window !== "undefined") window.I18N = I18N;
+if (typeof module !== "undefined" && module.exports) module.exports = I18N;

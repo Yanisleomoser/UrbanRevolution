@@ -114,18 +114,18 @@ const Export = (() => {
       .join("");
 
     const notesHTML = spec.production.constructionNotes
-      .map((n) => `<li>${n}</li>`)
+      .map((n) => `<li>${esc(n)}</li>`)
       .join("");
 
     const tagsHTML = spec.design.tags
-      .map((t) => `<span class="tag">${t}</span>`)
+      .map((t) => `<span class="tag">${esc(t)}</span>`)
       .join(" ");
 
     return `<!DOCTYPE html>
 <html lang="${loc().slice(0, 2)}">
 <head>
 <meta charset="UTF-8">
-<title>${spec.metadata.designId} — ${spec.design.name}</title>
+<title>${esc(spec.metadata.designId)} — ${esc(spec.design.name)}</title>
 <style>
     @page { size: A4; margin: 1.5cm; }
     body { font-family: 'Inter', -apple-system, sans-serif; color: #111; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }
@@ -148,19 +148,19 @@ const Export = (() => {
 <body>
     <div class="header">
         <div>
-            <h1>${spec.design.name}</h1>
+            <h1>${esc(spec.design.name)}</h1>
             <p>Urban Revolution · Production Spec Sheet</p>
         </div>
         <div class="id">
-            ${spec.metadata.designId}<br>
+            ${esc(spec.metadata.designId)}<br>
             ${new Date(spec.metadata.generatedAt).toLocaleDateString(loc())}
         </div>
     </div>
 
-    <div class="description">"${spec.design.description}"</div>
+    <div class="description">"${esc(spec.design.description)}"</div>
 
     <h2>${t("export.original_prompt")}</h2>
-    <p style="font-size: 14px; color: #444; font-style: italic;">"${spec.design.originalPrompt}"</p>
+    <p style="font-size: 14px; color: #444; font-style: italic;">"${esc(spec.design.originalPrompt)}"</p>
 
     <h2>${t("export.tags")}</h2>
     <p>${tagsHTML || '<span class="tag">custom</span>'}</p>
@@ -169,7 +169,7 @@ const Export = (() => {
     <table>
         <tr><td>${t("spec.type")}</td><td>${typeLabel(spec.specifications.garmentType)}</td></tr>
         <tr><td>${t("spec.material")}</td><td>${matLabel(spec.specifications.material)}</td></tr>
-        <tr><td>${t("spec.color")}</td><td><span class="color-chip" style="background:${spec.specifications.color}"></span>${spec.specifications.color}</td></tr>
+        <tr><td>${t("spec.color")}</td><td><span class="color-chip" style="background:${esc(spec.specifications.color)}"></span>${esc(spec.specifications.color)}</td></tr>
         <tr><td>${t("spec.fit")}</td><td>${spec.specifications.fit}</td></tr>
         <tr><td>${t("spec.length")}</td><td>${esc(spec.specifications.length)}</td></tr>
         <tr><td>${t("spec.print")}</td><td>${spec.specifications.print ? `&bdquo;${esc(spec.specifications.print)}&ldquo;` : "—"}</td></tr>
@@ -227,4 +227,5 @@ const Export = (() => {
   };
 })();
 
-window.Export = Export;
+if (typeof window !== "undefined") window.Export = Export;
+if (typeof module !== "undefined" && module.exports) module.exports = Export;
