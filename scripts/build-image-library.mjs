@@ -8,8 +8,12 @@
  * edit looks/prompts/categories in the JSON, re-run. Filenames match §3.1/§3.2
  * so render-preview.js + the selection nodes find them.
  *
- * Usage:
- *   REPLICATE_API_TOKEN=r8_xxx node scripts/build-image-library.mjs
+ * Usage (zwei Wege):
+ *   A) Token bleibt in Vercel (empfohlen) — via die key-gated /api/gen-image-Route:
+ *      node scripts/build-image-library.mjs --endpoint=https://revolveurban.com/api/gen-image --key=<IMAGE_GEN_KEY>
+ *   B) Lokaler Token:
+ *      REPLICATE_API_TOKEN=r8_xxx node scripts/build-image-library.mjs
+ *   Flags:
  *     --dry            print composed prompts + target paths, no API call
  *     --force          regenerate images that already exist
  *     --only=hero|mood|material   restrict to one group
@@ -30,6 +34,10 @@ const DRY = ARGS.includes("--dry");
 const FORCE = ARGS.includes("--force");
 const ONLY = (ARGS.find((a) => a.startsWith("--only=")) || "").split("=")[1] || null;
 const TOKEN = process.env.REPLICATE_API_TOKEN;
+// Optional: generate via the deployed key-gated /api/gen-image route, so the
+// Replicate token never leaves Vercel (no local token needed).
+const ENDPOINT = (ARGS.find((a) => a.startsWith("--endpoint=")) || "").split("=")[1] || null;
+const GATE_KEY = (ARGS.find((a) => a.startsWith("--key=")) || "").split("=")[1] || process.env.IMAGE_GEN_KEY || null;
 const ARCHETYPES = ["quietMinimal", "techAvant", "y2kStreet", "softCouture", "utility", "sport"];
 
 function die(m) { console.error("✗ " + m); process.exit(1); }
@@ -60,7 +68,25 @@ function plan(cfg) {
   return jobs;
 }
 
-async function generate(prompt) {
+// Via the deployed key-gated route — Replicate token stays in Vercel. Retries
+// a couple of times on a transient "pending".
+async function generateViaEndpoint(prompt) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, aspect: "4:5", key: GATE_KEY }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.imageUrl) return data.imageUrl;
+    if (res.status === 403) throw new Error("403 forbidden — IMAGE_GEN_KEY in Vercel und --key müssen übereinstimmen");
+    if (data.code === "pending" || res.status === 504) { await sleep(3000); continue; }
+    throw new Error(`endpoint ${res.status}: ${data.error || data.code || "no imageUrl"}`);
+  }
+  throw new Error("pending nach mehreren Versuchen");
+}
+
+async function generateViaReplicate(prompt) {
   let res = await fetch(MODEL, {
     method: "POST",
     headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json", Prefer: "wait=60" },
@@ -78,6 +104,8 @@ async function generate(prompt) {
   return Array.isArray(pred.output) ? pred.output[0] : pred.output;
 }
 
+const generate = (prompt) => (ENDPOINT ? generateViaEndpoint(prompt) : generateViaReplicate(prompt));
+
 async function main() {
   if (!fs.existsSync(CONFIG)) die("Config fehlt: " + CONFIG);
   const cfg = JSON.parse(fs.readFileSync(CONFIG, "utf8"));
@@ -89,7 +117,12 @@ async function main() {
     console.log("Dry-Run — nichts generiert. Ohne --dry (mit REPLICATE_API_TOKEN) erzeugt es die Bilder.");
     return;
   }
-  if (!TOKEN) die("REPLICATE_API_TOKEN nicht gesetzt. Beispiel:\n  REPLICATE_API_TOKEN=r8_xxx node scripts/build-image-library.mjs\n(oder --dry zum Prüfen ohne Token)");
+  if (ENDPOINT) {
+    if (!GATE_KEY) die("--endpoint gesetzt, aber kein --key=… (oder IMAGE_GEN_KEY). Der Gate-Key muss zu Vercels IMAGE_GEN_KEY passen.");
+    console.log(`→ via Endpoint ${ENDPOINT} (Replicate-Token bleibt in Vercel)\n`);
+  } else if (!TOKEN) {
+    die("Kein Generierungs-Weg: entweder --endpoint=<url> --key=<key> (Token bleibt in Vercel)\noder REPLICATE_API_TOKEN=r8_… (lokal). --dry prüft ohne beides.");
+  }
 
   let made = 0, skipped = 0, failed = 0;
   for (const j of jobs) {
