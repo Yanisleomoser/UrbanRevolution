@@ -11,10 +11,51 @@
 (function () {
   const V = window.DEVisuals;
 
+  // Subarchetype → distinguishing silhouette hints so each jacket type reads
+  // differently in its tile (puffer is voluminous, trench long, blazer notched…).
+  const SUBARCH = {
+    puffer: { volume: "high", collar: "stand", cuffs: "ribbed", hem: "ribbed" },
+    bomber: { length: "cropped", collar: "stand", cuffs: "ribbed", hem: "ribbed" },
+    trench: { length: "long", collar: "notched", closure: "button" },
+    blazer: { collar: "notched", closure: "button", structure: 0.85 },
+    work: { collar: "stand", pockets: "cargo", material: "cotton" },
+  };
+  // DNA paths (set by a choice's effects) → GarmentSVG params.
+  const PARAM = {
+    "silhouette.fit": "fit", "silhouette.volume": "volume", "silhouette.structure": "structure",
+    "length": "length", "construction.collar": "collar", "construction.sleeve": "sleeve",
+    "construction.closure": "closure", "construction.pockets": "pockets",
+    "construction.cuffs": "cuffs", "construction.hem": "hem",
+    "pattern.type": "pattern", "fabric.material": "material",
+  };
+
+  // Build GarmentSVG params from a choice's declared effects so the tile shows
+  // the ACTUAL option (e.g. the "hood" tile draws a hooded jacket).
+  function paramsFromChoice(choice) {
+    const set = (choice.effects && choice.effects.set) || {};
+    const p = {};
+    let touched = false;
+    Object.entries(set).forEach(([k, v]) => { if (PARAM[k] !== undefined) { p[PARAM[k]] = v; touched = true; } });
+    if (set.subArchetype && SUBARCH[set.subArchetype]) { Object.assign(p, SUBARCH[set.subArchetype]); touched = true; }
+    return { p, touched };
+  }
+
+  // A tile that is never a flat colour field: category → line-art silhouette;
+  // any jacket-shaping node → a parametric GarmentSVG of that exact option;
+  // everything else → the on-brand gradient (a real photo fades over it if the
+  // JSON `image` loads).
   function tileFallback(node, choice) {
     if (node.id === "category_select") {
       const w = V.el("div", { class: "de-visual" });
       w.appendChild(V.silhouette(choice.id));
+      return w;
+    }
+    const isJacketNode = typeof node.id === "string" && node.id.indexOf("jacket") === 0;
+    const { p, touched } = paramsFromChoice(choice);
+    if (window.GarmentSVG && (touched || isJacketNode)) {
+      const base = { fit: 0.5, structure: 0.5, volume: "mid", length: "regular", collar: "stand", sleeve: "set-in", closure: "zip", stops: ["#9aa0a8"], material: "cotton" };
+      const w = V.el("div", { class: "de-visual de-visual-garment" });
+      w.innerHTML = window.GarmentSVG.build("jacket", Object.assign(base, p));
       return w;
     }
     return V.swatch("var(--gradient)", "de-swatch-soft");

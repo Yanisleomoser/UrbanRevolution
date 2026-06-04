@@ -5478,3 +5478,20 @@ footer.footer {
 .de-preview-photo.is-duo img { filter: grayscale(1) contrast(1.06) brightness(0.85) blur(5px); }
 .de-preview-photo .de-preview-duo { position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.9; }
 .de-preview-photo:not(.is-duo) .de-preview-duo { display: none; }
+
+/* Karten-Kacheln zeigen statt rosa-lila Farbfläche eine parametrische
+   GarmentSVG-Illustration der jeweiligen Option (Kragen/Länge/Verschluss …);
+   ein echtes Foto blendet darüber, sobald das JSON `image` lädt. */
+.de-visual-garment { background: radial-gradient(120% 90% at 50% 22%, #1b1b20, #0c0c0f 82%); }
+.de-visual-garment .de-garment { width: 100%; height: 100%; max-width: none; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)); }
+
+/* In-App-Browser (Instagram/Facebook): der Viewport ist kürzer, und ein
+   mittig zentrierter Hero schiebt die Headline unter die fixe Navbar. Auf
+   kurzen Viewports oben ausrichten, mit Abstand der die Navbar + Notch frei
+   hält. (Im normalen, hohen Safari bleibt die Zentrierung.) */
+@media (max-height: 730px) {
+    .manifesto--lead {
+        align-items: start;
+        padding-top: max(calc(var(--space-10) + var(--space-4)), calc(84px + env(safe-area-inset-top)));
+    }
+}

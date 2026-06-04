@@ -63,6 +63,10 @@ function plan(cfg) {
     Object.entries(cfg.mood || {}).forEach(([key, subject]) =>
       add(`js/design-engine/content/img/mood/${key}.jpg`, subject));
   }
+  if (!ONLY || ONLY === "context") {
+    Object.entries(cfg.context || {}).forEach(([key, subject]) =>
+      add(`js/design-engine/content/img/context/${key}.jpg`, subject));
+  }
   if (!ONLY || ONLY === "material") {
     Object.entries(cfg.materials || {}).forEach(([key, label]) =>
       add(`js/design-engine/content/img/material/${key}.jpg`, cfg.material_template.replace("{material}", label)));

@@ -38,5 +38,15 @@
     "neon": "glossy neon reflections on wet black asphalt, magenta and cyan, night energy",
     "atelier": "a tailor's atelier worktable with shears, chalk and fabric bolts, warm focused light",
     "sportcore": "photograph of a sunlit running track with painted lane lines and the woven texture of performance fabric caught mid-motion, shallow depth of field, dynamic, fresh and precise"
+  },
+
+  "context": {
+    "occasion-everyday": "photograph of a person walking a quiet morning city street in relaxed everyday clothing, candid, soft daylight, shallow depth of field",
+    "occasion-work": "photograph of a calm modern workspace with a tailored jacket draped over a chair beside a desk, soft daylight, refined and focused",
+    "occasion-event": "photograph of an elegant evening event interior, low warm light and refined silhouettes, glossy reflections, bokeh",
+    "occasion-active": "photograph of a runner in motion on an urban path at dawn, performance wear, dynamic, shallow depth of field, fine grain",
+    "season-all": "photograph of a versatile layered outfit on a neutral studio clothing rail, soft even daylight, transitional textures and fabrics",
+    "season-warm": "photograph of a sunlit summer city scene with light linen fabric drifting in a warm breeze, bright and airy, shallow depth of field",
+    "season-cold": "photograph of a misty winter street with a heavy wool coat and visible breath in cold air, muted blue light, fine grain"
   }
 }

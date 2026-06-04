@@ -340,6 +340,7 @@
       "choices": [
         {
           "id": "everyday",
+          "image": "js/design-engine/content/img/context/occasion-everyday.jpg",
           "label": {
             "de": "Alltag",
             "en": "Everyday"
@@ -353,6 +354,7 @@
         },
         {
           "id": "work",
+          "image": "js/design-engine/content/img/context/occasion-work.jpg",
           "label": {
             "de": "Arbeit",
             "en": "Work"
@@ -370,6 +372,7 @@
         },
         {
           "id": "event",
+          "image": "js/design-engine/content/img/context/occasion-event.jpg",
           "label": {
             "de": "Anlass",
             "en": "Event"
@@ -386,6 +389,7 @@
         },
         {
           "id": "active",
+          "image": "js/design-engine/content/img/context/occasion-active.jpg",
           "label": {
             "de": "Aktiv",
             "en": "Active"
@@ -447,6 +451,7 @@
       "choices": [
         {
           "id": "all",
+          "image": "js/design-engine/content/img/context/season-all.jpg",
           "label": {
             "de": "Ganzjährig",
             "en": "All-year"
@@ -459,6 +464,7 @@
         },
         {
           "id": "warm",
+          "image": "js/design-engine/content/img/context/season-warm.jpg",
           "label": {
             "de": "Warm",
             "en": "Warm"
@@ -472,6 +478,7 @@
         },
         {
           "id": "cold",
+          "image": "js/design-engine/content/img/context/season-cold.jpg",
           "label": {
             "de": "Kalt",
             "en": "Cold"
