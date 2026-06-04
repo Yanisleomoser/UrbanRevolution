@@ -2,17 +2,20 @@
  * Urban Revolution — Design Engine · Flow controller
  *
  * Orchestrates the journey: loads JSON content, drives the engine one node at a
- * time, renders the active modality, tracks a maturity ring, mirrors concrete
- * attributes into StateManager (so the existing 3D + spec preview react), and
- * hands the finished DesignDNA to AI.generateDesign via summary.toPrompt.
+ * time, renders the active modality, keeps a live 2D preview proxy + maturity
+ * ring, flashes micro-feedback on each choice, persists progress to localStorage
+ * (resume after reload), runs Phase F (inference + warmer/colder refinement),
+ * mirrors concrete attributes into StateManager, and hands the finished
+ * DesignDNA to AI.generateDesign via summary.toPrompt.
  *
- *   DesignFlow.mount(hostEl, { contentBase, onFinish })  → Promise
+ *   DesignFlow.mount(hostEl, { contentBase, onDesign, onFinish })  → Promise
  *
- * Depends on the classic-script globals: DesignDNA, DesignEngine, DesignSummary,
- * DEModalities, I18N, CONFIG, StateManager (all optional-guarded).
+ * Globals (all optional-guarded): DesignDNA, DesignEngine, DesignInference,
+ * DesignPreview, DesignSummary, DEModalities, I18N, CONFIG, StateManager.
  */
 const DesignFlow = (() => {
   const DEFAULT_BASE = "js/design-engine/content/";
+  const STORAGE_KEY = "urev_journey_v1";
 
   function S(key, value) {
     if (!window.StateManager) return;
@@ -27,11 +30,7 @@ const DesignFlow = (() => {
       get("archetypes.json"), get("attributes.json"),
       get("nodes/intent.json"), get("nodes/jacket.json"),
     ]);
-    return {
-      archetypes: arch.archetypes,
-      attributes: attrs,
-      nodes: [...intent.nodes, ...jacket.nodes],
-    };
+    return { archetypes: arch.archetypes, attributes: attrs, nodes: [...intent.nodes, ...jacket.nodes] };
   }
 
   function resolveEffects(node, payload) {
@@ -44,21 +43,16 @@ const DesignFlow = (() => {
       return { eff, conf: 0.8 };
     }
     if (node.modality === "colorGradient") {
-      return {
-        eff: { set: {
-          "color.scheme": payload.scheme,
-          "color.stops": payload.stops,
-          "color.value": payload.value,
-          "color.saturation": payload.saturation,
-        } },
-        conf: 1,
-      };
+      return { eff: { set: {
+        "color.scheme": payload.scheme, "color.stops": payload.stops,
+        "color.value": payload.value, "color.saturation": payload.saturation,
+      } }, conf: 1 };
     }
     return { eff: DesignEngine.choiceEffects(node, payload), conf: 1 };
   }
 
   function mirror(dna, attributes) {
-    const map = (attributes.stateMap) || {};
+    const map = attributes.stateMap || {};
     Object.entries(map).forEach(([dnaPath, stateKey]) => {
       const v = DesignDNA.get(dna, dnaPath);
       if (v !== undefined && v !== null) S(stateKey, v);
@@ -66,68 +60,112 @@ const DesignFlow = (() => {
   }
 
   function ring(maturity) {
-    const C = 163.36; // 2π·26
+    const C = 163.36;
     const off = C * (1 - Math.max(0, Math.min(1, maturity)));
-    return `
-      <svg class="de-ring" viewBox="0 0 64 64" aria-hidden="true">
-        <defs><linearGradient id="deRingGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#ec4899"/><stop offset="0.5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
-        </linearGradient></defs>
-        <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
-        <circle cx="32" cy="32" r="26" fill="none" stroke="url(#deRingGrad)" stroke-width="4"
-          stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}"
-          transform="rotate(-90 32 32)"/>
-        <text x="32" y="36" text-anchor="middle" class="de-ring-pct">${Math.round(maturity * 100)}</text>
-      </svg>`;
+    return `<svg class="de-ring" viewBox="0 0 64 64" aria-hidden="true">
+      <defs><linearGradient id="deRingGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ec4899"/><stop offset="0.5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
+      </linearGradient></defs>
+      <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+      <circle cx="32" cy="32" r="26" fill="none" stroke="url(#deRingGrad)" stroke-width="4" stroke-linecap="round"
+        stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)"/>
+      <text x="32" y="36" text-anchor="middle" class="de-ring-pct">${Math.round(maturity * 100)}</text></svg>`;
+  }
+
+  // Short human label of what a choice just changed (micro-feedback, brief §7).
+  function changeLabel(node, payload, l) {
+    if (node.modality === "cards") {
+      const c = (node.choices || []).find((x) => x.id === payload);
+      return c && c.label ? c.label[l] : "";
+    }
+    if (node.modality === "thisOrThat") {
+      const c = (node.pair || []).find((x) => x.id === payload);
+      return c && c.label ? c.label[l] : "";
+    }
+    if (node.modality === "slider") {
+      const ax = node.axis && node.axis[l];
+      if (!ax) return "";
+      return payload > 0.66 ? ax[1] : payload < 0.34 ? ax[0] : "·";
+    }
+    if (node.modality === "colorGradient") return t("engine.changed_color");
+    return "";
   }
 
   function mount(hostEl, opts) {
     const options = opts || {};
     const base = options.contentBase || DEFAULT_BASE;
-    const dna = DesignDNA.create();
-    const answered = new Set();
+    let dna = DesignDNA.create();
+    let answered = new Set();
     const history = [];
     let content = null;
+    let currentNode = null;
 
     hostEl.classList.add("de-stage");
     hostEl.innerHTML = `
       <div class="de-head">
-        <div class="de-ring-wrap" id="de-ring"></div>
-        <p class="de-live" id="de-live"></p>
+        <div class="de-preview" id="de-preview" aria-hidden="true"></div>
+        <div class="de-head-meta">
+          <div class="de-ring-wrap" id="de-ring"></div>
+          <p class="de-live" id="de-live"></p>
+        </div>
+        <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
       </div>
       <div class="de-body" id="de-body"></div>
       <div class="de-controls">
         <button type="button" class="de-nav" id="de-back" disabled>${t("engine.back")}</button>
         <button type="button" class="de-nav" id="de-skip">${t("engine.skip")}</button>
+        <button type="button" class="de-nav" id="de-restart">${t("engine.restart")}</button>
         <button type="button" class="de-nav de-finish" id="de-finish" hidden>${t("engine.finish_early")}</button>
       </div>`;
 
     const body = hostEl.querySelector("#de-body");
     const ringWrap = hostEl.querySelector("#de-ring");
     const live = hostEl.querySelector("#de-live");
+    const previewEl = hostEl.querySelector("#de-preview");
+    const flashEl = hostEl.querySelector("#de-flash");
     const backBtn = hostEl.querySelector("#de-back");
     const skipBtn = hostEl.querySelector("#de-skip");
+    const restartBtn = hostEl.querySelector("#de-restart");
     const finishBtn = hostEl.querySelector("#de-finish");
 
-    function maturity() {
-      return DesignDNA.maturity(dna, content.attributes.required, content.attributes.confidenceThreshold);
+    const maturity = () => DesignDNA.maturity(dna, content.attributes.required, content.attributes.confidenceThreshold);
+
+    function updatePreview() {
+      if (window.DesignPreview) window.DesignPreview.renderInto(previewEl, dna);
+      live.textContent = DesignSummary.toSentence(dna, lang());
     }
     function refreshChrome() {
-      const m = maturity();
-      ringWrap.innerHTML = ring(m);
-      live.textContent = DesignSummary.toSentence(dna, lang());
+      ringWrap.innerHTML = ring(maturity());
+      updatePreview();
       backBtn.disabled = history.length === 0;
-      finishBtn.hidden = m < 0.6;
+      finishBtn.hidden = maturity() < 0.6;
     }
-    function snapshot() {
-      history.push({ dna: JSON.parse(JSON.stringify(dna)), answered: new Set(answered) });
+    let flashTimer = null;
+    function flash(text) {
+      if (!text) return;
+      flashEl.textContent = text;
+      flashEl.classList.add("is-on");
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => flashEl.classList.remove("is-on"), 1600);
     }
-    function restore(snap) {
-      Object.keys(dna).forEach((k) => delete dna[k]);
-      Object.assign(dna, JSON.parse(JSON.stringify(snap.dna)));
-      answered.clear();
-      snap.answered.forEach((id) => answered.add(id));
+
+    function persist() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ dna, answered: [...answered] }));
+      } catch (_e) { /* private mode / quota */ }
     }
+    function loadSaved() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const o = JSON.parse(raw);
+        if (!o || !Array.isArray(o.answered)) return null;
+        return o;
+      } catch (_e) { return null; }
+    }
+    function clearSaved() { try { localStorage.removeItem(STORAGE_KEY); } catch (_e) { /* no-op */ } }
+
+    function snapshot() { history.push({ dna: JSON.parse(JSON.stringify(dna)), answered: new Set(answered) }); }
 
     const ctx = {
       get lang() { return lang(); },
@@ -136,45 +174,84 @@ const DesignFlow = (() => {
         const { eff } = resolveEffects(currentNode, payload);
         if (eff && eff.set) Object.entries(eff.set).forEach(([p, v]) => DesignDNA.set(dna, p, v, 0));
         mirror(dna, content.attributes);
-        live.textContent = DesignSummary.toSentence(dna, lang());
+        updatePreview();
       },
       commit(payload) {
         const { eff, conf } = resolveEffects(currentNode, payload);
         snapshot();
+        flash("✓ " + changeLabel(currentNode, payload, lang()));
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
         mirror(dna, content.attributes);
+        persist();
         renderNext();
       },
     };
 
-    let currentNode = null;
+    function renderModality(node) {
+      currentNode = node;
+      const renderer = window.DEModalities && window.DEModalities[node.modality];
+      if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
+      renderer(body, node, ctx);
+      refreshChrome();
+    }
 
     function renderNext() {
       refreshChrome();
       const node = DesignEngine.nextNode(content.nodes, dna, answered);
-      currentNode = node;
-      if (!node) return finish();
-      const renderer = window.DEModalities && window.DEModalities[node.modality];
-      if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return finish(); }
-      renderer(body, node, ctx);
+      if (!node) return renderRefine();
+      renderModality(node);
     }
 
-    function finish() {
+    // Phase F — inference & confirmation (brief §6F): complete the DNA, show it
+    // in words + the inferred fills, let the user nudge warmer/colder, or dive
+    // deeper, then generate.
+    function renderRefine() {
       DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
       mirror(dna, content.attributes);
+      persist();
+      currentNode = null;
       refreshChrome();
-      const l = lang();
-      const sentence = DesignSummary.toSentence(dna, l);
-      const prompt = DesignSummary.toPrompt(dna, l);
-      body.innerHTML = `
-        <h2 class="de-question">${t("engine.done_title")}</h2>
-        <p class="de-summary">${sentence}</p>
-        <button type="button" class="de-confirm" id="de-generate">${t("engine.generate")}</button>`;
       finishBtn.hidden = true;
-      skipBtn.disabled = true;
-      const genBtn = body.querySelector("#de-generate");
-      genBtn.addEventListener("click", () => handoff(prompt, DesignDNA.get(dna, "category"), genBtn));
-      if (typeof options.onFinish === "function") options.onFinish({ dna, sentence, prompt });
+      const l = lang();
+      const sugg = window.DesignInference ? DesignInference.suggestions(dna, content.attributes, l) : [];
+      const chips = sugg.length
+        ? `<div class="de-inferred"><p class="de-inferred-h">${t("engine.refine_inferred")}</p><div class="de-chips">${
+            sugg.map((s) => `<span class="de-chip">${s.label}: <b>${s.valueLabel}</b></span>`).join("")}</div></div>`
+        : "";
+      const axisRows = (window.DesignInference ? ["energy", "brightness", "temperature"] : []).map((ax) => {
+        const label = DesignInference.AXES[ax][l === "en" ? "en" : "de"];
+        return `<div class="de-axis"><span class="de-axis-label">${label}</span>
+          <button type="button" class="de-nudge" data-ax="${ax}" data-dir="-1" aria-label="${label} ${t("engine.nudge_down")}">${t("engine.nudge_down")}</button>
+          <button type="button" class="de-nudge" data-ax="${ax}" data-dir="1" aria-label="${label} ${t("engine.nudge_up")}">${t("engine.nudge_up")}</button></div>`;
+      }).join("");
+
+      body.innerHTML = `
+        <h2 class="de-question">${t("engine.refine_title")}</h2>
+        <p class="de-summary" id="de-refine-summary">${DesignSummary.toSentence(dna, l)}</p>
+        ${chips}
+        ${axisRows ? `<div class="de-refine-axes"><p class="de-inferred-h">${t("engine.refine_adjust")}</p>${axisRows}</div>` : ""}
+        <div class="de-refine-actions">
+          <button type="button" class="de-nav" id="de-deeper">${t("engine.deeper")}</button>
+          <button type="button" class="de-confirm" id="de-generate">${t("engine.generate")}</button>
+        </div>`;
+
+      const reSummary = () => { body.querySelector("#de-refine-summary").textContent = DesignSummary.toSentence(dna, lang()); };
+      body.querySelectorAll(".de-nudge").forEach((btn) => btn.addEventListener("click", () => {
+        const r = DesignInference.adjust(dna, btn.dataset.ax, parseInt(btn.dataset.dir, 10), lang());
+        DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+        mirror(dna, content.attributes); persist(); updatePreview(); reSummary(); refreshChrome();
+        if (r) flash("✓ " + r.label);
+      }));
+      const deeper = body.querySelector("#de-deeper");
+      const moreNode = DesignEngine.nextNode(content.nodes, dna, answered);
+      if (!moreNode) deeper.hidden = true;
+      else deeper.addEventListener("click", () => { snapshot(); renderModality(moreNode); });
+      body.querySelector("#de-generate").addEventListener("click", (e) =>
+        handoff(DesignSummary.toPrompt(dna, lang()), DesignDNA.get(dna, "category"), e.currentTarget));
+
+      if (typeof options.onFinish === "function") {
+        options.onFinish({ dna, sentence: DesignSummary.toSentence(dna, l), prompt: DesignSummary.toPrompt(dna, l) });
+      }
     }
 
     async function handoff(prompt, type, btn) {
@@ -184,6 +261,7 @@ const DesignFlow = (() => {
       try {
         const design = await window.AI.generateDesign(prompt, type || "jacket");
         if (window.StateManager) S("currentDesign", design);
+        clearSaved();
         if (typeof options.onDesign === "function") options.onDesign(design);
         btn.textContent = design.name || t("engine.generate");
       } catch (e) {
@@ -193,18 +271,41 @@ const DesignFlow = (() => {
       }
     }
 
+    function resetJourney() {
+      clearSaved();
+      dna = DesignDNA.create();
+      answered = new Set();
+      history.length = 0;
+      currentNode = null;
+      renderNext();
+    }
+
     backBtn.addEventListener("click", () => {
       if (!history.length) return;
-      restore(history.pop());
+      const snap = history.pop();
+      dna = JSON.parse(JSON.stringify(snap.dna));
+      answered = new Set(snap.answered);
+      persist();
       renderNext();
     });
     skipBtn.addEventListener("click", () => {
-      if (currentNode) { snapshot(); answered.add(currentNode.id); }
+      if (currentNode) { snapshot(); answered.add(currentNode.id); persist(); }
       renderNext();
     });
-    finishBtn.addEventListener("click", finish);
+    restartBtn.addEventListener("click", resetJourney);
+    finishBtn.addEventListener("click", renderRefine);
 
-    return loadContent(base).then((c) => { content = c; renderNext(); });
+    return loadContent(base).then((c) => {
+      content = c;
+      const saved = loadSaved();
+      if (saved && saved.answered.length) {
+        dna = saved.dna;
+        if (!dna.archetypeWeights) dna.archetypeWeights = DesignDNA.create().archetypeWeights;
+        if (!dna._confidence) dna._confidence = {};
+        answered = new Set(saved.answered);
+      }
+      renderNext();
+    });
   }
 
   return { mount };

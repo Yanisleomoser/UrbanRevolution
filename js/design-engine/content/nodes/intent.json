@@ -9,9 +9,9 @@
       "priority": 0.95,
       "question": { "de": "Was zieht dich mehr an?", "en": "Which pulls you in?" },
       "pair": [
-        { "id": "calm", "label": { "de": "Ruhig", "en": "Calm" }, "image": "content/img/mood/calm-mono.jpg",
+        { "id": "calm", "label": { "de": "Ruhig", "en": "Calm" }, "image": "js/design-engine/content/img/mood/calm-mono.jpg",
           "effects": { "set": { "intent.energy": 0.25 }, "weight": { "quietMinimal": 0.4, "softCouture": 0.2 } } },
-        { "id": "bold", "label": { "de": "Laut", "en": "Bold" }, "image": "content/img/mood/bold-neon.jpg",
+        { "id": "bold", "label": { "de": "Laut", "en": "Bold" }, "image": "js/design-engine/content/img/mood/bold-neon.jpg",
           "effects": { "set": { "intent.energy": 0.8 }, "weight": { "techAvant": 0.35, "y2kStreet": 0.3 } } }
       ]
     },
@@ -23,22 +23,77 @@
       "priority": 0.9,
       "question": { "de": "Weich oder kantig?", "en": "Soft or sharp?" },
       "pair": [
-        { "id": "soft", "label": { "de": "Weich", "en": "Soft" }, "image": "content/img/mood/soft-drape.jpg",
+        { "id": "soft", "label": { "de": "Weich", "en": "Soft" }, "image": "js/design-engine/content/img/mood/soft-drape.jpg",
           "effects": { "set": { "silhouette.structure": 0.3 }, "weight": { "softCouture": 0.35, "quietMinimal": 0.15 } } },
-        { "id": "sharp", "label": { "de": "Kantig", "en": "Sharp" }, "image": "content/img/mood/sharp-structure.jpg",
+        { "id": "sharp", "label": { "de": "Kantig", "en": "Sharp" }, "image": "js/design-engine/content/img/mood/sharp-structure.jpg",
           "effects": { "set": { "silhouette.structure": 0.75 }, "weight": { "techAvant": 0.3, "utility": 0.2 } } }
+      ]
+    },
+    {
+      "id": "mood_clean_expressive",
+      "phase": "A",
+      "modality": "thisOrThat",
+      "when": "true",
+      "priority": 0.86,
+      "question": { "de": "Clean oder ausdrucksstark?", "en": "Clean or expressive?" },
+      "pair": [
+        { "id": "clean", "label": { "de": "Clean", "en": "Clean" }, "image": "js/design-engine/content/img/mood/clean.jpg",
+          "effects": { "set": { "pattern.type": "none" }, "weight": { "quietMinimal": 0.3, "techAvant": 0.15 } } },
+        { "id": "expressive", "label": { "de": "Ausdrucksstark", "en": "Expressive" }, "image": "js/design-engine/content/img/mood/expressive.jpg",
+          "effects": { "weight": { "y2kStreet": 0.35, "softCouture": 0.1 } } }
+      ]
+    },
+    {
+      "id": "mood_vintage_future",
+      "phase": "A",
+      "modality": "thisOrThat",
+      "when": "true",
+      "priority": 0.82,
+      "question": { "de": "Vintage oder Zukunft?", "en": "Vintage or future?" },
+      "pair": [
+        { "id": "vintage", "label": { "de": "Vintage", "en": "Vintage" }, "image": "js/design-engine/content/img/mood/vintage.jpg",
+          "effects": { "weight": { "utility": 0.25, "softCouture": 0.15 } } },
+        { "id": "future", "label": { "de": "Zukunft", "en": "Future" }, "image": "js/design-engine/content/img/mood/future.jpg",
+          "effects": { "weight": { "techAvant": 0.35, "sport": 0.1 } } }
+      ]
+    },
+    {
+      "id": "intent_occasion",
+      "phase": "A",
+      "modality": "cards",
+      "when": "_confidence.intent.occasion < 0.6",
+      "priority": 0.78,
+      "question": { "de": "Wofür ist es?", "en": "What's it for?" },
+      "choices": [
+        { "id": "everyday", "label": { "de": "Alltag", "en": "Everyday" }, "effects": { "set": { "intent.occasion": "everyday", "intent.formality": 0.3 } } },
+        { "id": "work", "label": { "de": "Arbeit", "en": "Work" }, "effects": { "set": { "intent.occasion": "work", "intent.formality": 0.6 }, "weight": { "quietMinimal": 0.15, "utility": 0.1 } } },
+        { "id": "event", "label": { "de": "Anlass", "en": "Event" }, "effects": { "set": { "intent.occasion": "event", "intent.formality": 0.85 }, "weight": { "softCouture": 0.25 } } },
+        { "id": "active", "label": { "de": "Aktiv", "en": "Active" }, "effects": { "set": { "intent.occasion": "active", "intent.formality": 0.2 }, "weight": { "sport": 0.3 } } }
       ]
     },
     {
       "id": "intent_formality",
       "phase": "A",
       "modality": "slider",
-      "when": "true",
-      "priority": 0.7,
+      "when": "_confidence.intent.formality < 0.5",
+      "priority": 0.6,
       "question": { "de": "Wie förmlich?", "en": "How formal?" },
       "bind": "intent.formality",
       "axis": { "de": ["Alltag", "Anlass"], "en": ["Everyday", "Occasion"] },
       "weightAt": { "low": { "y2kStreet": 0.15, "sport": 0.15 }, "high": { "softCouture": 0.2, "quietMinimal": 0.1 } }
+    },
+    {
+      "id": "intent_season",
+      "phase": "A",
+      "modality": "cards",
+      "when": "_confidence.intent.season < 0.6",
+      "priority": 0.5,
+      "question": { "de": "Für welche Jahreszeit?", "en": "Which season?" },
+      "choices": [
+        { "id": "all", "label": { "de": "Ganzjährig", "en": "All-year" }, "effects": { "set": { "intent.season": "all" } } },
+        { "id": "warm", "label": { "de": "Warm", "en": "Warm" }, "effects": { "set": { "intent.season": "warm", "fabric.weight": 0.3 } } },
+        { "id": "cold", "label": { "de": "Kalt", "en": "Cold" }, "effects": { "set": { "intent.season": "cold", "fabric.weight": 0.75 } } }
+      ]
     },
     {
       "id": "category_select",
