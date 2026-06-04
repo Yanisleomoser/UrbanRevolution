@@ -71,19 +71,24 @@ function plan(cfg) {
 // Via the deployed key-gated route — Replicate token stays in Vercel. Retries
 // a couple of times on a transient "pending".
 async function generateViaEndpoint(prompt) {
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, aspect: "4:5", key: GATE_KEY }),
-    });
-    const data = await res.json().catch(() => ({}));
+  let lastErr = "";
+  for (let attempt = 0; attempt < 6; attempt++) {
+    if (attempt > 0) await sleep(2000 * attempt); // backoff: 2,4,6,8,10s
+    let res, data;
+    try {
+      res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, aspect: "4:5", key: GATE_KEY }),
+      });
+      data = await res.json().catch(() => ({}));
+    } catch (err) { lastErr = "network " + err.message; continue; }
     if (res.ok && data.imageUrl) return data.imageUrl;
     if (res.status === 403) throw new Error("403 forbidden — IMAGE_GEN_KEY in Vercel und --key müssen übereinstimmen");
-    if (data.code === "pending" || res.status === 504) { await sleep(3000); continue; }
-    throw new Error(`endpoint ${res.status}: ${data.error || data.code || "no imageUrl"}`);
+    // pending / 429 / 5xx (Replicate-Rate-Limit) → transient, weiter retrien
+    lastErr = `endpoint ${res.status}: ${data.error || data.code || "no imageUrl"}`;
   }
-  throw new Error("pending nach mehreren Versuchen");
+  throw new Error(lastErr || "failed after retries");
 }
 
 async function generateViaReplicate(prompt) {
@@ -125,8 +130,11 @@ async function main() {
   }
 
   let made = 0, skipped = 0, failed = 0;
+  let first = true;
   for (const j of jobs) {
     if (fs.existsSync(j.out) && !FORCE) { console.log(`· skip: ${j.rel}`); skipped++; continue; }
+    if (!first) await sleep(2500); // throttle, um das Replicate-Rate-Limit zu schonen
+    first = false;
     process.stdout.write(`· ${j.rel} … `);
     try {
       const url = await generate(j.prompt);
