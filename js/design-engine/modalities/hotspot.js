@@ -45,6 +45,11 @@
             dot.classList.add("is-done");
             dot.classList.remove("is-active");
             strip.hidden = true;
+            // Live morph: reflect the just-tapped detail (collar/closure/hem…)
+            // in the preview immediately, so the piece visibly changes with the
+            // decision instead of only on commit.
+            if (typeof ctx.live === "function") ctx.live(picked);
+            if (window.DesignPreview && ctx.dna) window.DesignPreview.renderInto(proxy, ctx.dna);
           });
           strip.appendChild(b);
         });
