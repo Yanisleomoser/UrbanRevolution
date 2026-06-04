@@ -82,11 +82,11 @@
       "priority": 0.74,
       "question": { "de": "Was inspiriert dich? (mehrere)", "en": "What inspires you? (multiple)" },
       "choices": [
-        { "id": "concrete", "label": { "de": "Beton", "en": "Concrete" }, "effects": { "weight": { "quietMinimal": 0.2, "utility": 0.15 } } },
-        { "id": "nature", "label": { "de": "Natur", "en": "Nature" }, "effects": { "weight": { "softCouture": 0.2 } } },
-        { "id": "neon", "label": { "de": "Neon", "en": "Neon" }, "effects": { "weight": { "y2kStreet": 0.25 } } },
-        { "id": "atelier", "label": { "de": "Atelier", "en": "Atelier" }, "effects": { "weight": { "softCouture": 0.15, "quietMinimal": 0.15 } } },
-        { "id": "sportcore", "label": { "de": "Sport", "en": "Sport" }, "effects": { "weight": { "sport": 0.25 } } }
+        { "id": "concrete", "label": { "de": "Beton", "en": "Concrete" }, "image": "js/design-engine/content/img/mood/concrete.jpg", "effects": { "weight": { "quietMinimal": 0.2, "utility": 0.15 } } },
+        { "id": "nature", "label": { "de": "Natur", "en": "Nature" }, "image": "js/design-engine/content/img/mood/nature.jpg", "effects": { "weight": { "softCouture": 0.2 } } },
+        { "id": "neon", "label": { "de": "Neon", "en": "Neon" }, "image": "js/design-engine/content/img/mood/neon.jpg", "effects": { "weight": { "y2kStreet": 0.25 } } },
+        { "id": "atelier", "label": { "de": "Atelier", "en": "Atelier" }, "image": "js/design-engine/content/img/mood/atelier.jpg", "effects": { "weight": { "softCouture": 0.15, "quietMinimal": 0.15 } } },
+        { "id": "sportcore", "label": { "de": "Sport", "en": "Sport" }, "image": "js/design-engine/content/img/mood/sportcore.jpg", "effects": { "weight": { "sport": 0.25 } } }
       ]
     },
     {
