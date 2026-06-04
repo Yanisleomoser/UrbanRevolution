@@ -151,6 +151,12 @@ const beforeEnergy = DNA.get(B.dna, "intent.energy");
 Inference.adjust(B.dna, "energy", -1, "de");
 assert(DNA.get(B.dna, "intent.energy") < beforeEnergy, "energy nudge lowers intent.energy");
 
+console.log("\n— Share (URL roundtrip) —");
+const Share = require(path.join(ROOT, "share.js"));
+const dec = Share.decode(Share.encode(B.dna));
+assert(dec && dec.category === DNA.get(B.dna, "category") && JSON.stringify(dec.color) === JSON.stringify(DNA.get(B.dna, "color")), "encode → decode roundtrips the DNA");
+assert(Share.decode("@@not-base64@@") === null, "decode of garbage → null");
+
 console.log("\n— Short path completion (express) —");
 const S = run("express", { mood_calm_bold: "calm", category_select: "jacket", _default: () => "regular" });
 Engine.finalize(S.dna, archetypes, attributes.required, attributes.confidenceThreshold);

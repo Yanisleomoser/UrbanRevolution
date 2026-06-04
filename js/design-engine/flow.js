@@ -262,6 +262,7 @@ const DesignFlow = (() => {
         ${axisRows ? `<div class="de-refine-axes"><p class="de-inferred-h">${t("engine.refine_adjust")}</p>${axisRows}</div>` : ""}
         <div class="de-refine-actions">
           <button type="button" class="de-nav" id="de-deeper">${t("engine.deeper")}</button>
+          <button type="button" class="de-nav" id="de-share">${t("engine.share")}</button>
           <button type="button" class="de-confirm" id="de-generate">${t("engine.generate")}</button>
         </div>`;
 
@@ -276,6 +277,14 @@ const DesignFlow = (() => {
       const moreNode = DesignEngine.nextNode(content.nodes, dna, answered);
       if (!moreNode) deeper.hidden = true;
       else deeper.addEventListener("click", () => { snapshot(); renderModality(moreNode); });
+
+      const shareBtn = body.querySelector("#de-share");
+      if (shareBtn) shareBtn.addEventListener("click", () => {
+        const url = window.DesignShare ? DesignShare.buildUrl(dna) : "";
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(() => flash(t("engine.share_copied")), () => window.prompt(t("engine.share"), url));
+        } else { window.prompt(t("engine.share"), url); }
+      });
       body.querySelector("#de-generate").addEventListener("click", (e) =>
         handoff(DesignSummary.toPrompt(dna, lang()), DesignDNA.get(dna, "category"), e.currentTarget));
 
@@ -327,6 +336,14 @@ const DesignFlow = (() => {
 
     return loadContent(base).then((c) => {
       content = c;
+      const shared = window.DesignShare ? DesignShare.read() : null;
+      if (shared && typeof shared === "object" && shared.archetypeWeights !== undefined) {
+        dna = shared;
+        if (!dna._confidence) dna._confidence = {};
+        DesignShare.clear();
+        try { hostEl.scrollIntoView({ block: "start" }); } catch (_e) { /* no-op */ }
+        return renderRefine();
+      }
       const saved = loadSaved();
       if (saved && saved.answered.length) {
         dna = saved.dna;
