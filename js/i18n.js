@@ -276,6 +276,9 @@ const I18N = (() => {
       "engine.nudge_down": "weniger",
       "engine.nudge_up": "mehr",
       "engine.changed_color": "Farbwelt",
+      "engine.rank_up": "nach oben",
+      "engine.rank_down": "nach unten",
+      "engine.changed_details": "Details",
 
       // ── VTO ──
       "vto.btn": "Fotorealistische Vorschau generieren",
@@ -831,6 +834,9 @@ const I18N = (() => {
       "engine.nudge_down": "less",
       "engine.nudge_up": "more",
       "engine.changed_color": "Colourway",
+      "engine.rank_up": "move up",
+      "engine.rank_down": "move down",
+      "engine.changed_details": "Details",
 
       // ── VTO ──
       "vto.btn": "Generate photorealistic preview",

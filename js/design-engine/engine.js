@@ -34,6 +34,7 @@ const DesignEngine = (() => {
     const collect = (eff) => eff && eff.set && Object.keys(eff.set).forEach((k) => set.add(k));
     (node.choices || []).forEach((c) => collect(c.effects));
     (node.pair || []).forEach((p) => collect(p.effects));
+    (node.regions || []).forEach((r) => (r.choices || []).forEach((c) => collect(c.effects)));
     return [...set];
   }
 
@@ -41,7 +42,9 @@ const DesignEngine = (() => {
     const has = (eff) => eff && eff.weight && Object.keys(eff.weight).length;
     if (node.weightAt) return true;
     return (node.choices || []).some((c) => has(c.effects)) ||
-           (node.pair || []).some((p) => has(p.effects));
+           (node.pair || []).some((p) => has(p.effects)) ||
+           (node.options || []).some((o) => has(o.effects)) ||
+           (node.regions || []).some((r) => (r.choices || []).some((c) => has(c.effects)));
   }
 
   function attrGain(dna, node) {

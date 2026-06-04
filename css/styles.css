@@ -5239,3 +5239,31 @@ html.is-touch .lang-toggle { min-height: 38px; }
 @media (prefers-reduced-motion: reduce) {
     .de-flash, .de-nudge { transition: none !important; }
 }
+
+/* Design Engine — optionale Modalitäten: Ranking, Tap-auf-Vorschau, Mehrfachauswahl */
+.de-card.is-selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), var(--shadow-soft); }
+.de-card.is-selected::after { content: "✓"; position: absolute; top: var(--space-3); right: var(--space-3); width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--gradient); color: #fff; font-size: 13px; }
+.de-card { position: relative; }
+
+.de-rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.de-rank-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
+.de-rank-num { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--gradient); color: #fff; font-weight: 700; font-size: var(--text-sm); }
+.de-rank-label { flex: 1; color: var(--text); font-size: var(--text-md); }
+.de-rank-btn { flex: none; width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-sm); cursor: pointer; font-size: 16px; transition: border-color .2s var(--ease-out); }
+.de-rank-btn:hover:not(:disabled) { border-color: var(--accent); }
+.de-rank-btn:disabled { opacity: 0.3; cursor: default; }
+
+.de-hotspot { position: relative; width: 240px; max-width: 70%; margin: 0 auto var(--space-4); aspect-ratio: 3 / 4; }
+.de-hotspot-proxy { position: absolute; inset: 0; }
+.de-hotspot-proxy svg { width: 100%; height: 100%; }
+.de-hotspot-dot { position: absolute; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 6px rgba(236,72,153,0.18); transition: transform .15s var(--ease-out), box-shadow .2s var(--ease-out); }
+.de-hotspot-dot:hover, .de-hotspot-dot.is-active { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 0 10px rgba(236,72,153,0.28); }
+.de-hotspot-dot.is-done { background: var(--success); box-shadow: 0 0 0 6px rgba(16,185,129,0.2); }
+.de-hotspot-tag { position: absolute; left: 50%; top: -28px; transform: translateX(-50%); white-space: nowrap; font-size: var(--text-xs); color: var(--text); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 2px var(--space-2); pointer-events: none; }
+.de-hotspot-strip { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-bottom: var(--space-2); }
+.de-hotspot-choice { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out), background .2s var(--ease-out); }
+.de-hotspot-choice:hover { border-color: var(--accent); background: var(--gradient-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+    .de-rank-btn, .de-hotspot-dot, .de-hotspot-choice { transition: none !important; }
+}

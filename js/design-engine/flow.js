@@ -48,6 +48,29 @@ const DesignFlow = (() => {
         "color.value": payload.value, "color.saturation": payload.saturation,
       } }, conf: 1 };
     }
+    if (node.modality === "hotspot") return { eff: payload, conf: 1 };
+    if (node.modality === "ranking") {
+      const decay = [1, 0.6, 0.35, 0.2, 0.1];
+      const weight = {};
+      (payload || []).forEach((id, idx) => {
+        const opt = (node.options || []).find((o) => o.id === id);
+        const w = opt && opt.effects && opt.effects.weight;
+        if (w) { const f = decay[idx] != null ? decay[idx] : 0.05; Object.entries(w).forEach(([k, v]) => { weight[k] = (weight[k] || 0) + v * f; }); }
+      });
+      const eff = { weight };
+      if (node.bind && (payload || []).length) eff.set = { [node.bind]: payload[0] };
+      return { eff, conf: 1 };
+    }
+    if (node.modality === "cards" && Array.isArray(payload)) {
+      const eff = { set: {}, weight: {} };
+      payload.forEach((id) => {
+        const e = DesignEngine.choiceEffects(node, id);
+        if (e && e.set) Object.assign(eff.set, e.set);
+        if (e && e.weight) Object.entries(e.weight).forEach(([k, v]) => { eff.weight[k] = (eff.weight[k] || 0) + v; });
+      });
+      if (node.bind) eff.set[node.bind] = payload.join("+");
+      return { eff, conf: 1 };
+    }
     return { eff: DesignEngine.choiceEffects(node, payload), conf: 1 };
   }
 
@@ -74,6 +97,12 @@ const DesignFlow = (() => {
 
   // Short human label of what a choice just changed (micro-feedback, brief §7).
   function changeLabel(node, payload, l) {
+    if (node.modality === "ranking") {
+      const top = (node.options || []).find((o) => o.id === (payload || [])[0]);
+      return top && top.label ? top.label[l] : "";
+    }
+    if (node.modality === "hotspot") return t("engine.changed_details");
+    if (node.modality === "cards" && Array.isArray(payload)) return payload.length + "×";
     if (node.modality === "cards") {
       const c = (node.choices || []).find((x) => x.id === payload);
       return c && c.label ? c.label[l] : "";
@@ -169,6 +198,7 @@ const DesignFlow = (() => {
 
     const ctx = {
       get lang() { return lang(); },
+      get dna() { return dna; },
       t,
       live(payload) {
         const { eff } = resolveEffects(currentNode, payload);
