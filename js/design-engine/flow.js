@@ -16,6 +16,16 @@
 const DesignFlow = (() => {
   const DEFAULT_BASE = "js/design-engine/content/";
   const STORAGE_KEY = "urev_journey_v1";
+  // Attributes that drive the live flat — the user's value (incl. a live slider
+  // drag at confidence 0) must always win over the archetype inference in the
+  // preview clone, so every decision is visible immediately.
+  const LIVE_PATHS = [
+    "silhouette.fit", "silhouette.volume", "silhouette.structure", "length",
+    "construction.collar", "construction.sleeve", "construction.closure",
+    "construction.pockets", "construction.cuffs", "construction.hem",
+    "pattern.type", "pattern.scale", "color.scheme", "color.stops",
+    "fabric.material", "fabric.finishWeight", "intent.energy",
+  ];
 
   function S(key, value) {
     if (!window.StateManager) return;
@@ -176,6 +186,13 @@ const DesignFlow = (() => {
       // not a static placeholder until the last question.
       const previewDna = JSON.parse(JSON.stringify(dna));
       DesignEngine.finalize(previewDna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+      // The user's own choices ALWAYS win over the archetype inference — incl.
+      // live slider drags (set at confidence 0), which finalize would otherwise
+      // overwrite, making the Passform/Finish sliders feel dead. Overlay them.
+      LIVE_PATHS.forEach((path) => {
+        const v = DesignDNA.get(dna, path);
+        if (v !== undefined && v !== null) DesignDNA.set(previewDna, path, v, 1);
+      });
       if (window.DesignPreview) {
         if (animate) { previewEl.classList.remove("is-fade"); void previewEl.offsetWidth; previewEl.classList.add("is-fade"); }
         window.DesignPreview.renderInto(previewEl, previewDna, { realism: atRefine });

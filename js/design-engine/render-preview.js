@@ -65,9 +65,16 @@ const DesignPreview = (() => {
       cuffs: g("construction.cuffs"),
       hem: g("construction.hem"),
       pattern: g("pattern.type"),
+      patternScale: g("pattern.scale"),
       scheme: g("color.scheme"),
       stops: g("color.stops"),
       material: g("fabric.material"),
+      finish: g("fabric.finishWeight"),
+      // Soft signals so EVERY decision shows on the flat: energy (calm↔bold)
+      // tints/saturates the fill, and the winning archetype (driven by mood /
+      // inspo / occasion / season) sets the neutral tone.
+      energy: g("intent.energy"),
+      archetype: window.DesignDNA ? DesignDNA.topArchetype(dna) : null,
     };
   }
 

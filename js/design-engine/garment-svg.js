@@ -47,14 +47,25 @@ const GarmentSVG = (() => {
     tshirt: { sleeveLen: 56, hem: { cropped: 206, regular: 252, long: 286 }, defCollar: "crew", closure: "none", splay: 16, cuffW: 24, armDepth: 50, neckHalf: 20 },
   };
 
-  // ---- recolour ------------------------------------------------------------
-  // Light stroke always; the chosen colour fills as a SOFT tonal wash (low
-  // opacity), never a solid block. No scheme chosen → faint neutral fill.
+  // Material → baseline sheen (silk glossy, denim/wool matte). finish (matt↔
+  // glänzend) scales on top. Makes the "Stoff" + "Matt/Glänzend" choices visible.
+  const MATERIAL_SHEEN = { silk: 0.85, polyester: 0.55, cotton: 0.22, denim: 0.12, wool: 0.18, fleece: 0.10, linen: 0.14 };
+  // Neutral-fill tone per winning archetype (used when no colour is chosen yet)
+  // → mood / inspo / occasion / season shift the flat's tone because they shift
+  // the archetype. Cool tech ↔ warm couture/utility ↔ playful street.
+  const ARCH_TINT = { quietMinimal: "#9a9aa2", softCouture: "#b9a79b", utility: "#9ca08c", techAvant: "#8c99ab", y2kStreet: "#b48cac", sport: "#8caaa2" };
+
+  // ---- recolour + material/finish/energy/archetype -------------------------
+  // Light stroke always; chosen colour fills as a SOFT tonal wash (energy =
+  // calm↔bold drives how present it is). No colour yet → tone from the
+  // archetype. A sheen overlay (material × finish) gives the fabric a feel.
   function fillSpec(id, p) {
     const stops = Array.isArray(p.stops) && p.stops.length ? p.stops : null;
+    const energy = clamp(num(p.energy, 0.5), 0, 1);
+    const finish = clamp(num(p.finish, 0.5), 0, 1);
+    const sheen = clamp((MATERIAL_SHEEN[p.material] != null ? MATERIAL_SHEEN[p.material] : 0.2) + finish * 0.4, 0.04, 0.95);
     let defs = "";
-    let fill = "rgba(255,255,255,0.05)";
-    let opacity = 1;
+    let fill, opacity;
     if (stops) {
       if (p.scheme === "duo-gradient" && stops.length >= 2) {
         defs += `<linearGradient id="${id}g" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="${stops[0]}"/><stop offset="1" stop-color="${stops[1]}"/></linearGradient>`;
@@ -62,20 +73,28 @@ const GarmentSVG = (() => {
       } else {
         fill = stops[0];
       }
-      opacity = 0.42;
+      opacity = lerp(0.34, 0.62, energy); // bold = more present / saturated-looking
+    } else {
+      fill = ARCH_TINT[p.archetype] || "#8b8f96";
+      opacity = lerp(0.05, 0.17, energy); // calm wash → bolder neutral
     }
+    // Sheen overlay: bright diagonal highlight + soft shadow side.
+    defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${r(sheen * 0.5)}"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${r(sheen * 0.16)}"/></linearGradient>`;
     let pat = "";
-    if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern); pat = `url(#${id}p)`; }
-    return { defs, fill, opacity, pat };
+    if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
+    return { defs, fill, opacity, pat, sheen: `url(#${id}s)` };
   }
 
-  function patternDef(id, type) {
+  // scale 0.12..1 → tile factor ~0.6..1.6 so "Mustergröße" visibly resizes.
+  function patternDef(id, type, scale) {
     const ink = "rgba(236,236,240,0.22)";
-    if (type === "stripe") return `<pattern id="${id}" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="5.5" height="11" fill="${ink}"/></pattern>`;
-    if (type === "check") return `<pattern id="${id}" width="15" height="15" patternUnits="userSpaceOnUse"><rect width="7.5" height="7.5" fill="${ink}"/><rect x="7.5" y="7.5" width="7.5" height="7.5" fill="${ink}"/></pattern>`;
-    if (type === "camo") return `<pattern id="${id}" width="42" height="42" patternUnits="userSpaceOnUse"><ellipse cx="12" cy="13" rx="11" ry="8" fill="${ink}"/><ellipse cx="32" cy="30" rx="12" ry="9" fill="${ink}"/><ellipse cx="26" cy="6" rx="7" ry="5" fill="${ink}"/></pattern>`;
-    if (type === "graphic") return `<pattern id="${id}" width="46" height="46" patternUnits="userSpaceOnUse"><circle cx="23" cy="23" r="8" fill="none" stroke="${ink}" stroke-width="3"/></pattern>`;
-    return `<pattern id="${id}" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><path d="M0 17 Q8 5 17 17 T34 17" fill="none" stroke="${ink}" stroke-width="2.4"/></pattern>`;
+    const f = 0.55 + clamp(num(scale, 0.5), 0, 1);
+    const W = (n) => r(n * f);
+    if (type === "stripe") return `<pattern id="${id}" width="${W(11)}" height="${W(11)}" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect width="${W(5.5)}" height="${W(11)}" fill="${ink}"/></pattern>`;
+    if (type === "check") return `<pattern id="${id}" width="${W(15)}" height="${W(15)}" patternUnits="userSpaceOnUse"><rect width="${W(7.5)}" height="${W(7.5)}" fill="${ink}"/><rect x="${W(7.5)}" y="${W(7.5)}" width="${W(7.5)}" height="${W(7.5)}" fill="${ink}"/></pattern>`;
+    if (type === "camo") return `<pattern id="${id}" width="${W(42)}" height="${W(42)}" patternUnits="userSpaceOnUse"><ellipse cx="${W(12)}" cy="${W(13)}" rx="${W(11)}" ry="${W(8)}" fill="${ink}"/><ellipse cx="${W(32)}" cy="${W(30)}" rx="${W(12)}" ry="${W(9)}" fill="${ink}"/><ellipse cx="${W(26)}" cy="${W(6)}" rx="${W(7)}" ry="${W(5)}" fill="${ink}"/></pattern>`;
+    if (type === "graphic") return `<pattern id="${id}" width="${W(46)}" height="${W(46)}" patternUnits="userSpaceOnUse"><circle cx="${W(23)}" cy="${W(23)}" r="${W(8)}" fill="none" stroke="${ink}" stroke-width="3"/></pattern>`;
+    return `<pattern id="${id}" width="${W(34)}" height="${W(34)}" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><path d="M0 ${W(17)} Q${W(8)} ${W(5)} ${W(17)} ${W(17)} T${W(34)} ${W(17)}" fill="none" stroke="${ink}" stroke-width="2.4"/></pattern>`;
   }
 
   // ---- shared width model (tops) ------------------------------------------
@@ -101,8 +120,10 @@ const GarmentSVG = (() => {
 
   function geometry(p, cfg) {
     const w = topWidths(p, cfg);
+    const structure = clamp(num(p.structure, 0.5), 0, 1);
     const neckY = 60;
-    const shoulderY = 66 + (w.drop ? 4 : 0);
+    // Soft (low structure) → lower, sloped shoulders; sharp → higher, squarer.
+    const shoulderY = 66 - (structure - 0.5) * 9 + (w.drop ? 4 : 0);
     const armpitY = shoulderY + cfg.armDepth + (w.drop ? 12 : 0);
     const length = (cfg.hem[p.length] != null) ? p.length : "regular";
     const hemY = cfg.hem[length];
@@ -289,7 +310,8 @@ const GarmentSVG = (() => {
     const f = fillSpec(id, p);
     const body = paths.map((d) =>
       `<path d="${d}" fill="${f.fill}" fill-opacity="${f.opacity}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
-      (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none"/>` : "")
+      (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none"/>` : "") +
+      (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none"/>` : "")
     ).join("");
     return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}</defs>${body}${seamMarkup}</svg>`;
   }
