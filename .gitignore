@@ -10,6 +10,11 @@ build/
 # Vercel
 .vercel/
 
+# Secrets — never commit tokens (Replicate / Anthropic / Upstash). Use Vercel env.
+.env
+.env.*
+!.env.example
+
 # OS files
 .DS_Store
 Thumbs.db
