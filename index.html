@@ -108,6 +108,10 @@
       window.sentryOnLoad = function () {
         Sentry.init({
           dsn: "https://1eba00decb258179c8e3a62757290ef1@o4511512862720000.ingest.de.sentry.io/4511513069944912",
+          // Umgebung: revolveurban.com = production, alles andere (Vercel-
+          // Preview-Deploys, localhost) = preview. Trennt Live- von Test-
+          // Events im Sentry-Dashboard.
+          environment: /(^|\.)revolveurban\.com$/.test(location.hostname) ? "production" : "preview",
           // Datenschutz: Session Replay aus, keine personenbezogenen Daten.
           replaysSessionSampleRate: 0,
           replaysOnErrorSampleRate: 0,
