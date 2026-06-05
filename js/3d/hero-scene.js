@@ -292,6 +292,7 @@ function safeMount() {
         mount();
     } catch (err) {
         console.warn("[hero-3d] mount failed, keeping SVG:", err && err.message);
+        if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "3d", op: "hero" } });
         const svg = document.querySelector(SVG_SELECTOR);
         if (svg) svg.style.opacity = "";
         if (host) host.classList.remove("is-live");

@@ -258,6 +258,14 @@ const DesignFlow = (() => {
       atRefine = false; // back to the morphing flat for any question
       currentNode = node;
       T("node_shown", { id: node.id, phase: node.phase, modality: node.modality, lang: lang() });
+      // Journey breadcrumb for Sentry: which step the user was on when an error
+      // later fires (no answer values — only node id / phase / garment category).
+      if (window.Sentry) {
+        window.Sentry.addBreadcrumb({
+          category: "journey", level: "info", message: "node_shown",
+          data: { id: node.id, phase: node.phase, garment: DesignDNA.get(dna, "category") },
+        });
+      }
       const renderer = window.DEModalities && window.DEModalities[node.modality];
       if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
       renderer(body, node, ctx);
@@ -362,6 +370,7 @@ const DesignFlow = (() => {
         btn.textContent = t("engine.regenerate");
       } catch (e) {
         console.error("[DesignFlow] generate failed:", e);
+        if (window.Sentry) window.Sentry.captureException(e, { tags: { area: "engine" } });
         T("generate_fail");
         btn.disabled = false;
         btn.textContent = t("engine.generate");
