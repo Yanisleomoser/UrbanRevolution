@@ -124,12 +124,12 @@
 
         // Integrationen defensiv: nur hinzufügen, wenn das Loader-Bundle sie
         // mitbringt — sonst kein ReferenceError / Console-Fehler.
-        var integrations = [];
+        var extra = [];
         if (typeof Sentry.browserTracingIntegration === "function") {
-          integrations.push(Sentry.browserTracingIntegration());
+          extra.push(Sentry.browserTracingIntegration());
         }
         if (typeof Sentry.replayIntegration === "function") {
-          integrations.push(Sentry.replayIntegration({
+          extra.push(Sentry.replayIntegration({
             maskAllText: true,
             maskAllInputs: true,
             blockAllMedia: true,
@@ -147,7 +147,9 @@
           dsn: "https://98d7bb6998f909851294c6f1efab6ff5@o4511512862720000.ingest.de.sentry.io/4511512873730128",
           environment: environment,
           release: release,
-          integrations: integrations,
+          // Funktions-Form: behält ALLE Default-Integrationen (u. a. die globalen
+          // Error-/Promise-Handler) und ergänzt Tracing + Replay.
+          integrations: function (defaults) { return defaults.concat(extra); },
           // Bei Do-Not-Track: Tracing + Replay aus (Fehler werden weiter erfasst).
           tracesSampleRate: dntOn ? 0 : 0.1,
           replaysSessionSampleRate: dntOn ? 0 : 0.1,
@@ -157,11 +159,20 @@
       };
     </script>
     <script src="https://js-de.sentry-cdn.com/98d7bb6998f909851294c6f1efab6ff5.min.js" crossorigin="anonymous"></script>
-    <!-- TEMP Sentry-Verifikation: ?sentrytest=1 wirft einen unbehandelten Fehler
-         (von Sentrys globalem Handler erfasst). NACH dem Dashboard-Check entfernen. -->
+    <!-- TEMP Sentry-Verifikation: ?sentrytest=1. NACH dem Dashboard-Check entfernen.
+         Zwei Wege, damit das Event garantiert ankommt — unabhängig davon, wann der
+         async Loader das Bundle fertig geladen hat:
+         (1) Direkter captureException (vom Loader-Stub gequeuet, beim Laden geflusht).
+         (2) Zusätzlich ein unbehandelter Fehler nach 5 s (testet die globalen Handler). -->
     <script>
       if (new URLSearchParams(location.search).get("sentrytest") === "1") {
-        setTimeout(function () { throw new Error("Sentry test error " + Date.now()); }, 0);
+        try {
+          if (window.Sentry && Sentry.captureException) {
+            Sentry.captureException(new Error("Sentry test (capture) " + Date.now()),
+              { tags: { area: "test" } });
+          }
+        } catch (e) { /* Sentry blockiert (Adblocker/DNT) */ }
+        setTimeout(function () { throw new Error("Sentry test (uncaught) " + Date.now()); }, 5000);
       }
     </script>
 
