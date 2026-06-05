@@ -2,6 +2,49 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+# Urban Revolution (revolveurban.com) — Projekt-Regeln (Kurzfassung, zuerst lesen)
+
+> Diese Kurzfassung ist die verbindliche Regel-Ebene. Darunter folgt die
+> ausführliche Architektur-/Modul-Referenz — bei Konflikt gilt diese Kurzfassung.
+
+## Was das ist
+Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, KEIN Framework).
+Nachhaltige Made-to-Measure-Mode aus ocean-bound rPET.
+Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. Sprachen: DE + EN.
+
+## Architektur (nicht umbauen)
+- Kein Build-Framework. Klassische `<script>`-Module im `window.X = …`-Muster, in index.html eingebunden.
+- Design-Engine unter `js/design-engine/` (engine, dna, condition, inference, render-preview, summary, flow, garment-svg, modalities/, content/*.json). Datengetrieben: Nodes/Archetypen/Attribute/Bilder liegen in JSON.
+- State: `state-manager.js` (localStorage, Wiederaufnahme). KI: `ai.js` → Replicate (FLUX) / Anthropic-Proxy. Maße: `measurements.js` (9 Körpermaße). i18n: `i18n.js`. Telemetrie: `js/design-engine/telemetry.js` → `/api/track`. Fehler: Sentry (Loader im `<head>`).
+
+## Design-System — NUR bestehende :root-Tokens
+- Hintergrund `#0A0A0B`; Akzent-Verlauf pink → violett → cyan (`--gradient`).
+- Fonts: NUR Lora (Display) + Poppins (Body). KEINE anderen Fonts (kein Inter, kein Playfair).
+- Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum; Übergänge ≤ 250 ms; kein Layout-Sprung.
+
+## Harte Regeln (immer)
+- Mobile-first. Höhen in `svh`/`dvh` bzw. dem gepinnten `--svh`, NICHT roh `vh`. Safe-Area via `env(safe-area-inset-*)`. Auf iPhone-Breite (≤ 480 px) testen.
+- Barrierefrei: Tastatur, Fokus-States, ARIA, `prefers-reduced-motion`.
+- ALLE sichtbaren Strings über `i18n.js`, DE + EN.
+- Datengetrieben bleiben: neue Fragen/Optionen/Archetypen über JSON, nicht hartkodieren.
+- Design-Engine-Vorschau: saubere technische Silhouette (Fashion-Flat). Den Flat NIE über das Hero-Foto legen; Foto/KI-Render erst bei Konvergenz/„Generieren". Silhouetten aus Basis-Flats über Transforms morphen, NICHT Geometrie aus Formeln. Schulter = breitester Punkt, Ärmel immer sichtbar.
+- Bestehende Flows (Maße, KI, i18n, State) nicht brechen. Keine Console-Fehler.
+
+## Secrets
+- Replicate-/Anthropic-Token NIE committen, NIE in den Chat — nur via gitignored `.env` oder Vercel-Env. `.env` steht in `.gitignore`.
+- Sentry-DSN ist öffentlich/clientseitig und darf im Code stehen.
+
+## Workflow
+- Erst kurzer Plan, dann inkrementell. Nach jeder Stufe auf Mobilbreite prüfen, keine Console-Fehler.
+- Jede Änderung über einen PR mit Vercel-Preview-Deployment; auf echtem iPhone prüfen, BEVOR nach `main` gemergt wird. Nicht direkt auf `main` pushen. (Diese Regel ersetzt für UI-Änderungen die ältere Auto-Merge-Notiz weiter unten.)
+- Lokal: `python3 -m http.server 8080` (statisch) oder `npm run dev` (→ `npx serve .`). Die `/api/*`-Edge-Functions laufen nur via `vercel dev` / auf Vercel. Sentry (Loader im `<head>`) + Fehler-Tags (`area:ai|engine|preview|vto|measure|3d`) sind ohne lokalen Aufwand aktiv; Session-Replay bewusst aus.
+- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `jekyll build` (`build`), `npm run build` No-op (`validate`), `validate-css`, `validate-html` — siehe „Deployment" unten.
+
+---
+
+
 ## Project
 
 Urban Revolution is a single-page web app — an "AI couture atelier." The
@@ -474,6 +517,12 @@ Default branch is `main`; don't push directly. Development happens on
 feature branches. Don't open PRs unless explicitly asked.
 
 ### Auto-merge policy (standing instruction from the user)
+
+> **Aktualisiert (siehe Projekt-Regeln · Workflow oben):** Für **UI-/Frontend-
+> Änderungen** gilt jetzt zuerst der iPhone-Preview-Check — PR öffnen, Vercel-
+> Preview verlinken und auf dem echten Gerät verifizieren lassen, BEVOR nach
+> `main` gemergt wird. Die autonome Auto-Merge-Regel unten gilt weiterhin für
+> rein nicht-visuelle Änderungen (Docs, CI, `api/`-Logik, Tests).
 
 **Default: Claude merges its own PRs autonomously — do NOT ask, do NOT wait
 for confirmation, do NOT just report "CI is green" and stop.** The user has
