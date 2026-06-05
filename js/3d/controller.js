@@ -71,6 +71,7 @@ async function mount() {
         console.info("[3d] mounted");
     } catch (err) {
         console.error("[3d] mount failed:", err);
+        if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "3d", op: "mount" } });
         showMountFailure(container, err.message);
     } finally {
         mountInFlight = false;
@@ -170,6 +171,9 @@ function safeRun(fn, label) {
         fn();
     } catch (err) {
         console.error(`[3d] ${label} failed:`, err);
+        // 3D/WebGL is the most likely iPhone-Safari failure (context loss, OOM).
+        // safeRun normally swallows it; report to Sentry so we see it (no PII).
+        if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "3d", op: label } });
     }
 }
 

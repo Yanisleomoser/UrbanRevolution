@@ -93,27 +93,29 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap"></noscript>
 
-    <!-- Sentry Error-Monitoring + Performance + Session Replay — build-freier
-         Loader, früh geladen, um auch Fehler beim Seitenaufbau zu erfassen.
-         EU-Region (.de.sentry.io). Der DSN ist ein öffentlicher Client-Key
-         (kein Secret) und gehört per Design in den Browser-Code.
-         DATENSCHUTZ: Replay maskiert ALLE Texte/Inputs/Medien (Defaults) und
-         BLOCKT zusätzlich die sensiblen Zonen komplett — Körpermaße, Freitext,
-         Foto-Upload. Keine PII, keine Maße, kein Freitext an Sentry. Bei
-         Do-Not-Track sind Tracing + Replay aus (Fehler werden trotzdem erfasst),
-         konsistent mit telemetry.js. release/environment werden zur Build-Zeit
-         injiziert (scripts/inject-sentry.mjs), da eine statische Seite keine
-         Vercel-Env zur Laufzeit liest; lokal greift ein Hostname-Fallback. -->
+    <!-- Sentry — Error-Monitoring + Performance + Session Replay.
+         FESTES CDN-Bundle (kein Bundler/Build): lädt das SDK deterministisch inkl.
+         Tracing + Replay (unabhängig von Dashboard-Toggles) und ist SOFORT
+         verfügbar — so geht kein früher Fehler verloren (der Loader lud asynchron
+         und verpasste den frühesten Throw). EU-Region. DSN = öffentlicher
+         Client-Key (kein Secret). Version manuell pflegen (aktuell 10.56.0).
+         DATENSCHUTZ: Replay maskiert alle Texte/Inputs/Medien (Defaults) UND
+         blockt die sensiblen Zonen komplett — Körpermaße, Engine-Freitext,
+         KI-Prompt, Foto-Upload. Keine PII/Maße/Freitext an Sentry. Do-Not-Track →
+         Tracing + Replay aus (Fehler weiter erfasst), wie telemetry.js.
+         release/environment werden zur Build-Zeit injiziert
+         (scripts/inject-sentry.mjs); lokal greift ein Hostname-Fallback. -->
     <link rel="dns-prefetch" href="https://o4511512862720000.ingest.de.sentry.io">
-    <!-- sentryOnLoad muss VOR dem Loader-Script definiert sein, sonst kann
-         der Loader die Init-Konfiguration verpassen (Sentry-Doku). -->
+    <link rel="dns-prefetch" href="https://browser.sentry-cdn.com">
+    <script src="https://browser.sentry-cdn.com/10.56.0/bundle.tracing.replay.min.js" crossorigin="anonymous"></script>
     <script>
-      window.sentryOnLoad = function () {
+      (function () {
+        if (!window.Sentry) return; // vom Adblocker/Netz geblockt → fail-safe, keine Fehler
         var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
         var dntOn = (dnt === "1" || dnt === "yes");
 
-        // Platzhalter → von scripts/inject-sentry.mjs zur Build-Zeit ersetzt.
-        // Unersetzt (lokal/CI) → Fallback aus dem Hostname.
+        // Platzhalter → scripts/inject-sentry.mjs ersetzt sie zur Build-Zeit;
+        // unersetzt (lokal/CI) → Fallback aus dem Hostname.
         var RAW_ENV = "__SENTRY_ENV__", RAW_REL = "__SENTRY_RELEASE__";
         var injected = function (v) { return v && v.indexOf("__SENTRY_") !== 0; };
         var environment = injected(RAW_ENV) ? RAW_ENV
@@ -122,57 +124,39 @@
           : "preview";
         var release = injected(RAW_REL) ? RAW_REL : undefined;
 
-        // Integrationen defensiv: nur hinzufügen, wenn das Loader-Bundle sie
-        // mitbringt — sonst kein ReferenceError / Console-Fehler.
-        var extra = [];
-        if (typeof Sentry.browserTracingIntegration === "function") {
-          extra.push(Sentry.browserTracingIntegration());
-        }
-        if (typeof Sentry.replayIntegration === "function") {
-          extra.push(Sentry.replayIntegration({
-            maskAllText: true,
-            maskAllInputs: true,
-            blockAllMedia: true,
-            // Sensible Zonen KOMPLETT blocken (zusätzlich zu den Defaults):
-            block: [
-              ".measure-section", ".measure-form", ".measure-inputs",
-              ".de-freetext", "#de-freetext-input", ".prompt-fallback",
-              "[data-sentry-block]"
-            ],
-            mask: ["#de-freetext-input", "[data-sentry-mask]"],
-          }));
-        }
-
         Sentry.init({
           dsn: "https://98d7bb6998f909851294c6f1efab6ff5@o4511512862720000.ingest.de.sentry.io/4511512873730128",
           environment: environment,
           release: release,
-          // Funktions-Form: behält ALLE Default-Integrationen (u. a. die globalen
-          // Error-/Promise-Handler) und ergänzt Tracing + Replay.
-          integrations: function (defaults) { return defaults.concat(extra); },
-          // Bei Do-Not-Track: Tracing + Replay aus (Fehler werden weiter erfasst).
-          tracesSampleRate: dntOn ? 0 : 0.1,
+          integrations: [
+            Sentry.browserTracingIntegration(),
+            Sentry.replayIntegration({
+              maskAllText: true,
+              maskAllInputs: true,
+              blockAllMedia: true,
+              // Sensible Zonen KOMPLETT blocken (zusätzlich zu den Defaults):
+              block: [
+                ".measure-section", ".measure-form", ".measure-inputs",
+                ".de-freetext", "#de-freetext-input", ".prompt-fallback",
+                "[data-sentry-block]"
+              ],
+              mask: ["#de-freetext-input", "[data-sentry-mask]"],
+            }),
+          ],
+          // Überarbeitungsphase (wenig Traffic) → volle Performance-Sicht.
+          // Bei Launch/Skalierung auf ~0.1 senken. Do-Not-Track → alles aus außer Fehlern.
+          tracesSampleRate: dntOn ? 0 : 1.0,
           replaysSessionSampleRate: dntOn ? 0 : 0.1,
           replaysOnErrorSampleRate: dntOn ? 0 : 1.0,
           sendDefaultPii: false,
         });
-      };
+      })();
     </script>
-    <script src="https://js-de.sentry-cdn.com/98d7bb6998f909851294c6f1efab6ff5.min.js" crossorigin="anonymous"></script>
-    <!-- TEMP Sentry-Verifikation: ?sentrytest=1. NACH dem Dashboard-Check entfernen.
-         Zwei Wege, damit das Event garantiert ankommt — unabhängig davon, wann der
-         async Loader das Bundle fertig geladen hat:
-         (1) Direkter captureException (vom Loader-Stub gequeuet, beim Laden geflusht).
-         (2) Zusätzlich ein unbehandelter Fehler nach 5 s (testet die globalen Handler). -->
+    <!-- TEMP Sentry-Verifikation: ?sentrytest=1 wirft einen unbehandelten Fehler
+         (vom globalen Handler erfasst). NACH dem Dashboard-Check entfernen. -->
     <script>
       if (new URLSearchParams(location.search).get("sentrytest") === "1") {
-        try {
-          if (window.Sentry && Sentry.captureException) {
-            Sentry.captureException(new Error("Sentry test (capture) " + Date.now()),
-              { tags: { area: "test" } });
-          }
-        } catch (e) { /* Sentry blockiert (Adblocker/DNT) */ }
-        setTimeout(function () { throw new Error("Sentry test (uncaught) " + Date.now()); }, 5000);
+        setTimeout(function () { throw new Error("Sentry test error " + Date.now()); }, 1200);
       }
     </script>
 
