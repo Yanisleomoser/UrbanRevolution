@@ -101,13 +101,13 @@
          Hinweis: Der DSN ist ein öffentlicher Client-Key (kein Secret) — er
          gehört per Design in den Browser-Code; ein build-freier statischer
          Site-Stack kann ihn nicht aus Env-Variablen injizieren. -->
-    <link rel="dns-prefetch" href="https://o4511484411904000.ingest.de.sentry.io">
+    <link rel="dns-prefetch" href="https://o4511512862720000.ingest.de.sentry.io">
     <!-- sentryOnLoad muss VOR dem Loader-Script definiert sein, sonst kann
          der Loader die Init-Konfiguration verpassen (Sentry-Doku). -->
     <script>
       window.sentryOnLoad = function () {
         Sentry.init({
-          dsn: "https://541763f2f4076a2291fad4ad414c566a@o4511484411904000.ingest.de.sentry.io/4511484435300432",
+          dsn: "https://1eba00decb258179c8e3a62757290ef1@o4511512862720000.ingest.de.sentry.io/4511513069944912",
           // Datenschutz: Session Replay aus, keine personenbezogenen Daten.
           replaysSessionSampleRate: 0,
           replaysOnErrorSampleRate: 0,
@@ -118,7 +118,7 @@
         });
       };
     </script>
-    <script src="https://js-de.sentry-cdn.com/541763f2f4076a2291fad4ad414c566a.min.js" crossorigin="anonymous"></script>
+    <script src="https://js-de.sentry-cdn.com/1eba00decb258179c8e3a62757290ef1.min.js" crossorigin="anonymous"></script>
 
     <!-- Vercel Speed Insights -->
     <script>
