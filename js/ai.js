@@ -251,6 +251,13 @@ const AI = (() => {
     const reason = body && body.error ? body.error : `HTTP ${response.status}`;
     // "not configured" is an expected, quiet fallback (no key on server).
     if (!/not configured/i.test(reason)) {
+      // Report the real upstream failure (Replicate/Anthropic proxy) to Sentry.
+      // No prompt content — only the coded reason + HTTP status (no PII).
+      if (window.Sentry) {
+        window.Sentry.captureException(new Error("AI proxy failed: " + reason), {
+          tags: { area: "ai", status: response.status },
+        });
+      }
       window.dispatchEvent(new CustomEvent("ai-fallback", { detail: { reason } }));
     }
     return null;
@@ -372,6 +379,7 @@ Antworte NUR mit JSON:
       };
     } catch (error) {
       console.error("[AI] Design generation failed:", error);
+      if (window.Sentry) window.Sentry.captureException(error, { tags: { area: "ai" } });
       throw new Error(`Design generation failed: ${error.message}`);
     }
   }

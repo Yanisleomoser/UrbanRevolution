@@ -93,32 +93,77 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&display=swap"></noscript>
 
-    <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
-         geladen, um auch Fehler beim Seitenaufbau zu erfassen. Datensparsam
-         (DSGVO): kein Session Replay, keine PII; Performance-Tracing aktiv
-         (Seitenladezeiten / Web Vitals / Navigation, EU-Region .de.sentry.io).
-         Der Pose-/Foto-Flow bleibt 100 % client-seitig.
-         Hinweis: Der DSN ist ein öffentlicher Client-Key (kein Secret) — er
-         gehört per Design in den Browser-Code; ein build-freier statischer
-         Site-Stack kann ihn nicht aus Env-Variablen injizieren. -->
-    <link rel="dns-prefetch" href="https://o4511484411904000.ingest.de.sentry.io">
+    <!-- Sentry Error-Monitoring + Performance + Session Replay — build-freier
+         Loader, früh geladen, um auch Fehler beim Seitenaufbau zu erfassen.
+         EU-Region (.de.sentry.io). Der DSN ist ein öffentlicher Client-Key
+         (kein Secret) und gehört per Design in den Browser-Code.
+         DATENSCHUTZ: Replay maskiert ALLE Texte/Inputs/Medien (Defaults) und
+         BLOCKT zusätzlich die sensiblen Zonen komplett — Körpermaße, Freitext,
+         Foto-Upload. Keine PII, keine Maße, kein Freitext an Sentry. Bei
+         Do-Not-Track sind Tracing + Replay aus (Fehler werden trotzdem erfasst),
+         konsistent mit telemetry.js. release/environment werden zur Build-Zeit
+         injiziert (scripts/inject-sentry.mjs), da eine statische Seite keine
+         Vercel-Env zur Laufzeit liest; lokal greift ein Hostname-Fallback. -->
+    <link rel="dns-prefetch" href="https://o4511512862720000.ingest.de.sentry.io">
     <!-- sentryOnLoad muss VOR dem Loader-Script definiert sein, sonst kann
          der Loader die Init-Konfiguration verpassen (Sentry-Doku). -->
     <script>
       window.sentryOnLoad = function () {
+        var dnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+        var dntOn = (dnt === "1" || dnt === "yes");
+
+        // Platzhalter → von scripts/inject-sentry.mjs zur Build-Zeit ersetzt.
+        // Unersetzt (lokal/CI) → Fallback aus dem Hostname.
+        var RAW_ENV = "__SENTRY_ENV__", RAW_REL = "__SENTRY_RELEASE__";
+        var injected = function (v) { return v && v.indexOf("__SENTRY_") !== 0; };
+        var environment = injected(RAW_ENV) ? RAW_ENV
+          : /(^|\.)revolveurban\.com$/.test(location.hostname) ? "production"
+          : (location.hostname === "localhost" || location.hostname === "127.0.0.1") ? "development"
+          : "preview";
+        var release = injected(RAW_REL) ? RAW_REL : undefined;
+
+        // Integrationen defensiv: nur hinzufügen, wenn das Loader-Bundle sie
+        // mitbringt — sonst kein ReferenceError / Console-Fehler.
+        var integrations = [];
+        if (typeof Sentry.browserTracingIntegration === "function") {
+          integrations.push(Sentry.browserTracingIntegration());
+        }
+        if (typeof Sentry.replayIntegration === "function") {
+          integrations.push(Sentry.replayIntegration({
+            maskAllText: true,
+            maskAllInputs: true,
+            blockAllMedia: true,
+            // Sensible Zonen KOMPLETT blocken (zusätzlich zu den Defaults):
+            block: [
+              ".measure-section", ".measure-form", ".measure-inputs",
+              ".de-freetext", "#de-freetext-input", ".prompt-fallback",
+              "[data-sentry-block]"
+            ],
+            mask: ["#de-freetext-input", "[data-sentry-mask]"],
+          }));
+        }
+
         Sentry.init({
-          dsn: "https://541763f2f4076a2291fad4ad414c566a@o4511484411904000.ingest.de.sentry.io/4511484435300432",
-          // Datenschutz: Session Replay aus, keine personenbezogenen Daten.
-          replaysSessionSampleRate: 0,
-          replaysOnErrorSampleRate: 0,
-          // Performance-Tracing an: 100 % der Transaktionen (Seitenladezeiten,
-          // Web Vitals, Navigation). Für Low-Traffic ok; bei viel Traffic 0.1–0.2.
-          tracesSampleRate: 1.0,
+          dsn: "https://98d7bb6998f909851294c6f1efab6ff5@o4511512862720000.ingest.de.sentry.io/4511512873730128",
+          environment: environment,
+          release: release,
+          integrations: integrations,
+          // Bei Do-Not-Track: Tracing + Replay aus (Fehler werden weiter erfasst).
+          tracesSampleRate: dntOn ? 0 : 0.1,
+          replaysSessionSampleRate: dntOn ? 0 : 0.1,
+          replaysOnErrorSampleRate: dntOn ? 0 : 1.0,
           sendDefaultPii: false,
         });
       };
     </script>
-    <script src="https://js-de.sentry-cdn.com/541763f2f4076a2291fad4ad414c566a.min.js" crossorigin="anonymous"></script>
+    <script src="https://js-de.sentry-cdn.com/98d7bb6998f909851294c6f1efab6ff5.min.js" crossorigin="anonymous"></script>
+    <!-- TEMP Sentry-Verifikation: ?sentrytest=1 wirft einen unbehandelten Fehler
+         (von Sentrys globalem Handler erfasst). NACH dem Dashboard-Check entfernen. -->
+    <script>
+      if (new URLSearchParams(location.search).get("sentrytest") === "1") {
+        setTimeout(function () { throw new Error("Sentry test error " + Date.now()); }, 0);
+      }
+    </script>
 
     <!-- Vercel Speed Insights -->
     <script>

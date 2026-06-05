@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "echo 'Static site — no build step'",
+  "buildCommand": "node scripts/inject-sentry.mjs",
   "outputDirectory": ".",
   "installCommand": "npm install",
   "headers": [
