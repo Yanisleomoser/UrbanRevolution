@@ -880,6 +880,9 @@
         );
       } catch (err) {
         console.error("[pose] failed:", err);
+        // Client-side pose/measure failure (MediaPipe load or inference). The
+        // photo never leaves the device; only the error reaches Sentry — no PII.
+        if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "measure" } });
         showToast(t("toast.photo_failed", { msg: err.message || err }), "error");
         statusEl.textContent = t("measure.status_error");
       } finally {
@@ -1163,6 +1166,8 @@
           setVtoError(t("vto.error_unexpected"));
         }
       } catch (err) {
+        // Photoreal try-on (Replicate). No photo / prompt sent to Sentry.
+        if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "vto" } });
         setVtoError(t("vto.error_network", { msg: err.message }));
       }
     });
@@ -1461,6 +1466,7 @@
           : { error: t("dpreview.error_unexpected") });
       }
     } catch (err) {
+      if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "preview" } });
       renderPreviewSlot(design, window.PreviewFallback
         ? { fallback: true }
         : { error: t("dpreview.error_network", { msg: err.message }) });
