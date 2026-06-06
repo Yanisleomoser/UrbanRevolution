@@ -1586,6 +1586,7 @@
       description: t("lib.loaded_desc"),
       generatedAt: entry.savedAt,
       previewImageUrl: entry.previewImageUrl || null,
+      measurements: entry.measurements || null,
     };
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
