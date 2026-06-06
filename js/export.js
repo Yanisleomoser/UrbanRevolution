@@ -128,7 +128,7 @@ const Export = (() => {
 <title>${esc(spec.metadata.designId)} — ${esc(spec.design.name)}</title>
 <style>
     @page { size: A4; margin: 1.5cm; }
-    body { font-family: 'Inter', -apple-system, sans-serif; color: #111; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }
+    body { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: #111; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }
     h1 { font-family: Georgia, serif; font-size: 28px; margin-bottom: 4px; }
     h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin: 32px 0 12px; font-weight: 700; }
     .header { border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
