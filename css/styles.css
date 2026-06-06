@@ -1,4 +1,9 @@
 :root {
+    /* Markentypografie — EIN Display-Serif (Lora) + EINE Body-Sans (Poppins).
+       Familienwechsel künftig nur hier. (Skala: --text-* bleibt.) */
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-body: 'Poppins', system-ui, -apple-system, sans-serif;
+
     --bg: #0a0a0b;
     --bg-elevated: #121214;
     --bg-card: #18181b;
@@ -102,7 +107,7 @@ body {
 html { scroll-behavior: smooth; }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-body);
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
@@ -343,7 +348,7 @@ html.is-touch .navbar {
 }
 
 .hero-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     /* Cap at 88px in two-column hero layout — gives the asset slot room
        to breathe and keeps the CTA above the fold on 900px-tall viewports. */
     font-size: clamp(48px, 6vw, 88px);
@@ -476,9 +481,9 @@ html.is-touch .navbar {
 
 /* ============ VISUAL SCROLL STORY (pinned WebGL, 3 acts) ============ */
 /* Self-contained design system per the editorial brief: pure void black,
-   pure-white body, Poppins for facts/UI, Lora Italic for couture
-   statements. The brand gradient is reserved for hero words only. Scoped
-   to .story so the rest of the site keeps its Inter/Playfair tokens. */
+   pure-white body, Poppins for facts/UI, Lora for couture statements. The
+   brand gradient is reserved for hero words only. Scoped to .story so the
+   rest of the site keeps the shared --font-display / --font-body tokens. */
 .story {
     --void: #0A0A0C;
     --story-card: #121214;
@@ -646,7 +651,7 @@ html.is-touch .navbar {
 .story-act.is-active .story-cta { transition-delay: 0.5s; }
 
 .story-kicker {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-weight: 500;
     font-size: var(--text-sm);
     letter-spacing: var(--tracking-wider);
@@ -656,7 +661,7 @@ html.is-touch .navbar {
 }
 
 .story-headline {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-weight: 600;
     font-size: clamp(26px, 4vw, 52px);
     line-height: 1.12;
@@ -667,7 +672,7 @@ html.is-touch .navbar {
 }
 
 .story-statement {
-    font-family: 'Lora', serif;
+    font-family: var(--font-display);
     font-style: italic;
     font-weight: 500;
     font-size: clamp(30px, 5vw, 64px);
@@ -694,7 +699,7 @@ html.is-touch .navbar {
     gap: var(--space-2);
     margin-top: var(--space-7);
     padding: var(--space-4) var(--space-6);
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-weight: 500;
     font-size: var(--text-sm);
     letter-spacing: 0.02em;
@@ -730,7 +735,7 @@ html.is-touch .navbar {
     max-width: 1280px;
     margin: 0 auto;
     padding: clamp(20px, 4vh, 36px) var(--space-8);
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     pointer-events: none;
 }
 
@@ -769,7 +774,7 @@ html.is-touch .navbar {
     background: rgba(10, 10, 11, 0.35);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-size: var(--text-xs);
     letter-spacing: 0.02em;
     color: var(--text-dim);
@@ -800,7 +805,7 @@ html.is-touch .navbar {
     flex-direction: column;
     align-items: flex-end;
     gap: 2px;
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     text-align: right;
     opacity: 0;
     transform: translateY(-8px);
@@ -975,7 +980,7 @@ html.is-touch .navbar {
 }
 
 .section-header h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: var(--text-3xl);
     font-weight: 700;
     letter-spacing: var(--tracking-tight);
@@ -1302,7 +1307,7 @@ input[aria-invalid="true"] {
 }
 
 .design-result h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: 26px;
     margin-bottom: 16px;
     line-height: 1.2;
@@ -1372,7 +1377,7 @@ input[aria-invalid="true"] {
 }
 
 .design-card-titles h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: 26px;
     line-height: 1.15;
     margin: 0;
@@ -2204,7 +2209,7 @@ input[aria-invalid="true"] {
     color: #111;
     border-radius: var(--radius);
     padding: 48px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     box-shadow: var(--shadow-soft);
 }
 
@@ -2218,7 +2223,7 @@ input[aria-invalid="true"] {
 }
 
 .spec-header h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 4px;
@@ -2490,7 +2495,7 @@ input[aria-invalid="true"] {
 }
 
 .legal-page h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: var(--text-3xl);
     letter-spacing: var(--tracking-tight);
     margin-bottom: var(--space-3);
@@ -3456,7 +3461,7 @@ html.is-touch { scroll-behavior: auto; }
 }
 
 .library-modal-head h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: 28px;
     margin: 0;
 }
@@ -3553,7 +3558,7 @@ html.is-touch { scroll-behavior: auto; }
 }
 
 .library-tile-body h4 {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: 17px;
     line-height: 1.2;
     margin: 0;
@@ -3789,7 +3794,7 @@ main { display: block; }
     text-align: center;
 }
 .manifesto-eyebrow {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-weight: 600;
     font-size: var(--text-sm);
     letter-spacing: var(--tracking-wider, 0.18em);
@@ -3801,7 +3806,7 @@ main { display: block; }
     margin: 0 0 var(--space-5);
 }
 .manifesto-headline {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--text-3xl);
     line-height: 1.06;
@@ -3836,7 +3841,7 @@ main { display: block; }
 }
 .manifesto-stat-num {
     display: block;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(28px, 4vw, 44px);
     line-height: 1;
@@ -3903,7 +3908,7 @@ main { display: block; }
 }
 .howto-eyebrow {
     text-align: center;
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-weight: 600;
     font-size: var(--text-sm);
     letter-spacing: var(--tracking-wider, 0.18em);
@@ -3916,7 +3921,7 @@ main { display: block; }
 }
 .howto-heading {
     text-align: center;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--text-2xl);
     line-height: 1.14;
@@ -3948,7 +3953,7 @@ main { display: block; }
     border-radius: 50%;
     background: var(--gradient-dim);
     border: 1px solid var(--border);
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--text-lg);
     color: var(--text);
@@ -4008,7 +4013,7 @@ main { display: block; }
     border-top: 1px solid var(--border);
 }
 .cost-kicker {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-weight: 600;
     font-size: var(--text-sm);
     letter-spacing: var(--tracking-wider, 0.18em);
@@ -4020,7 +4025,7 @@ main { display: block; }
     margin: 0 0 var(--space-4);
 }
 .cost-headline {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: var(--text-3xl);
     line-height: 1.08;
@@ -4052,7 +4057,7 @@ main { display: block; }
 }
 .cost-stat-num {
     display: block;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(32px, 5vw, 52px);
     line-height: 1;
@@ -4075,7 +4080,7 @@ main { display: block; }
     border-radius: var(--radius);
 }
 .cost-chart-cap {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-size: var(--text-md);
     font-weight: 500;
     color: var(--text);
@@ -4124,7 +4129,7 @@ main { display: block; }
     text-align: center;
     max-width: 32ch;
     margin: 0 auto var(--space-8);
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 700;
     font-style: italic;
     font-size: var(--text-2xl);
@@ -4648,7 +4653,7 @@ main { display: block; }
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: #fff;
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     letter-spacing: 0.02em;
     pointer-events: none;
@@ -4971,7 +4976,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
 }
 .facts-live { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .facts-headline {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-weight: 700; font-size: var(--text-3xl);
     line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
     color: var(--text); margin: 0 0 var(--space-9); text-wrap: balance;
@@ -5046,7 +5051,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
     font-variant-numeric: tabular-nums; letter-spacing: 0.08em; margin: 0;
 }
 .begin-line {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
     font-size: clamp(34px, 5vw, 64px); font-weight: 700;
     line-height: 1.08; letter-spacing: var(--tracking-tight);
     color: var(--text); margin: 0 0 var(--space-8); text-wrap: balance;
@@ -5107,7 +5112,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
 }
 .funnel-close:hover { color: var(--text); }
 .funnel-q {
-    font-family: 'Playfair Display', serif; font-size: var(--text-2xl); font-weight: 700;
+    font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700;
     letter-spacing: var(--tracking-tight); line-height: var(--leading-tight);
     margin: 0 0 var(--space-6); color: var(--text);
 }
@@ -5144,7 +5149,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); }
 .de-ring-pct { fill: var(--text); font-size: 16px; font-weight: 700; }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
-.de-question { font-family: 'Lora', Georgia, serif; font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin: 0 0 var(--space-6); color: var(--text); }
+.de-question { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin: 0 0 var(--space-6); color: var(--text); }
 
 .de-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); }
 .de-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); cursor: pointer; transition: transform .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out); }
@@ -5163,7 +5168,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .de-tot-panel { position: relative; min-height: 280px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; color: var(--text); cursor: pointer; display: flex; align-items: flex-end; padding: var(--space-5); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .de-tot-panel .de-visual { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
 .de-tot-panel:hover, .de-tot-panel:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-glow); outline: none; }
-.de-tot-label { position: relative; font-family: 'Lora', Georgia, serif; font-size: var(--text-xl); font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+.de-tot-label { position: relative; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
 
 .de-slider { padding: var(--space-5) 0; }
 .de-slider-poles { display: flex; justify-content: space-between; color: var(--text-dim); font-size: var(--text-sm); margin-bottom: var(--space-3); }
@@ -5179,7 +5184,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
 
 .de-confirm { margin-top: var(--space-6); padding: var(--space-4) var(--space-8); border: 0; border-radius: 999px; background: var(--gradient); color: #fff; font-size: var(--text-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-glow); transition: transform .2s var(--ease-out); }
 .de-confirm:hover { transform: translateY(-2px); }
-.de-summary { font-family: 'Lora', Georgia, serif; font-size: var(--text-lg); line-height: var(--leading-snug); color: var(--text); margin: 0 0 var(--space-2); }
+.de-summary { font-family: var(--font-display); font-size: var(--text-lg); line-height: var(--leading-snug); color: var(--text); margin: 0 0 var(--space-2); }
 
 .de-controls { display: flex; align-items: center; gap: var(--space-4); }
 .de-nav { background: none; border: 0; color: var(--text-muted); cursor: pointer; font-size: var(--text-sm); transition: color .2s var(--ease-out); }
@@ -5362,7 +5367,7 @@ html.is-touch .lang-toggle { min-height: 38px; }
 /* §2 — Intro-Screen + optionaler Freitext am Schluss */
 .de-intro { min-height: 68svh; min-height: calc(var(--svh, 1svh) * 68); display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-8) var(--space-5); }
 .de-intro-inner { max-width: 620px; display: flex; flex-direction: column; gap: var(--space-6); align-items: center; }
-.de-intro-title { font-family: 'Lora', Georgia, serif; font-size: var(--text-3xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); margin: 0; color: var(--text); }
+.de-intro-title { font-family: var(--font-display); font-size: var(--text-3xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); margin: 0; color: var(--text); }
 .de-intro-sub { color: var(--text-dim); font-size: var(--text-md); line-height: var(--leading-normal); margin: 0; max-width: 52ch; }
 .de-intro-start { margin-top: var(--space-2); }
 
