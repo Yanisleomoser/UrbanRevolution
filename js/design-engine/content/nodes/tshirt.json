@@ -1,0 +1,333 @@
+{
+  "_comment": "tshirt branch — lean journey (B form · C fabric · D colour). Every node gated by category=='tshirt' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "nodes": [
+    {
+      "id": "tshirt_subarch",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.subArchetype < 0.6",
+      "priority": 0.9,
+      "question": {
+        "de": "Welches T-Shirt?",
+        "en": "Which tee?"
+      },
+      "choices": [
+        {
+          "id": "classic",
+          "label": {
+            "de": "Klassisch",
+            "en": "Classic"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "classic"
+            }
+          }
+        },
+        {
+          "id": "boxy",
+          "label": {
+            "de": "Boxy",
+            "en": "Boxy"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "boxy",
+              "silhouette.fit": 0.85,
+              "silhouette.volume": "high"
+            },
+            "weight": {
+              "y2kStreet": 0.15
+            }
+          }
+        },
+        {
+          "id": "cropped",
+          "label": {
+            "de": "Cropped",
+            "en": "Cropped"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "cropped",
+              "length": "cropped"
+            },
+            "weight": {
+              "y2kStreet": 0.15
+            }
+          }
+        },
+        {
+          "id": "fitted",
+          "label": {
+            "de": "Tailliert",
+            "en": "Fitted"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "fitted",
+              "silhouette.fit": 0.15
+            },
+            "weight": {
+              "softCouture": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "tshirt_fit",
+      "phase": "B",
+      "modality": "slider",
+      "when": "category == 'tshirt' && _confidence.silhouette.fit < 0.7",
+      "priority": 0.8,
+      "question": {
+        "de": "Wie sitzt es?",
+        "en": "How does it sit?"
+      },
+      "bind": "silhouette.fit",
+      "axis": {
+        "de": [
+          "Schmal",
+          "Oversized"
+        ],
+        "en": [
+          "Slim",
+          "Oversized"
+        ]
+      }
+    },
+    {
+      "id": "tshirt_neck",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.construction.collar < 0.6",
+      "priority": 0.68,
+      "question": {
+        "de": "Ausschnitt?",
+        "en": "Neckline?"
+      },
+      "choices": [
+        {
+          "id": "crew",
+          "label": {
+            "de": "Rundhals",
+            "en": "Crew"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "crew"
+            }
+          }
+        },
+        {
+          "id": "vneck",
+          "label": {
+            "de": "V-Ausschnitt",
+            "en": "V-neck"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "vneck"
+            },
+            "weight": {
+              "softCouture": 0.1
+            }
+          }
+        },
+        {
+          "id": "stand",
+          "label": {
+            "de": "Stehkragen",
+            "en": "Mock neck"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "stand"
+            },
+            "weight": {
+              "techAvant": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "tshirt_length",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.length < 0.6",
+      "priority": 0.62,
+      "question": {
+        "de": "Wie lang?",
+        "en": "How long?"
+      },
+      "choices": [
+        {
+          "id": "cropped",
+          "label": {
+            "de": "Cropped",
+            "en": "Cropped"
+          },
+          "effects": {
+            "set": {
+              "length": "cropped"
+            }
+          }
+        },
+        {
+          "id": "regular",
+          "label": {
+            "de": "Regular",
+            "en": "Regular"
+          },
+          "effects": {
+            "set": {
+              "length": "regular"
+            }
+          }
+        },
+        {
+          "id": "long",
+          "label": {
+            "de": "Longline",
+            "en": "Longline"
+          },
+          "effects": {
+            "set": {
+              "length": "long"
+            },
+            "weight": {
+              "y2kStreet": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "tshirt_material",
+      "phase": "C",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.fabric.material < 0.6",
+      "priority": 0.7,
+      "question": {
+        "de": "Aus welchem Stoff?",
+        "en": "What fabric?"
+      },
+      "choices": [
+        {
+          "id": "cotton",
+          "label": {
+            "de": "Bio-Baumwolle",
+            "en": "Organic cotton"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "cotton"
+            }
+          },
+          "image": "js/design-engine/content/img/material/cotton.jpg"
+        },
+        {
+          "id": "linen",
+          "label": {
+            "de": "Leinen-Mix",
+            "en": "Linen blend"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "linen"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/linen.jpg"
+        },
+        {
+          "id": "polyester",
+          "label": {
+            "de": "Performance",
+            "en": "Performance"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "polyester",
+              "fabric.finish": "matte"
+            },
+            "weight": {
+              "sport": 0.15
+            }
+          },
+          "image": "js/design-engine/content/img/material/polyester.jpg"
+        }
+      ]
+    },
+    {
+      "id": "tshirt_color",
+      "phase": "D",
+      "modality": "colorGradient",
+      "when": "category == 'tshirt' && _confidence.color.scheme < 0.7",
+      "priority": 0.78,
+      "question": {
+        "de": "Welche Farbwelt?",
+        "en": "Which colourway?"
+      }
+    },
+    {
+      "id": "tshirt_pattern",
+      "phase": "D",
+      "modality": "cards",
+      "when": "category == 'tshirt' && intent.energy > 0.45 && _confidence.pattern.type < 0.6",
+      "priority": 0.5,
+      "question": {
+        "de": "Print?",
+        "en": "Print?"
+      },
+      "choices": [
+        {
+          "id": "none",
+          "label": {
+            "de": "Keins",
+            "en": "None"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        },
+        {
+          "id": "stripe",
+          "label": {
+            "de": "Streifen",
+            "en": "Stripe"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "stripe"
+            }
+          }
+        },
+        {
+          "id": "graphic",
+          "label": {
+            "de": "Grafik",
+            "en": "Graphic"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "graphic"
+            },
+            "weight": {
+              "y2kStreet": 0.2
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

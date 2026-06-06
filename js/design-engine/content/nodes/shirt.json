@@ -1,0 +1,334 @@
+{
+  "_comment": "shirt branch — lean journey (B form · C fabric · D colour). Every node gated by category=='shirt' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "nodes": [
+    {
+      "id": "shirt_subarch",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'shirt' && _confidence.subArchetype < 0.6",
+      "priority": 0.9,
+      "question": {
+        "de": "Welches Hemd?",
+        "en": "Which shirt?"
+      },
+      "choices": [
+        {
+          "id": "classic",
+          "label": {
+            "de": "Klassisch",
+            "en": "Classic"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "classic",
+              "construction.collar": "shirt",
+              "construction.closure": "button"
+            }
+          }
+        },
+        {
+          "id": "overshirt",
+          "label": {
+            "de": "Overshirt",
+            "en": "Overshirt"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "overshirt",
+              "length": "regular",
+              "construction.pockets": "flap"
+            },
+            "weight": {
+              "utility": 0.2
+            }
+          }
+        },
+        {
+          "id": "camp",
+          "label": {
+            "de": "Resort",
+            "en": "Camp"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "camp",
+              "construction.collar": "notched"
+            },
+            "weight": {
+              "softCouture": 0.1
+            }
+          }
+        },
+        {
+          "id": "popover",
+          "label": {
+            "de": "Popover",
+            "en": "Popover"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "popover",
+              "construction.closure": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "shirt_fit",
+      "phase": "B",
+      "modality": "slider",
+      "when": "category == 'shirt' && _confidence.silhouette.fit < 0.7",
+      "priority": 0.8,
+      "question": {
+        "de": "Wie sitzt es?",
+        "en": "How does it sit?"
+      },
+      "bind": "silhouette.fit",
+      "axis": {
+        "de": [
+          "Schmal",
+          "Relaxed"
+        ],
+        "en": [
+          "Slim",
+          "Relaxed"
+        ]
+      }
+    },
+    {
+      "id": "shirt_length",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'shirt' && _confidence.length < 0.6",
+      "priority": 0.66,
+      "question": {
+        "de": "Wie lang?",
+        "en": "How long?"
+      },
+      "choices": [
+        {
+          "id": "cropped",
+          "label": {
+            "de": "Kurz",
+            "en": "Short"
+          },
+          "effects": {
+            "set": {
+              "length": "cropped"
+            }
+          }
+        },
+        {
+          "id": "regular",
+          "label": {
+            "de": "Regular",
+            "en": "Regular"
+          },
+          "effects": {
+            "set": {
+              "length": "regular"
+            }
+          }
+        },
+        {
+          "id": "long",
+          "label": {
+            "de": "Long",
+            "en": "Long"
+          },
+          "effects": {
+            "set": {
+              "length": "long"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "shirt_collar",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'shirt' && _confidence.construction.collar < 0.6",
+      "priority": 0.62,
+      "question": {
+        "de": "Kragen?",
+        "en": "Collar?"
+      },
+      "choices": [
+        {
+          "id": "shirt",
+          "label": {
+            "de": "Kläppchen",
+            "en": "Point"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "shirt"
+            }
+          }
+        },
+        {
+          "id": "stand",
+          "label": {
+            "de": "Steh/Grandad",
+            "en": "Band"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "stand"
+            },
+            "weight": {
+              "techAvant": 0.1
+            }
+          }
+        },
+        {
+          "id": "notched",
+          "label": {
+            "de": "Resort",
+            "en": "Camp"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "notched"
+            },
+            "weight": {
+              "softCouture": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "shirt_material",
+      "phase": "C",
+      "modality": "cards",
+      "when": "category == 'shirt' && _confidence.fabric.material < 0.6",
+      "priority": 0.7,
+      "question": {
+        "de": "Aus welchem Stoff?",
+        "en": "What fabric?"
+      },
+      "choices": [
+        {
+          "id": "cotton",
+          "label": {
+            "de": "Popeline",
+            "en": "Poplin"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "cotton"
+            }
+          },
+          "image": "js/design-engine/content/img/material/cotton.jpg"
+        },
+        {
+          "id": "linen",
+          "label": {
+            "de": "Leinen",
+            "en": "Linen"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "linen"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/linen.jpg"
+        },
+        {
+          "id": "denim",
+          "label": {
+            "de": "Denim",
+            "en": "Denim"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "denim"
+            },
+            "weight": {
+              "utility": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/denim.jpg"
+        }
+      ]
+    },
+    {
+      "id": "shirt_color",
+      "phase": "D",
+      "modality": "colorGradient",
+      "when": "category == 'shirt' && _confidence.color.scheme < 0.7",
+      "priority": 0.78,
+      "question": {
+        "de": "Welche Farbwelt?",
+        "en": "Which colourway?"
+      }
+    },
+    {
+      "id": "shirt_pattern",
+      "phase": "D",
+      "modality": "cards",
+      "when": "category == 'shirt' && intent.energy > 0.45 && _confidence.pattern.type < 0.6",
+      "priority": 0.5,
+      "question": {
+        "de": "Muster?",
+        "en": "Pattern?"
+      },
+      "choices": [
+        {
+          "id": "none",
+          "label": {
+            "de": "Uni",
+            "en": "Solid"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        },
+        {
+          "id": "stripe",
+          "label": {
+            "de": "Streifen",
+            "en": "Stripe"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "stripe"
+            }
+          }
+        },
+        {
+          "id": "check",
+          "label": {
+            "de": "Karo",
+            "en": "Check"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "check"
+            },
+            "weight": {
+              "utility": 0.1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

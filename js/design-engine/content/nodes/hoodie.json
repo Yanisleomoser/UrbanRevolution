@@ -1,0 +1,328 @@
+{
+  "_comment": "hoodie branch — lean journey (B form · C fabric · D colour). Every node gated by category=='hoodie' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "nodes": [
+    {
+      "id": "hoodie_subarch",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'hoodie' && _confidence.subArchetype < 0.6",
+      "priority": 0.9,
+      "question": {
+        "de": "Welcher Hoodie?",
+        "en": "Which hoodie?"
+      },
+      "choices": [
+        {
+          "id": "pullover",
+          "label": {
+            "de": "Pullover",
+            "en": "Pullover"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "pullover",
+              "construction.closure": "none",
+              "construction.collar": "hood"
+            }
+          }
+        },
+        {
+          "id": "zip",
+          "label": {
+            "de": "Zip-Hoodie",
+            "en": "Zip hoodie"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "zip",
+              "construction.closure": "zip",
+              "construction.collar": "hood"
+            },
+            "weight": {
+              "sport": 0.15,
+              "techAvant": 0.1
+            }
+          }
+        },
+        {
+          "id": "cropped",
+          "label": {
+            "de": "Cropped",
+            "en": "Cropped"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "cropped",
+              "length": "cropped"
+            },
+            "weight": {
+              "y2kStreet": 0.2
+            }
+          }
+        },
+        {
+          "id": "oversized",
+          "label": {
+            "de": "Oversized",
+            "en": "Oversized"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "oversized",
+              "silhouette.fit": 0.9,
+              "silhouette.volume": "high"
+            },
+            "weight": {
+              "y2kStreet": 0.15
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hoodie_fit",
+      "phase": "B",
+      "modality": "slider",
+      "when": "category == 'hoodie' && _confidence.silhouette.fit < 0.7",
+      "priority": 0.8,
+      "question": {
+        "de": "Wie sitzt er?",
+        "en": "How does it sit?"
+      },
+      "bind": "silhouette.fit",
+      "axis": {
+        "de": [
+          "Schmal",
+          "Oversized"
+        ],
+        "en": [
+          "Slim",
+          "Oversized"
+        ]
+      },
+      "weightAt": {
+        "high": {
+          "y2kStreet": 0.15
+        }
+      }
+    },
+    {
+      "id": "hoodie_length",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'hoodie' && _confidence.length < 0.6",
+      "priority": 0.7,
+      "question": {
+        "de": "Wie lang?",
+        "en": "How long?"
+      },
+      "choices": [
+        {
+          "id": "cropped",
+          "label": {
+            "de": "Cropped",
+            "en": "Cropped"
+          },
+          "effects": {
+            "set": {
+              "length": "cropped"
+            },
+            "weight": {
+              "y2kStreet": 0.15
+            }
+          }
+        },
+        {
+          "id": "regular",
+          "label": {
+            "de": "Hüfte",
+            "en": "Hip"
+          },
+          "effects": {
+            "set": {
+              "length": "regular"
+            }
+          }
+        },
+        {
+          "id": "long",
+          "label": {
+            "de": "Long",
+            "en": "Long"
+          },
+          "effects": {
+            "set": {
+              "length": "long"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hoodie_material",
+      "phase": "C",
+      "modality": "cards",
+      "when": "category == 'hoodie' && _confidence.fabric.material < 0.6",
+      "priority": 0.72,
+      "question": {
+        "de": "Aus welchem Stoff?",
+        "en": "What fabric?"
+      },
+      "choices": [
+        {
+          "id": "fleece",
+          "label": {
+            "de": "Bio-Fleece",
+            "en": "Organic fleece"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "fleece"
+            },
+            "weight": {
+              "sport": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/fleece.jpg"
+        },
+        {
+          "id": "cotton",
+          "label": {
+            "de": "Schwere Baumwolle",
+            "en": "Heavy cotton"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "cotton"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/cotton.jpg"
+        },
+        {
+          "id": "polyester",
+          "label": {
+            "de": "Recycled Tech",
+            "en": "Recycled tech"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "polyester",
+              "fabric.finish": "matte"
+            },
+            "weight": {
+              "techAvant": 0.15
+            }
+          },
+          "image": "js/design-engine/content/img/material/polyester.jpg"
+        }
+      ]
+    },
+    {
+      "id": "hoodie_color",
+      "phase": "D",
+      "modality": "colorGradient",
+      "when": "category == 'hoodie' && _confidence.color.scheme < 0.7",
+      "priority": 0.78,
+      "question": {
+        "de": "Welche Farbwelt?",
+        "en": "Which colourway?"
+      }
+    },
+    {
+      "id": "hoodie_pocket",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'hoodie' && _confidence.construction.pockets < 0.5",
+      "priority": 0.5,
+      "question": {
+        "de": "Tasche?",
+        "en": "Pocket?"
+      },
+      "choices": [
+        {
+          "id": "kangaroo",
+          "label": {
+            "de": "Kängurutasche",
+            "en": "Kangaroo"
+          },
+          "effects": {
+            "set": {
+              "construction.pockets": "kangaroo"
+            }
+          }
+        },
+        {
+          "id": "none",
+          "label": {
+            "de": "Clean",
+            "en": "Clean"
+          },
+          "effects": {
+            "set": {
+              "construction.pockets": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hoodie_hem",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'hoodie' && _confidence.construction.hem < 0.4",
+      "priority": 0.4,
+      "question": {
+        "de": "Saum & Bündchen?",
+        "en": "Hem & cuffs?"
+      },
+      "choices": [
+        {
+          "id": "ribbed",
+          "label": {
+            "de": "Gerippt",
+            "en": "Ribbed"
+          },
+          "effects": {
+            "set": {
+              "construction.hem": "ribbed",
+              "construction.cuffs": "ribbed"
+            }
+          }
+        },
+        {
+          "id": "drawcord",
+          "label": {
+            "de": "Kordelzug",
+            "en": "Drawcord"
+          },
+          "effects": {
+            "set": {
+              "construction.hem": "drawcord"
+            },
+            "weight": {
+              "sport": 0.1
+            }
+          }
+        },
+        {
+          "id": "straight",
+          "label": {
+            "de": "Gerade",
+            "en": "Straight"
+          },
+          "effects": {
+            "set": {
+              "construction.hem": "straight"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

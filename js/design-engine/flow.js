@@ -34,13 +34,20 @@ const DesignFlow = (() => {
   const lang = () => (window.I18N ? window.I18N.getLang() : "de");
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
 
+  // Every garment category now has its own node branch (each gated by
+  // `when: category=='X'`), so the journey goes deep for all six — not just the
+  // jacket. All branches load upfront; the engine only surfaces matching nodes.
+  const CATEGORY_NODES = ["jacket", "hoodie", "shirt", "tshirt", "pants", "dress"];
+
   async function loadContent(base) {
     const get = async (p) => (await fetch(base + p)).json();
-    const [arch, attrs, intent, jacket] = await Promise.all([
-      get("archetypes.json"), get("attributes.json"),
-      get("nodes/intent.json"), get("nodes/jacket.json"),
+    const [arch, attrs, intent, ...cats] = await Promise.all([
+      get("archetypes.json"), get("attributes.json"), get("nodes/intent.json"),
+      ...CATEGORY_NODES.map((c) => get(`nodes/${c}.json`)),
     ]);
-    return { archetypes: arch.archetypes, attributes: attrs, nodes: [...intent.nodes, ...jacket.nodes] };
+    const nodes = [...intent.nodes];
+    cats.forEach((c) => { if (c && Array.isArray(c.nodes)) nodes.push(...c.nodes); });
+    return { archetypes: arch.archetypes, attributes: attrs, nodes };
   }
 
   function resolveEffects(node, payload) {
