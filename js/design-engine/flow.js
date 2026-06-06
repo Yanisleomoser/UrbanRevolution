@@ -373,6 +373,13 @@ const DesignFlow = (() => {
       T("generate", { type: type || "jacket", archetype: DesignDNA.topArchetype(dna) });
       try {
         const design = await window.AI.generateDesign(prompt, type || "jacket");
+        // "Made for one": carry the body data onto the saved design so the later
+        // order/render is truly to-measure (the fit/silhouette already rides in
+        // the prompt via toSentence). Read-only snapshot, no PII leaves here.
+        if (design && window.StateManager) {
+          const m = window.StateManager.get("measurements");
+          if (m) design.measurements = m;
+        }
         if (window.StateManager) S("currentDesign", design);
         clearSaved();
         generated = true;

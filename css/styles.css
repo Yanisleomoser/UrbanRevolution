@@ -112,7 +112,8 @@ body {
     color: var(--text);
     line-height: 1.6;
     overflow-x: hidden;
-    min-height: 100vh;
+    min-height: 100svh; /* small-viewport unit → stabil, kein iOS-Toolbar-Sprung */
+    min-height: calc(var(--svh, 1svh) * 100); /* JS-gepinnt (in-app-Browser) */
 }
 
 .container {
@@ -2673,7 +2674,7 @@ input[aria-invalid="true"] {
        Selectors are deliberately more specific than the base #vto-example /
        .vto-stage rules (which sit later in the file) so these win the cascade. */
     .preview-container .vto-stage { min-height: 0; }
-    .preview-container .vto-stage .vto-result-img { min-height: 0; max-height: 75vh; }
+    .preview-container .vto-stage .vto-result-img { min-height: 0; max-height: 75svh; }
     .vto-stage #vto-example.has-image {
         min-height: 0;
         aspect-ratio: 16 / 9;
@@ -2781,7 +2782,7 @@ input[aria-invalid="true"] {
 
     /* Body diagram doesn't need to be huge on mobile */
     .body-diagram { padding: var(--space-4); }
-    .body-diagram svg { max-height: 70vh; }
+    .body-diagram svg { max-height: 70svh; }
 
     /* Spec sheet readability */
     .spec-sheet { padding: var(--space-5) !important; }
@@ -2894,7 +2895,7 @@ input[aria-invalid="true"] {
     padding: 32px;
     max-width: 720px;
     width: 100%;
-    max-height: 90vh;
+    max-height: 90svh;
     overflow-y: auto;
     box-shadow: var(--shadow-soft);
 }
@@ -2947,7 +2948,7 @@ input[aria-invalid="true"] {
 
 .vto-result-img {
     width: 100%;
-    max-height: 70vh;
+    max-height: 70svh;
     object-fit: contain;
     border-radius: var(--radius);
     display: block;
@@ -3447,7 +3448,7 @@ html.is-touch { scroll-behavior: auto; }
     padding: 28px 28px 32px;
     max-width: 960px;
     width: 100%;
-    max-height: 88vh;
+    max-height: 88svh;
     overflow-y: auto;
     box-shadow: var(--shadow-soft);
 }
@@ -4305,7 +4306,7 @@ main { display: block; }
     display: block;
     width: 100%;
     max-width: 400px;
-    max-height: 76vh;
+    max-height: 76svh;
     aspect-ratio: 768 / 1376; /* match the photo so the full figure (hair → hands) shows uncropped */
     border-radius: 28px;
     overflow: hidden;
