@@ -1742,27 +1742,6 @@
     }
   }
 
-  // "Skip to design" in the scroll story: jump INSTANTLY past the 12-viewport
-  // track. A plain anchor would honour scroll-behavior:smooth and slowly scroll
-  // through the whole story — the opposite of a skip — so force behavior:auto.
-  function initStorySkip() {
-    const skip = document.querySelector(".story-skip");
-    const target = document.getElementById("design");
-    if (!skip || !target) return;
-    skip.addEventListener("click", (e) => {
-      e.preventDefault();
-      // Force an instant jump: scrollIntoView behavior "auto" follows CSS
-      // scroll-behavior (smooth on desktop), which would slow-scroll through the
-      // whole story. Temporarily flip the root to auto so the jump is instant.
-      const root = document.documentElement;
-      const prev = root.style.scrollBehavior;
-      root.style.scrollBehavior = "auto";
-      target.scrollIntoView({ block: "start" });
-      root.style.scrollBehavior = prev;
-      try { history.replaceState(null, "", "#design"); } catch (_e) { /* no-op */ }
-    });
-  }
-
   function init() {
     initLangToggle();
     window.addEventListener("language:change", onLanguageChange);
@@ -1781,7 +1760,6 @@
     initExportButtons();
     initVtoButton();
     initLibrary();
-    initStorySkip();
     trackScrollSteps();
 
     if (window.StateManager) {
