@@ -245,9 +245,23 @@
         <div class="container facts-inner">
             <div class="facts-top">
                 <p class="mono-label section-label" data-i18n="facts.eyebrow">[ 01 / Das Problem ]</p>
-                <p class="mono-label facts-live section-live" id="facts-live" aria-hidden="true"></p>
             </div>
             <h2 id="facts-heading" class="facts-headline" data-reveal data-i18n-html="facts.headline_html">Die Mode produziert<br><em>für die Tonne</em>.</h2>
+
+            <!-- Live-Abfall-Zähler (Variante C): tickt die belegte Abfallmasse hoch
+                 (92 Mio. t/Jahr ÷ Sekunden ≈ 2'918 kg/s). Zahl wird von
+                 js/ambient-ticker.js gesetzt; aria-hidden, da der Wert sich jede
+                 Sekunde ändert — die zitierte Fakten-Liste trägt die Info barrierefrei. -->
+            <div class="cost-ticker" data-reveal aria-hidden="true">
+                <span class="cost-ticker-num">
+                    <span class="cost-ticker-kg tnum" data-ticker-kg>0</span><span class="cost-ticker-unit" data-i18n="ticker.unit">kg</span>
+                </span>
+                <span class="cost-ticker-meta">
+                    <span class="cost-ticker-live"><span class="ticker-pulse"></span><span data-i18n="ticker.live_rate">Live · jede Sekunde +2'918 kg</span></span>
+                    <span class="cost-ticker-cap" data-i18n="ticker.cap_full">Textilien verbrannt oder vergraben, seit du hier bist.</span>
+                    <span class="cost-ticker-src mono-label" data-i18n="ticker.source">[ Quelle: UNEP · 92 Mio. t / Jahr ]</span>
+                </span>
+            </div>
 
             <dl class="facts-list" data-reveal-stagger>
                 <div class="facts-row" data-reveal><dt data-i18n="facts.r1_k">Jede Sekunde</dt><dd data-i18n="facts.r1_v">1 Lastwagen Textilien — verbrannt oder vergraben</dd></div>
