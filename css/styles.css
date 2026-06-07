@@ -4725,7 +4725,8 @@ html.is-touch .lang-toggle { min-height: 38px; }
    ============================================================ */
 .de-stage { max-width: 1120px; margin: 0 auto; padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; gap: var(--space-7); }
 .de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); }
-.de-ring-pct { fill: var(--text); font-size: 16px; font-weight: 700; }
+.de-ring-pct { fill: var(--text); font-size: 17px; font-weight: 700; }
+.de-ring-unit { fill: var(--text-dim); font-size: 10px; font-weight: 600; }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .de-question { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin: 0 0 var(--space-6); color: var(--text); }
 
@@ -4869,8 +4870,10 @@ html.is-touch .lang-toggle { min-height: 38px; }
    für Ring/Flash. Sonst verankern sie am Spalten-Boden — dort sitzen aber die
    Chips, die der Ring dann überlagert (Desktop wie Mobile). */
 .de-preview-stage { position: relative; }
-.de-ring-wrap { position: absolute; left: var(--space-4); bottom: var(--space-4); width: 54px; height: 54px; padding: 4px; border-radius: 50%; background: rgba(10,10,11,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.de-ring-wrap { position: absolute; left: var(--space-4); bottom: var(--space-4); width: 54px; height: 54px; padding: 4px; border-radius: 50%; background: rgba(10,10,11,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: box-shadow .35s var(--ease-out); }
 .de-ring { width: 100%; height: 100%; }
+/* Ready: design is mature enough to finish → accent glow ties the ring to "Fertig". */
+.de-ring-wrap.is-ready { box-shadow: 0 0 0 1px var(--accent), 0 0 18px rgba(236, 72, 153, 0.45); }
 
 /* Frage groß, ruhig */
 .de-ask-col .de-question { margin-top: 0; }

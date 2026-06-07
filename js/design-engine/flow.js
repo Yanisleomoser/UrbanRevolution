@@ -101,15 +101,16 @@ const DesignFlow = (() => {
 
   function ring(maturity) {
     const C = 163.36;
-    const off = C * (1 - Math.max(0, Math.min(1, maturity)));
+    const m = Math.max(0, Math.min(1, maturity));
+    const off = C * (1 - m);
     return `<svg class="de-ring" viewBox="0 0 64 64" aria-hidden="true">
       <defs><linearGradient id="deRingGrad" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#ec4899"/><stop offset="0.5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
       </linearGradient></defs>
-      <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+      <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="4"/>
       <circle cx="32" cy="32" r="26" fill="none" stroke="url(#deRingGrad)" stroke-width="4" stroke-linecap="round"
         stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)"/>
-      <text x="32" y="36" text-anchor="middle" class="de-ring-pct">${Math.round(maturity * 100)}</text></svg>`;
+      <text x="32" y="35" text-anchor="middle" class="de-ring-pct">${Math.round(m * 100)}<tspan class="de-ring-unit" dx="0.5">%</tspan></text></svg>`;
   }
 
   // Short human label of what a choice just changed (micro-feedback, brief §7).
@@ -157,7 +158,7 @@ const DesignFlow = (() => {
         <div class="de-preview-col">
           <div class="de-preview-stage">
             <div class="de-preview" id="de-preview" aria-hidden="true"></div>
-            <div class="de-ring-wrap" id="de-ring"></div>
+            <div class="de-ring-wrap" id="de-ring" role="img"></div>
             <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
           </div>
           <div class="de-preview-chips" id="de-preview-chips"></div>
@@ -224,10 +225,15 @@ const DesignFlow = (() => {
       live.textContent = DesignSummary.toSentence(dna, lang());
     }
     function refreshChrome() {
-      ringWrap.innerHTML = ring(maturity());
+      const m = maturity();
+      ringWrap.innerHTML = ring(m);
+      // Ready state: once the design is mature enough to finish, the ring picks
+      // up an accent glow — tying the cryptic number to the "Fertig" affordance.
+      ringWrap.classList.toggle("is-ready", m >= 0.6);
+      ringWrap.setAttribute("aria-label", t("engine.maturity_aria") + ": " + Math.round(m * 100) + "%");
       updatePreview(true);
       backBtn.disabled = history.length === 0;
-      finishBtn.hidden = maturity() < 0.6;
+      finishBtn.hidden = m < 0.6;
     }
     let flashTimer = null;
     function flash(text) {
