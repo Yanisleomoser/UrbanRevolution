@@ -1,0 +1,41 @@
+name: Java Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  code-review:
+    name: Perform Code Review
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Set up Java
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17' # Update this if your project uses a different Java version
+
+      # Install Checkstyle
+      - name: Install Checkstyle
+        run: |
+          curl -LJO https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.4/checkstyle-10.12.4-all.jar
+
+      # Run Checkstyle
+      - name: Run Checkstyle
+        run: |
+          java -jar checkstyle-10.12.4-all.jar -c /google_checks.xml $(find . -name "*.java") | tee checkstyle-result.txt
+        continue-on-error: true
+
+      # Comment on PR with Checkstyle results
+      - name: Comment on Pull Request
+        if: failure()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          header: Checkstyle Report
+          path: checkstyle-result.txt
