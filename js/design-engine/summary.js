@@ -65,12 +65,14 @@ const DesignSummary = (() => {
     const g = (p) => DesignDNA.get(dna, p);
     const stops = g("color.stops") || [];
     const scheme = g("color.scheme");
+    // Hex → human colour name (i18n) — never show a raw "#1a1a1a" in the sentence.
+    const cn = (h) => (typeof window !== "undefined" && window.I18N && window.I18N.colorName ? window.I18N.colorName(h) : h);
     if (scheme === "duo-gradient" && stops.length >= 2) {
       return lang === "en"
-        ? `a ${stops[0]}-to-${stops[1]} gradient`
-        : `einem ${stops[0]}-zu-${stops[1]}-Verlauf`;
+        ? `a ${cn(stops[0])}-to-${cn(stops[1])} gradient`
+        : `einem Verlauf von ${cn(stops[0])} zu ${cn(stops[1])}`;
     }
-    if (stops.length) return lang === "en" ? `in ${stops[0]}` : `in ${stops[0]}`;
+    if (stops.length) return lang === "en" ? `in ${cn(stops[0])}` : `in ${cn(stops[0])}`;
     return null;
   }
 

@@ -1,0 +1,340 @@
+{
+  "_comment": "dress branch — lean journey (B form · C fabric · D colour). Every node gated by category=='dress' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "nodes": [
+    {
+      "id": "dress_subarch",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'dress' && _confidence.subArchetype < 0.6",
+      "priority": 0.9,
+      "question": {
+        "de": "Welches Kleid?",
+        "en": "Which dress?"
+      },
+      "choices": [
+        {
+          "id": "aline",
+          "label": {
+            "de": "A-Linie",
+            "en": "A-line"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "aline",
+              "silhouette.fit": 0.3
+            },
+            "weight": {
+              "softCouture": 0.15
+            }
+          }
+        },
+        {
+          "id": "column",
+          "label": {
+            "de": "Gerade",
+            "en": "Column"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "column",
+              "silhouette.fit": 0.7
+            },
+            "weight": {
+              "quietMinimal": 0.15
+            }
+          }
+        },
+        {
+          "id": "wrap",
+          "label": {
+            "de": "Wickel",
+            "en": "Wrap"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "wrap",
+              "construction.collar": "vneck"
+            },
+            "weight": {
+              "softCouture": 0.2
+            }
+          }
+        },
+        {
+          "id": "slip",
+          "label": {
+            "de": "Slip",
+            "en": "Slip"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "slip",
+              "fabric.material": "silk",
+              "construction.collar": "vneck"
+            },
+            "weight": {
+              "softCouture": 0.15
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dress_fit",
+      "phase": "B",
+      "modality": "slider",
+      "when": "category == 'dress' && _confidence.silhouette.fit < 0.7",
+      "priority": 0.8,
+      "question": {
+        "de": "Silhouette?",
+        "en": "Silhouette?"
+      },
+      "bind": "silhouette.fit",
+      "axis": {
+        "de": [
+          "A-Linie",
+          "Gerade"
+        ],
+        "en": [
+          "A-line",
+          "Column"
+        ]
+      }
+    },
+    {
+      "id": "dress_length",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'dress' && _confidence.length < 0.6",
+      "priority": 0.72,
+      "question": {
+        "de": "Wie lang?",
+        "en": "How long?"
+      },
+      "choices": [
+        {
+          "id": "cropped",
+          "label": {
+            "de": "Mini",
+            "en": "Mini"
+          },
+          "effects": {
+            "set": {
+              "length": "cropped"
+            },
+            "weight": {
+              "y2kStreet": 0.1
+            }
+          }
+        },
+        {
+          "id": "regular",
+          "label": {
+            "de": "Knie/Midi",
+            "en": "Knee/Midi"
+          },
+          "effects": {
+            "set": {
+              "length": "regular"
+            }
+          }
+        },
+        {
+          "id": "long",
+          "label": {
+            "de": "Maxi",
+            "en": "Maxi"
+          },
+          "effects": {
+            "set": {
+              "length": "long"
+            },
+            "weight": {
+              "softCouture": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dress_neck",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'dress' && _confidence.construction.collar < 0.6",
+      "priority": 0.66,
+      "question": {
+        "de": "Ausschnitt?",
+        "en": "Neckline?"
+      },
+      "choices": [
+        {
+          "id": "vneck",
+          "label": {
+            "de": "V-Ausschnitt",
+            "en": "V-neck"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "vneck"
+            },
+            "weight": {
+              "softCouture": 0.1
+            }
+          }
+        },
+        {
+          "id": "crew",
+          "label": {
+            "de": "Rund",
+            "en": "Round"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "crew"
+            }
+          }
+        },
+        {
+          "id": "stand",
+          "label": {
+            "de": "Hoch",
+            "en": "High"
+          },
+          "effects": {
+            "set": {
+              "construction.collar": "stand"
+            },
+            "weight": {
+              "techAvant": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "dress_material",
+      "phase": "C",
+      "modality": "cards",
+      "when": "category == 'dress' && _confidence.fabric.material < 0.6",
+      "priority": 0.72,
+      "question": {
+        "de": "Aus welchem Stoff?",
+        "en": "What fabric?"
+      },
+      "choices": [
+        {
+          "id": "silk",
+          "label": {
+            "de": "Seide",
+            "en": "Silk"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "silk",
+              "fabric.finish": "sheen"
+            },
+            "weight": {
+              "softCouture": 0.2
+            }
+          },
+          "image": "js/design-engine/content/img/material/silk.jpg"
+        },
+        {
+          "id": "cotton",
+          "label": {
+            "de": "Baumwolle",
+            "en": "Cotton"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "cotton"
+            }
+          },
+          "image": "js/design-engine/content/img/material/cotton.jpg"
+        },
+        {
+          "id": "linen",
+          "label": {
+            "de": "Leinen",
+            "en": "Linen"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "linen"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/linen.jpg"
+        }
+      ]
+    },
+    {
+      "id": "dress_color",
+      "phase": "D",
+      "modality": "colorGradient",
+      "when": "category == 'dress' && _confidence.color.scheme < 0.7",
+      "priority": 0.78,
+      "question": {
+        "de": "Welche Farbwelt?",
+        "en": "Which colourway?"
+      }
+    },
+    {
+      "id": "dress_pattern",
+      "phase": "D",
+      "modality": "cards",
+      "when": "category == 'dress' && intent.energy > 0.45 && _confidence.pattern.type < 0.6",
+      "priority": 0.5,
+      "question": {
+        "de": "Muster?",
+        "en": "Pattern?"
+      },
+      "choices": [
+        {
+          "id": "none",
+          "label": {
+            "de": "Uni",
+            "en": "Solid"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        },
+        {
+          "id": "floral",
+          "label": {
+            "de": "Floral",
+            "en": "Floral"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "abstract"
+            },
+            "weight": {
+              "softCouture": 0.15
+            }
+          }
+        },
+        {
+          "id": "stripe",
+          "label": {
+            "de": "Streifen",
+            "en": "Stripe"
+          },
+          "effects": {
+            "set": {
+              "pattern.type": "stripe"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

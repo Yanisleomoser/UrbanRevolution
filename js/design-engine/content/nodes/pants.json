@@ -1,0 +1,285 @@
+{
+  "_comment": "pants branch — lean journey (B form · C fabric · D colour). Every node gated by category=='pants' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "nodes": [
+    {
+      "id": "pants_subarch",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'pants' && _confidence.subArchetype < 0.6",
+      "priority": 0.9,
+      "question": {
+        "de": "Welche Hose?",
+        "en": "Which trousers?"
+      },
+      "choices": [
+        {
+          "id": "tailored",
+          "label": {
+            "de": "Tailored",
+            "en": "Tailored"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "tailored",
+              "silhouette.fit": 0.45
+            },
+            "weight": {
+              "softCouture": 0.15
+            }
+          }
+        },
+        {
+          "id": "slim",
+          "label": {
+            "de": "Slim",
+            "en": "Slim"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "slim",
+              "silhouette.fit": 0.12
+            }
+          }
+        },
+        {
+          "id": "wide",
+          "label": {
+            "de": "Weit",
+            "en": "Wide"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "wide",
+              "silhouette.fit": 0.92
+            },
+            "weight": {
+              "y2kStreet": 0.15
+            }
+          }
+        },
+        {
+          "id": "cargo",
+          "label": {
+            "de": "Cargo",
+            "en": "Cargo"
+          },
+          "effects": {
+            "set": {
+              "subArchetype": "cargo",
+              "construction.pockets": "cargo"
+            },
+            "weight": {
+              "utility": 0.25
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pants_fit",
+      "phase": "B",
+      "modality": "slider",
+      "when": "category == 'pants' && _confidence.silhouette.fit < 0.7",
+      "priority": 0.82,
+      "question": {
+        "de": "Wie weit?",
+        "en": "How wide?"
+      },
+      "bind": "silhouette.fit",
+      "axis": {
+        "de": [
+          "Schmal",
+          "Weit"
+        ],
+        "en": [
+          "Slim",
+          "Wide"
+        ]
+      },
+      "weightAt": {
+        "high": {
+          "y2kStreet": 0.15
+        }
+      }
+    },
+    {
+      "id": "pants_length",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'pants' && _confidence.length < 0.6",
+      "priority": 0.7,
+      "question": {
+        "de": "Wie lang?",
+        "en": "How long?"
+      },
+      "choices": [
+        {
+          "id": "cropped",
+          "label": {
+            "de": "7/8",
+            "en": "Cropped"
+          },
+          "effects": {
+            "set": {
+              "length": "cropped"
+            }
+          }
+        },
+        {
+          "id": "regular",
+          "label": {
+            "de": "Voll",
+            "en": "Full"
+          },
+          "effects": {
+            "set": {
+              "length": "regular"
+            }
+          }
+        },
+        {
+          "id": "long",
+          "label": {
+            "de": "Lang/Stack",
+            "en": "Stacked"
+          },
+          "effects": {
+            "set": {
+              "length": "long"
+            },
+            "weight": {
+              "y2kStreet": 0.1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pants_material",
+      "phase": "C",
+      "modality": "cards",
+      "when": "category == 'pants' && _confidence.fabric.material < 0.6",
+      "priority": 0.72,
+      "question": {
+        "de": "Aus welchem Stoff?",
+        "en": "What fabric?"
+      },
+      "choices": [
+        {
+          "id": "denim",
+          "label": {
+            "de": "Denim",
+            "en": "Denim"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "denim"
+            },
+            "weight": {
+              "y2kStreet": 0.15
+            }
+          },
+          "image": "js/design-engine/content/img/material/denim.jpg"
+        },
+        {
+          "id": "cotton",
+          "label": {
+            "de": "Twill/Chino",
+            "en": "Twill"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "cotton"
+            },
+            "weight": {
+              "utility": 0.1
+            }
+          },
+          "image": "js/design-engine/content/img/material/cotton.jpg"
+        },
+        {
+          "id": "wool",
+          "label": {
+            "de": "Wolle",
+            "en": "Wool"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "wool"
+            },
+            "weight": {
+              "softCouture": 0.15
+            }
+          },
+          "image": "js/design-engine/content/img/material/wool.jpg"
+        }
+      ]
+    },
+    {
+      "id": "pants_color",
+      "phase": "D",
+      "modality": "colorGradient",
+      "when": "category == 'pants' && _confidence.color.scheme < 0.7",
+      "priority": 0.76,
+      "question": {
+        "de": "Welche Farbwelt?",
+        "en": "Which colourway?"
+      }
+    },
+    {
+      "id": "pants_pockets",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'pants' && _confidence.construction.pockets < 0.5",
+      "priority": 0.5,
+      "question": {
+        "de": "Taschen?",
+        "en": "Pockets?"
+      },
+      "choices": [
+        {
+          "id": "side",
+          "label": {
+            "de": "Seitlich",
+            "en": "Side"
+          },
+          "effects": {
+            "set": {
+              "construction.pockets": "side"
+            }
+          }
+        },
+        {
+          "id": "cargo",
+          "label": {
+            "de": "Cargo",
+            "en": "Cargo"
+          },
+          "effects": {
+            "set": {
+              "construction.pockets": "cargo"
+            },
+            "weight": {
+              "utility": 0.2
+            }
+          }
+        },
+        {
+          "id": "none",
+          "label": {
+            "de": "Clean",
+            "en": "Clean"
+          },
+          "effects": {
+            "set": {
+              "construction.pockets": "none"
+            },
+            "weight": {
+              "quietMinimal": 0.1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
