@@ -5154,6 +5154,40 @@ footer.footer {
 .de-visual-garment { background: radial-gradient(120% 90% at 50% 22%, #1b1b20, #0c0c0f 82%); }
 .de-visual-garment .de-garment { width: 100%; height: 100%; max-width: none; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)); }
 
+/* ── Hybrid card cohesion (Schritt 3) ───────────────────────────────────
+   One shared "campaign" treatment over EVERY tile — photo (mood/material/
+   context) and technical flat (collar/sleeve/pockets) alike — so the two
+   visual languages read as one system: a cohesive cool grade + bottom
+   vignette seats heterogeneous photos on the dark theme and unifies them
+   with the line-art tiles. The photo itself sits below this overlay. */
+.de-visual-img { z-index: 1; }
+.de-visual::after {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    border-radius: inherit;
+    background:
+        linear-gradient(180deg, rgba(10, 10, 11, 0) 45%, rgba(10, 10, 11, 0.55) 100%),
+        radial-gradient(120% 100% at 50% 0%, rgba(6, 182, 212, 0.06), rgba(0, 0, 0, 0) 60%);
+}
+/* Crisper, more intentional technical flats: brighten the line a touch and
+   lift it off the tile so it reads as a deliberate spec drawing, not a stub. */
+.de-visual-garment { color: #d7dade; }
+.de-visual-garment .de-garment { filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.15)); }
+
+/* One strong, consistent selection state for photo + diagram tiles alike:
+   gradient-accent ring + glow + the existing ✓, and the chosen tile brightens. */
+.de-card.is-selected {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--accent), 0 10px 34px rgba(236, 72, 153, 0.28), var(--shadow-soft);
+}
+.de-card.is-selected .de-visual::after {
+    background:
+        linear-gradient(180deg, rgba(10, 10, 11, 0) 45%, rgba(10, 10, 11, 0.5) 100%),
+        radial-gradient(120% 100% at 50% 0%, rgba(236, 72, 153, 0.14), rgba(0, 0, 0, 0) 65%);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .de-card.is-selected .de-visual-img { transform: scale(1.03); transition: transform .35s var(--ease-out); }
+}
+
 /* In-App-Browser (Instagram/Facebook): der Viewport ist kürzer, und ein
    mittig zentrierter Hero schiebt die Headline unter die fixe Navbar. Auf
    kurzen Viewports oben ausrichten, mit Abstand der die Navbar + Notch frei

@@ -41,12 +41,12 @@
   },
 
   "context": {
-    "occasion-everyday": "photograph of a person walking a quiet morning city street in relaxed everyday clothing, candid, soft daylight, shallow depth of field",
-    "occasion-work": "photograph of a calm modern workspace with a tailored jacket draped over a chair beside a desk, soft daylight, refined and focused",
-    "occasion-event": "photograph of an elegant evening event interior, low warm light and refined silhouettes, glossy reflections, bokeh",
-    "occasion-active": "photograph of a runner in motion on an urban path at dawn, performance wear, dynamic, shallow depth of field, fine grain",
-    "season-all": "photograph of a versatile layered outfit on a neutral studio clothing rail, soft even daylight, transitional textures and fabrics",
-    "season-warm": "photograph of a sunlit summer city scene with light linen fabric drifting in a warm breeze, bright and airy, shallow depth of field",
-    "season-cold": "photograph of a misty winter street with a heavy wool coat and visible breath in cold air, muted blue light, fine grain"
+    "occasion-everyday": "low-key editorial photograph of a lone figure in relaxed everyday clothing on a dim quiet city street at dusk, deep shadows, cool moody grade, single soft light source, shallow depth of field, mostly near-black surroundings",
+    "occasion-work": "low-key editorial photograph of a tailored jacket draped over a chair in a dark minimal workspace lit by one focused desk lamp, deep shadows, cool grade, refined and quiet, mostly black negative space",
+    "occasion-event": "low-key editorial photograph of an elegant figure in evening wear inside a dark refined interior, low cool light, deep shadows, subtle glossy reflections and bokeh against near-black",
+    "occasion-active": "low-key editorial photograph of a runner in performance wear caught mid-motion on a dark urban path at night, cool rim light, deep shadows, dynamic, near-black surroundings, fine grain",
+    "season-all": "low-key editorial photograph of a layered outfit on a clothing rail in a dark studio, cool directional light, deep shadows, transitional textures and fabrics, mostly black negative space",
+    "season-warm": "low-key editorial photograph of light linen fabric drifting in a dim space lit by a single soft beam, airy folds and deep shadows against near-black, shallow depth of field",
+    "season-cold": "low-key editorial photograph of a heavy wool coat in cold misty darkness, muted cool blue light, deep shadows, faint visible breath, near-black surroundings, fine grain"
   }
 }
