@@ -50,16 +50,16 @@ Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. S
 Urban Revolution is a single-page web app — an "AI couture atelier." The
 user writes a free-text prompt describing a garment, the app turns it into
 a structured design concept, captures the user's measurements, renders a
-live 3D preview, and produces a printable production spec sheet for a
-tailor. The landing experience opens with a **scroll-driven visual story**
-(documentary photos → a WebGL particle garment) that frames the brand's
-anti-fast-fashion mission.
+live 2D technical-flat preview (the data-driven Design Engine), and produces
+a printable production spec sheet for a tailor. The landing experience opens
+with a **manifesto** that frames the brand's anti-fast-fashion mission,
+followed by the cited evidence band and the adaptive design journey.
 
 **Stack:** vanilla HTML / CSS / JS. No bundler, no transpiler. The
 `package.json` only exists so Vercel runs `npm install` to pull
 `@vercel/speed-insights` / `@vercel/analytics`; the app itself has no build
-step. Three.js (via import map), MediaPipe and Vercel analytics load from
-CDNs at runtime. Two Vercel Edge Functions (`api/`) proxy the AI calls.
+step. MediaPipe and Vercel analytics load from CDNs at runtime. Two Vercel
+Edge Functions (`api/`) proxy the AI calls.
 UI copy is **bilingual German/English** (`I18N`, default `de`,
 `toLocaleDateString` follows the active locale).
 
@@ -89,12 +89,7 @@ js/
   animations.js         # IntersectionObserver scroll-reveal (side effect)
   flair.js              # Pointer/scroll micro-interactions + easter egg (side effect)
   app.js                # Main controller — wires DOM events to StateManager
-  3d/
-    scene.js            # Three.js renderer, lights, bloom composer (ES module)
-    avatars.js          # Procedural mannequin from measurements + skin/hair
-    garments.js         # 6 parametric garment builders + PBR material factory
-    controller.js       # Lazy-mounts the 3D scene, subscribes to StateManager
-    story-scene.js      # WebGL particle scroll story (self-mounts)
+  design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
   og-image.png          # Social share image
   story/                # Documentary photos (Acts I–IV) — see CREDITS.md
@@ -132,24 +127,21 @@ window.Foo = Foo;
 | `animations.js`   | (none — side effect)    | classic         |
 | `flair.js`        | (none — side effect)    | classic         |
 | `app.js`          | (none — controller)     | classic         |
-| `3d/story-scene.js`| (self-mounts)          | `type="module"` |
-| `3d/controller.js`| (self-mounts)           | `type="module"` |
 
-The `js/3d/` render modules (`scene.js`, `avatars.js`, `garments.js`) are
-ES modules **dynamically imported by `controller.js`** — they're not listed
-as `<script>` tags, so Three.js (~600 KB) only loads when the preview
-section nears the viewport.
+The live garment preview is a **data-driven 2D technical flat** built by the
+`js/design-engine/` modules (classic scripts, see below) — there is no WebGL
+/ Three.js renderer.
 
 **Load order in `index.html` matters** — every classic module reads
 `window.CONFIG` at IIFE evaluation time, so `config.js` must load first.
 `i18n.js` must load before `app.js` / `export.js` (they call `I18N.t()`).
-`state-manager.js` must precede `app.js` and the deferred 3D modules (they
+`state-manager.js` must precede `app.js` and the design-engine modules (they
 subscribe to its events). The bottom-of-body order is:
 
 ```
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → animations →
-design-engine/* (dna … flow) → app → flair → 3d/story-scene.js (module)
+design-engine/* (dna … flow) → app → flair
 ```
 
 Follow the IIFE-with-global pattern for new classic code; don't introduce a
@@ -172,35 +164,9 @@ The whole UI is **DE/EN bilingual**. `window.I18N` (loaded right after
 When you add user-facing copy, add a key to **both** `de` and `en` in
 `i18n.js` and reference it via `data-i18n*` or `I18N.t()`.
 
-## Visual scroll story (`3d/story-scene.js`)
-
-The `#mission` section is a tall, pinned scroll stage (CSS `position:
-sticky`) with six acts:
-
-- **Acts I–IV** (the dark reality) are real documentary **photographs**
-  (`assets/story/`, CC-licensed — see `assets/story/CREDITS.md`),
-  crossfaded with a slow Ken Burns push. Plain DOM; `story-scene.js` just
-  toggles which one is shown per active act.
-- **Acts V–VI** (the hopeful turn) are a **WebGL particle system**: a
-  thread "curtain" that morphs into a tailored **jacket** — a matte
-  "fabric" layer (shoulders, notched-lapel collar, tapered body, sleeves,
-  dim worn figure) plus an additive "seam" layer (placket, lapels,
-  princess/armhole seams, cuffs, hem) lifted by a bloom pass.
-
-The thread→jacket morph (position/colour blend, jitter, pulse, shimmer)
-runs **entirely in a points vertex shader** driven by uniforms — the CPU
-only nudges a few uniforms per frame, so the particle budget can be large.
-Rendering goes through an `EffectComposer` (RenderPass → UnrealBloomPass →
-OutputPass) for the seam glow; the canvas clears to the opaque void so
-bloom stays free of alpha fringes. The canvas is invisible (and its work
-skipped) during the photo acts, then fades in for the transformation.
-Degrades gracefully: `prefers-reduced-motion` / no-WebGL → CSS shows
-static, readable acts. The reduced-motion and no-WebGL fallbacks are
-load-bearing; preserve them.
-
 ## The true cost (fast-fashion evidence band)
 
-Directly after the `#mission` scroll story sits `<section class="cost">` — the
+After the manifesto sits `<section class="cost">` (id `#cost`) — the
 **hard, cited evidence** behind the emotional film: the human cost (Public
 Eye's Shein investigation, a Swiss source), three sourced numbers (Ellen
 MacArthur Foundation / UNEP — fashion ≤ 8 % of global CO₂, a truckload of
@@ -211,18 +177,6 @@ bilingual (`cost.*` i18n keys, DE + EN), entrance via the shared
 `[data-reveal]` pattern (reduced-motion shows everything immediately). The
 ranking bar widths are set inline via `--v`; keep numbers honest/illustrative
 and the sources line intact.
-
-## 3D preview (`3d/controller.js` + `scene.js` / `avatars.js` / `garments.js`)
-
-`controller.js` lazy-mounts the Three.js scene when `#three-canvas` nears
-the viewport (IntersectionObserver, dynamic imports), then subscribes to
-StateManager. `scene.js` owns the renderer, studio lights, PMREM
-environment and an `EffectComposer` with `UnrealBloomPass` (rendering is
-**on-demand** — `requestRender()` schedules one frame; no continuous loop).
-Rebuild policy: mannequin rebuilds on `measurements` / `skinTone` /
-`hairColor`; garment rebuilds on `currentType` / `currentFit` /
-`measurements`; colour and material patch in place (no rebuild). Every 3D
-op is guarded by `safeRun` so a failure can't take down the rest of the app.
 
 ## AI design generation (`ai.js` + `api/generate-design.js`)
 
@@ -386,7 +340,8 @@ first** — other modules pick up the change.
 
 Seven materials: `cotton`, `linen`, `denim`, `wool`, `fleece`, `silk`,
 `polyester` — used in `<select id="material-select">`, as `MATERIAL_DICT`
-keys in `ai.js`, and mapped to PBR props in `3d/garments.js`.
+keys in `ai.js`, and mapped to sheen/finish in the Design Engine flat
+(`design-engine/garment-svg.js`).
 
 Nine body measurements: `height`, `weight`, `chest`, `waist`, `hips`,
 `shoulder`, `arm`, `inseam`, `neck`. Defined as keys of
