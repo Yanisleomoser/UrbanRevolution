@@ -135,6 +135,14 @@ const I18N = (() => {
       "facts.chart_cap": "[ Carbon-Intensität pro Umsatz — die Treiber ]",
       "facts.sources_html": '[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
+      // ── Live-Abfall-Zähler (Ticker, C+A) ──
+      "ticker.unit": "kg",
+      "ticker.live": "Live",
+      "ticker.live_rate": "Live · jede Sekunde +2'918 kg",
+      "ticker.cap_full": "Textilien verbrannt oder vergraben, seit du hier bist.",
+      "ticker.cap_short": "verbrannt oder vergraben · seit du hier bist",
+      "ticker.source": "[ Quelle: UNEP · 92 Mio. t / Jahr ]",
+
       // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Warum wir dieses System ändern müssen",
       "story.a0_kicker": "Akt I",
@@ -700,6 +708,14 @@ const I18N = (() => {
       "facts.model_v": "1 piece · made to measure · from fabric made of old clothes · 0 overproduction",
       "facts.chart_cap": "[ Carbon intensity per revenue — the drivers ]",
       "facts.sources_html": '[ Sources ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
+
+      // ── Live waste counter (ticker, C+A) ──
+      "ticker.unit": "kg",
+      "ticker.live": "Live",
+      "ticker.live_rate": "Live · every second +2'918 kg",
+      "ticker.cap_full": "of textiles burned or buried, since you arrived.",
+      "ticker.cap_short": "burned or buried · since you arrived",
+      "ticker.source": "[ Source: UNEP · 92 M t / year ]",
 
       // ── Visual Scroll Story (6 acts) ──
       "story.heading": "Why this system has to change",

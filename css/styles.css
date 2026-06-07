@@ -106,6 +106,14 @@ body {
 
 html { scroll-behavior: smooth; }
 
+/* Anchor jumps (#how, #design …) and scrollIntoView must clear the fixed
+   navbar — without this the section eyebrow/heading lands hidden behind the
+   ~60px bar. Matches nav-container height + a little breathing room; the
+   safe-area term covers the notch where the bar grows. */
+:is(main[id], section[id]) {
+    scroll-margin-top: calc(72px + env(safe-area-inset-top));
+}
+
 body {
     font-family: var(--font-body);
     background: var(--bg);
@@ -5024,9 +5032,11 @@ footer.footer {
     .manifesto-actions .manifesto-link { justify-content: center; text-align: center; }
 }
 
-/* Ambient-Kosten-Timer — bei jeder Sektions-Nummer, im Stil der Fakten-Seite.
-   Die Meta-Zeile (Nummer links, Timer rechts, Trennlinie) wird von
-   js/ambient-ticker.js gebaut und spiegelt .facts-top. */
+/* ============================================================
+   Live-Abfall-Zähler (Ticker) — Kombi C (Fakten-Odometer) + A (Badges)
+   Tickt die belegte Abfallmasse hoch (≈ 2'918 kg/s). Zahl im Marken-Verlauf,
+   warm-roter Live-Puls als Echtzeit-Signal. Gebaut von js/ambient-ticker.js.
+   ============================================================ */
 .section-meta {
     display: flex; justify-content: space-between; align-items: baseline;
     gap: var(--space-4); flex-wrap: wrap;
@@ -5034,7 +5044,81 @@ footer.footer {
     padding-bottom: var(--space-4);
     margin-bottom: var(--space-6);
 }
+
+/* Shared: tabular mono digits + brand-gradient number + pulsing live dot */
+.tnum {
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, monospace;
+    font-weight: 700; letter-spacing: -0.01em;
+}
+.cost-ticker-kg,
+.ticker-kg .tnum {
+    background: var(--gradient);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+}
+.ticker-pulse {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #ff5a5f; flex: none;
+    box-shadow: 0 0 0 0 rgba(255, 90, 95, 0.55);
+    animation: ticker-pulse 1.8s var(--ease-out) infinite;
+}
+@keyframes ticker-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 90, 95, 0.5); }
+    70%  { box-shadow: 0 0 0 9px rgba(255, 90, 95, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 90, 95, 0); }
+}
+
+/* ---- C: dramatic odometer in the facts section ---- */
+.cost-ticker {
+    display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
+    margin: var(--space-6) 0 var(--space-8);
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.cost-ticker-num {
+    display: inline-flex; align-items: baseline; line-height: 0.9;
+    filter: drop-shadow(0 0 26px rgba(236, 72, 153, 0.22));
+}
+.cost-ticker-kg {
+    font-size: clamp(40px, 9vw, 84px); font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    letter-spacing: -0.02em;
+}
+.cost-ticker-unit {
+    font-size: clamp(18px, 3vw, 30px); color: var(--text-dim); font-weight: 600;
+    font-family: ui-monospace, Menlo, Consolas, monospace; margin-left: 0.18em;
+}
+.cost-ticker-meta { display: flex; flex-direction: column; gap: var(--space-2); }
+.cost-ticker-live {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: #ff5a5f;
+}
+.cost-ticker-cap { color: var(--text-dim); font-size: var(--text-md); max-width: 34ch; line-height: 1.4; }
+.cost-ticker-src { color: var(--text-muted); margin: 0; }
+
+/* ---- A: compact omnipresent badge (beside every other section number) ---- */
 .section-live { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.section-live.ticker-badge {
+    display: inline-flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 12px; letter-spacing: 0.04em; color: var(--text-muted);
+}
+.ticker-live-label {
+    color: #ff5a5f; font-weight: 700; letter-spacing: 0.16em;
+    font-size: 10px; text-transform: uppercase;
+}
+.ticker-kg { font-size: 14px; }
+.ticker-cap { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+.manifesto-live.ticker-badge { justify-content: center; margin: var(--space-2) 0 var(--space-6); }
+
+@media (max-width: 520px) {
+    .ticker-cap { width: 100%; }          /* caption wraps under the number on phones */
+    .cost-ticker { gap: var(--space-4); }
+}
 
 /* Legal-Seiten (Impressum/Datenschutz): lesbares Panel über dem durchgehenden Verlauf */
 .legal-page {
