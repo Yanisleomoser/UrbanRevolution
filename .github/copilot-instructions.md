@@ -13,8 +13,11 @@ Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
 ## Architektur — nicht umbauen
 - Kein Bundler/Transpiler. Klassische `<script>`-Module im `window.X = …`-IIFE-
   Muster, in `index.html` in fester Reihenfolge eingebunden (`config.js` zuerst).
-- Die `js/3d/`-Render-Module sind ES-Module, dynamisch von `controller.js`
-  importiert (nicht als `<script>`-Tag).
+- Die Design-Engine (`js/design-engine/`) sind **ebenfalls klassische
+  `<script>`-Module** (datengetrieben — Nodes/Archetypen/Attribute liegen in
+  JSON, nicht im Code).
+- Einzige Ausnahme: die `js/3d/`-Render-Module sind ES-Module, dynamisch von
+  `controller.js` importiert (nicht als `<script>`-Tag).
 - State: `state-manager.js` (single source of truth, localStorage). Config:
   `js/config.js` (`window.CONFIG`) ist die zentrale Wahrheit — **dort zuerst
   ändern**, andere Module ziehen nach.
