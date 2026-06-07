@@ -11,7 +11,7 @@
  *       {
  *         id, name, type, color, material, fit, tags, pattern,
  *         originalPrompt, constructionNotes, vtoImageUrl,
- *         previewImageUrl, savedAt
+ *         previewImageUrl, measurements, savedAt
  *       },
  *       ...
  *     ]
@@ -68,6 +68,10 @@ const Library = (() => {
         : [],
       vtoImageUrl: ex.vtoImageUrl || null,
       previewImageUrl: ex.previewImageUrl || design.previewImageUrl || null,
+      // "Made for one": keep the body-measurement snapshot the design carries
+      // (set in design-engine/flow.js) so a recalled design stays to-measure.
+      // localStorage only — same device, never sent anywhere (see flow.js).
+      measurements: design.measurements || ex.measurements || null,
       savedAt: new Date().toISOString(),
     };
 
