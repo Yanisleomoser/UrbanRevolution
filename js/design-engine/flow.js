@@ -105,7 +105,7 @@ const DesignFlow = (() => {
     const off = C * (1 - m);
     return `<svg class="de-ring" viewBox="0 0 64 64" aria-hidden="true">
       <defs><linearGradient id="deRingGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#ec4899"/><stop offset="0.5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
+        <stop offset="0" stop-color="#2a9d8f"/><stop offset="0.5" stop-color="#2779a8"/><stop offset="1" stop-color="#64d6c4"/>
       </linearGradient></defs>
       <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="4"/>
       <circle cx="32" cy="32" r="26" fill="none" stroke="url(#deRingGrad)" stroke-width="4" stroke-linecap="round"

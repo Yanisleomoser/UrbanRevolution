@@ -7,10 +7,10 @@
 (function () {
   const V = window.DEVisuals;
   const TONE = {
-    calm: "linear-gradient(160deg,#18181b,#0a0a0b)",
-    soft: "linear-gradient(160deg,#2a2233,#14101a)",
-    bold: "linear-gradient(160deg,#ec4899,#8b5cf6 55%,#06b6d4)",
-    sharp: "linear-gradient(160deg,#1e293b,#0a0a0b)",
+    calm: "linear-gradient(160deg,#14283b,#0a1622)",
+    soft: "linear-gradient(160deg,#1b3349,#0f1e2e)",
+    bold: "linear-gradient(160deg,#2a9d8f,#2779a8 55%,#64d6c4)",
+    sharp: "linear-gradient(160deg,#1e293b,#0a1622)",
   };
 
   function render(host, node, ctx) {

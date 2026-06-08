@@ -141,7 +141,7 @@ const Export = (() => {
     ul { padding-left: 20px; }
     li { margin-bottom: 6px; font-size: 14px; }
     .tag { background: #f4f4f5; padding: 3px 10px; border-radius: 100px; font-size: 11px; margin-right: 4px; display: inline-block; }
-    .description { background: #fafafa; padding: 16px; border-left: 3px solid #ec4899; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
+    .description { background: #fafafa; padding: 16px; border-left: 3px solid #2a9d8f; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
     .footer { margin-top: 60px; padding-top: 16px; border-top: 1px solid #eee; font-size: 11px; color: #999; text-align: center; }
 </style>
 </head>
