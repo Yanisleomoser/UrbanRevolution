@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Urban Revolution">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ec4899"/>
-      <stop offset="50%" stop-color="#8b5cf6"/>
-      <stop offset="100%" stop-color="#06b6d4"/>
+      <stop offset="0%" stop-color="#2a9d8f"/>
+      <stop offset="50%" stop-color="#2779a8"/>
+      <stop offset="100%" stop-color="#64d6c4"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#g)"/>
-  <text x="256" y="338" font-family="Inter, system-ui, sans-serif" font-size="208" font-weight="800" text-anchor="middle" fill="#ffffff">UR</text>
+  <text x="256" y="338" font-family="Poppins, system-ui, sans-serif" font-size="208" font-weight="800" text-anchor="middle" fill="#ffffff">UR</text>
 </svg>
