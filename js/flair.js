@@ -105,7 +105,7 @@
     if (reduced) return;
     const r = anchor.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const colors = ["#ec4899", "#8b5cf6", "#06b6d4", "#f9a8d4"];
+    const colors = ["#2a9d8f", "#2779a8", "#64d6c4", "#f9a8d4"];
     const layer = document.createElement("div");
     layer.className = "egg-burst";
     for (let i = 0; i < 28; i++) {
