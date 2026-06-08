@@ -459,6 +459,9 @@
           "effects": {
             "set": {
               "intent.season": "all"
+            },
+            "weight": {
+              "quietMinimal": 0.15
             }
           }
         },
@@ -471,8 +474,11 @@
           },
           "effects": {
             "set": {
-              "intent.season": "warm",
-              "fabric.weight": 0.3
+              "intent.season": "warm"
+            },
+            "weight": {
+              "softCouture": 0.25,
+              "sport": 0.1
             }
           }
         },
@@ -485,8 +491,11 @@
           },
           "effects": {
             "set": {
-              "intent.season": "cold",
-              "fabric.weight": 0.75
+              "intent.season": "cold"
+            },
+            "weight": {
+              "utility": 0.3,
+              "techAvant": 0.1
             }
           }
         }

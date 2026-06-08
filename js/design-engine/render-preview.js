@@ -69,7 +69,12 @@ const DesignPreview = (() => {
       scheme: g("color.scheme"),
       stops: g("color.stops"),
       material: g("fabric.material"),
-      finish: g("fabric.finishWeight"),
+      // Honour the numeric finishWeight; fall back to the string finish
+      // ("matte"/"sheen") that archetype inference sets, so an inferred finish
+      // still shows on the flat (the two were previously disconnected).
+      finish: typeof g("fabric.finishWeight") === "number"
+        ? g("fabric.finishWeight")
+        : ({ sheen: 0.8, glossy: 0.85, matte: 0.15 })[g("fabric.finish")],
       // Soft signals so EVERY decision shows on the flat: energy (calm↔bold)
       // tints/saturates the fill, and the winning archetype (driven by mood /
       // inspo / occasion / season) sets the neutral tone.
