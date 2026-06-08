@@ -131,9 +131,6 @@
           },
           "image": "js/design-engine/content/img/mood/expressive.jpg",
           "effects": {
-            "set": {
-              "pattern.type": "graphic"
-            },
             "weight": {
               "y2kStreet": 0.35,
               "softCouture": 0.1
@@ -161,9 +158,6 @@
           },
           "image": "js/design-engine/content/img/mood/vintage.jpg",
           "effects": {
-            "set": {
-              "pattern.type": "check"
-            },
             "weight": {
               "utility": 0.25,
               "softCouture": 0.15
@@ -178,9 +172,6 @@
           },
           "image": "js/design-engine/content/img/mood/future.jpg",
           "effects": {
-            "set": {
-              "fabric.finishWeight": 0.85
-            },
             "weight": {
               "techAvant": 0.35,
               "sport": 0.1
@@ -275,9 +266,6 @@
           },
           "image": "js/design-engine/content/img/mood/concrete.jpg",
           "effects": {
-            "set": {
-              "silhouette.structure": 0.7
-            },
             "weight": {
               "quietMinimal": 0.2,
               "utility": 0.15
@@ -292,9 +280,6 @@
           },
           "image": "js/design-engine/content/img/mood/nature.jpg",
           "effects": {
-            "set": {
-              "fabric.material": "linen"
-            },
             "weight": {
               "softCouture": 0.2
             }
@@ -308,9 +293,6 @@
           },
           "image": "js/design-engine/content/img/mood/neon.jpg",
           "effects": {
-            "set": {
-              "pattern.type": "graphic"
-            },
             "weight": {
               "y2kStreet": 0.25
             }
@@ -324,9 +306,6 @@
           },
           "image": "js/design-engine/content/img/mood/atelier.jpg",
           "effects": {
-            "set": {
-              "fabric.material": "wool"
-            },
             "weight": {
               "softCouture": 0.15,
               "quietMinimal": 0.15
@@ -341,9 +320,6 @@
           },
           "image": "js/design-engine/content/img/mood/sportcore.jpg",
           "effects": {
-            "set": {
-              "fabric.material": "polyester"
-            },
             "weight": {
               "sport": 0.25
             }
@@ -372,8 +348,7 @@
           "effects": {
             "set": {
               "intent.occasion": "everyday",
-              "intent.formality": 0.3,
-              "fabric.finishWeight": 0.2
+              "intent.formality": 0.3
             }
           }
         },
@@ -387,8 +362,7 @@
           "effects": {
             "set": {
               "intent.occasion": "work",
-              "intent.formality": 0.6,
-              "silhouette.structure": 0.7
+              "intent.formality": 0.6
             },
             "weight": {
               "quietMinimal": 0.15,
@@ -406,8 +380,7 @@
           "effects": {
             "set": {
               "intent.occasion": "event",
-              "intent.formality": 0.85,
-              "fabric.finishWeight": 0.8
+              "intent.formality": 0.85
             },
             "weight": {
               "softCouture": 0.25
@@ -424,8 +397,7 @@
           "effects": {
             "set": {
               "intent.occasion": "active",
-              "intent.formality": 0.2,
-              "fabric.material": "polyester"
+              "intent.formality": 0.2
             },
             "weight": {
               "sport": 0.3
@@ -486,8 +458,10 @@
           },
           "effects": {
             "set": {
-              "intent.season": "all",
-              "fabric.material": "cotton"
+              "intent.season": "all"
+            },
+            "weight": {
+              "quietMinimal": 0.15
             }
           }
         },
@@ -500,9 +474,11 @@
           },
           "effects": {
             "set": {
-              "intent.season": "warm",
-              "fabric.material": "linen",
-              "fabric.finishWeight": 0.3
+              "intent.season": "warm"
+            },
+            "weight": {
+              "softCouture": 0.25,
+              "sport": 0.1
             }
           }
         },
@@ -515,9 +491,11 @@
           },
           "effects": {
             "set": {
-              "intent.season": "cold",
-              "fabric.material": "wool",
-              "silhouette.volume": "high"
+              "intent.season": "cold"
+            },
+            "weight": {
+              "utility": 0.3,
+              "techAvant": 0.1
             }
           }
         }
