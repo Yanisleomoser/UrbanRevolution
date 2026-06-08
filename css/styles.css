@@ -4578,9 +4578,18 @@ html.is-touch .lang-toggle { min-height: 38px; }
     color: var(--text-muted); margin: 0;
 }
 .facts-row dd {
-    margin: 0; font-size: var(--text-lg); font-weight: 500;
-    color: var(--text); line-height: 1.3; letter-spacing: -0.01em;
+    margin: 0; display: flex; flex-direction: column; gap: var(--space-1);
 }
+/* Key figure pulled out big — the number is the anchor of each row. Kept in
+   clean white (the brand gradient stays reserved for the live odometer above,
+   so the two don't compete) with tabular figures so they align. */
+.facts-fig {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.6vw, 46px); font-weight: 600; line-height: 1;
+    letter-spacing: var(--tracking-tight); color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+.facts-ctx { font-size: var(--text-base); font-weight: 500; color: var(--text-dim); line-height: 1.4; }
 .facts-turn {
     margin: 0 0 var(--space-9); padding: var(--space-7) var(--space-8);
     background: var(--bg-card); border: 1px solid var(--border);
