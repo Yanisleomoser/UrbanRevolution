@@ -1,6 +1,6 @@
 {
   "_comment": "Bild-Bibliothek-Config für scripts/build-image-library.mjs (Umsetzungs-Brief §5). Datengetrieben: Marke editiert Looks/Prompts/Kombinationen ohne Code. Globale Bild-DNA (`style`) liegt über ALLEN Bildern, damit die Bibliothek aus einem Guss wirkt. Dateinamen exakt nach §3.1/§3.2, damit render-preview.js + die Auswahl-Nodes sie finden.",
-  "style": "a real photograph with genuine depth, texture and detail — never a flat colour block or solid colour field, near-black seamless studio backdrop #0a0a0b, cohesive cool color grade, fine film grain, vertical 4:5, no logo, no text, pink-violet-cyan only as a subtle accent where natural, never tinting the whole frame",
+  "style": "a real photograph with genuine depth, texture and detail — never a flat colour block or solid colour field, soft natural daylight with gentle shadows, cohesive cool ocean-toned palette (deep navy, teal, seafoam, pale sand and off-white), airy and calm with a refined editorial mood, fine film grain, vertical 4:5, no logo, no text, never harsh black, never neon",
 
   "hero_template": "Editorial fashion photograph of a {category}, {look}, single-garment focus on a ghost / invisible mannequin against a near-black seamless studio backdrop, no logo, no text, photorealistic, ultra-detailed fabric, cohesive cool color grade with fine film grain, vertical 4:5.",
   "categories": ["jacket"],
@@ -25,28 +25,28 @@
   },
 
   "mood": {
-    "calm-mono": "foggy monochrome concrete and soft grey light, quiet, vast negative space",
-    "bold-neon": "neon light streaks on near-black, saturated magenta and cyan, glossy reflections, high energy",
-    "soft-drape": "extreme close-up of fluid fabric folds in warm soft light, blush and cream",
-    "sharp-structure": "hard-lit architectural concrete edges and structured pleats, steel and charcoal",
-    "clean": "near-empty off-white studio, one clean material edge, immense negative space",
-    "expressive": "layered saturated colour-blocked textures, graphic, dynamic",
-    "vintage": "grainy warm faded film look, sepia and rust, worn surface",
-    "future": "sleek cool metallic / technical surface, blue rim light, futuristic",
-    "concrete": "raw poured concrete texture, cool grey, brutalist calm",
-    "nature": "soft organic foliage and natural linen in diffuse daylight, earthy and tactile",
-    "neon": "glossy neon reflections on wet black asphalt, magenta and cyan, night energy",
-    "atelier": "a tailor's atelier worktable with shears, chalk and fabric bolts, warm focused light",
-    "sportcore": "photograph of a sunlit running track with painted lane lines and the woven texture of performance fabric caught mid-motion, shallow depth of field, dynamic, fresh and precise"
+    "calm-mono": "calm pale seafoam and soft grey daylight over still water, serene, vast airy negative space",
+    "bold-neon": "bold deep-teal and aqua tones in bright directional daylight, confident and dynamic, glossy water reflections",
+    "soft-drape": "extreme close-up of fluid fabric folds in soft natural daylight, pale sand and seafoam tones",
+    "sharp-structure": "architectural concrete edges and structured pleats in cool daylight, teal and slate",
+    "clean": "near-empty off-white studio in soft daylight, one clean material edge, immense negative space",
+    "expressive": "layered ocean-toned colour-blocked textures (teal, navy, seafoam, sand) in bright light, graphic and dynamic",
+    "vintage": "soft faded film look in cool muted ocean tones, weathered linen surface, gentle grain",
+    "future": "sleek cool ocean-metallic technical surface in soft blue daylight, refined and forward-looking",
+    "concrete": "raw poured concrete texture in cool daylight, soft teal-grey, calm",
+    "nature": "soft organic foliage and natural linen in bright diffuse daylight, earthy seafoam and sand, tactile",
+    "neon": "glossy aqua and teal reflections on a wet surface at blue hour, calm cool energy",
+    "atelier": "a tailor's atelier worktable with shears, chalk and fabric bolts in soft natural window light, airy and warm-cool balanced",
+    "sportcore": "sunlit running track with painted lane lines and woven performance-fabric texture caught mid-motion, fresh and precise, cool daylight"
   },
 
   "context": {
-    "occasion-everyday": "low-key editorial photograph of a lone figure in relaxed everyday clothing on a dim quiet city street at dusk, deep shadows, cool moody grade, single soft light source, shallow depth of field, mostly near-black surroundings",
-    "occasion-work": "low-key editorial photograph of a tailored jacket draped over a chair in a dark minimal workspace lit by one focused desk lamp, deep shadows, cool grade, refined and quiet, mostly black negative space",
-    "occasion-event": "low-key editorial photograph of an elegant figure in evening wear inside a dark refined interior, low cool light, deep shadows, subtle glossy reflections and bokeh against near-black",
-    "occasion-active": "low-key editorial photograph of a runner in performance wear caught mid-motion on a dark urban path at night, cool rim light, deep shadows, dynamic, near-black surroundings, fine grain",
-    "season-all": "low-key editorial photograph of a layered outfit on a clothing rail in a dark studio, cool directional light, deep shadows, transitional textures and fabrics, mostly black negative space",
-    "season-warm": "low-key editorial photograph of light linen fabric drifting in a dim space lit by a single soft beam, airy folds and deep shadows against near-black, shallow depth of field",
-    "season-cold": "low-key editorial photograph of a heavy wool coat in cold misty darkness, muted cool blue light, deep shadows, faint visible breath, near-black surroundings, fine grain"
+    "occasion-everyday": "editorial photograph of a lone figure in relaxed everyday clothing on a calm city street in soft morning daylight, candid, cool ocean-toned grade, shallow depth of field",
+    "occasion-work": "editorial photograph of a tailored jacket draped over a chair in a calm light-filled minimal workspace, soft daylight, refined and quiet, cool neutral tones",
+    "occasion-event": "editorial photograph of an elegant figure in evening wear inside a refined interior with soft warm-cool light, gentle glossy reflections, airy bokeh",
+    "occasion-active": "editorial photograph of a runner in performance wear caught mid-motion on an urban path in soft early daylight, dynamic, cool ocean grade, fine grain",
+    "season-all": "editorial photograph of a layered outfit on a clothing rail in a bright airy studio, soft even daylight, transitional textures and fabrics, cool neutral palette",
+    "season-warm": "editorial photograph of light linen fabric drifting in a warm breeze in bright soft daylight, airy folds, pale sand and seafoam tones, shallow depth of field",
+    "season-cold": "editorial photograph of a heavy wool coat in soft cool daylight with light mist, muted ocean-blue tones, gentle grain"
   }
 }
