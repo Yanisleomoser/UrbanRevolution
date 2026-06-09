@@ -28,10 +28,9 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
-          # Pinned to a known-good 1.x (Deno 1.x is EOL; v1.x dynamic
-          # resolution via the old action was failing at setup). Keeps the
-          # same lint ruleset the codebase was written against.
-          deno-version: v1.46.3
+          # Latest Deno 2.x (1.x is EOL). `deno lint` verified green against
+          # the js/ ruleset in deno.json under v2.
+          deno-version: v2.x
 
       # Uncomment this step to verify the use of 'deno fmt' on each commit.
       # - name: Verify formatting
