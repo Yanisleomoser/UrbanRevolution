@@ -20,7 +20,7 @@ Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. S
 - State: `state-manager.js` (localStorage, Wiederaufnahme). KI: `ai.js` → Replicate (FLUX) / Anthropic-Proxy. Maße: `measurements.js` (9 Körpermaße). i18n: `i18n.js`. Telemetrie: `js/design-engine/telemetry.js` → `/api/track`. Fehler: Sentry (Loader im `<head>`).
 
 ## Design-System — NUR bestehende :root-Tokens
-- Hintergrund `#0A0A0B`; Akzent-Verlauf pink → violett → cyan (`--gradient`).
+- Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2779A8` → Teal `#2A9D8F` → Aqua `#64D6C4` (`--gradient`, „Ocean Depths").
 - Fonts: NUR Lora (Display) + Poppins (Body). KEINE anderen Fonts (kein Inter, kein Playfair).
 - Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum; Übergänge ≤ 250 ms; kein Layout-Sprung.
 
