@@ -184,7 +184,7 @@ and the sources line intact.
 
 1. **Server proxy (production):** POST `{ prompt, type }` to
    `/api/generate-design` (Vercel Edge Function). The function calls
-   Anthropic's Messages API (`claude-sonnet-4-6`) with the
+   Anthropic's Messages API (`claude-opus-4-8`) with the
    `ANTHROPIC_API_KEY` env var — the key **never reaches the browser**.
    Without the key it returns a 500 with a setup message.
 2. **Browser-direct (demo only):** if `window.URBAN_REVOLUTION_API_KEY` is
