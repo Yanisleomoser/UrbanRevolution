@@ -7,7 +7,7 @@
 
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, **kein Framework**,
-**kein Build-Step**). Nachhaltige Made-to-Measure-Mode aus ocean-bound rPET.
+**kein Build-Step**). Nachhaltige Made-to-Measure-Mode aus geretteter Faser recycelter Alttextilien.
 Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
 
 ## Architektur — nicht umbauen

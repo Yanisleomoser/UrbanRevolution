@@ -1,6 +1,6 @@
 # Urban Revolution
 
-**Made for one. Not for all.** — KI-Couture-Atelier für maßgeschneiderte Mode aus geretteter, ozeangebundener rPET-Faser.
+**Made for one. Not for all.** — KI-Couture-Atelier für maßgeschneiderte Mode aus geretteter Faser recycelter Alttextilien.
 
 **Live:** [revolveurban.com](https://revolveurban.com)
 

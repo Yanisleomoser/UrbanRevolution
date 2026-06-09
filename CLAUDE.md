@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, KEIN Framework).
-Nachhaltige Made-to-Measure-Mode aus ocean-bound rPET.
+Nachhaltige Made-to-Measure-Mode aus geretteter Faser recycelter Alttextilien.
 Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. Sprachen: DE + EN.
 
 ## Architektur (nicht umbauen)
