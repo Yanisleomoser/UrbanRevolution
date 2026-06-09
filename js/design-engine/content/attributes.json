@@ -24,7 +24,12 @@
     "color.scheme": ["mono", "duo-gradient", "multi"],
     "pattern.type": ["none", "stripe", "check", "camo", "graphic", "abstract"],
     "hardware.finish": ["tonal", "matte", "metal"],
-    "construction.closure": ["zip", "button", "none"],
-    "construction.collar": ["stand", "notched", "hood", "crew", "none"]
+    "construction.closure": ["zip", "button", "half", "none"],
+    "construction.collar": ["stand", "notched", "hood", "crew", "vneck", "shirt", "none"],
+    "construction.sleeveLength": ["sleeveless", "cap", "short", "long"],
+    "construction.pockets": ["none", "side", "flap", "cargo", "kangaroo", "chest"],
+    "construction.hem": ["straight", "curved", "ribbed", "drawcord", "cuffed", "elastic"],
+    "construction.waistband": ["belt", "drawcord", "elastic"],
+    "construction.waist": ["fitted", "natural", "relaxed"]
   }
 }

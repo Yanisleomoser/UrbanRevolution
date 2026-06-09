@@ -1,5 +1,5 @@
 {
-  "_comment": "dress branch — lean journey (B form · C fabric · D colour). Every node gated by category=='dress' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "_comment": "dress branch — full journey at jacket depth (B form · C fabric+finish · D colour+pattern · E details). Every node gated by category=='dress' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
   "nodes": [
     {
       "id": "dress_subarch",
@@ -70,7 +70,8 @@
             "set": {
               "subArchetype": "slip",
               "fabric.material": "silk",
-              "construction.collar": "vneck"
+              "construction.collar": "vneck",
+              "construction.sleeveLength": "sleeveless"
             },
             "weight": {
               "softCouture": 0.15
@@ -271,6 +272,44 @@
       ]
     },
     {
+      "id": "dress_sleeve",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'dress' && _confidence.construction.sleeveLength < 0.5",
+      "priority": 0.6,
+      "question": { "de": "Ärmel?", "en": "Sleeves?" },
+      "choices": [
+        { "id": "sleeveless", "label": { "de": "Ärmellos", "en": "Sleeveless" }, "effects": { "set": { "construction.sleeveLength": "sleeveless" }, "weight": { "softCouture": 0.1 } } },
+        { "id": "cap", "label": { "de": "Cap", "en": "Cap" }, "effects": { "set": { "construction.sleeveLength": "cap" } } },
+        { "id": "short", "label": { "de": "Kurz", "en": "Short" }, "effects": { "set": { "construction.sleeveLength": "short" } } },
+        { "id": "long", "label": { "de": "Lang", "en": "Long" }, "effects": { "set": { "construction.sleeveLength": "long" }, "weight": { "quietMinimal": 0.1 } } }
+      ]
+    },
+    {
+      "id": "dress_waist",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'dress' && _confidence.construction.waist < 0.5",
+      "priority": 0.56,
+      "question": { "de": "Taille?", "en": "Waist?" },
+      "choices": [
+        { "id": "fitted", "label": { "de": "Betont", "en": "Fitted" }, "effects": { "set": { "construction.waist": "fitted" }, "weight": { "softCouture": 0.15 } } },
+        { "id": "natural", "label": { "de": "Natürlich", "en": "Natural" }, "effects": { "set": { "construction.waist": "natural" } } },
+        { "id": "relaxed", "label": { "de": "Fließend", "en": "Relaxed" }, "effects": { "set": { "construction.waist": "relaxed" }, "weight": { "quietMinimal": 0.1 } } }
+      ]
+    },
+    {
+      "id": "dress_finish",
+      "phase": "C",
+      "modality": "slider",
+      "when": "category == 'dress' && _confidence.fabric.finishWeight < 0.6",
+      "priority": 0.5,
+      "question": { "de": "Matt oder glänzend?", "en": "Matte or sheen?" },
+      "bind": "fabric.finishWeight",
+      "axis": { "de": ["Matt", "Glanz"], "en": ["Matte", "Sheen"] },
+      "weightAt": { "high": { "softCouture": 0.15 } }
+    },
+    {
       "id": "dress_color",
       "phase": "D",
       "modality": "colorGradient",
@@ -334,6 +373,29 @@
             }
           }
         }
+      ]
+    },
+    {
+      "id": "dress_pattern_scale",
+      "phase": "D",
+      "modality": "slider",
+      "when": "category == 'dress' && pattern.type != 'none' && _confidence.pattern.type > 0.5 && _confidence.pattern.scale < 0.6",
+      "priority": 0.4,
+      "question": { "de": "Wie groß das Muster?", "en": "Pattern scale?" },
+      "bind": "pattern.scale",
+      "axis": { "de": ["Fein", "Groß"], "en": ["Fine", "Bold"] }
+    },
+    {
+      "id": "dress_signature",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'dress' && intent.energy > 0.5 && _confidence.signature < 0.4",
+      "priority": 0.3,
+      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "choices": [
+        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "side-slit", "label": { "de": "Seitenschlitz", "en": "Side slit" }, "effects": { "set": { "signature": ["side-slit"] }, "weight": { "softCouture": 0.15 } } },
+        { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "techAvant": 0.1 } } }
       ]
     }
   ]

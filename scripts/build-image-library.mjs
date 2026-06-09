@@ -35,6 +35,9 @@ const FORCE = ARGS.includes("--force");
 const ONLY = (ARGS.find((a) => a.startsWith("--only=")) || "").split("=")[1] || null;
 // Restrict to jobs whose output path contains this substring (e.g. one motif).
 const MATCH = (ARGS.find((a) => a.startsWith("--match=")) || "").split("=")[1] || null;
+// Pause zwischen Jobs in ms (Default 2500; bei reduziertem Replicate-Limit —
+// 6/min unter $5 Guthaben — z. B. --throttle=11000 setzen).
+const THROTTLE = parseInt((ARGS.find((a) => a.startsWith("--throttle=")) || "").split("=")[1], 10) || 2500;
 const TOKEN = process.env.REPLICATE_API_TOKEN;
 // Optional: generate via the deployed key-gated /api/gen-image route, so the
 // Replicate token never leaves Vercel (no local token needed).
@@ -51,10 +54,13 @@ function plan(cfg) {
   const add = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.style}` });
   if (!ONLY || ONLY === "hero") {
     (cfg.categories || []).forEach((cat) => {
+      // Prompt noun per category ("tshirt" → "t-shirt") so FLUX gets real
+      // garment words; the FILENAME keeps the engine's category key.
+      const noun = (cfg.category_nouns || {})[cat] || cat;
       ARCHETYPES.forEach((arch) => {
         const look = cfg.looks[arch];
         if (!look) return;
-        const prompt = cfg.hero_template.replace("{category}", cat).replace("{look}", look);
+        const prompt = cfg.hero_template.replace("{category}", noun).replace("{look}", look);
         add(`js/design-engine/content/img/preview/${cat}-${arch}.jpg`, prompt);
       });
     });
@@ -98,11 +104,18 @@ async function generateViaEndpoint(prompt) {
 }
 
 async function generateViaReplicate(prompt) {
-  let res = await fetch(MODEL, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json", Prefer: "wait=60" },
-    body: JSON.stringify({ input: { prompt, aspect_ratio: "4:5", output_format: "jpg", output_quality: 90, prompt_upsampling: false, safety_tolerance: 2 } }),
-  });
+  let res;
+  // 429 (Replicate-Rate-Limit, z. B. 6/min bei niedrigem Guthaben) → mit
+  // Backoff weiterprobieren statt das Bild aufzugeben.
+  for (let attempt = 0; ; attempt++) {
+    res = await fetch(MODEL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json", Prefer: "wait=60" },
+      body: JSON.stringify({ input: { prompt, aspect_ratio: "4:5", output_format: "jpg", output_quality: 90, prompt_upsampling: false, safety_tolerance: 2 } }),
+    });
+    if (res.status !== 429 || attempt >= 5) break;
+    await sleep(15000 + attempt * 5000);
+  }
   if (!res.ok) throw new Error(`Replicate ${res.status}: ${(await res.text()).slice(0, 200)}`);
   let pred = await res.json();
   let tries = 0;
@@ -139,7 +152,7 @@ async function main() {
   let first = true;
   for (const j of jobs) {
     if (fs.existsSync(j.out) && !FORCE) { console.log(`· skip: ${j.rel}`); skipped++; continue; }
-    if (!first) await sleep(2500); // throttle, um das Replicate-Rate-Limit zu schonen
+    if (!first) await sleep(THROTTLE); // throttle, um das Replicate-Rate-Limit zu schonen
     first = false;
     process.stdout.write(`· ${j.rel} … `);
     try {

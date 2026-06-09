@@ -60,10 +60,13 @@ const DesignPreview = (() => {
       length: g("length"),
       collar: g("construction.collar"),
       sleeve: g("construction.sleeve"),
+      sleeveLength: g("construction.sleeveLength"),
       closure: g("construction.closure"),
       pockets: g("construction.pockets"),
       cuffs: g("construction.cuffs"),
       hem: g("construction.hem"),
+      waistband: g("construction.waistband"),
+      waist: g("construction.waist"),
       // Subarchetype reshapes the live flat (puffer voluminous, bomber cropped…),
       // not just the tile. Hardware finish tints the closure; signature draws an
       // extra detail — so the Phase-E choices also visibly land on the flat.
@@ -85,7 +88,7 @@ const DesignPreview = (() => {
       // tints/saturates the fill, and the winning archetype (driven by mood /
       // inspo / occasion / season) sets the neutral tone.
       energy: g("intent.energy"),
-      archetype: window.DesignDNA ? DesignDNA.topArchetype(dna) : null,
+      archetype: (typeof DesignDNA !== "undefined" && DesignDNA.topArchetype) ? DesignDNA.topArchetype(dna) : null,
     };
   }
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "pants branch — lean journey (B form · C fabric · D colour). Every node gated by category=='pants' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "_comment": "pants branch — full journey at jacket depth (B form · C fabric+finish · D colour+pattern · E details). Every node gated by category=='pants' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
   "nodes": [
     {
       "id": "pants_subarch",
@@ -216,6 +216,17 @@
       ]
     },
     {
+      "id": "pants_finish",
+      "phase": "C",
+      "modality": "slider",
+      "when": "category == 'pants' && _confidence.fabric.finishWeight < 0.6",
+      "priority": 0.5,
+      "question": { "de": "Matt oder glänzend?", "en": "Matte or sheen?" },
+      "bind": "fabric.finishWeight",
+      "axis": { "de": ["Matt", "Glanz"], "en": ["Matte", "Sheen"] },
+      "weightAt": { "high": { "softCouture": 0.1, "techAvant": 0.1 } }
+    },
+    {
       "id": "pants_color",
       "phase": "D",
       "modality": "colorGradient",
@@ -225,6 +236,43 @@
         "de": "Welche Farbwelt?",
         "en": "Which colourway?"
       }
+    },
+    {
+      "id": "pants_pattern",
+      "phase": "D",
+      "modality": "cards",
+      "when": "category == 'pants' && intent.energy > 0.45 && _confidence.pattern.type < 0.6",
+      "priority": 0.52,
+      "question": { "de": "Muster?", "en": "Pattern?" },
+      "choices": [
+        { "id": "none", "label": { "de": "Uni", "en": "Solid" }, "effects": { "set": { "pattern.type": "none" }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "stripe", "label": { "de": "Nadelstreifen", "en": "Pinstripe" }, "effects": { "set": { "pattern.type": "stripe" }, "weight": { "softCouture": 0.1 } } },
+        { "id": "check", "label": { "de": "Karo", "en": "Check" }, "effects": { "set": { "pattern.type": "check" }, "weight": { "utility": 0.1 } } },
+        { "id": "camo", "label": { "de": "Camo", "en": "Camo" }, "effects": { "set": { "pattern.type": "camo" }, "weight": { "utility": 0.15 } } }
+      ]
+    },
+    {
+      "id": "pants_pattern_scale",
+      "phase": "D",
+      "modality": "slider",
+      "when": "category == 'pants' && pattern.type != 'none' && _confidence.pattern.type > 0.5 && _confidence.pattern.scale < 0.6",
+      "priority": 0.4,
+      "question": { "de": "Wie groß das Muster?", "en": "Pattern scale?" },
+      "bind": "pattern.scale",
+      "axis": { "de": ["Fein", "Groß"], "en": ["Fine", "Bold"] }
+    },
+    {
+      "id": "pants_waistband",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'pants' && _confidence.construction.waistband < 0.5",
+      "priority": 0.48,
+      "question": { "de": "Bund?", "en": "Waistband?" },
+      "choices": [
+        { "id": "belt", "label": { "de": "Gürtelschlaufen", "en": "Belt loops" }, "effects": { "set": { "construction.waistband": "belt" } } },
+        { "id": "drawcord", "label": { "de": "Kordelzug", "en": "Drawcord" }, "effects": { "set": { "construction.waistband": "drawcord" }, "weight": { "sport": 0.15 } } },
+        { "id": "elastic", "label": { "de": "Elastisch", "en": "Elastic" }, "effects": { "set": { "construction.waistband": "elastic" }, "weight": { "sport": 0.1, "quietMinimal": 0.05 } } }
+      ]
     },
     {
       "id": "pants_pockets",
@@ -279,6 +327,32 @@
             }
           }
         }
+      ]
+    },
+    {
+      "id": "pants_hem",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'pants' && _confidence.construction.hem < 0.4",
+      "priority": 0.38,
+      "question": { "de": "Beinabschluss?", "en": "Leg opening?" },
+      "choices": [
+        { "id": "raw", "label": { "de": "Gerade", "en": "Plain" }, "effects": { "set": { "construction.hem": "straight" } } },
+        { "id": "cuffed", "label": { "de": "Umschlag", "en": "Cuffed" }, "effects": { "set": { "construction.hem": "cuffed" }, "weight": { "softCouture": 0.1 } } },
+        { "id": "elastic", "label": { "de": "Bündchen", "en": "Elastic" }, "effects": { "set": { "construction.hem": "elastic" }, "weight": { "sport": 0.15 } } }
+      ]
+    },
+    {
+      "id": "pants_signature",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'pants' && intent.energy > 0.5 && _confidence.signature < 0.4",
+      "priority": 0.3,
+      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "choices": [
+        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "utility": 0.1 } } },
+        { "id": "branding", "label": { "de": "Branding-Patch", "en": "Branding patch" }, "effects": { "set": { "signature": ["branding-patch"] }, "weight": { "y2kStreet": 0.1, "sport": 0.1 } } }
       ]
     }
   ]

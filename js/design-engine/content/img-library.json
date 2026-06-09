@@ -3,7 +3,15 @@
   "style": "a real photograph with genuine depth, texture and detail — never a flat colour block or solid colour field, soft natural daylight with gentle shadows, cohesive cool ocean-toned palette (deep navy, teal, seafoam, pale sand and off-white), airy and calm with a refined editorial mood, fine film grain, vertical 4:5, no logo, no text, never harsh black, never neon",
 
   "hero_template": "Editorial fashion photograph of a {category}, {look}, single-garment focus on a ghost / invisible mannequin against a near-black seamless studio backdrop, no logo, no text, photorealistic, ultra-detailed fabric, cohesive cool color grade with fine film grain, vertical 4:5.",
-  "categories": ["jacket"],
+  "categories": ["jacket", "tshirt", "hoodie", "shirt", "pants", "dress"],
+  "category_nouns": {
+    "jacket": "jacket",
+    "tshirt": "t-shirt",
+    "hoodie": "hoodie",
+    "shirt": "button-up shirt",
+    "pants": "pair of tailored trousers",
+    "dress": "dress"
+  },
   "looks": {
     "quietMinimal": "soft diffuse daylight, muted stone / off-white / grey palette, matte natural wool & cotton, calm and reduced with generous negative space",
     "techAvant": "cool directional studio light with hard shadows, charcoal / black / steel with a cyan edge, matte technical recycled nylon, sharp and architectural, future-leaning",

@@ -47,6 +47,18 @@ const GarmentSVG = (() => {
     tshirt: { sleeveLen: 56, hem: { cropped: 206, regular: 252, long: 286 }, defCollar: "crew", closure: "none", splay: 16, cuffW: 24, armDepth: 50, neckHalf: 20 },
   };
 
+  // Sleeve-length attribute → the limb's own length (per category, so a "long"
+  // tee reads as a longsleeve and a "short" shirt as rolled short sleeves).
+  // "sleeveless" collapses the limb entirely (tank / slip silhouette).
+  function sleeveLenFor(p, cfg) {
+    const sl = p.sleeveLength;
+    if (sl === "sleeveless") return 0;
+    if (sl === "cap") return 34;
+    if (sl === "short") return 58;
+    if (sl === "long") return Math.max(cfg.sleeveLen, 168);
+    return cfg.sleeveLen;
+  }
+
   // Material → baseline sheen (silk glossy, denim/wool matte). finish (matt↔
   // glänzend) scales on top. Makes the "Stoff" + "Matt/Glänzend" choices visible.
   const MATERIAL_SHEEN = { silk: 0.85, polyester: 0.55, cotton: 0.22, denim: 0.12, wool: 0.18, fleece: 0.10, linen: 0.14 };
@@ -128,13 +140,19 @@ const GarmentSVG = (() => {
     const length = (cfg.hem[p.length] != null) ? p.length : "regular";
     const hemY = cfg.hem[length];
     const waistY = armpitY + (hemY - armpitY) * 0.42;
-    const splay = cfg.splay + (w.drop ? 5 : 0);
-    const coX = w.shoulderHalf + splay;                 // outer cuff edge
-    const ciX = Math.max(w.chestHalf + 1, coX - cfg.cuffW); // inner cuff edge
-    const wristY = shoulderY + cfg.sleeveLen + (w.drop ? 6 : 0);
+    const sleeveLen = sleeveLenFor(p, cfg);
+    const sleeveless = sleeveLen <= 2;
+    // Sleeveless: the "sleeve" collapses onto the armscye (straight shoulder→
+    // armpit edge) instead of drawing limbs; splay/cuff shrink with the length
+    // so short sleeves still read as real limbs, not stubs.
+    const lenT = clamp(sleeveLen / 170, 0, 1);
+    const splay = sleeveless ? 0 : (cfg.splay + (w.drop ? 5 : 0)) * lerp(0.55, 1, lenT);
+    const coX = sleeveless ? w.chestHalf : w.shoulderHalf + splay;   // outer cuff edge
+    const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.7, 1, lenT)); // inner cuff edge
+    const wristY = sleeveless ? armpitY : shoulderY + sleeveLen + (w.drop ? 6 : 0);
     const collar = p.collar || cfg.defCollar;
     const neckHalf = neckHalfFor(collar, cfg);
-    return Object.assign(w, { neckY, shoulderY, armpitY, hemY, waistY, coX, ciX, wristY, collar, neckHalf, length });
+    return Object.assign(w, { neckY, shoulderY, armpitY, hemY, waistY, coX, ciX, wristY, collar, neckHalf, length, sleeveless });
   }
 
   function neckHalfFor(collar, cfg) {
@@ -218,6 +236,11 @@ const GarmentSVG = (() => {
     } else if (p.closure === "button" || (cfg.closure === "button" && p.closure == null)) {
       const n = 6; for (let i = 0; i < n; i++) { const y = top + 8 + (i * (g.hemY - top - 16)) / (n - 1); s.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${hw}" stroke-width="1.8"/>`); }
       line(`M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}`, 1.4, 0.5);
+    } else if (p.closure === "half") {
+      // Half placket (popover / quarter-zip): short centre opening + 3 buttons.
+      const phEnd = top + (g.armpitY - top) * 0.9 + 14;
+      line(`M ${CX} ${Y(top)} L ${CX} ${Y(phEnd)}`, 1.6, 0.7);
+      for (let i = 0; i < 3; i++) { const y = top + 8 + (i * (phEnd - top - 14)) / 2; s.push(`<circle cx="${CX}" cy="${Y(y)}" r="2" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${hw}" stroke-width="1.6"/>`); }
     } else if (p.closure === "none" && cfg.closure !== "none") {
       line(`M ${CX} ${Y(top)} L ${L(8)} ${Y(g.hemY)} M ${CX} ${Y(top)} L ${R(8)} ${Y(g.hemY)}`, 1.6, 0.7);
     }
@@ -228,14 +251,18 @@ const GarmentSVG = (() => {
     if (p.pockets === "flap") { s.push(`<rect x="${L(g.chestHalf - 4)}" y="${Y(py)}" width="26" height="13" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`); s.push(`<rect x="${R(g.chestHalf - 4) - 26}" y="${Y(py)}" width="26" height="13" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`); }
     if (p.pockets === "cargo") { s.push(`<rect x="${L(g.chestHalf - 2)}" y="${Y(py - 4)}" width="28" height="24" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`); s.push(`<rect x="${R(g.chestHalf - 2) - 28}" y="${Y(py - 4)}" width="28" height="24" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`); }
     if (p.pockets === "side") line(`M ${L(g.waistHalf - 4)} ${Y(py + 4)} l 18 5 M ${R(g.waistHalf - 4)} ${Y(py + 4)} l -18 5`, 1.8);
+    if (p.pockets === "chest") s.push(`<rect x="${L(g.chestHalf - 8)}" y="${Y(g.armpitY + 8)}" width="17" height="15" rx="1.5" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`);
 
-    // Cuffs.
-    if (p.cuffs === "ribbed" || (g.collar === "hood" && !p.cuffs)) { line(`M ${L(g.coX)} ${Y(g.wristY - 11)} L ${L(g.ciX)} ${Y(g.wristY - 11)} M ${R(g.coX)} ${Y(g.wristY - 11)} L ${R(g.ciX)} ${Y(g.wristY - 11)}`, 1.6, 0.8); }
-    else if (p.cuffs === "button") { s.push(`<circle cx="${L((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/><circle cx="${R((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`); }
+    // Cuffs (only when there are sleeves to cuff).
+    if (!g.sleeveless) {
+      if (p.cuffs === "ribbed" || (g.collar === "hood" && !p.cuffs)) { line(`M ${L(g.coX)} ${Y(g.wristY - 11)} L ${L(g.ciX)} ${Y(g.wristY - 11)} M ${R(g.coX)} ${Y(g.wristY - 11)} L ${R(g.ciX)} ${Y(g.wristY - 11)}`, 1.6, 0.8); }
+      else if (p.cuffs === "button") { s.push(`<circle cx="${L((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/><circle cx="${R((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`); }
+    }
 
     // Hem treatment.
     if (p.hem === "ribbed" || (g.collar === "hood" && !p.hem)) line(`M ${L(g.hemHalf)} ${Y(g.hemY - 9)} L ${R(g.hemHalf)} ${Y(g.hemY - 9)}`, 1.6, 0.7);
     else if (p.hem === "drawcord") line(`M ${L(g.hemHalf)} ${Y(g.hemY - 6)} L ${R(g.hemHalf)} ${Y(g.hemY - 6)}`, 1.6, 0.6);
+    else if (p.hem === "curved") line(`M ${L(g.hemHalf)} ${Y(g.hemY - 12)} Q ${CX} ${Y(g.hemY - 2)} ${R(g.hemHalf)} ${Y(g.hemY - 12)}`, 1.6, 0.6);
     else line(`M ${L(g.hemHalf)} ${Y(g.hemY - 5)} L ${R(g.hemHalf)} ${Y(g.hemY - 5)}`, 1.2, 0.4);
 
     // Signature detail (Phase-E choice, now visible on the flat).
@@ -272,9 +299,10 @@ const GarmentSVG = (() => {
     const topY = 70, hemY = { cropped: 250, regular: 300, long: 318 }[p.length] || 300;
     const hipHalf = 44 + vol * 7;
     const legTop = hipHalf;
-    // Wider slim↔wide spread: skinny clearly tapers, wide-leg is clearly full.
-    const thighHalf = 19 + (fit < 0.4 ? -5 : 0) + (fit > 0.66 ? 13 : 0) + vol * 6;
-    const ankleHalf = clamp(lerp(7, thighHalf, fit > 0.66 ? 0.95 : 0.4), 6, thighHalf);
+    // CONTINUOUS slim↔wide morph (no step jumps) so the fit slider visibly
+    // reshapes the leg frame by frame: skinny clearly tapers, wide-leg is full.
+    const thighHalf = lerp(14, 33, fit) + vol * 6;
+    const ankleHalf = clamp(lerp(7, thighHalf * 0.96, fit), 6, thighHalf);
     const crotchY = topY + 96;
     return { fit, vol, topY, hemY, hipHalf, legTop, thighHalf, ankleHalf, crotchY };
   }
@@ -286,10 +314,26 @@ const GarmentSVG = (() => {
       `L ${R(2)} ${Y(crotchY)} L ${L(2)} ${Y(crotchY)} ` +
       `L ${L(thighHalf * 0.05)} ${Y(hemY)} L ${L(ankleHalf + thighHalf * 0.0)} ${Y(hemY)} Z`;
     const seam = [];
+    const line = (d, sw, op) => seam.push(`<path d="${d}" fill="none" stroke="${SEAM}" stroke-width="${sw || 1.6}" stroke-linejoin="round" stroke-linecap="round"${op ? ` opacity="${op}"` : ""}/>`);
+    // Waistband panel + style (belt loops / drawcord / elastic channels).
     seam.push(`<path d="M ${L(legTop)} ${Y(topY)} L ${R(legTop)} ${Y(topY)} L ${R(legTop - 1)} ${Y(topY + 16)} L ${L(legTop - 1)} ${Y(topY + 16)} Z" fill="rgba(255,255,255,0.05)" stroke="${SEAM}" stroke-width="1.8"/>`);
+    if (p.waistband === "belt") {
+      for (const x of [-legTop + 9, -legTop / 2, legTop / 2 - 4, legTop - 9]) seam.push(`<rect x="${r(CX + x - 2)}" y="${Y(topY + 1.5)}" width="4" height="13" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`);
+      seam.push(`<circle cx="${CX}" cy="${Y(topY + 8)}" r="2.4" fill="none" stroke="${p.hardware === "metal" ? INK : SEAM}" stroke-width="1.6"/>`);
+    } else if (p.waistband === "drawcord") {
+      line(`M ${L(7)} ${Y(topY + 16)} L ${L(5)} ${Y(topY + 34)} M ${R(7)} ${Y(topY + 16)} L ${R(5)} ${Y(topY + 34)}`, 1.6, 0.85);
+    } else if (p.waistband === "elastic") {
+      for (let i = 0; i < 3; i++) line(`M ${L(legTop - 3)} ${Y(topY + 4 + i * 4.5)} L ${R(legTop - 3)} ${Y(topY + 4 + i * 4.5)}`, 1, 0.55);
+    }
     seam.push(`<path d="M ${CX} ${Y(topY + 16)} L ${CX} ${Y(crotchY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
-    seam.push(`<path d="M ${L(thighHalf * 0.5)} ${Y(topY + 22)} L ${L(ankleHalf * 0.7)} ${Y(hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="1.1" opacity="0.45"/>`);
-    seam.push(`<path d="M ${R(thighHalf * 0.5)} ${Y(topY + 22)} L ${R(ankleHalf * 0.7)} ${Y(hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="1.1" opacity="0.45"/>`);
+    // Creases (tailored) or plain inseam fall lines.
+    if (p.structure != null && clamp(num(p.structure, 0.5), 0, 1) > 0.66) {
+      line(`M ${L((thighHalf + ankleHalf) * 0.32)} ${Y(crotchY + 4)} L ${L(ankleHalf * 0.55)} ${Y(hemY - 4)}`, 1.3, 0.7);
+      line(`M ${R((thighHalf + ankleHalf) * 0.32)} ${Y(crotchY + 4)} L ${R(ankleHalf * 0.55)} ${Y(hemY - 4)}`, 1.3, 0.7);
+    } else {
+      line(`M ${L(thighHalf * 0.5)} ${Y(topY + 22)} L ${L(ankleHalf * 0.7)} ${Y(hemY - 4)}`, 1.1, 0.45);
+      line(`M ${R(thighHalf * 0.5)} ${Y(topY + 22)} L ${R(ankleHalf * 0.7)} ${Y(hemY - 4)}`, 1.1, 0.45);
+    }
     if (p.pockets === "cargo") {
       // patch cargo pockets on the thighs — clearly different from slash pockets
       const py = crotchY + 14, pw = r(thighHalf * 0.9), ph = 30;
@@ -297,6 +341,22 @@ const GarmentSVG = (() => {
     } else if (p.pockets && p.pockets !== "none") {
       // side: slash pockets at the hip
       seam.push(`<path d="M ${L(legTop - 4)} ${Y(topY + 20)} l -10 12 M ${R(legTop - 4)} ${Y(topY + 20)} l 10 12" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`);
+    }
+    // Leg hem finish: cuffed turn-up band / elastic rib / raw default.
+    const hx = ankleHalf, ix = thighHalf * 0.05;
+    if (p.hem === "cuffed") {
+      line(`M ${L(hx)} ${Y(hemY - 13)} L ${L(ix)} ${Y(hemY - 13)} M ${R(hx)} ${Y(hemY - 13)} L ${R(ix)} ${Y(hemY - 13)}`, 1.8, 0.85);
+    } else if (p.hem === "elastic" || p.hem === "ribbed") {
+      line(`M ${L(hx)} ${Y(hemY - 9)} L ${L(ix)} ${Y(hemY - 9)} M ${R(hx)} ${Y(hemY - 9)} L ${R(ix)} ${Y(hemY - 9)}`, 1.4, 0.7);
+      line(`M ${L(hx)} ${Y(hemY - 4.5)} L ${L(ix)} ${Y(hemY - 4.5)} M ${R(hx)} ${Y(hemY - 4.5)} L ${R(ix)} ${Y(hemY - 4.5)}`, 1, 0.5);
+    }
+    // Signature details on the trouser frame.
+    const sig = Array.isArray(p.signature) ? p.signature : [];
+    if (sig.includes("contrast-stitch")) {
+      seam.push(`<path d="M ${L(legTop - 2)} ${Y(topY + 18)} L ${L(ankleHalf + 1)} ${Y(hemY - 4)} M ${R(legTop - 2)} ${Y(topY + 18)} L ${R(ankleHalf + 1)} ${Y(hemY - 4)}" fill="none" stroke="${INK}" stroke-width="1.4" stroke-dasharray="2 3" opacity="0.9"/>`);
+    }
+    if (sig.includes("branding-patch")) {
+      seam.push(`<rect x="${R(legTop - 18)}" y="${Y(topY + 3)}" width="14" height="9" rx="1.5" fill="none" stroke="${INK}" stroke-width="1.6"/>`);
     }
     return renderFlat(p, [path], seam.join(""));
   }
@@ -310,13 +370,23 @@ const GarmentSVG = (() => {
     const armpitY = shoulderY + cfg.armDepth;
     const waistY = armpitY + 34;
     const hemY = cfg.hem[p.length] != null ? cfg.hem[p.length] : 300;
-    const aLine = w.fit < 0.5; // slim → straight column, else a strong A-line flare
-    const skirtHalf = aLine ? w.chestHalf * 1.7 : w.chestHalf * 1.0;
-    const coX = w.shoulderHalf + cfg.splay, ciX = Math.max(w.chestHalf + 1, coX - cfg.cuffW);
-    const wristY = shoulderY + cfg.sleeveLen;
+    // Waist emphasis: "fitted" nips the waist hard, "relaxed" barely shapes it.
+    const waistHalf = w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84);
+    // CONTINUOUS A-line ↔ column morph: low fit = strong flare from the waist,
+    // high fit = the hem stays at waist width (true straight sheath) — the
+    // silhouette slider visibly sweeps the skirt instead of snapping.
+    const skirtHalf = lerp(w.chestHalf * 1.85, waistHalf * 1.06, w.fit);
+    const sleeveLen = sleeveLenFor(p, cfg);
+    const sleeveless = sleeveLen <= 2;
+    const lenT = clamp(sleeveLen / 170, 0, 1);
+    const coX = sleeveless ? w.chestHalf : w.shoulderHalf + cfg.splay * lerp(0.55, 1, lenT);
+    const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.7, 1, lenT));
+    const wristY = sleeveless ? armpitY : shoulderY + sleeveLen;
     const collar = p.collar || cfg.defCollar;
     const neckHalf = neckHalfFor(collar, cfg);
-    return { neckHalf, neckY, shoulderHalf: w.shoulderHalf, shoulderY, coX, ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf: w.chestHalf * 0.84, waistY, hemHalf: skirtHalf, hemY, collar };
+    // Sleeveless dress: narrow the shoulder to a strap line (slip silhouette).
+    const shoulderHalf = sleeveless ? Math.max(neckHalf + 7, w.chestHalf * 0.62) : w.shoulderHalf;
+    return { neckHalf, neckY, shoulderHalf, shoulderY, coX: sleeveless ? w.chestHalf : coX, ciX: sleeveless ? w.chestHalf : ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf, waistY, hemHalf: skirtHalf, hemY, collar, sleeveless };
   }
   function paintDress(p, g) {
     const d =
@@ -327,7 +397,25 @@ const GarmentSVG = (() => {
       neckline(g) + " Z";
     const seam = [];
     seam.push(`<path d="M ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} M ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.chestHalf)} ${Y(g.armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
-    seam.push(`<path d="M ${L(g.waistHalf)} ${Y(g.waistY)} L ${R(g.waistHalf)} ${Y(g.waistY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+    seam.push(`<path d="M ${L(g.waistHalf)} ${Y(g.waistY)} L ${R(g.waistHalf)} ${Y(g.waistY)}" fill="none" stroke="${SEAM}" stroke-width="${p.waist === "fitted" ? 1.9 : 1.4}" opacity="${p.waist === "fitted" ? 0.85 : 0.6}"/>`);
+    // Wrap dress: diagonal surplice bodice line + waist tie — the wrap choice
+    // is visible, not just an invisible collar swap.
+    if (p.subArchetype === "wrap") {
+      seam.push(`<path d="M ${L(g.neckHalf - 2)} ${Y(g.neckY + 4)} L ${R(g.waistHalf - 4)} ${Y(g.waistY - 2)}" fill="none" stroke="${SEAM}" stroke-width="1.8" opacity="0.85"/>`);
+      seam.push(`<path d="M ${R(g.waistHalf - 4)} ${Y(g.waistY + 2)} q 10 7 6 18 M ${R(g.waistHalf - 4)} ${Y(g.waistY + 2)} q 12 3 16 12" fill="none" stroke="${SEAM}" stroke-width="1.6" opacity="0.8"/>`);
+    }
+    // Slip dress: thin spaghetti straps over the strap shoulder line.
+    if (g.sleeveless && (p.subArchetype === "slip" || p.collar === "vneck")) {
+      seam.push(`<path d="M ${L(g.neckHalf + 2)} ${Y(g.neckY)} L ${L(g.shoulderHalf - 2)} ${Y(g.shoulderY)} M ${R(g.neckHalf + 2)} ${Y(g.neckY)} L ${R(g.shoulderHalf - 2)} ${Y(g.shoulderY)}" fill="none" stroke="${INK}" stroke-width="1.4" opacity="0.9"/>`);
+    }
+    // Signature: side slit on the skirt (reads instantly on midi/maxi).
+    const sig = Array.isArray(p.signature) ? p.signature : [];
+    if (sig.includes("side-slit")) {
+      seam.push(`<path d="M ${L(g.hemHalf - 1)} ${Y(g.hemY)} L ${L(g.waistHalf + (g.hemHalf - g.waistHalf) * 0.55)} ${Y(g.waistY + (g.hemY - g.waistY) * 0.45)}" fill="none" stroke="${INK}" stroke-width="2" opacity="0.95"/>`);
+    }
+    if (sig.includes("contrast-stitch")) {
+      seam.push(`<path d="M ${L(g.waistHalf - 2)} ${Y(g.waistY + 6)} L ${L(g.hemHalf - 8)} ${Y(g.hemY - 8)} M ${R(g.waistHalf - 2)} ${Y(g.waistY + 6)} L ${R(g.hemHalf - 8)} ${Y(g.hemY - 8)}" fill="none" stroke="${INK}" stroke-width="1.4" stroke-dasharray="2 3" opacity="0.9"/>`);
+    }
     return renderFlat(p, [d], seam.join(""));
   }
 
