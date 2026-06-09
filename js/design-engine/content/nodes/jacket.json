@@ -10,10 +10,10 @@
       "question": { "de": "Welche Art Jacke?", "en": "What kind of jacket?" },
       "choices": [
         { "id": "puffer", "label": { "de": "Puffer", "en": "Puffer" }, "effects": { "set": { "subArchetype": "puffer", "silhouette.volume": "high" }, "weight": { "techAvant": 0.2, "sport": 0.15 } } },
-        { "id": "bomber", "label": { "de": "Bomber", "en": "Bomber" }, "effects": { "set": { "subArchetype": "bomber" }, "weight": { "y2kStreet": 0.15, "utility": 0.1 } } },
+        { "id": "bomber", "label": { "de": "Bomber", "en": "Bomber" }, "effects": { "set": { "subArchetype": "bomber", "length": "cropped" }, "weight": { "y2kStreet": 0.15, "utility": 0.1 } } },
         { "id": "trench", "label": { "de": "Trench", "en": "Trench" }, "effects": { "set": { "subArchetype": "trench", "length": "long" }, "weight": { "quietMinimal": 0.2, "softCouture": 0.15 } } },
-        { "id": "blazer", "label": { "de": "Blazer", "en": "Blazer" }, "effects": { "set": { "subArchetype": "blazer", "construction.closure": "button" }, "weight": { "softCouture": 0.2, "quietMinimal": 0.15 } } },
-        { "id": "work", "label": { "de": "Workwear", "en": "Work" }, "effects": { "set": { "subArchetype": "work" }, "weight": { "utility": 0.3 } } }
+        { "id": "blazer", "label": { "de": "Blazer", "en": "Blazer" }, "effects": { "set": { "subArchetype": "blazer", "construction.closure": "button", "silhouette.structure": 0.85 }, "weight": { "softCouture": 0.2, "quietMinimal": 0.15 } } },
+        { "id": "work", "label": { "de": "Workwear", "en": "Work" }, "effects": { "set": { "subArchetype": "work", "silhouette.structure": 0.7, "construction.pockets": "cargo" }, "weight": { "utility": 0.3 } } }
       ]
     },
     {

@@ -207,12 +207,16 @@ const GarmentSVG = (() => {
     }
     if (g.collar === "crew") line(`M ${L(g.neckHalf - 2)} ${Y(g.neckY + 1)} Q ${CX} ${Y(g.neckY + 19)} ${R(g.neckHalf - 2)} ${Y(g.neckY + 1)}`, 1.6, 0.7);
 
-    // Centre-front closure.
+    // Centre-front closure. Hardware finish tints it: shiny metal = bright stroke
+    // + glint, matte/tonal = the dim seam tone (so "Hardware-Finish" lands visibly).
     const top = g.neckY + (g.collar === "crew" || g.collar === "vneck" ? 26 : 12);
+    const hw = p.hardware === "metal" ? INK : SEAM;
+    const hwW = p.hardware === "metal" ? 2.8 : 2.4;
     if (p.closure === "zip" || (cfg.closure === "zip" && p.closure == null)) {
-      s.push(`<path d="M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="2.4" stroke-dasharray="3 2.4"/>`);
+      s.push(`<path d="M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}" fill="none" stroke="${hw}" stroke-width="${hwW}" stroke-dasharray="3 2.4"/>`);
+      if (p.hardware === "metal") s.push(`<circle cx="${CX}" cy="${Y(top + 6)}" r="2.6" fill="${INK}"/>`);
     } else if (p.closure === "button" || (cfg.closure === "button" && p.closure == null)) {
-      const n = 6; for (let i = 0; i < n; i++) { const y = top + 8 + (i * (g.hemY - top - 16)) / (n - 1); s.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`); }
+      const n = 6; for (let i = 0; i < n; i++) { const y = top + 8 + (i * (g.hemY - top - 16)) / (n - 1); s.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${hw}" stroke-width="1.8"/>`); }
       line(`M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}`, 1.4, 0.5);
     } else if (p.closure === "none" && cfg.closure !== "none") {
       line(`M ${CX} ${Y(top)} L ${L(8)} ${Y(g.hemY)} M ${CX} ${Y(top)} L ${R(8)} ${Y(g.hemY)}`, 1.6, 0.7);
@@ -233,6 +237,22 @@ const GarmentSVG = (() => {
     if (p.hem === "ribbed" || (g.collar === "hood" && !p.hem)) line(`M ${L(g.hemHalf)} ${Y(g.hemY - 9)} L ${R(g.hemHalf)} ${Y(g.hemY - 9)}`, 1.6, 0.7);
     else if (p.hem === "drawcord") line(`M ${L(g.hemHalf)} ${Y(g.hemY - 6)} L ${R(g.hemHalf)} ${Y(g.hemY - 6)}`, 1.6, 0.6);
     else line(`M ${L(g.hemHalf)} ${Y(g.hemY - 5)} L ${R(g.hemHalf)} ${Y(g.hemY - 5)}`, 1.2, 0.4);
+
+    // Signature detail (Phase-E choice, now visible on the flat).
+    const sig = Array.isArray(p.signature) ? p.signature : [];
+    if (sig.includes("contrast-stitch")) {
+      s.push(`<path d="M ${L(g.chestHalf - 10)} ${Y(g.armpitY + 6)} L ${L(g.waistHalf - 8)} ${Y(g.hemY - 14)} M ${R(g.chestHalf - 10)} ${Y(g.armpitY + 6)} L ${R(g.waistHalf - 8)} ${Y(g.hemY - 14)}" fill="none" stroke="${INK}" stroke-width="1.4" stroke-dasharray="2 3" opacity="0.9"/>`);
+    }
+    if (sig.includes("asymmetric-zip")) {
+      s.push(`<path d="M ${L(g.neckHalf - 4)} ${Y(g.neckY + 10)} L ${R(g.chestHalf * 0.4)} ${Y(g.hemY - 6)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-dasharray="3 2.4"/>`);
+    }
+    if (sig.includes("branding-patch")) {
+      s.push(`<rect x="${L(g.chestHalf - 6)}" y="${Y(g.armpitY + 10)}" width="14" height="9" rx="1.5" fill="none" stroke="${INK}" stroke-width="1.6"/>`);
+    }
+    // Puffer subarchetype → horizontal quilting channels make it unmistakable.
+    if (p.subArchetype === "puffer") {
+      for (let i = 1; i <= 4; i++) { const y = g.armpitY + ((g.hemY - g.armpitY) * i) / 5; line(`M ${L(g.chestHalf - 3)} ${Y(y)} L ${R(g.chestHalf - 3)} ${Y(y)}`, 1.2, 0.5); }
+    }
 
     return s.join("");
   }
@@ -270,7 +290,14 @@ const GarmentSVG = (() => {
     seam.push(`<path d="M ${CX} ${Y(topY + 16)} L ${CX} ${Y(crotchY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
     seam.push(`<path d="M ${L(thighHalf * 0.5)} ${Y(topY + 22)} L ${L(ankleHalf * 0.7)} ${Y(hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="1.1" opacity="0.45"/>`);
     seam.push(`<path d="M ${R(thighHalf * 0.5)} ${Y(topY + 22)} L ${R(ankleHalf * 0.7)} ${Y(hemY - 4)}" fill="none" stroke="${SEAM}" stroke-width="1.1" opacity="0.45"/>`);
-    if (p.pockets && p.pockets !== "none") { seam.push(`<path d="M ${L(legTop - 4)} ${Y(topY + 20)} l -10 12 M ${R(legTop - 4)} ${Y(topY + 20)} l 10 12" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`); }
+    if (p.pockets === "cargo") {
+      // patch cargo pockets on the thighs — clearly different from slash pockets
+      const py = crotchY + 14, pw = r(thighHalf * 0.9), ph = 30;
+      seam.push(`<rect x="${L(thighHalf - 2)}" y="${Y(py)}" width="${pw}" height="${ph}" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/><rect x="${R(thighHalf - 2) - pw}" y="${Y(py)}" width="${pw}" height="${ph}" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`);
+    } else if (p.pockets && p.pockets !== "none") {
+      // side: slash pockets at the hip
+      seam.push(`<path d="M ${L(legTop - 4)} ${Y(topY + 20)} l -10 12 M ${R(legTop - 4)} ${Y(topY + 20)} l 10 12" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`);
+    }
     return renderFlat(p, [path], seam.join(""));
   }
 

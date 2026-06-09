@@ -64,6 +64,12 @@ const DesignPreview = (() => {
       pockets: g("construction.pockets"),
       cuffs: g("construction.cuffs"),
       hem: g("construction.hem"),
+      // Subarchetype reshapes the live flat (puffer voluminous, bomber cropped…),
+      // not just the tile. Hardware finish tints the closure; signature draws an
+      // extra detail — so the Phase-E choices also visibly land on the flat.
+      subArchetype: g("subArchetype"),
+      hardware: g("hardware.finish"),
+      signature: g("signature"),
       pattern: g("pattern.type"),
       patternScale: g("pattern.scale"),
       scheme: g("color.scheme"),

@@ -74,8 +74,12 @@ const DesignFlow = (() => {
         const w = opt && opt.effects && opt.effects.weight;
         if (w) { const f = decay[idx] != null ? decay[idx] : 0.05; Object.entries(w).forEach(([k, v]) => { weight[k] = (weight[k] || 0) + v * f; }); }
       });
-      const eff = { weight };
-      if (node.bind && (payload || []).length) eff.set = { [node.bind]: payload[0] };
+      const eff = { weight, set: {} };
+      // The top-ranked option also writes its rendered set() so the ranking
+      // visibly reshapes the flat — not only the (invisible) archetype weights.
+      const topOpt = (node.options || []).find((o) => o.id === (payload || [])[0]);
+      if (topOpt && topOpt.effects && topOpt.effects.set) Object.assign(eff.set, topOpt.effects.set);
+      if (node.bind && (payload || []).length) eff.set[node.bind] = payload[0];
       return { eff, conf: 1 };
     }
     if (node.modality === "cards" && Array.isArray(payload)) {
