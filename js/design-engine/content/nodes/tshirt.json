@@ -20,7 +20,8 @@
           },
           "effects": {
             "set": {
-              "subArchetype": "classic"
+              "subArchetype": "classic",
+              "silhouette.fit": 0.5
             }
           }
         },
