@@ -32,9 +32,9 @@ Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
   Kommentare und Rechtsseiten Deutsch.
 - **Datengetrieben bleiben:** neue Fragen/Optionen/Archetypen über JSON, nicht
   hartkodieren.
-- **Design-System:** nur bestehende `:root`-Tokens. Hintergrund `#0A0A0B`,
-  Akzent-Verlauf `--gradient` (pink → violett → cyan). Fonts NUR Lora (Display)
-  + Poppins (Body) — keine anderen.
+- **Design-System:** nur bestehende `:root`-Tokens. Hintergrund Midnight-Navy
+  `#0A1622`, Akzent-Verlauf `--gradient` (Ozean-Blau → Teal → Aqua). Fonts NUR
+  Lora (Display) + Poppins (Body) — keine anderen.
 - **Validate at the boundary:** User-/AI-Input über `CONFIG.validate*` führen.
 - **Feedback** über `showToast(message, type)`, nicht `alert`. **Geld** in CHF.
 - Bestehende Flows (Maße, KI, i18n, State, 3D) nicht brechen. **Keine

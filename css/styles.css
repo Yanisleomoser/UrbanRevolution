@@ -3577,6 +3577,19 @@ main { display: block; }
     -webkit-text-fill-color: transparent;
     font-weight: 700;
 }
+/* KI als Pluspunkt, nicht Hauptpunkt: ruhige, abgesetzte Fußnote unter den
+   Payoff-Chips — gedämpft, nur "Und die KI?" trägt den Akzent. */
+.howto-ai-note {
+    max-width: 64ch;
+    margin: var(--space-8) auto 0;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: var(--text-sm);
+    line-height: var(--leading-loose);
+    color: var(--text-muted);
+}
+.howto-ai-note strong { color: var(--accent); font-weight: 600; }
 @media (max-width: 720px) {
     .howto-steps { grid-template-columns: 1fr; gap: var(--space-5); }
 }
