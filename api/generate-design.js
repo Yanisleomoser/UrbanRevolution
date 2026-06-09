@@ -21,7 +21,7 @@
 export const config = { runtime: "edge" };
 
 const API_ENDPOINT = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-opus-4-8";
 const VALID_GARMENT_TYPES = ['tshirt', 'hoodie', 'shirt', 'pants', 'jacket', 'dress'];
 
 export default async function handler(request) {
