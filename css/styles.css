@@ -5419,20 +5419,23 @@ footer.footer {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background-position: center; background-size: cover; background-repeat: no-repeat;
 }
+/* Dedizierte Breitbild-Hintergründe (img/bg/, 3:2, dunkel/cineastisch) — der
+   Scrim ist leichter als bei den alten 4:5-Crops, weil die Bilder selbst dunkel
+   sind und oben Negativraum für Text tragen. Verläuft an den Rändern in --bg. */
 .alternative::before {
   background-image:
-    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.86) 30%, rgba(10,22,34,0.9) 70%, var(--bg, #0a1622) 100%),
-    url("../js/design-engine/content/img/mood/atelier.jpg");
+    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.62) 32%, rgba(10,22,34,0.7) 70%, var(--bg, #0a1622) 100%),
+    url("../js/design-engine/content/img/bg/alternative.jpg");
 }
 .vision::before {
   background-image:
-    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.9) 30%, rgba(10,22,34,0.92) 70%, var(--bg, #0a1622) 100%),
-    url("../js/design-engine/content/img/mood/clean.jpg");
+    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.66) 32%, rgba(10,22,34,0.72) 70%, var(--bg, #0a1622) 100%),
+    url("../js/design-engine/content/img/bg/vision.jpg");
 }
 .final-cta::before {
   background-image:
-    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.9) 35%, rgba(10,22,34,0.94) 100%),
-    url("../js/design-engine/content/img/mood/future.jpg");
+    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.6) 38%, rgba(10,22,34,0.8) 100%),
+    url("../js/design-engine/content/img/bg/final.jpg");
 }
 
 /* ─── UX-Scan-Feinschliff (präziser Audit) ─────────────────────────────────
@@ -5447,6 +5450,6 @@ footer.footer {
 
 /* #6 Ambiente-Hintergründe: thematisch sinnvoller Bildausschnitt je Sektion
    (4:5-Quellen werden als cover beschnitten — Fokus gezielt setzen). */
-.alternative::before { background-position: center 38%; }
-.vision::before { background-position: center 30%; }
-.final-cta::before { background-position: center 42%; }
+.alternative::before { background-position: center 55%; }
+.vision::before { background-position: center; }
+.final-cta::before { background-position: center bottom; }
