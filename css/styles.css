@@ -5386,3 +5386,32 @@ footer.footer {
   .gallery-tile:hover { transform: translateY(-4px); border-color: var(--accent); }
 }
 .lookbook-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+
+/* Bugfix: [hidden] muss IMMER gewinnen — Klassen mit eigenem display
+   (.manifesto-cta, .de-nav …) überstimmten sonst die UA-Regel, wodurch z. B.
+   „Zeig die Alternative" schon bei Karte 1/4 sichtbar war (iPhone-Report). */
+.prob-controls [hidden], #ownership [hidden], .ownership-actions [hidden] { display: none !important; }
+
+/* Premium-Ambiente: echte, ozean-gegradete Fotografie als ruhige Tiefe hinter
+   den Erzähl-Sektionen (statt nur Flächenfarbe). Dunkler Scrim hält Kontrast
+   und Lesbarkeit; Bilder liegen unter dem Fold und laden lazy via CSS. */
+.alternative, .vision, .final-cta { position: relative; isolation: isolate; }
+.alternative::before, .vision::before, .final-cta::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-position: center; background-size: cover; background-repeat: no-repeat;
+}
+.alternative::before {
+  background-image:
+    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.84) 22%, rgba(10,22,34,0.88) 78%, var(--bg, #0a1622) 100%),
+    url("../js/design-engine/content/img/mood/soft-drape.jpg");
+}
+.vision::before {
+  background-image:
+    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.88) 20%, rgba(10,22,34,0.9) 80%, var(--bg, #0a1622) 100%),
+    url("../js/design-engine/content/img/mood/calm-mono.jpg");
+}
+.final-cta::before {
+  background-image:
+    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.78) 30%, rgba(10,22,34,0.9) 100%),
+    url("../js/design-engine/content/img/context/season-cold.jpg");
+}

@@ -104,7 +104,7 @@ const DesignFlow = (() => {
   function shiftHex(hex, dh, dl) {
     const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
     if (!m) return hex;
-    let r = parseInt(m[1].slice(0, 2), 16) / 255, g = parseInt(m[1].slice(2, 4), 16) / 255, b = parseInt(m[1].slice(4, 6), 16) / 255;
+    const r = parseInt(m[1].slice(0, 2), 16) / 255, g = parseInt(m[1].slice(2, 4), 16) / 255, b = parseInt(m[1].slice(4, 6), 16) / 255;
     const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0; const li = (mx + mn) / 2;
     const d = mx - mn;
     const sa = d === 0 ? 0 : d / (1 - Math.abs(2 * li - 1));
@@ -450,7 +450,7 @@ const DesignFlow = (() => {
           return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
             <button type="button" class="de-concept-pick" data-pick="${i}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}">
               <span class="de-concept-stage">${tileSvg(cur)}</span>
-              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span>${i === 0 ? `<span class="de-concept-tag">${t("engine.concept_original")}</span>` : ""}</span>
+              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span>${i === 0 && c.version === 1 ? `<span class="de-concept-tag">${t("engine.concept_original")}</span>` : ""}</span>
             </button>
             <div class="de-concept-actions">
               <button type="button" class="de-concept-evolve" data-evolve="${i}">${t("engine.evolve")}</button>
@@ -616,7 +616,14 @@ const DesignFlow = (() => {
         if (!dna.archetypeWeights) dna.archetypeWeights = DesignDNA.create().archetypeWeights;
         if (!dna._confidence) dna._confidence = {};
         answered = new Set(saved.answered);
-        return renderNext();
+        // Resume-Falle: Ein BEREITS KONVERGIERTER Durchlauf (keine offenen
+        // Fragen mehr) würde jeden Wiederbesuch direkt aufs Ergebnis werfen —
+        // „die Reise ist weg". Fertige Sessions gelten als abgeschlossen: das
+        // Design lebt in StateManager/Library weiter, die Reise startet frisch.
+        if (DesignEngine.nextNode(content.nodes, dna, answered)) return renderNext();
+        clearSaved();
+        dna = DesignDNA.create();
+        answered = new Set();
       }
       // Direktive: „No onboarding" — Nutzer erschaffen sofort (showIntro bleibt
       // als Funktion erhalten, wird aber nicht mehr aufgerufen).
