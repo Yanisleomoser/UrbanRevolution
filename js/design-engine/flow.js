@@ -21,8 +21,9 @@ const DesignFlow = (() => {
   // preview clone, so every decision is visible immediately.
   const LIVE_PATHS = [
     "silhouette.fit", "silhouette.volume", "silhouette.structure", "length",
-    "construction.collar", "construction.sleeve", "construction.closure",
-    "construction.pockets", "construction.cuffs", "construction.hem",
+    "construction.collar", "construction.sleeve", "construction.sleeveLength",
+    "construction.closure", "construction.pockets", "construction.cuffs",
+    "construction.hem", "construction.waistband", "construction.waist",
     "pattern.type", "pattern.scale", "color.scheme", "color.stops",
     "fabric.material", "fabric.finishWeight", "intent.energy",
   ];
