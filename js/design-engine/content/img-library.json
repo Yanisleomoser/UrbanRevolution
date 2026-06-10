@@ -3,7 +3,15 @@
   "style": "a real photograph with genuine depth, texture and detail — never a flat colour block or solid colour field, soft natural daylight with gentle shadows, cohesive cool ocean-toned palette (deep navy, teal, seafoam, pale sand and off-white), airy and calm with a refined editorial mood, fine film grain, vertical 4:5, no logo, no text, never harsh black, never neon",
 
   "hero_template": "Editorial fashion photograph of a {category}, {look}, single-garment focus on a ghost / invisible mannequin against a near-black seamless studio backdrop, no logo, no text, photorealistic, ultra-detailed fabric, cohesive cool color grade with fine film grain, vertical 4:5.",
-  "categories": ["jacket"],
+  "categories": ["jacket", "tshirt", "hoodie", "shirt", "pants", "dress"],
+  "category_nouns": {
+    "jacket": "jacket",
+    "tshirt": "t-shirt",
+    "hoodie": "hoodie",
+    "shirt": "button-up shirt",
+    "pants": "pair of tailored trousers",
+    "dress": "dress"
+  },
   "looks": {
     "quietMinimal": "soft diffuse daylight, muted stone / off-white / grey palette, matte natural wool & cotton, calm and reduced with generous negative space",
     "techAvant": "cool directional studio light with hard shadows, charcoal / black / steel with a cyan edge, matte technical recycled nylon, sharp and architectural, future-leaning",
@@ -40,13 +48,14 @@
     "sportcore": "sunlit running track with painted lane lines and woven performance-fabric texture caught mid-motion, fresh and precise, cool daylight"
   },
 
+  "_context_note": "Kontext-Kacheln sind GARMENT-FREI (Szenen/Texturen, keine Kleidungsstücke) — sie erscheinen in jeder Kategorie-Reise; ein fremdes Kleidungsstück (z. B. eine Jacke in der Hosen-Reise) würde als Auswahl missverstanden.",
   "context": {
-    "occasion-everyday": "editorial photograph of a lone figure in relaxed everyday clothing on a calm city street in soft morning daylight, candid, cool ocean-toned grade, shallow depth of field",
-    "occasion-work": "editorial photograph of a tailored jacket draped over a chair in a calm light-filled minimal workspace, soft daylight, refined and quiet, cool neutral tones",
-    "occasion-event": "editorial photograph of an elegant figure in evening wear inside a refined interior with soft warm-cool light, gentle glossy reflections, airy bokeh",
-    "occasion-active": "editorial photograph of a runner in performance wear caught mid-motion on an urban path in soft early daylight, dynamic, cool ocean grade, fine grain",
-    "season-all": "editorial photograph of a layered outfit on a clothing rail in a bright airy studio, soft even daylight, transitional textures and fabrics, cool neutral palette",
+    "occasion-everyday": "editorial photograph of a quiet morning city street with long soft shadows and a bicycle leaning against a pale wall, soft daylight, candid calm, cool ocean-toned grade, shallow depth of field, no people, no clothing",
+    "occasion-work": "editorial photograph of a calm light-filled minimal workspace, wooden desk with a closed notebook and a ceramic cup, soft daylight, refined and quiet, cool neutral tones, no people, no clothing",
+    "occasion-event": "editorial photograph of a refined interior at dusk, soft warm-cool light, glasses and gentle glossy reflections, airy bokeh, elegant and celebratory, no people, no clothing",
+    "occasion-active": "editorial photograph of a sunlit urban running track with painted lane markings and subtle motion-blurred light, dynamic and fresh, soft early daylight, cool ocean grade, fine grain, no people, no clothing",
+    "season-all": "editorial still life of four folded fabric textures side by side — linen, cotton, wool and a technical weave — on a light table in soft even daylight, cool neutral palette, no garments",
     "season-warm": "editorial photograph of light linen fabric drifting in a warm breeze in bright soft daylight, airy folds, pale sand and seafoam tones, shallow depth of field",
-    "season-cold": "editorial photograph of a heavy wool coat in soft cool daylight with light mist, muted ocean-blue tones, gentle grain"
+    "season-cold": "editorial photograph of a frost-laced window pane and soft mist over calm water in cool blue daylight, muted ocean-blue tones, gentle grain, no people, no clothing"
   }
 }

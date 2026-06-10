@@ -21,10 +21,13 @@ const DesignPreview = (() => {
   // shape to the new one (GarmentSVG.lerpModel), so the user SEES the garment
   // reshape (shoulder widening, hem dropping, waist nipping). This is the fix
   // for "the morph works but is so minimal it feels like nothing happens".
-  const MORPH_MS = 440;
+  const MORPH_MS = 380; // per-answer reshape: snappy but still legibly animated
   const lastModel = new WeakMap(); // preview el → last GarmentSVG model
   const tweenId = new WeakMap();   // preview el → running rAF id
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const wasGenesis = new WeakMap(); // preview el → last render was the nebula
+  // easeInOutCubic — accelerates out of the old shape and settles softly into
+  // the new one, so the morph reads as one deliberate motion (not a linear slide).
+  const easeOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const reduceMotion = () =>
     typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -60,10 +63,13 @@ const DesignPreview = (() => {
       length: g("length"),
       collar: g("construction.collar"),
       sleeve: g("construction.sleeve"),
+      sleeveLength: g("construction.sleeveLength"),
       closure: g("construction.closure"),
       pockets: g("construction.pockets"),
       cuffs: g("construction.cuffs"),
       hem: g("construction.hem"),
+      waistband: g("construction.waistband"),
+      waist: g("construction.waist"),
       // Subarchetype reshapes the live flat (puffer voluminous, bomber cropped…),
       // not just the tile. Hardware finish tints the closure; signature draws an
       // extra detail — so the Phase-E choices also visibly land on the flat.
@@ -85,7 +91,7 @@ const DesignPreview = (() => {
       // tints/saturates the fill, and the winning archetype (driven by mood /
       // inspo / occasion / season) sets the neutral tone.
       energy: g("intent.energy"),
-      archetype: window.DesignDNA ? DesignDNA.topArchetype(dna) : null,
+      archetype: (typeof DesignDNA !== "undefined" && DesignDNA.topArchetype) ? DesignDNA.topArchetype(dna) : null,
     };
   }
 
@@ -124,17 +130,43 @@ const DesignPreview = (() => {
     if (!el) return;
     const realism = !!(opts && opts.realism);
     const p = params(dna);
+
+    // ── Genesis stage (before the user has chosen a category) ──────────────
+    // No garment exists yet, so none is shown: an abstract thread-flow reacts
+    // to the mood answers and gains material with every choice. The first
+    // category decision then WEAVES the threads into the silhouette (CSS
+    // draw-in via .is-weave) — the piece visibly comes into being.
+    if (opts && opts.genesis && window.GarmentSVG && window.GarmentSVG.nebula) {
+      const badgeG = window.I18N ? window.I18N.t("dpreview.genesis_badge") : "ES ENTSTEHT …";
+      el.innerHTML = `
+        <div class="de-garment-wrap is-genesis">${window.GarmentSVG.nebula({
+          energy: p.energy, structure: p.structure, archetype: p.archetype, seed: (opts.seed || 0),
+        })}</div>
+        <span class="de-preview-badge">${badgeG}</span>`;
+      lastModel.delete(el);
+      wasGenesis.set(el, true);
+      return;
+    }
+
     const badge = window.I18N ? window.I18N.t("dpreview.fallback_badge") : "STILVORSCHAU";
     const schemeChosen = DesignDNA.confidence(dna, "color.scheme") > SCHEME_THRESHOLD;
+
+    // Materialisation progress (0..1): the flat develops from faint sketch to
+    // fully dressed as the journey matures (GarmentSVG honours p.reveal).
+    if (opts && typeof opts.progress === "number") p.reveal = Math.max(0.25, Math.min(1, opts.progress));
 
     // Resolve the new silhouette as a morph model when GarmentSVG is present so
     // we can animate from the previous shape; fall back to the static studio SVG.
     const toModel = window.GarmentSVG ? window.GarmentSVG.model(p.category || "tshirt", p) : null;
     const targetSvg = toModel ? window.GarmentSVG.paint(toModel) : silhouette(p);
 
+    // Fresh out of genesis → the silhouette draws itself in (weave moment).
+    const weaveIn = wasGenesis.get(el) === true && !reduceMotion();
+    wasGenesis.delete(el);
+
     el.innerHTML = `
       <div class="de-preview-photo${schemeChosen ? " is-duo" : ""}" hidden><img alt="" /><div class="de-preview-duo"></div></div>
-      <div class="de-garment-wrap">${targetSvg}</div>
+      <div class="de-garment-wrap${weaveIn ? " is-weave" : ""}">${targetSvg}</div>
       <span class="de-preview-badge">${badge}</span>`;
 
     const duo = el.querySelector(".de-preview-duo");

@@ -20,6 +20,14 @@ const DesignSummary = (() => {
       puffer: { de: "Puffer-", en: "puffer " }, bomber: { de: "Bomber-", en: "bomber " },
       trench: { de: "Trench-", en: "trench " }, blazer: { de: "Blazer-", en: "blazer " },
       work: { de: "Workwear-", en: "work " },
+      pullover: { de: "Pullover-", en: "pullover " }, zip: { de: "Zip-", en: "zip " },
+      oversized: { de: "Oversized-", en: "oversized " },
+      classic: { de: "", en: "" }, boxy: { de: "Boxy-", en: "boxy " }, fitted: { de: "tailliertes ", en: "fitted " },
+      overshirt: { de: "Overshirt-", en: "overshirt " }, camp: { de: "Resort-", en: "camp " }, popover: { de: "Popover-", en: "popover " },
+      tailored: { de: "Tailored-", en: "tailored " }, slim: { de: "Slim-", en: "slim " },
+      wide: { de: "weite ", en: "wide-leg " }, cargo: { de: "Cargo-", en: "cargo " },
+      aline: { de: "A-Linien-", en: "A-line " }, column: { de: "gerades ", en: "column " },
+      wrap: { de: "Wickel-", en: "wrap " }, slip: { de: "Slip-", en: "slip " },
     },
     material: {
       cotton: { de: "Canvas-Baumwolle", en: "cotton canvas" }, linen: { de: "Leinen", en: "linen" },
@@ -33,12 +41,32 @@ const DesignSummary = (() => {
     },
     closure: {
       zip: { de: "Reißverschluss", en: "zip closure" }, button: { de: "Knopfleiste", en: "button closure" },
-      none: { de: "offenem Schnitt", en: "open front" },
+      half: { de: "Half-Placket", en: "half placket" }, none: { de: "offenem Schnitt", en: "open front" },
     },
     collar: {
       stand: { de: "Stehkragen", en: "stand collar" }, notched: { de: "Reverskragen", en: "notched lapel" },
       hood: { de: "Kapuze", en: "hood" }, crew: { de: "Rundhals", en: "crew neck" },
+      vneck: { de: "V-Ausschnitt", en: "v-neck" }, shirt: { de: "Hemdkragen", en: "shirt collar" },
       none: { de: "ohne Kragen", en: "collarless" },
+    },
+    sleeveLength: {
+      sleeveless: { de: "ärmellos", en: "sleeveless" }, cap: { de: "Cap-Ärmeln", en: "cap sleeves" },
+      short: { de: "kurzen Ärmeln", en: "short sleeves" }, long: { de: "langen Ärmeln", en: "long sleeves" },
+    },
+    pockets: {
+      none: null, side: { de: "Seitentaschen", en: "side pockets" }, flap: { de: "Pattentaschen", en: "flap pockets" },
+      cargo: { de: "Cargo-Taschen", en: "cargo pockets" }, kangaroo: { de: "Kängurutasche", en: "kangaroo pocket" },
+      chest: { de: "Brusttasche", en: "chest pocket" },
+    },
+    waistband: {
+      belt: { de: "Gürtelschlaufen", en: "belt loops" }, drawcord: { de: "Kordelzug-Bund", en: "drawcord waist" },
+      elastic: { de: "elastischem Bund", en: "elastic waist" },
+    },
+    signature: {
+      "asymmetric-zip": { de: "asymmetrischem Zip", en: "asymmetric zip" },
+      "contrast-stitch": { de: "Kontrastnähten", en: "contrast stitching" },
+      "branding-patch": { de: "Branding-Patch", en: "branding patch" },
+      "side-slit": { de: "Seitenschlitz", en: "side slit" },
     },
     hardware: {
       tonal: { de: "tonaler Hardware", en: "tonal hardware" },
@@ -96,10 +124,15 @@ const DesignSummary = (() => {
 
     const details = [];
     const collar = pick(lang, W.collar[g("construction.collar")], null);
+    const sleeves = pick(lang, W.sleeveLength[g("construction.sleeveLength")], null);
     const closure = pick(lang, W.closure[g("construction.closure")], null);
+    const pockets = pick(lang, W.pockets[g("construction.pockets")], null);
+    const waistband = pick(lang, W.waistband[g("construction.waistband")], null);
     const hw = pick(lang, W.hardware[g("hardware.finish")], null);
     const pat = pick(lang, W.pattern[g("pattern.type")], null);
-    [collar, closure, hw, pat].forEach((d) => d && details.push(d));
+    const sig = (Array.isArray(g("signature")) ? g("signature") : [])
+      .map((s) => pick(lang, W.signature[s], null)).filter(Boolean).join(lang === "en" ? " and " : " und ") || null;
+    [collar, sleeves, closure, pockets, waistband, hw, pat, sig].forEach((d) => d && details.push(d));
     return { out, details };
   }
 

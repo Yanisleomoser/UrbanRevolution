@@ -187,5 +187,128 @@ const haveAll = attributes.required.every((p) => DNA.get(S.dna, p) !== undefined
 assert(haveAll, "express path still yields a COMPLETE design (all required attrs filled)");
 console.log("  express summary:", DesignSummary.toSentence(S.dna, "en"));
 
+// ─── Garment parity: every category offers jacket-depth choices ─────────────
+// (the journey must not be deep only for jackets — brief + user requirement)
+console.log("\n— Garment parity (all 6 categories at jacket depth) —");
+const GARMENTS = ["jacket", "hoodie", "shirt", "tshirt", "pants", "dress"];
+const fileNodes = {};
+GARMENTS.forEach((g) => (fileNodes[g] = readJSON(`content/nodes/${g}.json`).nodes));
+const setsPath = (ns, p) => ns.some((n) =>
+  (n.bind === p) ||
+  (n.choices || []).some((c) => c.effects && c.effects.set && Object.prototype.hasOwnProperty.call(c.effects.set, p)) ||
+  (n.regions || []).some((rg) => (rg.choices || []).some((c) => c.effects && c.effects.set && Object.prototype.hasOwnProperty.call(c.effects.set, p))));
+GARMENTS.forEach((g) => {
+  const ns = fileNodes[g];
+  assert(ns.length >= 12, `${g}: >= 12 nodes (has ${ns.length})`);
+  ["subArchetype", "silhouette.fit", "length", "fabric.material", "fabric.finishWeight", "pattern.type", "pattern.scale", "signature"]
+    .forEach((p) => assert(setsPath(ns, p), `${g}: resolves ${p}`));
+  assert(ns.some((n) => n.modality === "colorGradient"), `${g}: has a colour node`);
+});
+
+// Every attribute path a node sets must surface in the preview params mapping
+// (Eingabe == Output: no choice may silently disappear before the renderer).
+console.log("\n— Input → output coverage (node sets ⊆ preview params) —");
+global.GarmentSVG = require(path.join(ROOT, "garment-svg.js"));
+const Preview = require(path.join(ROOT, "render-preview.js"));
+const RENDERED_PATHS = new Set([
+  "category", "subArchetype", "length", "silhouette.fit", "silhouette.structure", "silhouette.volume",
+  "fabric.material", "fabric.finish", "fabric.finishWeight", "color.scheme", "color.stops", "color.value", "color.saturation",
+  "pattern.type", "pattern.scale", "hardware.finish", "signature", "intent.energy",
+  "construction.collar", "construction.closure", "construction.sleeve", "construction.sleeveLength",
+  "construction.pockets", "construction.cuffs", "construction.hem", "construction.waistband", "construction.waist",
+]);
+const NON_VISUAL = new Set(["intent.season", "intent.occasion", "intent.formality", "fabric.weight"]); // soft signals → archetype weights
+let uncovered = [];
+GARMENTS.forEach((g) => fileNodes[g].forEach((n) => {
+  const paths = [];
+  if (n.bind) paths.push(n.bind);
+  (n.choices || []).forEach((c) => c.effects && c.effects.set && paths.push(...Object.keys(c.effects.set)));
+  (n.regions || []).forEach((rg) => (rg.choices || []).forEach((c) => c.effects && c.effects.set && paths.push(...Object.keys(c.effects.set))));
+  paths.forEach((p) => { if (!RENDERED_PATHS.has(p) && !NON_VISUAL.has(p)) uncovered.push(`${g}/${n.id} → ${p}`); });
+}));
+assert(uncovered.length === 0, "every garment-node set path reaches the renderer" + (uncovered.length ? ` (uncovered: ${uncovered.join(", ")})` : ""));
+
+// ─── Persona: STREET HOODIE — deep branch + DNA mirrors the answers ─────────
+console.log("\n— Persona: STREET / hoodie —");
+const hoodieNodes = [...readJSON("content/nodes/intent.json").nodes, ...fileNodes.hoodie];
+function runOn(nodeList, persona) {
+  const dna = DNA.create();
+  const answered = new Set();
+  const order = [];
+  let guard = 0;
+  while (guard++ < 100) {
+    const node = Engine.nextNode(nodeList, dna, answered);
+    if (!node) break;
+    order.push(node.id);
+    const choice = persona[node.id] !== undefined ? persona[node.id] : persona._default(node);
+    const { eff, conf } = resolveEffects(node, choice);
+    Engine.answer(dna, node, eff, answered, conf);
+  }
+  Engine.finalize(dna, archetypes, attributes.required, attributes.confidenceThreshold);
+  return { dna, order };
+}
+const street = {
+  mood_calm_bold: "bold", mood_soft_sharp: "sharp", mood_clean_expressive: "expressive", mood_vintage_future: "future",
+  intent_occasion: "everyday", intent_season: "cold", intent_formality: 0.15,
+  category_select: "hoodie",
+  hoodie_subarch: "zip", hoodie_fit: 0.9, hoodie_length: "regular", hoodie_sleeve: "drop",
+  hoodie_material: "fleece", hoodie_finish: 0.8,
+  hoodie_color: { set: { "color.scheme": "mono", "color.stops": ["#2a9d8f"], "color.value": 0.5, "color.saturation": 0.6 } },
+  hoodie_pattern: "graphic", hoodie_pattern_scale: 0.8,
+  hoodie_pocket: "kangaroo", hoodie_hem: "ribbed", hoodie_hardware: "metal", hoodie_signature: "branding",
+  _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
+};
+const H = runOn(hoodieNodes, street);
+console.log("  order:", H.order.join(" → "));
+assert(H.order.includes("hoodie_pattern") && H.order.includes("hoodie_signature") && H.order.includes("hoodie_hardware"),
+  "street hoodie reaches deep pattern/hardware/signature nodes");
+assert(DNA.get(H.dna, "pattern.type") === "graphic" && DNA.get(H.dna, "construction.closure") === "zip"
+  && DNA.get(H.dna, "hardware.finish") === "metal" && DNA.get(H.dna, "construction.pockets") === "kangaroo",
+  "hoodie DNA mirrors every answer (Eingabe == Output)");
+const hParams = Preview.params(H.dna);
+const hSvg = global.GarmentSVG.build(hParams.category, hParams);
+assert(hSvg.includes("<svg") && !hSvg.includes("NaN"), "hoodie persona renders a clean flat");
+assert(hSvg !== global.GarmentSVG.build("hoodie", { fit: 0.5 }), "hoodie persona flat differs from the default flat");
+
+// ─── Persona: COUTURE DRESS — sleeveless slip + slit reach the flat ─────────
+console.log("\n— Persona: COUTURE / dress —");
+const dressNodes = [...readJSON("content/nodes/intent.json").nodes, ...fileNodes.dress];
+const couture = {
+  mood_calm_bold: "bold", mood_soft_sharp: "soft", mood_clean_expressive: "expressive", mood_vintage_future: "future",
+  intent_occasion: "event", intent_season: "warm", intent_formality: 0.9,
+  category_select: "dress",
+  dress_subarch: "slip", dress_fit: 0.75, dress_length: "long", dress_neck: "vneck",
+  dress_sleeve: "sleeveless", dress_waist: "fitted", dress_material: "silk", dress_finish: 0.9,
+  dress_color: { set: { "color.scheme": "mono", "color.stops": ["#0a1622"], "color.value": 0.2, "color.saturation": 0.3 } },
+  dress_pattern: "none", dress_signature: "side-slit",
+  _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
+};
+const D = runOn(dressNodes, couture);
+console.log("  order:", D.order.join(" → "));
+assert(DNA.get(D.dna, "construction.sleeveLength") === "sleeveless" && DNA.get(D.dna, "construction.waist") === "fitted",
+  "dress DNA carries sleeve length + waist");
+const dParams = Preview.params(D.dna);
+assert(dParams.sleeveLength === "sleeveless" && dParams.waist === "fitted" && Array.isArray(dParams.signature) && dParams.signature.includes("side-slit"),
+  "preview params carry the new dress attributes to the renderer");
+const dSvg = global.GarmentSVG.build("dress", dParams);
+assert(dSvg.includes("<svg") && !dSvg.includes("NaN"), "couture dress renders a clean flat");
+assert(dSvg !== global.GarmentSVG.build("dress", Object.assign({}, dParams, { sleeveLength: "short", signature: [] })),
+  "sleeveless + slit visibly change the dress flat");
+
+// ─── Genesis & materialisation (immersive Entstehung) ────────────────────────
+console.log("\n— Genesis & materialisation —");
+const GS = global.GarmentSVG;
+const nebCalm = GS.nebula({ energy: 0.1, structure: 0.5, seed: 1 });
+const nebBold = GS.nebula({ energy: 0.9, structure: 0.5, seed: 1 });
+const nebLate = GS.nebula({ energy: 0.1, structure: 0.5, seed: 6 });
+assert(nebCalm.includes("<svg") && nebCalm.includes("de-nebula") && !nebCalm.includes("NaN"), "nebula renders clean");
+assert(nebCalm !== nebBold, "mood energy reshapes the nebula");
+assert((nebLate.match(/<path/g) || []).length > (nebCalm.match(/<path/g) || []).length,
+  "every answer adds threads (the cloth is being spun)");
+const revSketch = GS.build("hoodie", { reveal: 0.3, stops: ["#2a9d8f"], pattern: "stripe" });
+const revFull = GS.build("hoodie", { reveal: 1, stops: ["#2a9d8f"], pattern: "stripe" });
+assert(revSketch !== revFull, "reveal stages the materialisation (sketch → dressed)");
+assert(GS.build("hoodie", {}).includes('pathLength="1"'), "flat paths are draw-animatable (weave-in)");
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

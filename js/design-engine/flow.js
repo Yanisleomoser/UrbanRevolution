@@ -21,8 +21,9 @@ const DesignFlow = (() => {
   // preview clone, so every decision is visible immediately.
   const LIVE_PATHS = [
     "silhouette.fit", "silhouette.volume", "silhouette.structure", "length",
-    "construction.collar", "construction.sleeve", "construction.closure",
-    "construction.pockets", "construction.cuffs", "construction.hem",
+    "construction.collar", "construction.sleeve", "construction.sleeveLength",
+    "construction.closure", "construction.pockets", "construction.cuffs",
+    "construction.hem", "construction.waistband", "construction.waist",
     "pattern.type", "pattern.scale", "color.scheme", "color.stops",
     "fabric.material", "fabric.finishWeight", "intent.energy",
   ];
@@ -207,7 +208,17 @@ const DesignFlow = (() => {
       });
       if (window.DesignPreview) {
         if (animate) { previewEl.classList.remove("is-fade"); void previewEl.offsetWidth; previewEl.classList.add("is-fade"); }
-        window.DesignPreview.renderInto(previewEl, previewDna, { realism: atRefine });
+        // Genesis: as long as the USER hasn't decided a category (raw-DNA
+        // confidence, not the inferred preview clone), no garment is shown —
+        // the abstract thread-flow builds up instead, and the category answer
+        // weaves it into the silhouette. progress staggers the materialisation.
+        const catConf = DesignDNA.confidence(dna, "category");
+        window.DesignPreview.renderInto(previewEl, previewDna, {
+          realism: atRefine,
+          genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
+          progress: 0.38 + maturity() * 0.62,
+          seed: answered.size,
+        });
       }
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
       // sichtbares Feedback (Subarch/Fit/Länge/Material/Muster), nicht ins Foto.
@@ -307,7 +318,9 @@ const DesignFlow = (() => {
     }
 
     function renderNext() {
-      refreshChrome();
+      // Kein refreshChrome hier: renderModality/renderRefine rendern selbst.
+      // Ein doppelter Render würde u. a. die einmalige Weave-In-Animation
+      // (Genesis → Silhouette) sofort wieder überschreiben.
       const node = DesignEngine.nextNode(content.nodes, dna, answered);
       if (!node) return renderRefine();
       renderModality(node);

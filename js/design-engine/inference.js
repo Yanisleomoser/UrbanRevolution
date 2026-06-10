@@ -20,6 +20,11 @@ const DesignInference = (() => {
     "color.scheme": { de: "Farbschema", en: "Colour scheme" },
     "construction.closure": { de: "Verschluss", en: "Closure" },
     "construction.collar": { de: "Kragen", en: "Collar" },
+    "construction.sleeveLength": { de: "Ärmel", en: "Sleeves" },
+    "construction.pockets": { de: "Taschen", en: "Pockets" },
+    "construction.hem": { de: "Saum", en: "Hem" },
+    "construction.waistband": { de: "Bund", en: "Waistband" },
+    "construction.waist": { de: "Taille", en: "Waist" },
     "hardware.finish": { de: "Hardware", en: "Hardware" },
     "pattern.type": { de: "Muster", en: "Pattern" },
   };
@@ -33,6 +38,12 @@ const DesignInference = (() => {
     stand: { de: "Stehkragen", en: "stand" }, notched: { de: "Revers", en: "notched" }, hood: { de: "Kapuze", en: "hood" },
     tonal: { de: "tonal", en: "tonal" }, metal: { de: "Glanz-Metall", en: "shiny metal" }, matteHw: { de: "Matt-Metall", en: "matte metal" },
     stripe: { de: "Streifen", en: "stripe" }, camo: { de: "Camo", en: "camo" }, graphic: { de: "Grafik", en: "graphic" }, abstract: { de: "Abstrakt", en: "abstract" },
+    check: { de: "Karo", en: "check" }, half: { de: "Half-Placket", en: "half placket" },
+    crew: { de: "Rundhals", en: "crew" }, vneck: { de: "V-Ausschnitt", en: "v-neck" }, shirt: { de: "Hemdkragen", en: "shirt collar" },
+    sleeveless: { de: "ärmellos", en: "sleeveless" }, cap: { de: "Cap-Ärmel", en: "cap sleeves" }, short: { de: "kurz", en: "short" }, long: { de: "lang", en: "long" },
+    chest: { de: "Brusttasche", en: "chest pocket" }, side: { de: "seitlich", en: "side" }, flap: { de: "Patten", en: "flap" }, cargo: { de: "Cargo", en: "cargo" }, kangaroo: { de: "Kängurutasche", en: "kangaroo" },
+    straight: { de: "gerade", en: "straight" }, curved: { de: "gerundet", en: "curved" }, ribbed: { de: "gerippt", en: "ribbed" }, drawcord: { de: "Kordelzug", en: "drawcord" }, cuffed: { de: "Umschlag", en: "cuffed" }, elastic: { de: "elastisch", en: "elastic" },
+    belt: { de: "Gürtelschlaufen", en: "belt loops" }, fitted: { de: "betont", en: "fitted" }, natural: { de: "natürlich", en: "natural" }, relaxed: { de: "fließend", en: "relaxed" },
   };
 
   const valueWord = (v, lang) => {

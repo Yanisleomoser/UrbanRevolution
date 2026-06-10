@@ -1,5 +1,5 @@
 {
-  "_comment": "tshirt branch — lean journey (B form · C fabric · D colour). Every node gated by category=='tshirt' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
+  "_comment": "tshirt branch — full journey at jacket depth (B form · C fabric+finish · D colour+pattern · E details). Every node gated by category=='tshirt' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
   "nodes": [
     {
       "id": "tshirt_subarch",
@@ -265,6 +265,30 @@
       ]
     },
     {
+      "id": "tshirt_sleevelen",
+      "phase": "B",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.construction.sleeveLength < 0.5",
+      "priority": 0.58,
+      "question": { "de": "Ärmel?", "en": "Sleeves?" },
+      "choices": [
+        { "id": "short", "label": { "de": "Kurz", "en": "Short" }, "effects": { "set": { "construction.sleeveLength": "short" } } },
+        { "id": "cap", "label": { "de": "Cap", "en": "Cap" }, "effects": { "set": { "construction.sleeveLength": "cap" }, "weight": { "softCouture": 0.1 } } },
+        { "id": "long", "label": { "de": "Longsleeve", "en": "Long" }, "effects": { "set": { "construction.sleeveLength": "long" }, "weight": { "y2kStreet": 0.1, "techAvant": 0.1 } } }
+      ]
+    },
+    {
+      "id": "tshirt_finish",
+      "phase": "C",
+      "modality": "slider",
+      "when": "category == 'tshirt' && _confidence.fabric.finishWeight < 0.6",
+      "priority": 0.5,
+      "question": { "de": "Matt oder leicht glänzend?", "en": "Matte or slight sheen?" },
+      "bind": "fabric.finishWeight",
+      "axis": { "de": ["Matt", "Glanz"], "en": ["Matte", "Sheen"] },
+      "weightAt": { "high": { "softCouture": 0.1, "sport": 0.1 } }
+    },
+    {
       "id": "tshirt_color",
       "phase": "D",
       "modality": "colorGradient",
@@ -328,6 +352,54 @@
             }
           }
         }
+      ]
+    },
+    {
+      "id": "tshirt_pattern_scale",
+      "phase": "D",
+      "modality": "slider",
+      "when": "category == 'tshirt' && pattern.type != 'none' && _confidence.pattern.type > 0.5 && _confidence.pattern.scale < 0.6",
+      "priority": 0.4,
+      "question": { "de": "Wie groß der Print?", "en": "Print scale?" },
+      "bind": "pattern.scale",
+      "axis": { "de": ["Fein", "Groß"], "en": ["Fine", "Bold"] }
+    },
+    {
+      "id": "tshirt_pocket",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.construction.pockets < 0.5",
+      "priority": 0.44,
+      "question": { "de": "Brusttasche?", "en": "Chest pocket?" },
+      "choices": [
+        { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "chest", "label": { "de": "Brusttasche", "en": "Chest pocket" }, "effects": { "set": { "construction.pockets": "chest" }, "weight": { "utility": 0.1 } } }
+      ]
+    },
+    {
+      "id": "tshirt_hem",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'tshirt' && _confidence.construction.hem < 0.4",
+      "priority": 0.38,
+      "question": { "de": "Saumabschluss?", "en": "Hem finish?" },
+      "choices": [
+        { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } },
+        { "id": "curved", "label": { "de": "Gerundet", "en": "Curved" }, "effects": { "set": { "construction.hem": "curved" }, "weight": { "sport": 0.1 } } },
+        { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed" }, "weight": { "y2kStreet": 0.1 } } }
+      ]
+    },
+    {
+      "id": "tshirt_signature",
+      "phase": "E",
+      "modality": "cards",
+      "when": "category == 'tshirt' && intent.energy > 0.5 && _confidence.signature < 0.4",
+      "priority": 0.3,
+      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "choices": [
+        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "utility": 0.1 } } },
+        { "id": "branding", "label": { "de": "Branding-Patch", "en": "Branding patch" }, "effects": { "set": { "signature": ["branding-patch"] }, "weight": { "y2kStreet": 0.15, "sport": 0.1 } } }
       ]
     }
   ]
