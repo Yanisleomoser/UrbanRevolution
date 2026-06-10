@@ -116,5 +116,5 @@ npm run validate:css  # css-tree-Strukturprüfung
 npm run validate:html # htmlhint
 ```
 
-CI (grün vor Merge): `deno lint`, `jekyll build` (trivial), `npm run build` (No-op),
+CI (grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`),
 `validate-css`, `validate-html`. Einziges Deploy-Ziel ist **Vercel** (revolveurban.com).

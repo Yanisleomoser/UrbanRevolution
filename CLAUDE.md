@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, KEIN Framework).
-Nachhaltige Made-to-Measure-Mode aus geretteter Faser recycelter Alttextilien.
+KI-entworfene Einzelstücke nach Maß aus recycelter Kleidung — gegen Fast Fashion, für echtes Textil-Recycling.
 Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. Sprachen: DE + EN.
 
 ## Architektur (nicht umbauen)
@@ -40,7 +40,7 @@ Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. S
 - Erst kurzer Plan, dann inkrementell. Nach jeder Stufe auf Mobilbreite prüfen, keine Console-Fehler.
 - Jede Änderung über einen PR mit Vercel-Preview-Deployment; auf echtem iPhone prüfen, BEVOR nach `main` gemergt wird. Nicht direkt auf `main` pushen. (Diese Regel ersetzt für UI-Änderungen die ältere Auto-Merge-Notiz weiter unten.)
 - Lokal: `python3 -m http.server 8080` (statisch) oder `npm run dev` (→ `npx serve .`). Die `/api/*`-Edge-Functions laufen nur via `vercel dev` / auf Vercel. Sentry (Loader im `<head>`) + Fehler-Tags (`area:ai|engine|preview|vto|measure|3d`) sind ohne lokalen Aufwand aktiv; Session-Replay bewusst aus.
-- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `jekyll build` (`build`), `npm run build` No-op (`validate`), `validate-css`, `validate-html` — siehe „Deployment" unten.
+- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`, Workflow „Tests"), `validate-css`, `validate-html` — siehe „Deployment" unten.
 
 ---
 
@@ -95,12 +95,15 @@ assets/
   story/                # Documentary photos (Acts I–IV) — see CREDITS.md
 vercel.json             # Hosting config — no build, /api/ runs as edge functions
 scripts/validate-css.mjs# css-tree structural CSS check (CI)
-.github/workflows/      # CI only: deno(test), webpack(validate),
-                        # jekyll-docker(build), validate-css, validate-html — see Deployment
+.github/workflows/      # CI only: deno(test), test.yml(validate = build-no-op
+                        # + npm test), validate-css, validate-html — see Deployment
 ```
 
-No unit tests. CI runs `deno lint` (configured via `deno.json`, with
-browser-incompatible rules excluded), plus structural HTML/CSS validators.
+Unit tests: 8 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+fallback, export scaling, i18n parity, state, persistence, API error mapping),
+run via `npm test` in CI (test.yml). No network needed. CI additionally runs
+`deno lint` (configured via `deno.json`, with browser-incompatible rules
+excluded) plus structural HTML/CSS validators.
 
 ## Module conventions
 
@@ -363,8 +366,9 @@ it if you modify the flow.
 
 All styles in `css/styles.css`. Design system uses CSS variables on
 `:root` (`--bg*`, `--text*`, `--accent*`, `--gradient`, `--radius*`,
-`--shadow*`). Reuse variables instead of hardcoding hex. The pink →
-purple → cyan `--gradient` is core brand. A global `prefers-reduced-motion`
+`--shadow*`). Reuse variables instead of hardcoding hex. The Ocean Depths
+`--gradient` (#2779A8 → #2A9D8F → #64D6C4 on `--bg` #0A1622) is core brand.
+A global `prefers-reduced-motion`
 reset, a `:focus-visible` ring, and a skip-link target (`#main-content`)
 are in place.
 
@@ -416,23 +420,21 @@ run on Vercel (or `vercel dev`).
   only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
   — the repo no longer has a Pages workflow.
 
-The functional PR checks come from files with **misleading GitHub-default
-names** — don't delete one assuming it's a stub. The mapping:
+The functional PR checks (check name = job id):
 
-| PR check       | File                  | Workflow name        | What it runs              |
-| -------------- | --------------------- | -------------------- | ------------------------- |
-| `build`        | `jekyll-docker.yml`   | "Jekyll site CI"     | `jekyll build` (trivial)  |
-| `test`         | `deno.yml`            | "Deno"               | `deno lint`               |
-| `validate`     | `webpack.yml`         | "Validate Static Site" | `npm run build` (no-op) |
-| `validate-css` | `validate-css.yml`    |                      | css-tree check            |
-| `validate-html`| `validate-html.yml`   |                      | htmlhint                  |
+| PR check       | File               | Workflow name | What it runs                                        |
+| -------------- | ------------------ | ------------- | --------------------------------------------------- |
+| `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (8 offline suites) |
+| `validate-css` | `validate-css.yml` |               | css-tree check                                       |
+| `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights)   |
 
-These five are the **entire** `.github/workflows/` set — **keep all of them**.
-The old GitHub-template clutter was removed: `deploy.yml` + `jekyll-gh-pages.yml`
-(two redundant GitHub Pages deploys, unused since the site is on Vercel),
-`npm-publish*.yml` (duplicate "Node.js Package", release-only, never ran), and
-`copilot-setup-steps.yml` (broken empty-keyed SecureStack scan that failed on
-every push).
+These four are the **entire** `.github/workflows/` set. Removed template
+clutter: `deploy.yml` + `jekyll-gh-pages.yml` (redundant Pages deploys),
+`npm-publish*.yml` (never ran), `copilot-setup-steps.yml` (broken scan), and
+`jekyll-docker.yml` (GitHub starter; built a `_site` that was never deployed —
+Vercel serves the repo root). `webpack.yml` was renamed to `test.yml` (it never
+ran webpack; it is the test runner).
 
 ### Checking deploy / CI status yourself (standing instruction from the user)
 
@@ -489,8 +491,8 @@ specific PR. When you open a PR, the job isn't done until it's merged (or CI
 is red and you're fixing it). Subscribing to a PR means driving it to merge,
 not narrating that you're waiting.
 
-A PR is mergeable when **all functional CI checks are green** — `build`,
-`test`, `validate`, `validate-css`, `validate-html` — and no review comment
+A PR is mergeable when **all functional CI checks are green** — `test`,
+`validate`, `validate-css`, `validate-html` — and no review comment
 requests a change. The advisory **"Vercel Agent Review"** is non-blocking;
 address its points if valid, but it need not be green to merge. If any
 functional check is red, fix it first; never merge red CI.
