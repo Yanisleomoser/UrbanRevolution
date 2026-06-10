@@ -7,7 +7,8 @@
 
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, **kein Framework**,
-**kein Build-Step**). Nachhaltige Made-to-Measure-Mode aus geretteter Faser recycelter Alttextilien.
+**kein Build-Step**). KI-entworfene Einzelstücke nach Maß aus recycelter
+Kleidung — gegen Fast Fashion, für echtes Textil-Recycling.
 Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
 
 ## Architektur — nicht umbauen
@@ -46,17 +47,14 @@ Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
   im Code stehen.
 
 ## CI (Pflicht, grün vor Merge)
-Fünf Checks, alle müssen grün sein:
+Vier Checks, alle müssen grün sein:
 
-| Check          | Befehl                          |
-| -------------- | ------------------------------- |
-| `test`         | `deno lint`                     |
-| `build`        | `jekyll build` (trivial)        |
-| `validate`     | `npm run build` (No-op)         |
-| `validate-css` | `node scripts/validate-css.mjs` |
-| `validate-html`| `npx htmlhint`                  |
-
-Plus der Node-Engine-Test: `npm test`.
+| Check          | Befehl                            |
+| -------------- | --------------------------------- |
+| `test`         | `deno lint` (Deno 2.x)            |
+| `validate`     | `npm run build` (No-op) + `npm test` |
+| `validate-css` | `node scripts/validate-css.mjs`   |
+| `validate-html`| `npx htmlhint` (inkl. insights.html) |
 
 ## Lokal laufen lassen
 ```bash
@@ -82,7 +80,7 @@ der PR ist der Übergabepunkt, nicht eine Live-Verbindung.
 
 ### Review-Checkliste für Copilot
 Beim Review eines PRs prüfen:
-1. Alle fünf CI-Checks + `npm test` lokal grün?
+1. Alle vier CI-Checks (`validate` enthält `npm test`) lokal grün?
 2. Neue sichtbare Strings in **DE und EN** in `i18n.js`?
 3. Keine rohen `vh` (stattdessen `svh`/`dvh`/`--svh`)? Mobile (≤ 480 px) ok?
 4. Nur bestehende `:root`-Tokens, nur Lora/Poppins?
