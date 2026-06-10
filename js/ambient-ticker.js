@@ -47,6 +47,10 @@
         document.querySelectorAll(".section-label").forEach((label) => {
             const parent = label.parentNode;
             if (!parent) return;
+            // UR-Create-Direktive: Statistik gehört in die Beweis-Zone (Problem /
+            // Fakten), NICHT in Hero, UR Create, Galerie, Vision, Join … — sonst
+            // führt eine Zahl, bevor der Nutzer erschaffen hat. Badge nur dort.
+            if (!(label.closest && label.closest("#problem, .facts"))) return;
             // Facts section owns the big "C" odometer (static markup) → no badge.
             if (parent.classList.contains("facts-top")) return;
             // Landing eyebrow is centred → badge centred right under it.
