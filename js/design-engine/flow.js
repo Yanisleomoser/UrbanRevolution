@@ -215,7 +215,7 @@ const DesignFlow = (() => {
         window.DesignPreview.renderInto(previewEl, previewDna, {
           realism: atRefine,
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
-          progress: 0.45 + maturity() * 0.55,
+          progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
         });
       }

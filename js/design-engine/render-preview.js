@@ -21,11 +21,13 @@ const DesignPreview = (() => {
   // shape to the new one (GarmentSVG.lerpModel), so the user SEES the garment
   // reshape (shoulder widening, hem dropping, waist nipping). This is the fix
   // for "the morph works but is so minimal it feels like nothing happens".
-  const MORPH_MS = 440;
+  const MORPH_MS = 380; // per-answer reshape: snappy but still legibly animated
   const lastModel = new WeakMap(); // preview el → last GarmentSVG model
   const tweenId = new WeakMap();   // preview el → running rAF id
   const wasGenesis = new WeakMap(); // preview el → last render was the nebula
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  // easeInOutCubic — accelerates out of the old shape and settles softly into
+  // the new one, so the morph reads as one deliberate motion (not a linear slide).
+  const easeOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const reduceMotion = () =>
     typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
