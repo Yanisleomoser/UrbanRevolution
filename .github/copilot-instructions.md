@@ -73,7 +73,8 @@ der PR ist der Übergabepunkt, nicht eine Live-Verbindung.
   einen **Draft-PR**.
 - **Copilot CLI = Reviewer/Tester:** checkt den Branch aus, läuft `npm test`,
   `node scripts/validate-css.mjs`, `npx htmlhint index.html impressum.html
-  datenschutz.html`, und postet konkrete Befunde als **PR-Review-Kommentare**.
+  datenschutz.html insights.html`, und postet konkrete Befunde als
+  **PR-Review-Kommentare**.
 - **Guardrail:** Immer nur *ein* Agent besitzt einen Branch gleichzeitig. Draft =
   Builder ist dran; „Ready for review" = Reviewer ist dran. Keine parallelen
   Edits am selben Branch.
