@@ -96,6 +96,54 @@ const DesignFlow = (() => {
     return { eff: DesignEngine.choiceEffects(node, payload), conf: 1 };
   }
 
+  // ── Concept-Studio (Direktive Schritte 3+4): Varianten + EVOLVE ───────────
+  // Deterministische Mutationen der konvergierten DNA — jede Variante ist eine
+  // echte, weiterentwickelbare Richtung (Farbe/Fit/Muster/Finish-Deltas), keine
+  // Zufalls-Lotterie: hash(seed) ist stabil pro (Konzept, Version).
+  const hash01 = (a, b, c) => { const s = Math.sin(a * 127.1 + b * 311.7 + (c || 0) * 74.7 + 13.37) * 43758.5453; return s - Math.floor(s); };
+  function shiftHex(hex, dh, dl) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+    if (!m) return hex;
+    let r = parseInt(m[1].slice(0, 2), 16) / 255, g = parseInt(m[1].slice(2, 4), 16) / 255, b = parseInt(m[1].slice(4, 6), 16) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0; const li = (mx + mn) / 2;
+    const d = mx - mn;
+    const sa = d === 0 ? 0 : d / (1 - Math.abs(2 * li - 1));
+    if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+    h = (h + dh + 360) % 360; const l2 = Math.min(0.92, Math.max(0.08, li + dl));
+    const c = (1 - Math.abs(2 * l2 - 1)) * sa, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m2 = l2 - c / 2;
+    let rr = 0, gg = 0, bb = 0;
+    if (h < 60) { rr = c; gg = x; } else if (h < 120) { rr = x; gg = c; } else if (h < 180) { gg = c; bb = x; }
+    else if (h < 240) { gg = x; bb = c; } else if (h < 300) { rr = x; bb = c; } else { rr = c; bb = x; }
+    const to = (v) => Math.round((v + m2) * 255).toString(16).padStart(2, "0");
+    return "#" + to(rr) + to(gg) + to(bb);
+  }
+  const PATTERN_POOL = ["none", "stripe", "graphic", "check", "camo", "abstract"];
+  function mutateDna(base, idx, version) {
+    const d = JSON.parse(JSON.stringify(base));
+    const set = (p, v) => DesignDNA.set(d, p, v, 1);
+    const g = (p) => DesignDNA.get(d, p);
+    const r1 = hash01(idx + 1, version, 1), r2 = hash01(idx + 1, version, 2), r3 = hash01(idx + 1, version, 3);
+    // Farbe: Hue-Drift + Lichtjitter (Konzept-Index spreizt, Version verfeinert)
+    const stops = (g("color.stops") || []).map((s, i) =>
+      shiftHex(s, (idx - 1.5) * 34 + (version - 1) * 16 + i * 8, (r1 - 0.5) * 0.14));
+    if (stops.length) set("color.stops", stops);
+    // Fit/Finish: kleine, fühlbare Verschiebungen
+    const fit = typeof g("silhouette.fit") === "number" ? g("silhouette.fit") : 0.5;
+    set("silhouette.fit", Math.min(1, Math.max(0, fit + (r2 - 0.5) * 0.3)));
+    const fin = typeof g("fabric.finishWeight") === "number" ? g("fabric.finishWeight") : 0.4;
+    set("fabric.finishWeight", Math.min(1, Math.max(0, fin + (r3 - 0.5) * 0.36)));
+    // Eine Variante wagt ein anderes Muster / eine andere Länge
+    if (idx % 2 === 1 && r1 > 0.35) {
+      set("pattern.type", PATTERN_POOL[Math.floor(r2 * PATTERN_POOL.length) % PATTERN_POOL.length]);
+      set("pattern.scale", 0.25 + r3 * 0.6);
+    }
+    if (idx === 3 && r2 > 0.5) {
+      const L = ["cropped", "regular", "long"]; const cur = L.indexOf(g("length"));
+      set("length", L[(cur + 1 + Math.floor(r3 * 2)) % 3]);
+    }
+    return d;
+  }
+
   function mirror(dna, attributes) {
     const map = attributes.stateMap || {};
     Object.entries(map).forEach(([dnaPath, stateKey]) => {
@@ -354,6 +402,11 @@ const DesignFlow = (() => {
       body.innerHTML = `
         <h2 class="de-question">${t("engine.refine_title")}</h2>
         <p class="de-summary" id="de-refine-summary">${DesignSummary.toSentence(dna, l)}</p>
+        <div class="de-concepts">
+          <p class="de-inferred-h">${t("engine.concepts_title")}</p>
+          <div class="de-concept-grid" id="de-concept-grid"></div>
+          <p class="de-concepts-hint">${t("engine.concepts_hint")}</p>
+        </div>
         ${chips}
         ${axisRows ? `<div class="de-refine-axes"><p class="de-inferred-h">${t("engine.refine_adjust")}</p>${axisRows}</div>` : ""}
         <div class="de-freetext">
@@ -367,6 +420,66 @@ const DesignFlow = (() => {
         </div>`;
 
       const reSummary = () => { body.querySelector("#de-refine-summary").textContent = DesignSummary.toSentence(dna, lang()); };
+
+      // ── Concept-Studio: 4 Varianten der konvergierten DNA, jede mit EVOLVE
+      // (Versionskette V1→V2→…) und „Wählen“. Wählen macht die Variante zur
+      // aktiven DNA (Vorschau, Satz, Share, Generieren). Die Original-Richtung
+      // bleibt als Konzept 0 erhalten — nichts geht verloren.
+      const baseDna = JSON.parse(JSON.stringify(dna));
+      const concepts = [0, 1, 2, 3].map((i) => ({
+        history: [i === 0 ? baseDna : mutateDna(baseDna, i, 1)],
+        version: 1,
+      }));
+      let selected = 0;
+      const grid = body.querySelector("#de-concept-grid");
+      const tileSvg = (cdna) => {
+        if (!window.GarmentSVG || !window.DesignPreview) return "";
+        const p = window.DesignPreview.params(cdna);
+        return window.GarmentSVG.build(p.category || "tshirt", p);
+      };
+      const applySelected = () => {
+        const c = concepts[selected];
+        dna = JSON.parse(JSON.stringify(c.history[c.history.length - 1]));
+        DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+        mirror(dna, content.attributes); persist(); updatePreview(); reSummary();
+      };
+      const renderConcepts = () => {
+        if (!grid) return;
+        grid.innerHTML = concepts.map((c, i) => {
+          const cur = c.history[c.history.length - 1];
+          return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
+            <button type="button" class="de-concept-pick" data-pick="${i}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}">
+              <span class="de-concept-stage">${tileSvg(cur)}</span>
+              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span>${i === 0 ? `<span class="de-concept-tag">${t("engine.concept_original")}</span>` : ""}</span>
+            </button>
+            <div class="de-concept-actions">
+              <button type="button" class="de-concept-evolve" data-evolve="${i}">${t("engine.evolve")}</button>
+              ${c.history.length > 1 ? `<button type="button" class="de-concept-back" data-back="${i}" aria-label="${t("engine.evolve_back_aria")}">↩</button>` : ""}
+            </div>
+          </figure>`;
+        }).join("");
+        grid.querySelectorAll("[data-pick]").forEach((b) => b.addEventListener("click", () => {
+          selected = parseInt(b.dataset.pick, 10); applySelected(); renderConcepts();
+          flash("✓ " + t("engine.concept_picked"));
+        }));
+        grid.querySelectorAll("[data-evolve]").forEach((b) => b.addEventListener("click", () => {
+          const i = parseInt(b.dataset.evolve, 10);
+          const c = concepts[i];
+          c.version += 1;
+          c.history.push(mutateDna(c.history[c.history.length - 1], i, c.version));
+          if (c.history.length > 8) c.history.shift();
+          selected = i; applySelected(); renderConcepts();
+          T("concept_evolve", { i, v: c.version });
+          flash("✓ " + t("engine.evolved", { v: c.version }));
+        }));
+        grid.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => {
+          const i = parseInt(b.dataset.back, 10);
+          const c = concepts[i];
+          if (c.history.length > 1) { c.history.pop(); c.version = Math.max(1, c.version - 1); }
+          selected = i; applySelected(); renderConcepts();
+        }));
+      };
+      renderConcepts();
       body.querySelectorAll(".de-nudge").forEach((btn) => btn.addEventListener("click", () => {
         const r = DesignInference.adjust(dna, btn.dataset.ax, parseInt(btn.dataset.dir, 10), lang());
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
@@ -460,7 +573,8 @@ const DesignFlow = (() => {
       answered = new Set();
       history.length = 0;
       currentNode = null;
-      showIntro();
+      // Direktive: kein Onboarding — sofort die erste Frage (kein Intro-Screen).
+      renderNext();
     }
 
     backBtn.addEventListener("click", () => {
@@ -504,7 +618,10 @@ const DesignFlow = (() => {
         answered = new Set(saved.answered);
         return renderNext();
       }
-      return showIntro();
+      // Direktive: „No onboarding" — Nutzer erschaffen sofort (showIntro bleibt
+      // als Funktion erhalten, wird aber nicht mehr aufgerufen).
+      void showIntro;
+      return renderNext();
     });
   }
 
