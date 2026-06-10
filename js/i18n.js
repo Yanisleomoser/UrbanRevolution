@@ -406,6 +406,7 @@ const I18N = (() => {
       "dpreview.error_unexpected": "Unerwartete Antwort vom Server.",
       "dpreview.error_network": "Netzwerkfehler: {msg}",
       "dpreview.fallback_badge": "STILVORSCHAU",
+      "dpreview.genesis_badge": "ES ENTSTEHT …",
       "dpreview.fallback_caption": "Kostenlose Stilvorschau aus deinem Entwurf — der fotorealistische Render ist gerade nicht verfügbar.",
       "dpreview.fallback_retry": "Fotorealistisch versuchen",
 
@@ -987,6 +988,7 @@ const I18N = (() => {
       "dpreview.error_unexpected": "Unexpected response from the server.",
       "dpreview.error_network": "Network error: {msg}",
       "dpreview.fallback_badge": "STYLE PREVIEW",
+      "dpreview.genesis_badge": "TAKING SHAPE …",
       "dpreview.fallback_caption": "Free style preview from your design — the photoreal render is unavailable right now.",
       "dpreview.fallback_retry": "Try photoreal render",
 

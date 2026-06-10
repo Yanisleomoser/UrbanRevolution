@@ -420,15 +420,64 @@ const GarmentSVG = (() => {
   }
 
   // ---- assemble the SVG ----------------------------------------------------
+  // p.reveal (0..1, default 1) stages the MATERIALISATION of the flat as the
+  // journey matures: early answers show a faint sketch (light wash, dim seams),
+  // later answers develop fill, sheen, pattern and details — the garment
+  // visibly "entsteht" instead of appearing finished at the first question.
   function renderFlat(p, paths, seamMarkup) {
     const id = "g" + (++uid);
     const f = fillSpec(id, p);
+    const reveal = clamp(num(p.reveal, 1), 0, 1);
+    const fillOp = r(f.opacity * lerp(0.3, 1, reveal));
+    const layerOp = r(lerp(0.12, 1, reveal));
+    const seamOp = r(lerp(0.4, 1, reveal));
     const body = paths.map((d) =>
-      `<path d="${d}" fill="${f.fill}" fill-opacity="${f.opacity}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
-      (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none"/>` : "") +
-      (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none"/>` : "")
+      `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
+      (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
+      (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "")
     ).join("");
-    return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}</defs>${body}${seamMarkup}</svg>`;
+    const seams = seamMarkup ? `<g opacity="${seamOp}">${seamMarkup}</g>` : "";
+    // pathLength=1 normalises every path so CSS can draw the flat in with one
+    // stroke-dasharray animation (the genesis "weave-in" moment).
+    return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}</defs>${body}${seams}</svg>`
+      .replace(/<path /g, '<path pathLength="1" ');
+  }
+
+  // ---- genesis nebula -------------------------------------------------------
+  // The pre-category stage of the journey: no garment yet — an abstract flow of
+  // fabric threads that reacts to the mood answers (energy excites the strokes,
+  // structure straightens them, the leading archetype tints them) and gains
+  // threads with every answer (seed). Deterministic per (seed,i) so re-renders
+  // are stable and answering only ADDS material — the cloth is being spun
+  // before it is woven into a silhouette.
+  function nebula(p) {
+    const energy = clamp(num(p && p.energy, 0.5), 0, 1);
+    const structure = clamp(num(p && p.structure, 0.5), 0, 1);
+    const seed = Math.max(0, Math.floor(num(p && p.seed, 0)));
+    const tint = (p && ARCH_TINT[p.archetype]) || "#8b96a4";
+    const cx = CX, cy = 158;
+    const hash = (i, k) => { const s = Math.sin(i * 127.1 + k * 311.7 + 13.37) * 43758.5453; return s - Math.floor(s); };
+    const count = Math.min(30, 13 + seed * 2);
+    const amp = lerp(22, 78, energy);
+    const paths = [];
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2 + hash(i, 1) * 0.9;
+      const rad = 58 + hash(i, 2) * 52;
+      const x0 = r(cx + Math.cos(a) * rad), y0 = r(cy + Math.sin(a) * rad * 1.25);
+      const x1 = r(cx - Math.cos(a) * rad * (0.7 + hash(i, 3) * 0.5)), y1 = r(cy - Math.sin(a) * rad * 1.15);
+      const px = -Math.sin(a), py = Math.cos(a);
+      const w1 = (hash(i, 4) - 0.5) * 2 * amp, w2 = (hash(i, 5) - 0.5) * 2 * amp * lerp(1, 0.35, structure);
+      const c1x = r(cx + px * w1), c1y = r(cy + py * w1 - 24);
+      const c2x = r(cx + px * w2), c2y = r(cy + py * w2 + 24);
+      const accent = hash(i, 6) > 0.72;
+      const op = r(0.16 + hash(i, 7) * (accent ? 0.42 : 0.26));
+      const sw = r(1.1 + hash(i, 8) * (accent ? 1.8 : 1.1));
+      paths.push(`<path pathLength="1" d="M ${x0} ${y0} C ${c1x} ${c1y} ${c2x} ${c2y} ${x1} ${y1}" fill="none" stroke="${accent ? tint : SEAM}" stroke-width="${sw}" stroke-linecap="round" opacity="${op}"/>`);
+    }
+    const glowOp = r(0.05 + energy * 0.07);
+    return `<svg class="de-garment de-nebula" viewBox="0 0 ${VB} ${VH}" aria-hidden="true">` +
+      `<defs><radialGradient id="nbGlow${seed}" cx="0.5" cy="0.46" r="0.55"><stop offset="0" stop-color="${tint}" stop-opacity="${glowOp}"/><stop offset="1" stop-color="${tint}" stop-opacity="0"/></radialGradient></defs>` +
+      `<rect x="0" y="0" width="${VB}" height="${VH}" fill="url(#nbGlow${seed})"/>${paths.join("")}</svg>`;
   }
 
   // ---- morph model -------------------------------------------------------
@@ -473,7 +522,7 @@ const GarmentSVG = (() => {
     return paint(model(category, params));
   }
 
-  return { build, model, paint, lerpModel, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  return { build, model, paint, lerpModel, nebula, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

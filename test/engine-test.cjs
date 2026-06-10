@@ -295,5 +295,20 @@ assert(dSvg.includes("<svg") && !dSvg.includes("NaN"), "couture dress renders a 
 assert(dSvg !== global.GarmentSVG.build("dress", Object.assign({}, dParams, { sleeveLength: "short", signature: [] })),
   "sleeveless + slit visibly change the dress flat");
 
+// ─── Genesis & materialisation (immersive Entstehung) ────────────────────────
+console.log("\n— Genesis & materialisation —");
+const GS = global.GarmentSVG;
+const nebCalm = GS.nebula({ energy: 0.1, structure: 0.5, seed: 1 });
+const nebBold = GS.nebula({ energy: 0.9, structure: 0.5, seed: 1 });
+const nebLate = GS.nebula({ energy: 0.1, structure: 0.5, seed: 6 });
+assert(nebCalm.includes("<svg") && nebCalm.includes("de-nebula") && !nebCalm.includes("NaN"), "nebula renders clean");
+assert(nebCalm !== nebBold, "mood energy reshapes the nebula");
+assert((nebLate.match(/<path/g) || []).length > (nebCalm.match(/<path/g) || []).length,
+  "every answer adds threads (the cloth is being spun)");
+const revSketch = GS.build("hoodie", { reveal: 0.3, stops: ["#2a9d8f"], pattern: "stripe" });
+const revFull = GS.build("hoodie", { reveal: 1, stops: ["#2a9d8f"], pattern: "stripe" });
+assert(revSketch !== revFull, "reveal stages the materialisation (sketch → dressed)");
+assert(GS.build("hoodie", {}).includes('pathLength="1"'), "flat paths are draw-animatable (weave-in)");
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

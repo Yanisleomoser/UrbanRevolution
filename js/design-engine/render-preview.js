@@ -24,6 +24,7 @@ const DesignPreview = (() => {
   const MORPH_MS = 440;
   const lastModel = new WeakMap(); // preview el → last GarmentSVG model
   const tweenId = new WeakMap();   // preview el → running rAF id
+  const wasGenesis = new WeakMap(); // preview el → last render was the nebula
   const easeOut = (t) => 1 - Math.pow(1 - t, 3);
   const reduceMotion = () =>
     typeof window !== "undefined" && window.matchMedia
@@ -127,17 +128,43 @@ const DesignPreview = (() => {
     if (!el) return;
     const realism = !!(opts && opts.realism);
     const p = params(dna);
+
+    // ── Genesis stage (before the user has chosen a category) ──────────────
+    // No garment exists yet, so none is shown: an abstract thread-flow reacts
+    // to the mood answers and gains material with every choice. The first
+    // category decision then WEAVES the threads into the silhouette (CSS
+    // draw-in via .is-weave) — the piece visibly comes into being.
+    if (opts && opts.genesis && window.GarmentSVG && window.GarmentSVG.nebula) {
+      const badgeG = window.I18N ? window.I18N.t("dpreview.genesis_badge") : "ES ENTSTEHT …";
+      el.innerHTML = `
+        <div class="de-garment-wrap is-genesis">${window.GarmentSVG.nebula({
+          energy: p.energy, structure: p.structure, archetype: p.archetype, seed: (opts.seed || 0),
+        })}</div>
+        <span class="de-preview-badge">${badgeG}</span>`;
+      lastModel.delete(el);
+      wasGenesis.set(el, true);
+      return;
+    }
+
     const badge = window.I18N ? window.I18N.t("dpreview.fallback_badge") : "STILVORSCHAU";
     const schemeChosen = DesignDNA.confidence(dna, "color.scheme") > SCHEME_THRESHOLD;
+
+    // Materialisation progress (0..1): the flat develops from faint sketch to
+    // fully dressed as the journey matures (GarmentSVG honours p.reveal).
+    if (opts && typeof opts.progress === "number") p.reveal = Math.max(0.25, Math.min(1, opts.progress));
 
     // Resolve the new silhouette as a morph model when GarmentSVG is present so
     // we can animate from the previous shape; fall back to the static studio SVG.
     const toModel = window.GarmentSVG ? window.GarmentSVG.model(p.category || "tshirt", p) : null;
     const targetSvg = toModel ? window.GarmentSVG.paint(toModel) : silhouette(p);
 
+    // Fresh out of genesis → the silhouette draws itself in (weave moment).
+    const weaveIn = wasGenesis.get(el) === true && !reduceMotion();
+    wasGenesis.delete(el);
+
     el.innerHTML = `
       <div class="de-preview-photo${schemeChosen ? " is-duo" : ""}" hidden><img alt="" /><div class="de-preview-duo"></div></div>
-      <div class="de-garment-wrap">${targetSvg}</div>
+      <div class="de-garment-wrap${weaveIn ? " is-weave" : ""}">${targetSvg}</div>
       <span class="de-preview-badge">${badge}</span>`;
 
     const duo = el.querySelector(".de-preview-duo");
