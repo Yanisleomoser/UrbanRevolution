@@ -5181,14 +5181,27 @@ footer.footer {
 @media (prefers-reduced-motion: no-preference) {
   .de-garment-wrap.is-genesis .de-nebula { animation: deBreath 6s ease-in-out infinite alternate; }
   .de-garment-wrap.is-genesis .de-nebula path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-  .de-garment-wrap.is-weave svg path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw 1.1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-  .de-garment-wrap.is-weave svg { animation: deMaterialize 1.1s var(--ease-out); }
+  /* Bright fibre nodes pulse so the spun threads feel alive. */
+  .de-garment-wrap.is-genesis .de-neb-node { animation: deNodePulse 3.2s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+  /* Weave-in: the silhouette draws itself limb-by-limb (staggered), then a
+     soft light sweep passes over it — the garment is woven into being. */
+  .de-garment-wrap.is-weave svg path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw 1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .de-garment-wrap.is-weave svg path:nth-of-type(2) { animation-delay: .18s; }
+  .de-garment-wrap.is-weave svg path:nth-of-type(3) { animation-delay: .34s; }
+  .de-garment-wrap.is-weave svg path:nth-of-type(4) { animation-delay: .48s; }
+  .de-garment-wrap.is-weave svg path:nth-of-type(n+5) { animation-delay: .6s; }
+  .de-garment-wrap.is-weave svg { animation: deMaterialize 1.3s var(--ease-out); }
+  .de-garment-wrap.is-weave::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, transparent 38%, rgba(100,214,196,0.16) 50%, transparent 62%);
+    background-size: 280% 100%; animation: deSweep 1.5s var(--ease-out) forwards; }
   .de-garment-wrap:not(.is-genesis) .de-garment { animation: deFloat 7s ease-in-out infinite alternate; }
 }
 @keyframes deWeaveDraw { to { stroke-dashoffset: 0; } }
-@keyframes deMaterialize { from { opacity: 0.15; } to { opacity: 1; } }
+@keyframes deMaterialize { from { opacity: 0.12; } to { opacity: 1; } }
 @keyframes deBreath { from { opacity: 0.82; transform: scale(0.985); } to { opacity: 1; transform: scale(1.015); } }
 @keyframes deFloat { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
+@keyframes deNodePulse { from { opacity: 0.25; transform: scale(0.7); } to { opacity: 0.9; transform: scale(1.25); } }
+@keyframes deSweep { from { background-position: 140% 0; opacity: 1; } to { background-position: -140% 0; opacity: 0; } }
 
 /* Karten-Kacheln zeigen statt rosa-lila Farbfläche eine parametrische
    GarmentSVG-Illustration der jeweiligen Option (Kragen/Länge/Verschluss …);

@@ -455,29 +455,40 @@ const GarmentSVG = (() => {
     const structure = clamp(num(p && p.structure, 0.5), 0, 1);
     const seed = Math.max(0, Math.floor(num(p && p.seed, 0)));
     const tint = (p && ARCH_TINT[p.archetype]) || "#8b96a4";
+    // Second, brighter ocean accent so the threads read as luminous fibre, not
+    // grey scribble — aqua by default, warmed toward the archetype tint.
+    const accentCol = (p && ARCH_TINT[p.archetype]) ? "#64d6c4" : "#76c7c0";
     const cx = CX, cy = 158;
     const hash = (i, k) => { const s = Math.sin(i * 127.1 + k * 311.7 + 13.37) * 43758.5453; return s - Math.floor(s); };
-    const count = Math.min(30, 13 + seed * 2);
-    const amp = lerp(22, 78, energy);
-    const paths = [];
+    const count = Math.min(34, 14 + seed * 2);
+    const amp = lerp(22, 82, energy);
+    const threads = [];
+    const nodes = [];
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 + hash(i, 1) * 0.9;
-      const rad = 58 + hash(i, 2) * 52;
+      const rad = 54 + hash(i, 2) * 56;
       const x0 = r(cx + Math.cos(a) * rad), y0 = r(cy + Math.sin(a) * rad * 1.25);
       const x1 = r(cx - Math.cos(a) * rad * (0.7 + hash(i, 3) * 0.5)), y1 = r(cy - Math.sin(a) * rad * 1.15);
       const px = -Math.sin(a), py = Math.cos(a);
-      const w1 = (hash(i, 4) - 0.5) * 2 * amp, w2 = (hash(i, 5) - 0.5) * 2 * amp * lerp(1, 0.35, structure);
+      const w1 = (hash(i, 4) - 0.5) * 2 * amp, w2 = (hash(i, 5) - 0.5) * 2 * amp * lerp(1, 0.32, structure);
       const c1x = r(cx + px * w1), c1y = r(cy + py * w1 - 24);
       const c2x = r(cx + px * w2), c2y = r(cy + py * w2 + 24);
-      const accent = hash(i, 6) > 0.72;
-      const op = r(0.16 + hash(i, 7) * (accent ? 0.42 : 0.26));
-      const sw = r(1.1 + hash(i, 8) * (accent ? 1.8 : 1.1));
-      paths.push(`<path pathLength="1" d="M ${x0} ${y0} C ${c1x} ${c1y} ${c2x} ${c2y} ${x1} ${y1}" fill="none" stroke="${accent ? tint : SEAM}" stroke-width="${sw}" stroke-linecap="round" opacity="${op}"/>`);
+      const accent = hash(i, 6) > 0.62;
+      const col = accent ? accentCol : tint;
+      const op = r(0.18 + hash(i, 7) * (accent ? 0.5 : 0.3));
+      const sw = r(1.1 + hash(i, 8) * (accent ? 1.9 : 1.1));
+      const d = `M ${x0} ${y0} C ${c1x} ${c1y} ${c2x} ${c2y} ${x1} ${y1}`;
+      // Bloom: a wide, very faint stroke under a crisp bright one (cheap glow,
+      // no SVG filter so it stays fast on mobile).
+      threads.push(`<path pathLength="1" d="${d}" fill="none" stroke="${col}" stroke-width="${r(sw * 3)}" stroke-linecap="round" opacity="${r(op * 0.16)}"/>`);
+      threads.push(`<path pathLength="1" d="${d}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" opacity="${op}"/>`);
+      // A few bright fibre nodes where threads originate — they pulse in CSS.
+      if (accent && hash(i, 9) > 0.5) nodes.push(`<circle class="de-neb-node" cx="${x0}" cy="${y0}" r="${r(1.4 + hash(i, 10) * 1.8)}" fill="${accentCol}" opacity="${r(0.4 + hash(i, 11) * 0.4)}"/>`);
     }
-    const glowOp = r(0.05 + energy * 0.07);
+    const glowOp = r(0.06 + energy * 0.09);
     return `<svg class="de-garment de-nebula" viewBox="0 0 ${VB} ${VH}" aria-hidden="true">` +
-      `<defs><radialGradient id="nbGlow${seed}" cx="0.5" cy="0.46" r="0.55"><stop offset="0" stop-color="${tint}" stop-opacity="${glowOp}"/><stop offset="1" stop-color="${tint}" stop-opacity="0"/></radialGradient></defs>` +
-      `<rect x="0" y="0" width="${VB}" height="${VH}" fill="url(#nbGlow${seed})"/>${paths.join("")}</svg>`;
+      `<defs><radialGradient id="nbGlow${seed}" cx="0.5" cy="0.46" r="0.6"><stop offset="0" stop-color="${tint}" stop-opacity="${glowOp}"/><stop offset="1" stop-color="${tint}" stop-opacity="0"/></radialGradient></defs>` +
+      `<rect x="0" y="0" width="${VB}" height="${VH}" fill="url(#nbGlow${seed})"/>${threads.join("")}${nodes.join("")}</svg>`;
   }
 
   // ---- morph model -------------------------------------------------------
