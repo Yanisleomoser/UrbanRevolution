@@ -93,11 +93,35 @@
     let revealed = false;
     const reveal = (design) => {
       if (sec.hidden) sec.hidden = false;
+      // Mit der ersten Kreation öffnet sich auch die fotorealistische Vorschau —
+      // vorher wäre sie Output ohne Input (leere Stage, toter Anprobe-Dialog).
+      const prevSec = $("#preview");
+      if (prevSec && prevSec.hidden) prevSec.hidden = false;
       const nameEl = $("#own-name");
       if (nameEl && design && design.name) nameEl.textContent = "„" + design.name + "“";
       if (!revealed) {
         revealed = true;
         if (window.I18N && window.I18N.apply) window.I18N.apply(sec);
+        // Geführter nächster Schritt: sanft zum Ownership-Moment scrollen —
+        // aber nur beim Übergang (erste Kreation) und nicht bei reduced motion.
+        const inCreate = (() => { const d = $("#design"); if (!d) return false;
+          const r = d.getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0; })();
+        // Eigener rAF-Tween: natives smooth-Scrolling (scrollIntoView UND
+        // scrollTo{smooth}) ist mit dem globalen overflow-x:hidden auf
+        // html/body in Chromium wirkungslos (verifiziert) — instant geht.
+        if (inCreate) setTimeout(() => {
+          const target = sec.getBoundingClientRect().top + window.scrollY - 12;
+          if (reduce()) { window.scrollTo(0, target); return; }
+          const from = window.scrollY, dist = target - from, dur = 700;
+          const t0 = performance.now();
+          const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+          const step = (now) => {
+            const k = Math.min(1, (now - t0) / dur);
+            window.scrollTo(0, from + dist * ease(k));
+            if (k < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }, 900);
       }
     };
     if (window.StateManager) {
