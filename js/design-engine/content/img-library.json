@@ -10,6 +10,15 @@
     "final": "sculptural flowing dark fabric folds merging into a calm ocean surface, deep midnight navy and teal, soft cinematic side light, elegant and aspirational"
   },
 
+  "_prob_note": "Problem-Szenen (img/problem/): EHRLICHE Dokumentarmotive zum jeweiligen Missstand. Inhalt vor Farb-Grade — bewusst NICHT in die dunkle Ocean-Palette gezwungen, sondern echtes, helles Tageslicht (die Marke ist zukunftsgewandt/positiv, nicht düster). 4:5.",
+  "prob_style": "documentary editorial photography, honest and true-to-life, bright natural daylight, crisp clear detail, realistic colours, photojournalistic depth of field, vertical 4:5, no logo, no text, no recognizable faces, candid not staged, not dark, not moody",
+  "problems": {
+    "overproduction": "endless rows of identical brand-new garments on industrial rolling racks stretching into the distance in a vast bright factory, overwhelming abundance",
+    "unsold": "a huge bright distribution warehouse stacked floor to ceiling with unsold clothing in cardboard boxes, long wide aisles receding",
+    "waste": "an enormous mountain of discarded colourful clothing and textiles in an open landscape under bright overcast daylight, vast stark scale",
+    "human": "close-up of a garment worker's hands guiding fabric through an industrial sewing machine on a busy production line, dignified, daylight"
+  },
+
   "hero_template": "Editorial fashion photograph of a {category}, {look}, single-garment focus on a ghost / invisible mannequin against a near-black seamless studio backdrop, no logo, no text, photorealistic, ultra-detailed fabric, cohesive cool color grade with fine film grain, vertical 4:5.",
   "categories": ["jacket", "tshirt", "hoodie", "shirt", "pants", "dress"],
   "category_nouns": {

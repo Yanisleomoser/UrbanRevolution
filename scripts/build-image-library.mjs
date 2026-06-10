@@ -83,6 +83,11 @@ function plan(cfg) {
     Object.entries(cfg.backgrounds || {}).forEach(([key, subject]) =>
       addBg(`js/design-engine/content/img/bg/${key}.jpg`, subject));
   }
+  // Problem-Szenen: eigener heller Dokumentar-Stil (prob_style), 4:5.
+  if (!ONLY || ONLY === "prob") {
+    Object.entries(cfg.problems || {}).forEach(([key, subject]) =>
+      jobs.push({ rel: `js/design-engine/content/img/problem/${key}.jpg`, out: path.join(ROOT, `js/design-engine/content/img/problem/${key}.jpg`), prompt: `${subject}, ${cfg.prob_style}`, aspect: "4:5" }));
+  }
   return jobs;
 }
 

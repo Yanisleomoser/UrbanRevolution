@@ -5453,3 +5453,39 @@ footer.footer {
 .alternative::before { background-position: center 55%; }
 .vision::before { background-position: center; }
 .final-cta::before { background-position: center bottom; }
+
+/* ─── Problem = Beleg, zusammengeführt: scroll-getriebene Szenen ───────────
+   Eine Sektion, vier Szenen. Jede: ehrliches, HELLES Dokumentar-Bild (Inhalt
+   vor Farb-Grade) + Missstand + belegte Zahl. Bild bleibt oben sichtbar; ein
+   Verlauf-Scrim nach unten macht den Text lesbar (statt das Bild abzudunkeln).
+   data-reveal (IntersectionObserver) lässt sie beim Scrollen nacheinander
+   erscheinen — „läuft mit", volle Kontrolle, barrierefrei. */
+.prob-head { text-align: center; max-width: 720px; }
+.prob-intro { color: var(--text-muted); margin-top: 10px; }
+.prob-scenes { display: flex; flex-direction: column; gap: 16px; max-width: 1080px; margin: 30px auto 0; padding: 0 clamp(16px, 4vw, 24px); }
+.prob-scene {
+  position: relative; display: flex; align-items: flex-end;
+  min-height: clamp(420px, 74svh, 600px);
+  background-image: var(--img); background-size: cover; background-position: center;
+  border-radius: var(--radius-lg, 18px); overflow: hidden;
+  border: 1px solid var(--border, #25415a);
+}
+.prob-scene::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent 28%, rgba(10,22,34,0.45) 56%, rgba(10,22,34,0.93) 100%);
+}
+.prob-scene-inner { position: relative; z-index: 1; padding: clamp(20px, 5vw, 44px); max-width: 660px; }
+.prob-kicker { color: var(--accent-3, #64d6c4); letter-spacing: 0.14em; margin: 0 0 10px; }
+.prob-scene-body { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.35rem, 4.4vw, 2.1rem); line-height: 1.22; margin: 0 0 16px; }
+.prob-fig { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.prob-fig-num { font-family: var(--font-display, 'Lora', serif); font-weight: 700; font-size: clamp(2.1rem, 9vw, 3.6rem); line-height: 1;
+  background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.prob-fig-ctx { color: var(--text-muted); font-size: 0.95rem; }
+.prob-live { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; color: var(--text-muted); font-size: 0.78rem; letter-spacing: 0.06em; }
+.prob-foot { text-align: center; max-width: 720px; margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.prob-bridge { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.3rem, 4vw, 2rem); }
+.prob-foot .facts-sources { margin: 0; }
+@media (min-width: 760px) {
+  /* Desktop: Zahl groß rechts, Text links — ein editorialer Split je Szene. */
+  .prob-scene-inner { max-width: 72%; }
+}
