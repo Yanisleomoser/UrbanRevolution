@@ -5370,3 +5370,19 @@ footer.footer {
 
 /* Hero-Showcase: Journey-Badge dort ausblenden (reines Schaufenster) */
 .ur-hero-showcase .de-preview-badge { display: none; }
+
+/* Lookbook — editorialer Bildband (Scroll-Snap, sanftes Hover-Leben) */
+.lookbook { padding: 78px 0 70px; overflow: hidden; }
+.lookbook-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.7rem, 4.6vw, 2.6rem); margin: 10px 0 26px; }
+.lookbook-track { display: flex; gap: 18px; overflow-x: auto; padding: 6px max(24px, calc((100vw - 1160px) / 2)) 22px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.lookbook-track::-webkit-scrollbar { display: none; }
+.lookbook-slide { margin: 0; flex: 0 0 auto; width: clamp(220px, 62vw, 336px); scroll-snap-align: center; }
+.lookbook-slide img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-lg, 18px); border: 1px solid var(--border, #25415a); box-shadow: 0 14px 38px rgba(0,0,0,0.45); display: block; }
+.lookbook-slide figcaption { margin-top: 10px; color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.14em; }
+@media (prefers-reduced-motion: no-preference) {
+  .lookbook-slide img { transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out); }
+  .lookbook-slide:hover img { transform: translateY(-6px) scale(1.015); box-shadow: 0 22px 50px rgba(0,0,0,0.55); }
+  .gallery-tile { transition: transform .3s var(--ease-out), border-color .3s var(--ease-out); }
+  .gallery-tile:hover { transform: translateY(-4px); border-color: var(--accent); }
+}
+.lookbook-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }

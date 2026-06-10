@@ -405,12 +405,64 @@
                 <button type="button" id="own-publish" class="btn-ghost" data-i18n="own.publish">In der Galerie zeigen</button>
             </div>
             <div class="ownership-next" data-reveal>
+                <a href="#preview" class="manifesto-link" data-i18n-html="own.photoreal_html">Sieh sie fotorealistisch <span aria-hidden="true">&#8595;</span></a>
                 <a href="#problem" class="manifesto-link" data-i18n-html="own.why_html">Entdecke, warum das zählt <span aria-hidden="true">&#8595;</span></a>
                 <button type="button" id="own-makereal" class="manifesto-link as-button" data-i18n-html="own.makereal_html">Mach es real — Maße &amp; Fertigung <span aria-hidden="true">&#8594;</span></button>
             </div>
         </div>
     </section>
 
+
+    <!-- 3b · FOTOREALISTISCHE VORSCHAU — direkt nach dem Ownership-Moment:
+         die eigene Kreation als Studio-Render / Anprobe sehen (Replicate). -->
+    <section id="preview" class="section preview-section">
+        <div class="container">
+            <div class="section-header" data-reveal>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.preview">[ 05 / Vorschau ]</span>
+                <h2 data-i18n="preview.h2">Fotorealistische Vorschau</h2>
+                <p data-i18n="preview.intro">Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.</p>
+            </div>
+
+            <div class="preview-container" data-reveal>
+                <div class="vto-stage" id="vto-stage">
+                    <!-- Default state: a static example (user-provided image drops in
+                         here; until then a styled placeholder) so the step never looks
+                         empty before a photo is uploaded. -->
+                    <div class="vto-example has-image" id="vto-example">
+                        <span class="vto-example-tag" data-i18n="preview.example_tag">Beispiel</span>
+                        <p class="vto-example-label" data-i18n="preview.example_label">So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.</p>
+                    </div>
+                    <!-- Generating -->
+                    <div class="vto-loading" hidden>
+                        <div class="vto-spinner"></div>
+                        <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
+                    </div>
+                    <!-- Result -->
+                    <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
+                </div>
+                <div class="preview-controls">
+                    <div class="vto-section">
+                        <button id="vto-btn" class="vto-btn" disabled>
+                            <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau generieren</span>
+                            <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
+                        </button>
+                        <div class="vto-result-actions" id="vto-result-actions" hidden>
+                            <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
+                        </div>
+                        <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
+                    </div>
+                    <div class="control-section">
+                        <h4 data-i18n="preview.model_info">Modell-Info</h4>
+                        <div id="model-info" class="model-info">
+                            <div><span data-i18n="preview.fabric">Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
+                            <div><span data-i18n="preview.seams">Nähte:</span> <span id="info-seams">12 cm</span></div>
+                            <div><span data-i18n="preview.size">Größe:</span> <span id="info-size">M</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- 4 · COMMUNITY CREATIONS — publizierte Kreationen (Upstash-Galerie,
          kuratierter Fallback ohne Backend). Remix = DNA weiterentwickeln. -->
@@ -527,6 +579,26 @@
         </div>
     </section>
 
+
+    <!-- 6b · LOOKBOOK — editorialer Bildband (kuratierte Studio-Renders der
+         Bild-Bibliothek): zukunftsgerichtete Konzepte, menschenzentrierte
+         Kreation. Horizontaler Scroll-Snap, lazy geladen. -->
+    <section class="lookbook" aria-labelledby="lookbook-heading">
+        <div class="container">
+            <p class="mono-label section-label" data-reveal data-i18n="look.label">[ KONZEPTE ]</p>
+            <h2 id="lookbook-heading" class="lookbook-headline" data-reveal data-i18n="look.h2">Was entsteht, wenn Menschen zuerst kommen</h2>
+        </div>
+        <div class="lookbook-track" data-reveal tabindex="0" data-i18n-aria-label="look.aria" aria-label="Lookbook — horizontal scrollen">
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/jacket-techAvant.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Tech Avant</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/dress-softCouture.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Soft Couture</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/hoodie-y2kStreet.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Y2K Street</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/shirt-quietMinimal.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Quiet Minimal</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/pants-utility.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Utility</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/tshirt-sport.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Sport</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/jacket-softCouture.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Soft Couture</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/dress-techAvant.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Tech Avant</figcaption></figure>
+        </div>
+    </section>
 
     <!-- 7 · VISION — interaktive Timeline von heute in die Zukunft. -->
     <section class="vision" id="vision" aria-labelledby="vision-heading">
@@ -745,54 +817,6 @@
                         </g>
                     </svg>
                     <p class="measure-figure-hint" data-i18n="measure.figure_hint">Tippe eine Markierung, um den Wert anzupassen</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section id="preview" class="section preview-section">
-        <div class="container">
-            <div class="section-header" data-reveal>
-                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.preview">[ 05 / Vorschau ]</span>
-                <h2 data-i18n="preview.h2">Fotorealistische Vorschau</h2>
-                <p data-i18n="preview.intro">Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.</p>
-            </div>
-
-            <div class="preview-container" data-reveal>
-                <div class="vto-stage" id="vto-stage">
-                    <!-- Default state: a static example (user-provided image drops in
-                         here; until then a styled placeholder) so the step never looks
-                         empty before a photo is uploaded. -->
-                    <div class="vto-example has-image" id="vto-example">
-                        <span class="vto-example-tag" data-i18n="preview.example_tag">Beispiel</span>
-                        <p class="vto-example-label" data-i18n="preview.example_label">So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.</p>
-                    </div>
-                    <!-- Generating -->
-                    <div class="vto-loading" hidden>
-                        <div class="vto-spinner"></div>
-                        <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
-                    </div>
-                    <!-- Result -->
-                    <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
-                </div>
-                <div class="preview-controls">
-                    <div class="vto-section">
-                        <button id="vto-btn" class="vto-btn" disabled>
-                            <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau generieren</span>
-                            <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
-                        </button>
-                        <div class="vto-result-actions" id="vto-result-actions" hidden>
-                            <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
-                        </div>
-                        <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
-                    </div>
-                    <div class="control-section">
-                        <h4 data-i18n="preview.model_info">Modell-Info</h4>
-                        <div id="model-info" class="model-info">
-                            <div><span data-i18n="preview.fabric">Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
-                            <div><span data-i18n="preview.seams">Nähte:</span> <span id="info-seams">12 cm</span></div>
-                            <div><span data-i18n="preview.size">Größe:</span> <span id="info-size">M</span></div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
