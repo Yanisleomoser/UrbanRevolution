@@ -23,7 +23,7 @@ const I18N = (() => {
   const dict = {
     de: {
       // ── <head> ──
-      "head.title": "Urban Revolution — Aus Abfall wird Couture für Einen",
+      "head.title": "Urban Revolution — Erschaffe die Zukunft der Mode",
 
       // ── Navigation ──
       "nav.skip": "Zum Inhalt springen",
@@ -197,14 +197,14 @@ const I18N = (() => {
 
       // ── Section labels (Ovyon-style [ NN / Titel ] kicker) ──
       "sec.design": "[ 03 / Dein Entwurf ]",
-      "sec.measure": "[ 04 / Deine Maße ]",
-      "sec.preview": "[ 05 / Vorschau ]",
-      "sec.production": "[ 06 / Produktion ]",
+      "sec.measure": "[ Deine Maße ]",
+      "sec.preview": "[ Fotorealistische Vorschau ]",
+      "sec.production": "[ Produktion ]",
       "sec.faq": "[ FAQ ]",
 
       // ── Facts block (consolidated [ 01 / Das Problem ]) ──
-      "facts.eyebrow": "[ 01 / Das Problem ]",
-      "facts.headline_html": "Die Mode produziert<br><em>für die Tonne</em>.",
+      "facts.eyebrow": "[ Die Belege ]",
+      "facts.headline_html": "Die Zahlen <em>dahinter</em>.",
       "facts.r1_k": "Jede Sekunde",
       "facts.r1_fig": "1 Lkw",
       "facts.r1_v": "Textilien — verbrannt oder vergraben",
@@ -698,7 +698,7 @@ const I18N = (() => {
 
     en: {
       // ── <head> ──
-      "head.title": "Urban Revolution — From waste to couture for one",
+      "head.title": "Urban Revolution — Create the future of fashion",
 
       // ── Navigation ──
       "nav.skip": "Skip to content",
@@ -872,14 +872,14 @@ const I18N = (() => {
 
       // ── Section labels (Ovyon-style [ NN / Title ] kicker) ──
       "sec.design": "[ 03 / Your Design ]",
-      "sec.measure": "[ 04 / Your Measurements ]",
-      "sec.preview": "[ 05 / Preview ]",
-      "sec.production": "[ 06 / Production ]",
+      "sec.measure": "[ Your measurements ]",
+      "sec.preview": "[ Photoreal preview ]",
+      "sec.production": "[ Production ]",
       "sec.faq": "[ FAQ ]",
 
       // ── Facts block (consolidated [ 01 / The Problem ]) ──
-      "facts.eyebrow": "[ 01 / The Problem ]",
-      "facts.headline_html": "Fashion makes clothes<br><em>for the bin</em>.",
+      "facts.eyebrow": "[ The evidence ]",
+      "facts.headline_html": "The numbers <em>behind it</em>.",
       "facts.r1_k": "Every second",
       "facts.r1_fig": "1 truck",
       "facts.r1_v": "of textiles — burned or buried",

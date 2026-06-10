@@ -4264,7 +4264,16 @@ main { display: block; }
 /* QA: touch tap-target sizing — lift the two shortest interactive controls to a
    comfortable height on touch (measured at 390px: preset 33px, lang 28px). */
 html.is-touch .preset-btn { min-height: 44px; }
-html.is-touch .lang-toggle { min-height: 38px; }
+/* Touch-Komfort: ≥44px für alle interaktiven Kleinelemente (UX-Scan #4). */
+html.is-touch .lang-toggle { min-height: 44px; }
+html.is-touch .de-nav { min-height: 44px; padding-left: 10px; padding-right: 10px; display: inline-flex; align-items: center; }
+html.is-touch .nav-links a { min-height: 44px; display: inline-flex; align-items: center; }
+html.is-touch .manifesto-link,
+html.is-touch .gallery-cta a { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; }
+html.is-touch .de-concept-evolve,
+html.is-touch .de-concept-back,
+html.is-touch .gallery-tile-actions a,
+html.is-touch .gallery-tile-actions button { min-height: 44px; }
 
 /* ── Card spotlight: a faint sheen follows the cursor across dark cards
       (wired in js/flair.js; desktop fine-pointer only). ── */
@@ -4568,7 +4577,9 @@ html.is-touch .lang-toggle { min-height: 38px; }
 .facts-live { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .facts-headline {
     font-family: var(--font-display);
-    font-weight: 700; font-size: var(--text-3xl);
+    /* Beleg-Hierarchie: bewusst kleiner als die #problem-Headline darüber, damit
+       die Fakten als Beweis lesen, nicht als zweites Problem (UX-Scan #1). */
+    font-weight: 700; font-size: var(--text-2xl);
     line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
     color: var(--text); margin: 0 0 var(--space-9); text-wrap: balance;
 }
@@ -5423,3 +5434,19 @@ footer.footer {
     linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.9) 35%, rgba(10,22,34,0.94) 100%),
     url("../js/design-engine/content/img/mood/future.jpg");
 }
+
+/* ─── UX-Scan-Feinschliff (präziser Audit) ─────────────────────────────────
+   #4 Touch-Ziele werden über html.is-touch oben gelöst (Projekt-Muster). */
+/* #5 Concept-Studio: Grid-/Flex-Kinder dürfen schrumpfen (min-width:0), sonst
+   läuft der ↩-Button über den Kartenrand (iPhone-Report). Pfeil = kompakte,
+   gleich hohe Sekundärtaste. */
+.de-concept { min-width: 0; }
+.de-concept-evolve { min-width: 0; }
+.de-concept-actions { align-items: stretch; }
+.de-concept-back { flex: 0 0 auto; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* #6 Ambiente-Hintergründe: thematisch sinnvoller Bildausschnitt je Sektion
+   (4:5-Quellen werden als cover beschnitten — Fokus gezielt setzen). */
+.alternative::before { background-position: center 38%; }
+.vision::before { background-position: center 30%; }
+.final-cta::before { background-position: center 42%; }
