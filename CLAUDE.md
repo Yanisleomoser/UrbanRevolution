@@ -9,6 +9,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > Diese Kurzfassung ist die verbindliche Regel-Ebene. Darunter folgt die
 > ausführliche Architektur-/Modul-Referenz — bei Konflikt gilt diese Kurzfassung.
 
+## Arbeitsweise (Grundhaltung — gilt für JEDE Codierung, höchste Priorität)
+Präzision und Durchdachtheit vor Schnelligkeit. Eine sorgfältige Lösung
+ermöglicht mehr als eine schnelle, oberflächliche — Hast erzeugt Nacharbeit,
+Sorgfalt erzeugt Tempo. Konkret, verbindlich:
+- **Erst verstehen, dann ändern.** Ursache am echten Artefakt prüfen (Code
+  lesen, rendern, Daten/DOM ansehen) — nie raten, nie auf Annahmen patchen.
+- **Verifizieren, bevor etwas „fertig" heißt.** Tests, Lint UND echtes
+  Rendern/E2E. „Müsste passen" zählt nicht; nur belegt zählt.
+- **Bilder/Assets konkret prüfen — nie nur den Code-String.** Ein korrekter
+  `url(...)`/`src` im Markup beweist NICHTS. Belegen, dass (a) die Ressource
+  lädt (HTTP 200, kein 404 — z. B. via Response-Status im Headless-Browser oder
+  `fetch`) UND (b) sie sichtbar gerendert wird (Screenshot). Achtung-Falle:
+  relative `url()` in einer CSS-Variable wird relativ zum **Stylesheet** (css/)
+  aufgelöst, nicht zum Dokument → root-absolute Pfade (`/js/...`) nutzen.
+- **Auf Ideen des Users kritisch reagieren — nicht reflexhaft bejahen.** Den
+  Vorschlag ernst prüfen, Schwächen/Risiken/Trade-offs offen benennen, bei
+  Bedarf begründet widersprechen UND eine eigene, ggf. bessere Alternative
+  vorschlagen. Der User will einen mitdenkenden Engineer, kein Ja-Sagen.
+- **Eine Sache sauber zu Ende** statt mehrere halb. Scope klein halten,
+  Bestehendes nicht brechen.
+- **Im Muster des Codes bleiben** (bestehende Systeme/Tokens/Konventionen
+  nutzen, statt parallele Mechanismen danebenzusetzen).
+- **Nach jedem sinnvollen Schritt committen** (Web-Sessions können neu starten
+  und Uncommittetes verwerfen).
+- **Bei Unklarheit fragen** statt annehmen (siehe Konventionen unten).
+- **Ehrlich berichten:** was geprüft wurde, was offen ist — keine geschönten
+  „grün"-Meldungen.
+
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, KEIN Framework).
 KI-entworfene Einzelstücke nach Maß aus recycelter Kleidung — gegen Fast Fashion, für echtes Textil-Recycling.

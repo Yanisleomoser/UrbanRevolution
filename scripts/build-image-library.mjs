@@ -48,10 +48,12 @@ const ARCHETYPES = ["quietMinimal", "techAvant", "y2kStreet", "softCouture", "ut
 function die(m) { console.error("✗ " + m); process.exit(1); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Build the full job list: [{ prompt, out }]
+// Build the full job list: [{ prompt, out, aspect }]
 function plan(cfg) {
   const jobs = [];
-  const add = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.style}` });
+  const add = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.style}`, aspect: "4:5" });
+  // Backgrounds use a landscape style (bg_style), not the portrait `style`.
+  const addBg = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.bg_style}`, aspect: "3:2" });
   if (!ONLY || ONLY === "hero") {
     (cfg.categories || []).forEach((cat) => {
       // Prompt noun per category ("tshirt" → "t-shirt") so FLUX gets real
@@ -77,12 +79,21 @@ function plan(cfg) {
     Object.entries(cfg.materials || {}).forEach(([key, label]) =>
       add(`js/design-engine/content/img/material/${key}.jpg`, cfg.material_template.replace("{material}", label)));
   }
+  if (!ONLY || ONLY === "bg") {
+    Object.entries(cfg.backgrounds || {}).forEach(([key, subject]) =>
+      addBg(`js/design-engine/content/img/bg/${key}.jpg`, subject));
+  }
+  // Problem-Szenen: eigener heller Dokumentar-Stil (prob_style), 4:5.
+  if (!ONLY || ONLY === "prob") {
+    Object.entries(cfg.problems || {}).forEach(([key, subject]) =>
+      jobs.push({ rel: `js/design-engine/content/img/problem/${key}.jpg`, out: path.join(ROOT, `js/design-engine/content/img/problem/${key}.jpg`), prompt: `${subject}, ${cfg.prob_style}`, aspect: "4:5" }));
+  }
   return jobs;
 }
 
 // Via the deployed key-gated route — Replicate token stays in Vercel. Retries
 // a couple of times on a transient "pending".
-async function generateViaEndpoint(prompt) {
+async function generateViaEndpoint(prompt, aspect) {
   let lastErr = "";
   for (let attempt = 0; attempt < 6; attempt++) {
     if (attempt > 0) await sleep(2000 * attempt); // backoff: 2,4,6,8,10s
@@ -91,7 +102,7 @@ async function generateViaEndpoint(prompt) {
       res = await fetch(ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, aspect: "4:5", key: GATE_KEY }),
+        body: JSON.stringify({ prompt, aspect: aspect || "4:5", key: GATE_KEY }),
       });
       data = await res.json().catch(() => ({}));
     } catch (err) { lastErr = "network " + err.message; continue; }
@@ -103,7 +114,7 @@ async function generateViaEndpoint(prompt) {
   throw new Error(lastErr || "failed after retries");
 }
 
-async function generateViaReplicate(prompt) {
+async function generateViaReplicate(prompt, aspect) {
   let res;
   // 429 (Replicate-Rate-Limit, z. B. 6/min bei niedrigem Guthaben) → mit
   // Backoff weiterprobieren statt das Bild aufzugeben.
@@ -111,7 +122,7 @@ async function generateViaReplicate(prompt) {
     res = await fetch(MODEL, {
       method: "POST",
       headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json", Prefer: "wait=60" },
-      body: JSON.stringify({ input: { prompt, aspect_ratio: "4:5", output_format: "jpg", output_quality: 90, prompt_upsampling: false, safety_tolerance: 2 } }),
+      body: JSON.stringify({ input: { prompt, aspect_ratio: aspect || "4:5", output_format: "jpg", output_quality: 90, prompt_upsampling: false, safety_tolerance: 2 } }),
     });
     if (res.status !== 429 || attempt >= 5) break;
     await sleep(15000 + attempt * 5000);
@@ -128,7 +139,7 @@ async function generateViaReplicate(prompt) {
   return Array.isArray(pred.output) ? pred.output[0] : pred.output;
 }
 
-const generate = (prompt) => (ENDPOINT ? generateViaEndpoint(prompt) : generateViaReplicate(prompt));
+const generate = (prompt, aspect) => (ENDPOINT ? generateViaEndpoint(prompt, aspect) : generateViaReplicate(prompt, aspect));
 
 async function main() {
   if (!fs.existsSync(CONFIG)) die("Config fehlt: " + CONFIG);
@@ -156,7 +167,7 @@ async function main() {
     first = false;
     process.stdout.write(`· ${j.rel} … `);
     try {
-      const url = await generate(j.prompt);
+      const url = await generate(j.prompt, j.aspect);
       const img = await fetch(url);
       if (!img.ok) throw new Error(`download ${img.status}`);
       fs.mkdirSync(path.dirname(j.out), { recursive: true });

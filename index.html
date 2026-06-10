@@ -6,16 +6,16 @@
     <meta name="theme-color" content="#0a1622">
     <meta name="color-scheme" content="dark">
 
-    <title>Urban Revolution — Aus Abfall wird Couture für Einen</title>
-    <meta name="description" content="Fast Fashion verschwendet Millionen Tonnen Stoff. Wir retten die Faser aus aussortierten Textilien und machen daraus dein Einzelstück: KI-entworfen, nach deinen Maßen, in Zürich gefertigt.">
-    <meta name="keywords" content="Nachhaltige Mode, Recycling, Textilrecycling, Zero Waste, AI Fashion, Maßgeschneidert, KI Design, Couture, Zürich, Schweizer Atelier, Custom Clothing">
+    <title>Urban Revolution — Erschaffe die Zukunft der Mode</title>
+    <meta name="description" content="Erschaffe dein eigenes Kleidungsstück mit UR Create — KI-entworfen, nach deinen Maßen, aus recycelter Kleidung. Die Alternative zu Mode von der Stange: ohne Überproduktion, in Zürich gefertigt.">
+    <meta name="keywords" content="UR Create, KI Mode Design, Mode erschaffen, Nachhaltige Mode, Textilrecycling, Maßgeschneidert, AI Fashion, Couture, Zürich, Schweizer Atelier, Custom Clothing">
     <meta name="author" content="Urban Revolution">
 
     <!-- Open Graph — beim Teilen auf Facebook, LinkedIn, iMessage, Slack -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Urban Revolution">
-    <meta property="og:title" content="Aus Abfall wird Couture für Einen — Urban Revolution">
-    <meta property="og:description" content="Wir retten aussortierte Textilien und machen daraus dein Einzelstück: KI-entworfen, nach deinen Maßen, von Schweizer Schneidern gefertigt. Keine Überproduktion.">
+    <meta property="og:title" content="Erschaffe die Zukunft der Mode — Urban Revolution">
+    <meta property="og:description" content="Entwirf dein Stück mit UR Create — KI-entworfen, nach Maß, aus recycelter Kleidung. Schweizer Fertigung, keine Überproduktion.">
     <meta property="og:url" content="https://revolveurban.com">
     <meta property="og:locale" content="de_DE">
     <meta property="og:locale:alternate" content="en_US">
@@ -26,8 +26,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Aus Abfall wird Couture für Einen">
-    <meta name="twitter:description" content="Wir retten aussortierte Textilien und machen daraus dein Einzelstück — KI-entworfen, nach Maß, aus Zürich. Keine Überproduktion.">
+    <meta name="twitter:title" content="Erschaffe die Zukunft der Mode — Urban Revolution">
+    <meta name="twitter:description" content="Entwirf dein Stück mit UR Create — KI-entworfen, nach Maß, aus recycelter Kleidung. Keine Überproduktion.">
     <meta name="twitter:image" content="https://revolveurban.com/assets/og-image.png">
 
     <link rel="canonical" href="https://revolveurban.com/">
@@ -196,12 +196,10 @@
                 <span class="nav-toggle-bar"></span>
             </button>
             <ul class="nav-links" id="nav-links">
-                <li><a href="#cost" data-i18n="nav.mission">Problem</a></li>
-                <li><a href="#design" data-i18n="nav.design">Design</a></li>
-                <li><a href="#measure" data-i18n="nav.measure">Maße</a></li>
-                <li><a href="#preview" data-i18n="nav.preview">Vorschau</a></li>
-                <li><a href="#production" data-i18n="nav.production">Produktion</a></li>
-                <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+                <li><a href="#design" data-i18n="nav.create">UR Create</a></li>
+                <li><a href="#vision" data-i18n="nav.vision">Vision</a></li>
+                <li><a href="#gallery" data-i18n="nav.community">Community</a></li>
+                <li><a href="#design" class="nav-cta" data-i18n="nav.enter">UR Create starten</a></li>
                 <li class="nav-lang-item">
                     <button id="lang-toggle" class="lang-toggle" type="button" data-i18n-aria-label="nav.lang_aria" aria-label="Sprache wechseln">
                         <span class="lang-opt" data-lang="de">DE</span>
@@ -214,126 +212,24 @@
     </nav>
 
     <main id="main-content">
-    <!-- (Prompt-Hero entfernt — Manifest ist jetzt die Startseite) -->
+    <!-- Direktive-Architektur: Hero → UR Create → Ownership → Community → Problem → Alternative → Vision → Join → Final. Made-to-Measure (Maße/Vorschau/Produktion/FAQ) faltet sich hinter UR Create auf. -->
 
-    <!-- Manifesto — the whole thesis (fashion waste + rescued textiles + our answer) on a
-         single compact screen, right after the hero so the "why" lands before
-         the long cinematic story (which becomes optional depth). Static markup,
-         bilingual (manifesto.* keys), entrance via the shared [data-reveal]. -->
-    <section class="manifesto manifesto--lead" id="why" aria-labelledby="manifesto-heading">
-        <div class="container manifesto-inner">
-            <p class="manifesto-eyebrow mono-label section-label" data-reveal data-i18n="manifesto.eyebrow">[ Warum es uns gibt ]</p>
-            <h1 id="manifesto-heading" class="manifesto-headline" data-reveal data-i18n-html="manifesto.headline_html">Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.</h1>
-
-            <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution macht aus weggeworfenen Kleidern neuen Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich — aus genau dem, was die Branche wegwirft. Kein neuer Rohstoff, keine Überproduktion, keine Deponie.</p>
-
-            <div class="manifesto-actions" data-reveal>
-                <a href="#design" class="manifesto-cta" data-i18n-html="manifesto.cta_html">Entwirf dein Stück <span aria-hidden="true">→</span></a>
-                <a href="#cost" class="manifesto-link" data-i18n-html="manifesto.link_html">Sieh die Fakten <span aria-hidden="true">↓</span></a>
+    <!-- 1 · HERO — Produktversprechen. Links Statement + CTA, rechts eine live
+         laufende UR-Create-Evolution (GarmentSVG-Morph-Schaufenster). -->
+    <section class="ur-hero" id="top" aria-labelledby="urhero-heading">
+        <div class="container ur-hero-grid">
+            <div class="ur-hero-copy">
+                <p class="mono-label section-label" data-reveal data-i18n="hero2.eyebrow">[ URBAN REVOLUTION ]</p>
+                <h1 id="urhero-heading" class="ur-hero-headline" data-reveal data-i18n-html="hero2.headline_html">Erschaffe die <span class="gradient-text">Zukunft der Mode</span></h1>
+                <p class="ur-hero-sub" data-reveal data-i18n="hero2.sub">Entwirf einzigartige Mode-Konzepte mit UR Create — und entdecke eine neue Alternative zu massenproduzierter Mode.</p>
+                <div class="ur-hero-actions" data-reveal>
+                    <a href="#design" class="manifesto-cta" data-i18n-html="hero2.cta_html">UR Create starten <span aria-hidden="true">&#8594;</span></a>
+                    <a href="#problem" class="manifesto-link" data-i18n-html="hero2.link_html">Warum das wichtig ist <span aria-hidden="true">&#8595;</span></a>
+                </div>
             </div>
-        </div>
-    </section>
-
-
-    <!-- The true cost — the hard, cited evidence behind the emotional story.
-         Human cost (Public Eye / Shein), the numbers (Ellen MacArthur
-         Foundation, UNEP), and the worst emitters, then the turn to our model. -->
-    <!-- [ 01 / DAS PROBLEM ] — consolidated facts (one fast-scan block):
-         mono section label + live ticker, LABEL:VALUE list, the model turn,
-         emitter ranking, sources. Dark theme, brand gradient accents. -->
-    <section class="facts" id="cost" aria-labelledby="facts-heading">
-        <div class="container facts-inner">
-            <div class="facts-top">
-                <p class="mono-label section-label" data-i18n="facts.eyebrow">[ 01 / Das Problem ]</p>
-            </div>
-            <h2 id="facts-heading" class="facts-headline" data-reveal data-i18n-html="facts.headline_html">Die Mode produziert<br><em>für die Tonne</em>.</h2>
-
-            <!-- Live-Abfall-Zähler (Variante C): tickt die belegte Abfallmasse hoch
-                 (92 Mio. t/Jahr ÷ Sekunden ≈ 2'918 kg/s). Zahl wird von
-                 js/ambient-ticker.js gesetzt; aria-hidden, da der Wert sich jede
-                 Sekunde ändert — die zitierte Fakten-Liste trägt die Info barrierefrei. -->
-            <div class="cost-ticker" data-reveal aria-hidden="true">
-                <span class="cost-ticker-num">
-                    <span class="cost-ticker-kg tnum" data-ticker-kg>0</span><span class="cost-ticker-unit" data-i18n="ticker.unit">kg</span>
-                </span>
-                <span class="cost-ticker-meta">
-                    <span class="cost-ticker-live"><span class="ticker-pulse"></span><span data-i18n="ticker.live_rate">Live · jede Sekunde +2'918 kg</span></span>
-                    <span class="cost-ticker-cap" data-i18n="ticker.cap_full">Textilien verbrannt oder vergraben, seit du hier bist.</span>
-                    <span class="cost-ticker-src mono-label" data-i18n="ticker.source">[ Quelle: UNEP · 92 Mio. t / Jahr ]</span>
-                </span>
-            </div>
-
-            <dl class="facts-list" data-reveal-stagger>
-                <div class="facts-row" data-reveal><dt data-i18n="facts.r1_k">Jede Sekunde</dt><dd><span class="facts-fig" data-i18n="facts.r1_fig">1 Lkw</span><span class="facts-ctx" data-i18n="facts.r1_v">Textilien — verbrannt oder vergraben</span></dd></div>
-                <div class="facts-row" data-reveal><dt data-i18n="facts.r2_k">Recycelt</dt><dd><span class="facts-fig" data-i18n="facts.r2_fig">&lt; 1 %</span><span class="facts-ctx" data-i18n="facts.r2_v">zurück in neue Kleidung</span></dd></div>
-                <div class="facts-row" data-reveal><dt data-i18n="facts.r3_k">Kleidung im Müll</dt><dd><span class="facts-fig" data-i18n="facts.r3_fig">92 Mio. t</span><span class="facts-ctx" data-i18n="facts.r3_v">jedes Jahr, weltweit</span></dd></div>
-                <div class="facts-row" data-reveal><dt data-i18n="facts.r4_k">CO₂ der Mode</dt><dd><span class="facts-fig" data-i18n="facts.r4_fig">bis 8 %</span><span class="facts-ctx" data-i18n="facts.r4_v">global — mehr als Flüge und Schifffahrt zusammen</span></dd></div>
-                <div class="facts-row" data-reveal><dt data-i18n="facts.r5_k">Der Mensch</dt><dd><span class="facts-fig" data-i18n="facts.r5_fig">75 h</span><span class="facts-ctx" data-i18n="facts.r5_v">Wochen, unter Existenzlohn (Public Eye)</span></dd></div>
-            </dl>
-
-            <div class="facts-turn" data-reveal>
-                <p class="mono-label" data-i18n="facts.model_k">[ Unser Modell ]</p>
-                <p class="facts-model" data-i18n="facts.model_v">1 Stück · nach Maß · aus Stoff aus recycelten Kleidern · 0 Überproduktion</p>
-            </div>
-
-            <figure class="facts-chart">
-                <figcaption class="mono-label" data-reveal data-i18n="facts.chart_cap">[ Carbon-Intensität pro Umsatz — die Treiber ]</figcaption>
-                <ul class="facts-bars" data-reveal-stagger>
-                    <li class="facts-bar" data-reveal style="--v: 100%;"><span class="facts-bar-name">Shein</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
-                    <li class="facts-bar" data-reveal style="--v: 82%;"><span class="facts-bar-name">H&amp;M</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
-                    <li class="facts-bar" data-reveal style="--v: 64%;"><span class="facts-bar-name">ASOS</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
-                    <li class="facts-bar" data-reveal style="--v: 50%;"><span class="facts-bar-name">Primark</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
-                    <li class="facts-bar" data-reveal style="--v: 38%;"><span class="facts-bar-name">Zara</span><span class="facts-bar-track"><span class="facts-bar-fill"></span></span></li>
-                </ul>
-            </figure>
-
-            <p class="facts-sources mono-label" data-i18n-html="facts.sources_html">[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons</p>
-        </div>
-        <!-- Der Live-Timer (#facts-live) wird zusammen mit allen Sektions-Tickern
-             zentral von js/ambient-ticker.js getrieben (einheitliche t0). -->
-    </section>
-
-
-    <!-- How it works — the vision made concrete: 3 compact steps that bridge
-         the "why" into the tool, foregrounding rescued fibre + made-to-measure
-         + no overproduction. Bilingual (howto.*), entrance via [data-reveal]. -->
-    <section class="howto" id="how" aria-labelledby="howto-heading">
-        <div class="container">
-            <p class="howto-eyebrow mono-label section-label" data-reveal data-i18n="howto.eyebrow">[ 02 / Das Modell ]</p>
-            <h2 id="howto-heading" class="howto-heading" data-reveal data-i18n="howto.heading">Vom Wunsch zum Einzelstück — in drei Schritten.</h2>
-            <ol class="howto-steps" data-reveal-stagger>
-                <li class="howto-step" data-reveal>
-                    <span class="howto-num" aria-hidden="true">1</span>
-                    <h3 class="howto-step-title" data-i18n="howto.s1_title">Finde heraus, was du suchst</h3>
-                    <p class="howto-step-body" data-i18n="howto.s1_body">Klick dich durch ein paar Fragen — Stimmung, Form, Stoff. Aus deinen Entscheidungen wächst live ein konkretes Stück. Lieber direkt? Beschreib es in einem Satz.</p>
-                </li>
-                <li class="howto-step" data-reveal>
-                    <span class="howto-num" aria-hidden="true">2</span>
-                    <h3 class="howto-step-title" data-i18n="howto.s2_title">Deine Maße, dein Schnitt</h3>
-                    <p class="howto-step-body" data-i18n="howto.s2_body">Neun Körpermaße — per Foto geschätzt oder manuell. Keine Standardgröße, kein Kompromiss: gefertigt für genau einen Körper, deinen.</p>
-                </li>
-                <li class="howto-step" data-reveal>
-                    <span class="howto-num" aria-hidden="true">3</span>
-                    <h3 class="howto-step-title" data-i18n="howto.s3_title">Aus geretteter Faser genäht</h3>
-                    <p class="howto-step-body" data-i18n="howto.s3_body">Ein Schweizer Schneider näht dein Stück aus geretteter Faser recycelter Alttextilien — auf Bestellung, in rund 14 Tagen bei dir. Kein Lager, keine Überproduktion.</p>
-                </li>
-            </ol>
-            <ul class="howto-payoff" data-reveal>
-                <li data-i18n="howto.p1">Aus geretteter Faser</li>
-                <li data-i18n="howto.p2">Maßanfertigung</li>
-                <li data-i18n="howto.p3">Null Überproduktion</li>
-            </ul>
-            <p class="howto-ai-note" data-reveal data-i18n-html="howto.ai_note"><strong>Und die KI?</strong> Sie steht nicht im Rampenlicht — sie arbeitet im Hintergrund: übersetzt deine Entscheidungen in einen präzisen, produzierbaren Schnitt und denkt bei Passform und Material mit. KI als Werkzeug, das ein echtes Problem löst — Größen, die niemandem passen, und Berge, die niemand braucht — nicht als Selbstzweck.</p>
-        </div>
-    </section>
-
-    <section class="workflow">
-        <div class="container">
-            <div class="step-tracker" data-reveal>
-                <div class="step active" data-step="1" data-i18n-html="workflow.s1_html"><span>1</span> Design</div>
-                <div class="step" data-step="2" data-i18n-html="workflow.s2_html"><span>2</span> Maße</div>
-                <div class="step" data-step="3" data-i18n-html="workflow.s3_html"><span>3</span> Vorschau</div>
-                <div class="step" data-step="4" data-i18n-html="workflow.s4_html"><span>4</span> Produktion</div>
+            <div class="ur-hero-stage" aria-hidden="true">
+                <div id="hero-showcase" class="ur-hero-showcase"></div>
+                <p class="ur-hero-caption mono-label" data-i18n="hero2.caption">[ LIVE · EIN KONZEPT ENTWICKELT SICH ]</p>
             </div>
         </div>
     </section>
@@ -341,9 +237,9 @@
     <section id="design" class="section design-section">
         <div class="container">
             <div class="section-header" data-reveal>
-                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.design">[ 03 / Dein Entwurf ]</span>
-                <h2 data-i18n="design.h2">Beschreibe dein Design</h2>
-                <p data-i18n="design.intro">Erzähle der KI, was du tragen möchtest. Stil, Farbe, Material, Anlass — alles ist möglich.</p>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="urcreate.label">[ UR CREATE ]</span>
+                <h2 data-i18n="urcreate.h2">Deine Vorstellungskraft kommt zuerst</h2>
+                <p data-i18n="urcreate.intro">Die meiste Mode beginnt mit Produktion. Was passiert, wenn sie bei Menschen beginnt? Erschaffe, entwickle weiter, mach sie zu deiner.</p>
             </div>
 
             <div class="design-grid" data-reveal-stagger>
@@ -494,18 +390,247 @@
         </div>
     </section>
 
-    <div id="library-modal" class="library-modal" hidden>
-        <div class="library-modal-backdrop"></div>
-        <div class="library-modal-content" role="dialog" aria-modal="true" aria-labelledby="library-modal-title">
-            <header class="library-modal-head">
-                <h3 id="library-modal-title" data-i18n="library.title">Meine Designs</h3>
-                <button id="library-modal-close" class="library-modal-close" type="button" data-i18n-aria-label="library.close" aria-label="Schließen">&times;</button>
-            </header>
-            <p class="library-modal-hint" id="library-modal-hint"></p>
-            <div class="library-grid" id="library-grid"></div>
-        </div>
-    </div>
 
+    <!-- 3 · OWNERSHIP MOMENT — von app.js eingeblendet, sobald eine Kreation
+         existiert. Save -> Share/Publish -> Warum das zaehlt. -->
+    <section class="ownership" id="ownership" aria-labelledby="own-heading" hidden>
+        <div class="container ownership-inner">
+            <p class="mono-label section-label" data-reveal data-i18n="own.eyebrow">[ DEIN MOMENT ]</p>
+            <h2 id="own-heading" class="ownership-headline" data-reveal data-i18n-html="own.headline_html">Dieses Design existiert, <em>weil du es erschaffen hast.</em></h2>
+            <p class="ownership-name mono-label" id="own-name" aria-live="polite"></p>
+            <p class="ownership-text" data-reveal data-i18n="own.text">Die meiste Mode entsteht andersherum: Millionen Kleidungsstücke werden produziert, bevor irgendjemand danach gefragt hat. Urban Revolution glaubt, dass Kreativität zuerst kommt.</p>
+            <div class="ownership-actions" data-reveal>
+                <button type="button" id="own-save" class="manifesto-cta" data-i18n="own.save">Meine Kreation speichern</button>
+                <button type="button" id="own-share" class="btn-ghost" data-i18n="own.share">Teilen</button>
+                <button type="button" id="own-publish" class="btn-ghost" data-i18n="own.publish">In der Galerie zeigen</button>
+            </div>
+            <div class="ownership-next" data-reveal>
+                <a href="#preview" class="manifesto-link" data-i18n-html="own.photoreal_html">Sieh sie fotorealistisch <span aria-hidden="true">&#8595;</span></a>
+                <a href="#problem" class="manifesto-link" data-i18n-html="own.why_html">Entdecke, warum das zählt <span aria-hidden="true">&#8595;</span></a>
+                <button type="button" id="own-makereal" class="manifesto-link as-button" data-i18n-html="own.makereal_html">Mach es real — Maße &amp; Fertigung <span aria-hidden="true">&#8594;</span></button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 3b · FOTOREALISTISCHE VORSCHAU — direkt nach dem Ownership-Moment:
+         die eigene Kreation als Studio-Render / Anprobe sehen (Replicate). -->
+    <section id="preview" class="section preview-section" hidden>
+        <div class="container">
+            <div class="section-header" data-reveal>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.preview">[ 05 / Vorschau ]</span>
+                <h2 data-i18n="preview.h2">Fotorealistische Vorschau</h2>
+                <p data-i18n="preview.intro">Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.</p>
+            </div>
+
+            <div class="preview-container" data-reveal>
+                <div class="vto-stage" id="vto-stage">
+                    <!-- Default state: a static example (user-provided image drops in
+                         here; until then a styled placeholder) so the step never looks
+                         empty before a photo is uploaded. -->
+                    <div class="vto-example has-image" id="vto-example">
+                        <span class="vto-example-tag" data-i18n="preview.example_tag">Beispiel</span>
+                        <p class="vto-example-label" data-i18n="preview.example_label">So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.</p>
+                    </div>
+                    <!-- Generating -->
+                    <div class="vto-loading" hidden>
+                        <div class="vto-spinner"></div>
+                        <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
+                    </div>
+                    <!-- Result -->
+                    <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
+                </div>
+                <div class="preview-controls">
+                    <div class="vto-section">
+                        <button id="vto-btn" class="vto-btn" disabled>
+                            <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau generieren</span>
+                            <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
+                        </button>
+                        <div class="vto-result-actions" id="vto-result-actions" hidden>
+                            <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
+                        </div>
+                        <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
+                    </div>
+                    <div class="control-section">
+                        <h4 data-i18n="preview.model_info">Modell-Info</h4>
+                        <div id="model-info" class="model-info">
+                            <div><span data-i18n="preview.fabric">Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
+                            <div><span data-i18n="preview.seams">Nähte:</span> <span id="info-seams">12 cm</span></div>
+                            <div><span data-i18n="preview.size">Größe:</span> <span id="info-size">M</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- 5 · THE PROBLEM — interaktive Story-Karten, darunter die zitierte
+         Fakten-Bande als Beleg (Quellen bleiben intakt). -->
+    <!-- 5 · DAS PROBLEM — eine Sektion: vier scroll-getriebene Szenen, je ein
+         Missstand + seine belegte Zahl, über einem ehrlichen Dokumentar-Bild
+         (hell, inhaltlich — bewusst nicht düster). Quellen am Ende. Der Live-
+         Zähler hat hier seinen einzigen Auftritt (Szene 2). -->
+    <section class="problem" id="problem" aria-labelledby="prob-heading">
+        <div class="container prob-head" data-reveal>
+            <span class="section-number mono-label section-label" data-i18n="prob.label">[ DAS PROBLEM ]</span>
+            <h2 id="prob-heading" data-i18n="prob.h2">Die Industrie produziert mehr, als die Welt braucht</h2>
+            <p class="prob-intro" data-i18n="prob.intro">Vier Tatsachen — jede mit einer Zahl, die niemand sehen will.</p>
+        </div>
+
+        <div class="prob-scenes">
+            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/overproduction.jpg');">
+                <div class="prob-scene-inner">
+                    <p class="prob-kicker mono-label" data-i18n="prob.c1_k">01 · Überproduktion</p>
+                    <p class="prob-scene-body" data-i18n="prob.c1_b">Millionen Kleidungsstücke werden produziert, bevor Nachfrage existiert.</p>
+                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f1_num">92 Mio. t</span><span class="prob-fig-ctx" data-i18n="prob.f1_ctx">Kleidung landen jedes Jahr im Müll</span></p>
+                </div>
+            </article>
+
+            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/unsold.jpg');">
+                <div class="prob-scene-inner">
+                    <p class="prob-kicker mono-label" data-i18n="prob.c2_k">02 · Unverkaufte Ware</p>
+                    <p class="prob-scene-body" data-i18n="prob.c2_b">Produkte liegen in Lagern und warten auf Käufer, die nie kommen.</p>
+                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f2_num">1 Lkw / Sekunde</span><span class="prob-fig-ctx" data-i18n="prob.f2_ctx">Textilien, verbrannt oder vergraben</span></p>
+                    <p class="prob-live" aria-hidden="true"><span class="ticker-pulse"></span><span class="tnum" data-ticker-kg>0</span>&nbsp;<span data-i18n="ticker.unit">kg</span> · <span data-i18n="prob.since">seit du hier bist</span></p>
+                </div>
+            </article>
+
+            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/waste.jpg');">
+                <div class="prob-scene-inner">
+                    <p class="prob-kicker mono-label" data-i18n="prob.c4_k">04 · Abfall</p>
+                    <p class="prob-scene-body" data-i18n="prob.c4_b">Abfall beginnt, lange bevor ein Kleidungsstück je getragen wird.</p>
+                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f3_num">&lt; 1 %</span><span class="prob-fig-ctx" data-i18n="prob.f3_ctx">der Alttextilien werden zu neuer Kleidung</span></p>
+                </div>
+            </article>
+
+            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/human.jpg');">
+                <div class="prob-scene-inner">
+                    <p class="prob-kicker mono-label" data-i18n="prob.c5_k">05 · Der wahre Preis</p>
+                    <p class="prob-scene-body" data-i18n="prob.c5_b">Hinter billiger Mode steht ein Mensch — nicht nur eine Maschine.</p>
+                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f4_num">75 h</span><span class="prob-fig-ctx" data-i18n="prob.f4_ctx">pro Woche, oft unter Existenzlohn (Public Eye)</span></p>
+                </div>
+            </article>
+        </div>
+
+        <div class="container prob-foot" data-reveal>
+            <p class="prob-bridge" data-i18n="prob.bridge">Das ist das System, das wir ersetzen.</p>
+            <p class="facts-sources mono-label" data-i18n-html="facts.sources_html">[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons</p>
+            <a href="#alternative" class="manifesto-cta" data-i18n-html="prob.show_html">Zeig die Alternative <span aria-hidden="true">&#8594;</span></a>
+        </div>
+    </section>
+
+    <!-- 6 · THE ALTERNATIVE — Gegenentwurf (nutzt das Manifest-Narrativ). -->
+    <section class="alternative manifesto" id="alternative" aria-labelledby="alt-heading">
+        <div class="container manifesto-inner">
+            <p class="manifesto-eyebrow mono-label section-label" data-reveal data-i18n="alt.label">[ DIE ALTERNATIVE ]</p>
+            <h2 id="alt-heading" class="manifesto-headline" data-reveal data-i18n-html="alt.headline_html">Was wäre, wenn Mode <em>bei Menschen</em> begänne?</h2>
+            <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution macht aus weggeworfenen Kleidern neuen Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich — aus genau dem, was die Branche wegwirft. Kein neuer Rohstoff, keine Überproduktion, keine Deponie.</p>
+            <div class="manifesto-actions" data-reveal>
+                <a href="#vision" class="manifesto-cta" data-i18n-html="alt.cta_html">Stell dir ein anderes System vor <span aria-hidden="true">&#8594;</span></a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 6b · LOOKBOOK — editorialer Bildband (kuratierte Studio-Renders der
+         Bild-Bibliothek): zukunftsgerichtete Konzepte, menschenzentrierte
+         Kreation. Horizontaler Scroll-Snap, lazy geladen. -->
+    <section class="lookbook" aria-labelledby="lookbook-heading">
+        <div class="container">
+            <p class="mono-label section-label" data-reveal data-i18n="look.label">[ KONZEPTE ]</p>
+            <h2 id="lookbook-heading" class="lookbook-headline" data-reveal data-i18n="look.h2">Was entsteht, wenn Menschen zuerst kommen</h2>
+        </div>
+        <div class="lookbook-track" data-reveal tabindex="0" data-i18n-aria-label="look.aria" aria-label="Lookbook — horizontal scrollen">
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/jacket-techAvant.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Tech Avant</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/dress-softCouture.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Soft Couture</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/hoodie-y2kStreet.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Y2K Street</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/shirt-quietMinimal.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Quiet Minimal</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/pants-utility.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Utility</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/tshirt-sport.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Sport</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/jacket-softCouture.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Soft Couture</figcaption></figure>
+                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/dress-techAvant.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Tech Avant</figcaption></figure>
+        </div>
+    </section>
+
+    <!-- 7 · VISION — interaktive Timeline von heute in die Zukunft. -->
+    <section class="vision" id="vision" aria-labelledby="vision-heading">
+        <div class="container">
+            <div class="section-header" data-reveal>
+                <span class="section-number mono-label section-label" data-i18n="vision.label">[ VISION ]</span>
+                <h2 id="vision-heading" data-i18n="vision.h2">Mode sollte bei Menschen beginnen</h2>
+            </div>
+            <ol class="vision-line" id="vision-line" data-reveal>
+                <li><button type="button" class="vision-stop is-active" data-stage="0" data-i18n="vision.s1">Heute</button></li>
+                <li><button type="button" class="vision-stop" data-stage="1" data-i18n="vision.s2">Überproduktion</button></li>
+                <li><button type="button" class="vision-stop" data-stage="2" data-i18n="vision.s3">Kreative Teilhabe</button></li>
+                <li><button type="button" class="vision-stop" data-stage="3" data-i18n="vision.s4">Bewusste Fertigung</button></li>
+                <li><button type="button" class="vision-stop" data-stage="4" data-i18n="vision.s5">Die Zukunft</button></li>
+            </ol>
+            <p class="vision-desc" id="vision-desc" aria-live="polite" data-reveal data-i18n="vision.d1">Mode beginnt heute in der Fabrik: erst die Ware, dann die Suche nach Käufern.</p>
+            <div class="vision-cta" data-reveal>
+                <a href="#community" class="manifesto-cta" data-i18n-html="vision.cta_html">Werde Teil der Revolution <span aria-hidden="true">&#8594;</span></a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 4 · COMMUNITY CREATIONS — publizierte Kreationen (Upstash-Galerie,
+         kuratierter Fallback ohne Backend). Remix = DNA weiterentwickeln. -->
+    <section class="gallery" id="gallery" aria-labelledby="gallery-heading">
+        <div class="container">
+            <div class="section-header" data-reveal>
+                <span class="section-number mono-label section-label" data-i18n="gal.label">[ COMMUNITY ]</span>
+                <h2 id="gallery-heading" data-i18n="gal.h2">Keine zwei Visionen sind gleich</h2>
+                <p data-i18n="gal.intro">Kreationen aus der Community — sieh sie an, lass dich inspirieren oder remixe sie als Start deiner eigenen Evolution.</p>
+            </div>
+            <div class="gallery-grid" id="gallery-grid" data-reveal></div>
+            <div class="gallery-cta" data-reveal>
+                <a href="#community" class="manifesto-link" data-i18n-html="gal.why_html">Werde Teil davon <span aria-hidden="true">&#8595;</span></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8+9 · COMMUNITY & JOIN — Teilhabe wählen, dann beitreten (Waitlist-API). -->
+    <section class="join" id="community" aria-labelledby="join-heading">
+        <div class="container join-inner">
+            <p class="mono-label section-label" data-reveal data-i18n="join.label">[ COMMUNITY ]</p>
+            <h2 id="join-heading" class="join-headline" data-reveal data-i18n="join.h2">Die Zukunft der Mode entsteht gemeinsam</h2>
+            <form id="join-form" class="join-form" data-reveal novalidate>
+                <fieldset class="join-choices">
+                    <legend class="visually-hidden" data-i18n="join.legend">Wie möchtest du teilnehmen?</legend>
+                    <label class="join-choice"><input type="checkbox" name="part" value="create" checked> <span data-i18n="join.p1">Designs erschaffen</span></label>
+                    <label class="join-choice"><input type="checkbox" name="part" value="follow"> <span data-i18n="join.p2">Die Reise verfolgen</span></label>
+                    <label class="join-choice"><input type="checkbox" name="part" value="ideas"> <span data-i18n="join.p3">Ideen beitragen</span></label>
+                    <label class="join-choice"><input type="checkbox" name="part" value="updates"> <span data-i18n="join.p4">Auf dem Laufenden bleiben</span></label>
+                </fieldset>
+                <div class="join-row">
+                    <label class="visually-hidden" for="join-email" data-i18n="join.email_label">E-Mail-Adresse</label>
+                    <input type="email" id="join-email" name="email" required data-i18n-placeholder="join.email_ph" placeholder="deine@email.ch" autocomplete="email">
+                    <button type="submit" class="manifesto-cta" data-i18n="join.cta">Urban Revolution beitreten</button>
+                </div>
+                <p class="join-consent"><label><input type="checkbox" id="join-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label></p>
+                <p class="join-status mono-label" id="join-status" aria-live="polite"></p>
+            </form>
+        </div>
+    </section>
+
+
+    <!-- 10 · FINALER CTA — kein Standard-Footer-Ende, ein letzter Moment. -->
+    <section class="final-cta" aria-labelledby="final-heading">
+        <div class="container final-inner">
+            <h2 id="final-heading" class="final-headline" data-reveal data-i18n-html="final.h2_html">Bereit, die Zukunft der Mode zu erschaffen?</h2>
+            <p class="final-sub" data-reveal data-i18n="final.sub">Jede Idee beginnt mit jemandem, der bereit ist, sich etwas anderes vorzustellen.</p>
+            <a href="#design" class="manifesto-cta final-btn" data-reveal data-i18n-html="final.cta_html">UR Create starten <span aria-hidden="true">&#8594;</span></a>
+        </div>
+    </section>
+
+
+    <!-- „Bring it to life" — Made-to-Measure-Pfad (Maße → Vorschau → Fertigung
+         → FAQ). Eingeklappt, bis der Ownership-CTA ihn öffnet; alle bestehenden
+         Flows (IDs, JS, Print-Spec) bleiben unangetastet funktional. -->
+    <div id="make-real" class="make-real" hidden>
 
     <section id="measure" class="section measure-section">
         <div class="container">
@@ -637,56 +762,6 @@
             </div>
         </div>
     </section>
-
-    <section id="preview" class="section preview-section">
-        <div class="container">
-            <div class="section-header" data-reveal>
-                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.preview">[ 05 / Vorschau ]</span>
-                <h2 data-i18n="preview.h2">Fotorealistische Vorschau</h2>
-                <p data-i18n="preview.intro">Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.</p>
-            </div>
-
-            <div class="preview-container" data-reveal>
-                <div class="vto-stage" id="vto-stage">
-                    <!-- Default state: a static example (user-provided image drops in
-                         here; until then a styled placeholder) so the step never looks
-                         empty before a photo is uploaded. -->
-                    <div class="vto-example has-image" id="vto-example">
-                        <span class="vto-example-tag" data-i18n="preview.example_tag">Beispiel</span>
-                        <p class="vto-example-label" data-i18n="preview.example_label">So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Maße“ ein Ganzkörperfoto hoch.</p>
-                    </div>
-                    <!-- Generating -->
-                    <div class="vto-loading" hidden>
-                        <div class="vto-spinner"></div>
-                        <p id="vto-status" role="status" aria-live="polite" data-i18n="vto.generating">Generiere fotorealistische Vorschau...</p>
-                    </div>
-                    <!-- Result -->
-                    <img id="vto-result-img" class="vto-result-img" data-i18n-alt="vto.result_alt" alt="Fotorealistische Vorschau" hidden>
-                </div>
-                <div class="preview-controls">
-                    <div class="vto-section">
-                        <button id="vto-btn" class="vto-btn" disabled>
-                            <span class="vto-btn-text" data-i18n="vto.btn">Fotorealistische Vorschau generieren</span>
-                            <span class="vto-btn-hint" id="vto-btn-hint" data-i18n="vto.hint_no_photo">Lade zuerst ein Foto unter "Maße" hoch</span>
-                        </button>
-                        <div class="vto-result-actions" id="vto-result-actions" hidden>
-                            <button id="vto-download" class="vto-download-btn" data-i18n="vto.download">Bild speichern</button>
-                        </div>
-                        <p class="vto-disclaimer" data-i18n="vto.disclaimer">Sendet dein Foto + die Design-Beschreibung an Replicate (FLUX Kontext) für die fotorealistische Generierung. Externe API, ~10 Sekunden Wartezeit.</p>
-                    </div>
-                    <div class="control-section">
-                        <h4 data-i18n="preview.model_info">Modell-Info</h4>
-                        <div id="model-info" class="model-info">
-                            <div><span data-i18n="preview.fabric">Stoffmenge:</span> <span id="info-fabric">~ 1.8 m²</span></div>
-                            <div><span data-i18n="preview.seams">Nähte:</span> <span id="info-seams">12 cm</span></div>
-                            <div><span data-i18n="preview.size">Größe:</span> <span id="info-size">M</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section id="production" class="section production-section">
         <div class="container">
             <div class="section-header" data-reveal>
@@ -759,7 +834,6 @@
             </div>
         </div>
     </section>
-
     <section class="trust-strip" data-i18n-aria-label="trust.aria" aria-label="Markenmerkmale">
         <div class="container">
             <ul class="trust-list" data-reveal-stagger>
@@ -802,7 +876,6 @@
             </ul>
         </div>
     </section>
-
     <section id="faq" class="section faq-section">
         <div class="container">
             <div class="section-header" data-reveal>
@@ -838,6 +911,24 @@
             </div>
         </div>
     </section>
+
+    </div>
+
+    <div id="library-modal" class="library-modal" hidden>
+        <div class="library-modal-backdrop"></div>
+        <div class="library-modal-content" role="dialog" aria-modal="true" aria-labelledby="library-modal-title">
+            <header class="library-modal-head">
+                <h3 id="library-modal-title" data-i18n="library.title">Meine Designs</h3>
+                <button id="library-modal-close" class="library-modal-close" type="button" data-i18n-aria-label="library.close" aria-label="Schließen">&times;</button>
+            </header>
+            <p class="library-modal-hint" id="library-modal-hint"></p>
+            <div class="library-grid" id="library-grid"></div>
+        </div>
+    </div>
+
+
+    <a id="sticky-create" class="sticky-create" href="#design" hidden data-i18n="nav.enter">UR Create starten</a>
+
     </main>
 
     <footer class="footer">
@@ -916,6 +1007,7 @@
     <script src="js/design-engine/flow.js"></script>
     <script src="js/app.js"></script>
     <script src="js/flair.js"></script>
+    <script src="js/ur-create.js"></script>
     <script src="js/ambient-ticker.js"></script>
 </body>
 </html>

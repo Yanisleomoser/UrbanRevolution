@@ -47,6 +47,11 @@
         document.querySelectorAll(".section-label").forEach((label) => {
             const parent = label.parentNode;
             if (!parent) return;
+            // Kein automatisches Badge mehr: Der Live-Zähler hat seinen einzigen
+            // Auftritt eingebettet in Problem-Szene 2 (data-ticker-kg, von tick()
+            // unten getrieben). Ein Badge am Sektions-Eyebrow wäre ein zweiter,
+            // konkurrierender Ticker. Nur noch in einer echten .facts-Zone (legacy).
+            if (!(label.closest && label.closest(".facts"))) return;
             // Facts section owns the big "C" odometer (static markup) → no badge.
             if (parent.classList.contains("facts-top")) return;
             // Landing eyebrow is centred → badge centred right under it.
