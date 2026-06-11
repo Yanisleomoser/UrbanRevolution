@@ -41,8 +41,8 @@
   function trackScrollSteps() {
     const sections = [
       { id: "design", step: 1 },
-      { id: "measure", step: 2 },
-      { id: "preview", step: 3 },
+      { id: "ownership", step: 2 },
+      { id: "measure", step: 3 },
       { id: "production", step: 4 },
     ];
 
@@ -918,6 +918,95 @@
     if (sizeEl) sizeEl.textContent = size;
   }
 
+  // The design-info panel inside the merged Ownership/try-on moment. Unlike
+  // updateModelInfo (production figures, needs measurements), this shows the
+  // design's identity (type/material/colour/fit/length) the moment a design
+  // exists; size fills in once measurements are present, "—" until then.
+  function updateOwnInfo() {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const type = S.get("currentType");
+    const material = S.get("currentMaterial");
+    const fit = S.get("currentFit");
+    const length = S.get("currentLength");
+    const color = S.get("currentColor");
+    const measurements = S.get("measurements");
+    set("oi-type", type ? typeLabel(type) : "—");
+    set("oi-material", material ? typeMaterialLabel(material) : "—");
+    set("oi-fit", (fit !== null && fit !== undefined) ? fitLabel(fit) : "—");
+    set("oi-length", length ? lengthLabel(length) : "—");
+    set("oi-size", measurements ? Measurements.calculateSize(measurements) : "—");
+    const colorEl = document.getElementById("oi-color");
+    if (colorEl) {
+      colorEl.innerHTML = color
+        ? `<span class="oi-swatch" style="background:${escapeHtml(color)}"></span>${escapeHtml(colorAdjective(color))}`
+        : "—";
+    }
+  }
+
+  // "Wer trägt es?" — the chooser in the Ownership/try-on moment. Either the
+  // user's own photo (reuses the existing pose-upload pipeline, so it also
+  // pre-fills measurements) or one of the 6 preset persons. A preset is a
+  // same-origin asset; /api/try-on requires a data:image/ URL, so we fetch it
+  // and convert before handing it to the unchanged VTO flow as userPhoto.
+  function initOwnershipChooser() {
+    const grid = document.getElementById("own-presets");
+    const uploadBtn = document.getElementById("own-upload-btn");
+    const poseInput = document.getElementById("pose-photo");
+
+    const clearPresetSelection = () => {
+      document.querySelectorAll(".own-preset").forEach((b) => {
+        b.classList.remove("is-selected");
+        b.setAttribute("aria-checked", "false");
+      });
+    };
+
+    if (uploadBtn && poseInput) {
+      uploadBtn.addEventListener("click", () => {
+        clearPresetSelection();
+        // Programmatic click opens the file dialog even though the input lives
+        // in the (still-collapsed) make-real path — visibility is irrelevant.
+        poseInput.click();
+      });
+    }
+
+    if (grid) {
+      const buttons = Array.from(grid.querySelectorAll(".own-preset"));
+      buttons.forEach((btn, i) => {
+        btn.setAttribute("aria-label", t("own.preset_alt", { n: i + 1 }));
+        btn.addEventListener("click", () => choosePreset(btn, buttons));
+      });
+    }
+  }
+
+  async function choosePreset(btn, buttons) {
+    buttons.forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle("is-selected", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    const id = btn.dataset.preset;
+    btn.classList.add("is-loading");
+    try {
+      const res = await fetch(`assets/presets/${id}.jpg`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = () => reject(fr.error);
+        fr.readAsDataURL(blob);
+      });
+      // Sets userPhoto → the subscribed updateVtoButtonState enables the button.
+      S.set("userPhoto", dataUrl);
+    } catch (_err) {
+      btn.classList.remove("is-selected");
+      btn.setAttribute("aria-checked", "false");
+      showToast(t("vto.error_unexpected"), "error");
+    } finally {
+      btn.classList.remove("is-loading");
+    }
+  }
+
   function updateProductionPreview() {
     const measurements = S.get("measurements");
     if (!measurements) return;
@@ -1723,6 +1812,10 @@
     updateModelInfo();
     updateProductionPreview();
     updateVtoButtonState();
+    updateOwnInfo();
+    // Re-localize the preset persons' accessible names.
+    document.querySelectorAll("#own-presets .own-preset").forEach((b, i) =>
+      b.setAttribute("aria-label", t("own.preset_alt", { n: i + 1 })));
     // Re-render the design card with the new language if one is showing.
     const design = S.get("currentDesign");
     if (design && document.querySelector(".design-card")) {
@@ -1759,14 +1852,20 @@
     initMeasurements();
     initExportButtons();
     initVtoButton();
+    initOwnershipChooser();
     initLibrary();
     trackScrollSteps();
 
     if (window.StateManager) {
       window.StateManager.subscribe("currentDesign:change", updateVtoButtonState);
       window.StateManager.subscribe("userPhoto:change", updateVtoButtonState);
+      // Keep the Ownership-moment design-info panel live as the design evolves.
+      ["currentDesign", "currentType", "currentMaterial", "currentColor",
+        "currentFit", "currentLength", "measurements"].forEach((key) =>
+        window.StateManager.subscribe(`${key}:change`, updateOwnInfo));
     }
     updateVtoButtonState();
+    updateOwnInfo();
 
     window.addEventListener("ai-fallback", (e) => {
       showToast(t("toast.ai_fallback", { reason: e.detail.reason }), "info");
