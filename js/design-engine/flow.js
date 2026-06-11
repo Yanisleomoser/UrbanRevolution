@@ -220,10 +220,10 @@ const DesignFlow = (() => {
           <div class="de-body" id="de-body"></div>
           <p class="de-live" id="de-live"></p>
           <div class="de-controls">
-            <button type="button" class="de-nav" id="de-back" disabled>${t("engine.back")}</button>
-            <button type="button" class="de-nav" id="de-skip">${t("engine.skip")}</button>
-            <button type="button" class="de-nav" id="de-restart">${t("engine.restart")}</button>
-            <button type="button" class="de-nav de-finish" id="de-finish" hidden>${t("engine.finish_early")}</button>
+            <button type="button" class="de-nav" id="de-back" data-i18n="engine.back" disabled>${t("engine.back")}</button>
+            <button type="button" class="de-nav" id="de-skip" data-i18n="engine.skip">${t("engine.skip")}</button>
+            <button type="button" class="de-nav" id="de-restart" data-i18n="engine.restart">${t("engine.restart")}</button>
+            <button type="button" class="de-nav de-finish" id="de-finish" data-i18n="engine.finish_early" hidden>${t("engine.finish_early")}</button>
           </div>
         </div>
       </div>`;
