@@ -92,9 +92,16 @@ const GarmentSVG = (() => {
     }
     // Sheen overlay: bright diagonal highlight + soft shadow side.
     defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${r(sheen * 0.5)}"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${r(sheen * 0.16)}"/></linearGradient>`;
+    // Volume/round-body shading: a soft centre highlight falling off to shaded
+    // side seams (horizontal), so the flat reads as a garment ON a body with
+    // depth instead of a paper cut-out — the main "looks real, not cheap" lift.
+    // Subtle and tied to fabric weight so matte cottons stay flat, glossy
+    // synthetics catch more light (closer to the photoreal renders).
+    const volStr = clamp(0.12 + sheen * 0.22, 0.12, 0.34);
+    defs += `<linearGradient id="${id}v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="${r(volStr)}"/><stop offset="0.22" stop-color="#000" stop-opacity="${r(volStr * 0.35)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="${r(volStr * 0.7)}"/><stop offset="0.78" stop-color="#000" stop-opacity="${r(volStr * 0.35)}"/><stop offset="1" stop-color="#000" stop-opacity="${r(volStr)}"/></linearGradient>`;
     let pat = "";
     if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
-    return { defs, fill, opacity, pat, sheen: `url(#${id}s)` };
+    return { defs, fill, opacity, pat, sheen: `url(#${id}s)`, vol: `url(#${id}v)` };
   }
 
   // scale 0.12..1 → tile factor ~0.6..1.6 so "Mustergröße" visibly resizes.
@@ -300,9 +307,11 @@ const GarmentSVG = (() => {
     const hipHalf = 44 + vol * 7;
     const legTop = hipHalf;
     // CONTINUOUS slim↔wide morph (no step jumps) so the fit slider visibly
-    // reshapes the leg frame by frame: skinny clearly tapers, wide-leg is full.
-    const thighHalf = lerp(14, 33, fit) + vol * 6;
-    const ankleHalf = clamp(lerp(7, thighHalf * 0.96, fit), 6, thighHalf);
+    // reshapes the leg frame by frame. Wide-leg must stay FULL down to the hem
+    // (the photoreal wide trousers fall straight, not taper to sticks), so the
+    // ankle width tracks the leg-top width at high fit instead of pinching in.
+    const thighHalf = lerp(13, 40, fit) + vol * 6;
+    const ankleHalf = clamp(lerp(7, legTop * 0.92, fit) + Math.max(0, vol) * 4, 6, legTop);
     const crotchY = topY + 96;
     return { fit, vol, topY, hemY, hipHalf, legTop, thighHalf, ankleHalf, crotchY };
   }
@@ -433,6 +442,7 @@ const GarmentSVG = (() => {
     const seamOp = r(lerp(0.4, 1, reveal));
     const body = paths.map((d) =>
       `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
+      (f.vol ? `<path d="${d}" fill="${f.vol}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "")
     ).join("");
