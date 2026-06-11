@@ -5272,8 +5272,30 @@ footer.footer {
 .nav-cta { display: inline-block; padding: 0.5rem 1.1rem; border-radius: 999px; background: var(--gradient); color: #06121c !important; font-weight: 600; }
 
 /* 1 · Hero */
-.ur-hero { padding: calc(96px + env(safe-area-inset-top)) 0 56px; min-height: calc(86 * var(--svh, 1svh)); display: flex; align-items: center; }
-.ur-hero-grid { display: grid; gap: 40px; align-items: center; }
+.ur-hero { padding: calc(96px + env(safe-area-inset-top)) 0 56px; min-height: calc(86 * var(--svh, 1svh)); display: flex; align-items: center; position: relative; overflow: hidden; }
+.ur-hero-grid { display: grid; gap: 40px; align-items: center; position: relative; z-index: 1; }
+
+/* ── Modul A · Schnittmuster-Hero (SVG-Bezier-Layer) ───────────────────────── */
+.ur-hero-curves { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.ur-hero-curves svg { width: 100%; height: 100%; display: block; }
+.urc-glow { fill: none; stroke: url(#urGrad); stroke-width: 6; filter: url(#urCurveGlow); opacity: .5; }
+.urc-line { fill: none; stroke: url(#urGrad); stroke-width: 1.5; }
+/* Selbstzeichnen beim Laden (pathLength=1 normiert die Strichlänge), danach
+   sehr langsames Opacity-Atmen. Pro Kurve leicht gestaffelt. */
+.urc-glow, .urc-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: urcDraw 1.6s var(--ease-out) forwards; }
+.urc-line { animation: urcDraw 1.6s var(--ease-out) forwards, urcBreathe 8s ease-in-out infinite; }
+.urc-d1 { animation-delay: 0s, 1.8s; }
+.urc-d2 { animation-delay: .2s, 2s; }
+.urc-d3 { animation-delay: .4s, 2.2s; }
+.urc-anchor { fill: #eef4f8; /* helles Off-White, bewusst kein Token (SVG) */ transform-box: fill-box; transform-origin: center; animation: urcPulse 2.4s ease-in-out infinite alternate; }
+@keyframes urcDraw { to { stroke-dashoffset: 0; } }
+@keyframes urcBreathe { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
+@keyframes urcPulse { from { transform: scale(.78); opacity: .7; } to { transform: scale(1.15); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .urc-glow, .urc-line { stroke-dashoffset: 0 !important; animation: none !important; }
+  .urc-anchor { animation: none !important; }
+}
+@media (max-width: 859px) { .ur-hero-curves { opacity: .5; } }
 .ur-hero-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(2.4rem, 7vw, 4.4rem); line-height: 1.06; margin: 14px 0 18px; }
 .ur-hero-sub { color: var(--text-muted); max-width: 46ch; font-size: 1.06rem; }
 .ur-hero-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 26px; }

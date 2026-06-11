@@ -73,7 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260603-funnel">
+    <link rel="stylesheet" href="css/styles.css?v=20260611-motion">
 
     <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
          Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
@@ -216,6 +216,38 @@
     <!-- 1 · HERO — Produktversprechen. Links Statement + CTA, rechts eine live
          laufende UR-Create-Evolution (GarmentSVG-Morph-Schaufenster). -->
     <section class="ur-hero" id="top" aria-labelledby="urhero-heading">
+        <!-- Modul A · Schnittmuster-Hero: selbstzeichnende Bezier-Kurven (Armloch-/
+             Seitennaht-Charakter) mit Teal-Gradient-Glow + Ankerpunkten. Rein
+             dekorativer Hintergrund-Layer, überlagert NICHT #hero-showcase. -->
+        <div class="ur-hero-curves" aria-hidden="true">
+            <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                    <linearGradient id="urGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#2779a8"/><!-- --accent-2 -->
+                        <stop offset="50%" stop-color="#2a9d8f"/><!-- --accent -->
+                        <stop offset="100%" stop-color="#64d6c4"/><!-- --accent-3 -->
+                    </linearGradient>
+                    <filter id="urCurveGlow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur stdDeviation="4"/>
+                    </filter>
+                </defs>
+                <!-- Kurve 1 · Seitennaht -->
+                <path class="urc-glow urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700"/>
+                <path class="urc-line urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700"/>
+                <!-- Kurve 2 · Armloch -->
+                <path class="urc-glow urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560"/>
+                <path class="urc-line urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560"/>
+                <!-- Kurve 3 · Saum -->
+                <path class="urc-glow urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                <path class="urc-line urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                <circle class="urc-anchor" cx="90" cy="70" r="4"/>
+                <circle class="urc-anchor" cx="430" cy="700" r="4"/>
+                <circle class="urc-anchor" cx="520" cy="80" r="4"/>
+                <circle class="urc-anchor" cx="900" cy="560" r="4"/>
+                <circle class="urc-anchor" cx="980" cy="120" r="4"/>
+                <circle class="urc-anchor" cx="1160" cy="720" r="4"/>
+            </svg>
+        </div>
         <div class="container ur-hero-grid">
             <div class="ur-hero-copy">
                 <p class="mono-label section-label" data-reveal data-i18n="hero2.eyebrow">[ URBAN REVOLUTION ]</p>
