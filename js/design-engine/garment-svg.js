@@ -122,10 +122,11 @@ const GarmentSVG = (() => {
     const structure = clamp(num(p.structure, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
     const drop = p.sleeve === "drop" || cfg.drop;
-    // Shoulder is the widest point. The fit/structure/volume influence is wide
-    // on purpose (was a near-flat 58 ± ~11 → now ~42..82) so slim ↔ oversized
-    // is unmistakable rather than a few pixels nobody notices.
-    const shoulderHalf = 50 + structure * 9 + vol * 8 + fit * 13 + (drop ? 12 : 0);
+    // Shoulder is the widest point. Tuned narrower than before so tops read at
+    // garment proportions (~40–60 % of frame, matching the photoreal renders)
+    // instead of filling the box like a boxy slab — while keeping a clear
+    // slim ↔ oversized spread.
+    const shoulderHalf = 44 + structure * 6 + vol * 6 + fit * 12 + (drop ? 8 : 0);
     // Chest derived FROM the shoulder, ALWAYS narrower (capped so the invariant
     // "shoulder is widest" holds). Slim tapers hard from the shoulder line;
     // oversized fills almost to it.
@@ -156,7 +157,7 @@ const GarmentSVG = (() => {
     // Sleeves DRAPE down close to the body (how a garment photographs) instead
     // of splaying into a wide T: only a small outward offset at the cuff, and
     // the cuff tapers in from the shoulder so the limb reads as a hanging tube.
-    const splay = sleeveless ? 0 : (cfg.splay * 0.42 + (w.drop ? 3 : 0)) * lerp(0.55, 1, lenT);
+    const splay = sleeveless ? 0 : (cfg.splay * 0.3 + (w.drop ? 3 : 0)) * lerp(0.55, 1, lenT);
     const coX = sleeveless ? w.chestHalf : w.shoulderHalf + splay;   // outer cuff edge
     const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.82, 1.15, lenT)); // inner cuff edge
     const wristY = sleeveless ? armpitY : shoulderY + sleeveLen + (w.drop ? 6 : 0);
@@ -378,8 +379,13 @@ const GarmentSVG = (() => {
   function dressGeom(p) {
     const cfg = DRESS_CFG;
     const w = topWidths(p, cfg);
-    const neckY = 60, shoulderY = 66;
-    const armpitY = shoulderY + cfg.armDepth;
+    const sleeveLen0 = sleeveLenFor(p, cfg);
+    const sleevelessTop = sleeveLen0 <= 2;
+    const neckY = 60;
+    // Sleeveless (slip/tank): the strap sits LOWER and the bust is closer up, so
+    // the top reads as short soft straps over a scoop — not tall sharp peaks.
+    const shoulderY = sleevelessTop ? 84 : 66;
+    const armpitY = shoulderY + (sleevelessTop ? 32 : cfg.armDepth);
     const waistY = armpitY + 34;
     const hemY = cfg.hem[p.length] != null ? cfg.hem[p.length] : 300;
     // Waist emphasis: "fitted" nips the waist hard, "relaxed" barely shapes it.
@@ -399,16 +405,26 @@ const GarmentSVG = (() => {
     const wristY = sleeveless ? armpitY : shoulderY + sleeveLen;
     const collar = p.collar || cfg.defCollar;
     const neckHalf = neckHalfFor(collar, cfg);
-    // Sleeveless dress: narrow the shoulder to a strap line (slip silhouette).
-    const shoulderHalf = sleeveless ? Math.max(neckHalf + 7, w.chestHalf * 0.62) : w.shoulderHalf;
+    // Sleeveless dress: pull the shoulder in to a soft narrow strap line near
+    // the neck (slip silhouette) instead of a wide, sharply pointed shoulder.
+    const shoulderHalf = sleeveless ? Math.max(neckHalf + 3, w.chestHalf * 0.5) : w.shoulderHalf;
     return { neckHalf, neckY, shoulderHalf, shoulderY, coX: sleeveless ? w.chestHalf : coX, ciX: sleeveless ? w.chestHalf : ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf, waistY, hemHalf: skirtHalf, hemY, collar, sleeveless };
   }
   function paintDress(p, g) {
+    // Sleeveless (slip / tank): a thin strap at the shoulder and a SCOOPED
+    // (concave) armhole down to the bust — not a straight diagonal that juts
+    // out into sharp "horn" points. Sleeved dresses keep the limb edge.
+    const mid = (g.shoulderY + g.armpitY) / 2;
+    const armL = g.sleeveless
+      ? `L ${L(g.shoulderHalf)} ${Y(g.shoulderY)} Q ${L(g.shoulderHalf - 2)} ${Y(mid)} ${L(g.chestHalf)} ${Y(g.armpitY)} `
+      : `L ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.coX)} ${Y(g.wristY)} L ${L(g.ciX)} ${Y(g.wristY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} `;
+    const armR = g.sleeveless
+      ? `L ${R(g.chestHalf)} ${Y(g.armpitY)} Q ${R(g.shoulderHalf - 2)} ${Y(mid)} ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.neckHalf)} ${Y(g.neckY)} `
+      : `L ${R(g.chestHalf)} ${Y(g.armpitY)} L ${R(g.ciX)} ${Y(g.wristY)} L ${R(g.coX)} ${Y(g.wristY)} L ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.neckHalf)} ${Y(g.neckY)} `;
     const d =
-      `M ${L(g.neckHalf)} ${Y(g.neckY)} ` +
-      `L ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.coX)} ${Y(g.wristY)} L ${L(g.ciX)} ${Y(g.wristY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} ` +
+      `M ${L(g.neckHalf)} ${Y(g.neckY)} ` + armL +
       `L ${L(g.waistHalf)} ${Y(g.waistY)} L ${L(g.hemHalf)} ${Y(g.hemY)} L ${R(g.hemHalf)} ${Y(g.hemY)} L ${R(g.waistHalf)} ${Y(g.waistY)} ` +
-      `L ${R(g.chestHalf)} ${Y(g.armpitY)} L ${R(g.ciX)} ${Y(g.wristY)} L ${R(g.coX)} ${Y(g.wristY)} L ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.neckHalf)} ${Y(g.neckY)} ` +
+      armR +
       neckline(g) + " Z";
     const seam = [];
     seam.push(`<path d="M ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} M ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.chestHalf)} ${Y(g.armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
