@@ -5,9 +5,14 @@
   "_bg_note": "Breitbild-Ambiente-Hintergründe (img/bg/) hinter den Erzähl-Sektionen. Dunkel, cineastisch, ruhig — viel Negativraum, damit weißer Text darüber lesbar bleibt, ohne schweren Scrim. Thematisch je Sektion gewählt. 3:2 Querformat.",
   "bg_style": "cinematic editorial background photograph, deep moody low-key lighting, predominantly dark midnight-navy with subtle teal and seafoam highlights, refined and premium, soft gradients, generous calm negative space in the upper area for text, fine film grain, wide landscape 3:2, no people, no logo, no text, never neon, never pure black",
   "backgrounds": {
-    "alternative": "a Swiss tailor's atelier at dusk — a worktable with folded fabric bolts, shears and a sewing machine beside a tall window, intimate low natural light, deep navy and teal shadows, soft and human",
     "vision": "a vast calm horizon over still water at blue hour, minimal and forward-looking, deep navy sky fading to a faint teal glow at the waterline, immense quiet negative space",
     "final": "sculptural flowing dark fabric folds merging into a calm ocean surface, deep midnight navy and teal, soft cinematic side light, elegant and aspirational"
+  },
+
+  "_bg_light_note": "Heller Pivot-Hintergrund (img/bg/): die EINE Sektion, in der die Erzählung vom Problem zur Hoffnung kippt (#alternative). Bewusst NICHT in die dunkle Ocean-Palette gezwungen — lichtdurchflutetes Tageslicht, zukunftsgewandt/positiv, passend zur Vision. Inhalt vor Farb-Grade (Anweisung des Nutzers). Oben luftiger Negativraum für weißen Text. 3:2 Querformat.",
+  "bg_light_style": "bright airy editorial background photograph, soft luminous natural daylight pouring in, light and hopeful and forward-looking, pale off-white and light wood tones with gentle teal and seafoam ocean accents, refined and premium, generous calm bright negative space in the upper area for text, fine film grain, wide landscape 3:2, no people, no logo, no text, never neon, never dark, never moody",
+  "backgrounds_light": {
+    "alternative": "a sunlit Swiss tailor's atelier by tall windows — a clean worktable with neatly folded bolts of reclaimed fabric, shears and a sewing machine, soft morning daylight flooding the bright room, pale walls and light wood, calm and human and optimistic"
   },
 
   "_prob_note": "Problem-Szenen (img/problem/): EHRLICHE Dokumentarmotive zum jeweiligen Missstand. Inhalt vor Farb-Grade — bewusst NICHT in die dunkle Ocean-Palette gezwungen, sondern echtes, helles Tageslicht (die Marke ist zukunftsgewandt/positiv, nicht düster). 4:5.",

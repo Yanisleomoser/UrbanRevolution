@@ -54,6 +54,9 @@ function plan(cfg) {
   const add = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.style}`, aspect: "4:5" });
   // Backgrounds use a landscape style (bg_style), not the portrait `style`.
   const addBg = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.bg_style}`, aspect: "3:2" });
+  // The bright pivot background (#alternative) uses its own light style so the
+  // dark global bg_style doesn't grade the hopeful daylight motif back to dusk.
+  const addBgLight = (rel, prompt) => jobs.push({ rel, out: path.join(ROOT, rel), prompt: `${prompt}, ${cfg.bg_light_style}`, aspect: "3:2" });
   if (!ONLY || ONLY === "hero") {
     (cfg.categories || []).forEach((cat) => {
       // Prompt noun per category ("tshirt" → "t-shirt") so FLUX gets real
@@ -82,6 +85,8 @@ function plan(cfg) {
   if (!ONLY || ONLY === "bg") {
     Object.entries(cfg.backgrounds || {}).forEach(([key, subject]) =>
       addBg(`js/design-engine/content/img/bg/${key}.jpg`, subject));
+    Object.entries(cfg.backgrounds_light || {}).forEach(([key, subject]) =>
+      addBgLight(`js/design-engine/content/img/bg/${key}.jpg`, subject));
   }
   // Problem-Szenen: eigener heller Dokumentar-Stil (prob_style), 4:5.
   if (!ONLY || ONLY === "prob") {

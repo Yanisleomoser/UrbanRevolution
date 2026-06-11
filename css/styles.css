@@ -5311,7 +5311,7 @@ footer.footer {
 .gallery-tile-name { font-weight: 600; font-size: 0.92rem; }
 .gallery-tile-by { color: var(--text-muted); font-size: 0.78rem; }
 .gallery-tile-actions { display: flex; gap: 8px; margin-top: auto; }
-.gallery-tile-actions a, .gallery-tile-actions button { flex: 1; text-align: center; font-size: 0.78rem; letter-spacing: 0.08em; padding: 0.45rem 0.4rem; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; text-decoration: none; transition: border-color .2s; }
+.gallery-tile-actions a, .gallery-tile-actions button { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: 0.78rem; letter-spacing: 0.08em; padding: 0.45rem 0.4rem; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; text-decoration: none; transition: border-color .2s; }
 .gallery-tile-actions .is-remix { border-color: var(--accent); color: var(--accent-3, #64d6c4); }
 .gallery-tile-actions a:hover, .gallery-tile-actions button:hover { border-color: var(--accent); }
 .gallery-cta { margin-top: 30px; text-align: center; }
@@ -5422,9 +5422,15 @@ footer.footer {
 /* Dedizierte Breitbild-Hintergründe (img/bg/, 3:2, dunkel/cineastisch) — der
    Scrim ist leichter als bei den alten 4:5-Crops, weil die Bilder selbst dunkel
    sind und oben Negativraum für Text tragen. Verläuft an den Rändern in --bg. */
+/* Heller Pivot-Hintergrund: dieses Foto ist bewusst licht/hoffnungsvoll (der
+   Wendepunkt von Problem zu Lösung). Der Scrim ist daher anders gebaut als bei
+   den dunklen bg-Bildern — er hält nur so viel Navy-Schleier, wie weißer Text
+   über dem Tageslicht braucht (oben dichter hinter Eyebrow/Headline, zur
+   Bildmitte hin lichter, damit das helle Atelier sichtbar bleibt), und
+   verläuft unten weich in --bg. */
 .alternative::before {
   background-image:
-    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.62) 32%, rgba(10,22,34,0.7) 70%, var(--bg, #0a1622) 100%),
+    linear-gradient(180deg, rgba(10,22,34,0.9) 0%, rgba(10,22,34,0.64) 26%, rgba(10,22,34,0.5) 54%, rgba(10,22,34,0.66) 84%, var(--bg, #0a1622) 100%),
     url("../js/design-engine/content/img/bg/alternative.jpg");
 }
 .vision::before {
