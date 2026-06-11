@@ -5413,11 +5413,18 @@ footer.footer {
    bleibt in SEINER Box; vorher füllte er die ganze Stage und überlappte die
    Caption (iPhone-Report). */
 .ur-hero-showcase { position: relative; overflow: hidden; border-radius: 12px; height: clamp(270px, 40svh, 380px); display: flex; align-items: center; justify-content: center; }
-/* Kuratierte Studio-Fotos, übereinander gestapelt, Crossfade per opacity. */
-.ur-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; opacity: 0; transition: opacity 1.2s var(--ease-out); }
-.ur-hero-photo.is-active { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { .ur-hero-photo { transition: none; } }
-.ur-hero-caption { margin-top: 14px; text-align: center; color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.1em; white-space: nowrap; }
+/* Flat (technischer Schnitt) und echtes Foto übereinander gestapelt; per Klasse
+   am Showcase wird zwischen ihnen aufgelöst (Dissolve). */
+.ur-hero-flat, .ur-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ur-hero-flat { display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.98); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+.ur-hero-flat svg { height: 86%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
+.ur-hero-photo { object-fit: cover; border-radius: inherit; opacity: 0; transform: scale(1.02); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); }
+.ur-hero-showcase.show-flat .ur-hero-flat { opacity: 1; transform: none; }
+.ur-hero-showcase.show-photo .ur-hero-photo { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ur-hero-flat, .ur-hero-photo { transition: none; transform: none; }
+}
+.ur-hero-caption { margin-top: 14px; text-align: center; color: var(--text-muted); font-size: 0.82rem; line-height: 1.4; max-width: 38ch; margin-left: auto; margin-right: auto; }
 @media (min-width: 860px) { .ur-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 56px; } }
 
 .btn-ghost { padding: 0.8rem 1.4rem; border-radius: 999px; border: 1px solid var(--border, #25415a); background: transparent; color: var(--text); font: inherit; cursor: pointer; transition: border-color .2s var(--ease-out), background .2s var(--ease-out); }

@@ -68,30 +68,62 @@
     return curated;
   }
 
-  // ── 1 · Hero-Showcase — endlose Konzept-Evolution ──────────────────────────
+  // ── 1 · Hero-Showcase — Flat → echtes Foto (das Produktversprechen sichtbar) ──
+  // Pro Stück: erst der technische Flat (GarmentSVG, aus derselben DNA), dann
+  // löst er sich auf und das passende Studio-Foto materialisiert an gleicher
+  // Stelle — „aus deiner Skizze wird dein Lieblingsstück". Datenquelle:
+  // hero-pairs.json (DNA speist Flat UND Foto-Prompt → Foto == Flat).
   async function heroShowcase() {
-    const el = $("#hero-showcase");
-    if (!el) return;
-    // Kuratierte Studio-Fotos (ehemals Lookbook) statt Live-Flat: schöneres,
-    // fotorealistisches Erstbild. Crossfade-Rotation; reduced-motion / <2 →
-    // erstes Foto statisch. Bilddateien liegen in img/preview/ (auch von der
-    // Design-Engine genutzt) — hier nur referenziert.
-    const DIR = "js/design-engine/content/img/preview/";
-    const PHOTOS = [
-      "jacket-techAvant", "dress-softCouture", "hoodie-y2kStreet", "shirt-quietMinimal",
-      "pants-utility", "tshirt-sport", "jacket-softCouture", "dress-techAvant",
-    ];
-    el.innerHTML = PHOTOS.map((name, n) =>
-      `<img class="ur-hero-photo${n === 0 ? " is-active" : ""}" src="${DIR}${name}.jpg" alt="" width="448" height="560" loading="${n === 0 ? "eager" : "lazy"}" decoding="async">`
-    ).join("");
-    const imgs = Array.from(el.querySelectorAll(".ur-hero-photo"));
-    if (reduce() || imgs.length < 2) return;
+    const stage = $("#hero-showcase");
+    if (!stage) return;
+    let pairs = [];
+    try {
+      const res = await fetch("js/design-engine/content/hero-pairs.json");
+      pairs = (await res.json()).pairs || [];
+    } catch (_e) { pairs = []; }
+    const DIR = "js/design-engine/content/img/hero/";
+    if (!pairs.length) return;
+
+    stage.innerHTML =
+      '<div class="ur-hero-flat" aria-hidden="true"></div>' +
+      '<img class="ur-hero-photo" alt="" decoding="async">';
+    const flatEl = stage.querySelector(".ur-hero-flat");
+    const photoEl = stage.querySelector(".ur-hero-photo");
+    const canFlat = !!(window.DesignPreview && window.DesignShare);
+    const renderFlat = (i) => {
+      if (!canFlat) return;
+      const dna = window.DesignShare.decode(pairs[i].dna);
+      if (dna) window.DesignPreview.renderInto(flatEl, dna, {});
+    };
+    pairs.forEach((p) => { const im = new Image(); im.src = DIR + p.id + ".jpg"; }); // vorladen
+
     let i = 0;
-    setInterval(() => {
-      imgs[i].classList.remove("is-active");
-      i = (i + 1) % imgs.length;
-      imgs[i].classList.add("is-active");
-    }, 3600);
+    renderFlat(0);
+    photoEl.src = DIR + pairs[0].id + ".jpg";
+
+    // Reduced-motion / kein Flat-Renderer: zeige direkt das Ergebnis (Foto), statisch.
+    if (reduce() || !canFlat || pairs.length < 1) {
+      stage.classList.add("show-photo");
+      return;
+    }
+
+    stage.classList.add("show-flat");
+    const FLAT_MS = 1900;  // Flat steht
+    const PHOTO_MS = 2900; // Foto steht
+    const toPhoto = () => {
+      stage.classList.remove("show-flat");
+      stage.classList.add("show-photo");      // Flat löst sich auf, Foto materialisiert
+      setTimeout(nextPiece, PHOTO_MS);
+    };
+    function nextPiece() {
+      i = (i + 1) % pairs.length;
+      renderFlat(i);                           // neuen Flat hinter dem Foto vorbereiten
+      stage.classList.remove("show-photo");
+      stage.classList.add("show-flat");        // neuer Flat blendet ein, altes Foto aus
+      setTimeout(() => { photoEl.src = DIR + pairs[i].id + ".jpg"; }, 750); // Quelle tauschen, sobald verdeckt
+      setTimeout(toPhoto, FLAT_MS);
+    }
+    setTimeout(toPhoto, FLAT_MS);
   }
 
   // ── 2 · Ownership-Moment ───────────────────────────────────────────────────

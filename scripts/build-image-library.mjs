@@ -93,6 +93,16 @@ function plan(cfg) {
     Object.entries(cfg.problems || {}).forEach(([key, subject]) =>
       jobs.push({ rel: `js/design-engine/content/img/problem/${key}.jpg`, out: path.join(ROOT, `js/design-engine/content/img/problem/${key}.jpg`), prompt: `${subject}, ${cfg.prob_style}`, aspect: "4:5" }));
   }
+  // Hero Flat→Foto-Paare: Subjekte aus hero-pairs.json (eine Quelle für Flat
+  // UND Foto), Ghost-Mannequin-Stil (hero_style), 4:5. Eigener Schalter
+  // (--only=heropair), NICHT im Default-Lauf — sonst würde jeder Lauf die
+  // 4 FLUX-Renders neu erzeugen. (Abgegrenzt von ONLY==="hero" = Preview-Lib.)
+  if (ONLY === "heropair") {
+    const hp = path.join(CONTENT, "hero-pairs.json");
+    const pairs = fs.existsSync(hp) ? (JSON.parse(fs.readFileSync(hp, "utf8")).pairs || []) : [];
+    pairs.forEach((p) =>
+      jobs.push({ rel: `js/design-engine/content/img/hero/${p.id}.jpg`, out: path.join(ROOT, `js/design-engine/content/img/hero/${p.id}.jpg`), prompt: `${p.prompt}, ${cfg.hero_style}`, aspect: "4:5" }));
+  }
   return jobs;
 }
 

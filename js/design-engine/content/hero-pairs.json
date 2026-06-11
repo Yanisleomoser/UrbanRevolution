@@ -1,0 +1,25 @@
+{
+  "_comment": "Hero Flat->Foto-Paare. Jede DNA rendert den Flat (GarmentSVG) UND speist den Foto-Prompt -> Foto zeigt garantiert dasselbe Stueck. Trend vor Palette. Fotos: img/hero/{id}.jpg via build-image-library.mjs --only=hero (prompt + img-library.hero_style).",
+  "pairs": [
+    {
+      "id": "hoodie",
+      "dna": "eyJhcmNoZXR5cGVXZWlnaHRzIjp7InF1aWV0TWluaW1hbCI6MCwidGVjaEF2YW50IjowLCJ5MmtTdHJlZXQiOjAsInNvZnRDb3V0dXJlIjowLCJ1dGlsaXR5IjowLCJzcG9ydCI6MH0sImNhdGVnb3J5IjoiaG9vZGllIiwic3ViQXJjaGV0eXBlIjoicHVsbG92ZXIiLCJzaWxob3VldHRlIjp7ImZpdCI6MC45NSwidm9sdW1lIjoiaGlnaCJ9LCJsZW5ndGgiOiJyZWd1bGFyIiwiZmFicmljIjp7Im1hdGVyaWFsIjoiZmxlZWNlIiwiZmluaXNoV2VpZ2h0IjowLjc1fSwiY29sb3IiOnsic2NoZW1lIjoibW9ubyIsInN0b3BzIjpbIiNiMDdhNTIiXX0sInBhdHRlcm4iOnsidHlwZSI6ImdyYXBoaWMiLCJzY2FsZSI6MC44NX0sImNvbnN0cnVjdGlvbiI6eyJjbG9zdXJlIjoibm9uZSIsImNvbGxhciI6Imhvb2QiLCJwb2NrZXRzIjoia2FuZ2Fyb28ifSwiaGFyZHdhcmUiOnsiZmluaXNoIjoibWF0dGUifSwiaW50ZW50Ijp7ImVuZXJneSI6MC44fX0",
+      "prompt": "An oversized drop-shoulder pullover hoodie in warm clay brown, heavyweight cotton fleece, with a bold creative abstract graphic print across the chest, kangaroo pocket, relaxed contemporary streetwear silhouette"
+    },
+    {
+      "id": "pants",
+      "dna": "eyJhcmNoZXR5cGVXZWlnaHRzIjp7InF1aWV0TWluaW1hbCI6MCwidGVjaEF2YW50IjowLCJ5MmtTdHJlZXQiOjAsInNvZnRDb3V0dXJlIjowLCJ1dGlsaXR5IjowLCJzcG9ydCI6MH0sImNhdGVnb3J5IjoicGFudHMiLCJzdWJBcmNoZXR5cGUiOiJ0YWlsb3JlZCIsInNpbGhvdWV0dGUiOnsiZml0IjowLjJ9LCJsZW5ndGgiOiJsb25nIiwiZmFicmljIjp7Im1hdGVyaWFsIjoid29vbCJ9LCJjb2xvciI6eyJzY2hlbWUiOiJtb25vIiwic3RvcHMiOlsiIzNhM2Y0NSJdfSwiY29uc3RydWN0aW9uIjp7InBvY2tldHMiOiJzbGFudCIsIndhaXN0YmFuZCI6InBsZWF0ZWQiLCJoZW0iOiJwbGFpbiJ9LCJpbnRlbnQiOnsiZW5lcmd5IjowLjV9fQ",
+      "prompt": "ONLY a pair of trousers and nothing else, a lower-body garment by itself with no top, no shirt and no jacket — relaxed wide straight-leg high-waisted tailored designer trousers in deep charcoal grey wool, pressed front crease, floor-length, presented alone on an invisible lower-body trouser form, waistband at the very top, wide hems at the bottom, elevated minimalist tailoring"
+    },
+    {
+      "id": "jacket",
+      "dna": "eyJhcmNoZXR5cGVXZWlnaHRzIjp7InF1aWV0TWluaW1hbCI6MCwidGVjaEF2YW50IjowLCJ5MmtTdHJlZXQiOjAsInNvZnRDb3V0dXJlIjowLCJ1dGlsaXR5IjowLCJzcG9ydCI6MH0sImNhdGVnb3J5IjoiamFja2V0Iiwic3ViQXJjaGV0eXBlIjoicHVmZmVyIiwic2lsaG91ZXR0ZSI6eyJ2b2x1bWUiOiJoaWdoIiwiZml0IjowLjc4fSwibGVuZ3RoIjoiY3JvcHBlZCIsImZhYnJpYyI6eyJtYXRlcmlhbCI6InBvbHllc3RlciIsImZpbmlzaFdlaWdodCI6MC44NX0sImNvbG9yIjp7InNjaGVtZSI6Im1vbm8iLCJzdG9wcyI6WyIjYzJjN2NjIl19LCJjb25zdHJ1Y3Rpb24iOnsiY2xvc3VyZSI6InppcCIsImNvbGxhciI6InN0YW5kIn0sImhhcmR3YXJlIjp7ImZpbmlzaCI6Im1ldGFsIn0sImludGVudCI6eyJlbmVyZ3kiOjAuODV9fQ",
+      "prompt": "A cropped boxy puffer jacket in metallic chrome silver, glossy quilted nylon, high stand collar, full zip front, futuristic contemporary streetwear"
+    },
+    {
+      "id": "dress",
+      "dna": "eyJhcmNoZXR5cGVXZWlnaHRzIjp7InF1aWV0TWluaW1hbCI6MCwidGVjaEF2YW50IjowLCJ5MmtTdHJlZXQiOjAsInNvZnRDb3V0dXJlIjowLCJ1dGlsaXR5IjowLCJzcG9ydCI6MH0sImNhdGVnb3J5IjoiZHJlc3MiLCJzdWJBcmNoZXR5cGUiOiJzbGlwIiwic2lsaG91ZXR0ZSI6eyJmaXQiOjAuN30sImxlbmd0aCI6ImxvbmciLCJmYWJyaWMiOnsibWF0ZXJpYWwiOiJzaWxrIiwiZmluaXNoV2VpZ2h0IjowLjl9LCJjb2xvciI6eyJzY2hlbWUiOiJtb25vIiwic3RvcHMiOlsiI2U4ZDI3YSJdfSwiY29uc3RydWN0aW9uIjp7ImNvbGxhciI6InZuZWNrIiwic2xlZXZlTGVuZ3RoIjoic2xlZXZlbGVzcyIsIndhaXN0IjoiZml0dGVkIn0sInNpZ25hdHVyZSI6WyJzaWRlLXNsaXQiXSwiaW50ZW50Ijp7ImVuZXJneSI6MC42fX0",
+      "prompt": "A bias-cut satin slip dress in soft butter yellow, fluid bias drape, slim straps, V neckline, midi length, minimalist modern couture"
+    }
+  ]
+}
