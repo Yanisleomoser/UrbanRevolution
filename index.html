@@ -73,7 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260603-funnel">
+    <link rel="stylesheet" href="css/styles.css?v=20260611-weave">
 
     <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
          Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
@@ -216,10 +216,69 @@
     <!-- 1 · HERO — Produktversprechen. Links Statement + CTA, rechts eine live
          laufende UR-Create-Evolution (GarmentSVG-Morph-Schaufenster). -->
     <section class="ur-hero" id="top" aria-labelledby="urhero-heading">
+        <!-- Modul B · Aurora: weiche radial-gradient-Orbs (KEIN filter:blur →
+             kein iOS-Safari-Jank), Drift nur per transform (compositor-only). -->
+        <div class="aurora" aria-hidden="true"></div>
+        <!-- Modul A · Schnittmuster-Hero: LEBENDE Bezier-Kurven (Armloch-/Seiten-
+             naht-Charakter) — die Kontrollpunkte morphen endlos (SMIL, läuft auch
+             in Safari; CSS d:path() tut das nicht), Endpunkte + Anker bleiben fix.
+             Lichtfunken wandern als Dash-Segment AUF dem Stroke entlang → kleben
+             geometrisch exakt an der morphenden Linie. Teal-Gradient + Glow.
+             Rein dekorativer Hintergrund-Layer, überlagert NICHT #hero-showcase. -->
+        <div class="ur-hero-curves" aria-hidden="true">
+            <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                    <linearGradient id="urGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#2779a8"/><!-- --accent-2 -->
+                        <stop offset="50%" stop-color="#2a9d8f"/><!-- --accent -->
+                        <stop offset="100%" stop-color="#64d6c4"/><!-- --accent-3 -->
+                    </linearGradient>
+                    <filter id="urCurveGlow" x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur stdDeviation="4"/>
+                    </filter>
+                </defs>
+                <!-- Kurve 1 · Seitennaht -->
+                <path class="urc-glow urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
+                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
+                </path>
+                <path class="urc-line urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
+                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
+                </path>
+                <path class="urc-spark urc-s1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
+                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
+                </path>
+                <!-- Kurve 2 · Armloch -->
+                <path class="urc-glow urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
+                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
+                </path>
+                <path class="urc-line urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
+                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
+                </path>
+                <path class="urc-spark urc-s2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
+                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
+                </path>
+                <!-- Kurve 3 · Saum -->
+                <path class="urc-glow urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
+                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                </path>
+                <path class="urc-line urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
+                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                </path>
+                <path class="urc-spark urc-s3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
+                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                </path>
+                <circle class="urc-anchor" cx="90" cy="70" r="4"/>
+                <circle class="urc-anchor" cx="430" cy="700" r="4"/>
+                <circle class="urc-anchor" cx="520" cy="80" r="4"/>
+                <circle class="urc-anchor" cx="900" cy="560" r="4"/>
+                <circle class="urc-anchor" cx="980" cy="120" r="4"/>
+                <circle class="urc-anchor" cx="1160" cy="720" r="4"/>
+            </svg>
+        </div>
         <div class="container ur-hero-grid">
             <div class="ur-hero-copy">
                 <p class="mono-label section-label" data-reveal data-i18n="hero2.eyebrow">[ URBAN REVOLUTION ]</p>
-                <h1 id="urhero-heading" class="ur-hero-headline" data-reveal data-i18n-html="hero2.headline_html">Erschaffe die <span class="gradient-text">Zukunft der Mode</span></h1>
+                <h1 id="urhero-heading" class="ur-hero-headline" data-reveal="blur" data-i18n-html="hero2.headline_html">Erschaffe die <span class="gradient-text">Zukunft der Mode</span></h1>
                 <p class="ur-hero-sub" data-reveal data-i18n="hero2.sub">Entwirf einzigartige Mode-Konzepte mit UR Create — und entdecke eine neue Alternative zu massenproduzierter Mode.</p>
                 <div class="ur-hero-actions" data-reveal>
                     <a href="#design" class="manifesto-cta" data-i18n-html="hero2.cta_html">UR Create starten <span aria-hidden="true">&#8594;</span></a>
@@ -227,11 +286,26 @@
                 </div>
             </div>
             <div class="ur-hero-stage" aria-hidden="true">
+                <!-- f13 · Border-Beam: ein Lichtbogen läuft langsam um die Kante
+                     des LIVE-Rahmens — macht „live" sichtbar statt behauptet. -->
+                <div class="ur-beam" aria-hidden="true"></div>
                 <div id="hero-showcase" class="ur-hero-showcase"></div>
-                <p class="ur-hero-caption mono-label" data-i18n="hero2.caption">[ LIVE · EIN KONZEPT ENTWICKELT SICH ]</p>
+                <p class="ur-hero-caption" data-i18n="hero2.caption">Sieh, wie aus deinem Design dein Lieblingsstück entsteht.</p>
             </div>
         </div>
     </section>
+    <script>
+        /* Reduced-Motion-Guard für die SMIL-Kurven-Morphs oben: SMIL hört nicht
+           auf CSS-Media-Queries → SVG-Uhr pausieren (statisch sichtbar). */
+        (function () {
+            var svg = document.querySelector(".ur-hero-curves svg");
+            if (!svg || !svg.pauseAnimations) return;
+            var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+            var apply = function () { if (mq.matches) svg.pauseAnimations(); else svg.unpauseAnimations(); };
+            apply();
+            if (mq.addEventListener) mq.addEventListener("change", apply);
+        })();
+    </script>
 
     <section id="design" class="section design-section">
         <div class="container">
@@ -474,7 +548,7 @@
     <section class="problem" id="problem" aria-labelledby="prob-heading">
         <div class="container prob-head" data-reveal>
             <span class="section-number mono-label section-label" data-i18n="prob.label">[ DAS PROBLEM ]</span>
-            <h2 id="prob-heading" data-i18n="prob.h2">Die Industrie produziert mehr, als die Welt braucht</h2>
+            <h2 id="prob-heading" data-reveal="blur" data-i18n="prob.h2">Die Industrie produziert mehr, als die Welt braucht</h2>
             <p class="prob-intro" data-i18n="prob.intro">Vier Tatsachen — jede mit einer Zahl, die niemand sehen will.</p>
         </div>
 
@@ -524,7 +598,7 @@
     <section class="alternative manifesto" id="alternative" aria-labelledby="alt-heading">
         <div class="container manifesto-inner">
             <p class="manifesto-eyebrow mono-label section-label" data-reveal data-i18n="alt.label">[ DIE ALTERNATIVE ]</p>
-            <h2 id="alt-heading" class="manifesto-headline" data-reveal data-i18n-html="alt.headline_html">Was wäre, wenn Mode <em>bei Menschen</em> begänne?</h2>
+            <h2 id="alt-heading" class="manifesto-headline" data-reveal="blur" data-i18n-html="alt.headline_html">Was wäre, wenn Mode <em>bei Menschen</em> begänne?</h2>
             <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution macht aus weggeworfenen Kleidern neuen Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich — aus genau dem, was die Branche wegwirft. Kein neuer Rohstoff, keine Überproduktion, keine Deponie.</p>
             <div class="manifesto-actions" data-reveal>
                 <a href="#community" class="manifesto-cta" data-i18n-html="alt.cta_html">Stell dir ein anderes System vor <span aria-hidden="true">&#8594;</span></a>
@@ -533,33 +607,15 @@
     </section>
 
 
-    <!-- 6b · LOOKBOOK — editorialer Bildband (kuratierte Studio-Renders der
-         Bild-Bibliothek): zukunftsgerichtete Konzepte, menschenzentrierte
-         Kreation. Horizontaler Scroll-Snap, lazy geladen. -->
-    <section class="lookbook" aria-labelledby="lookbook-heading">
-        <div class="container">
-            <p class="mono-label section-label" data-reveal data-i18n="look.label">[ KONZEPTE ]</p>
-            <h2 id="lookbook-heading" class="lookbook-headline" data-reveal data-i18n="look.h2">Was entsteht, wenn Menschen zuerst kommen</h2>
-        </div>
-        <div class="lookbook-track" data-reveal tabindex="0" data-i18n-aria-label="look.aria" aria-label="Lookbook — horizontal scrollen">
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/jacket-techAvant.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Tech Avant</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/dress-softCouture.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Soft Couture</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/hoodie-y2kStreet.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Y2K Street</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/shirt-quietMinimal.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Quiet Minimal</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/pants-utility.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Utility</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/tshirt-sport.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Sport</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/jacket-softCouture.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Soft Couture</figcaption></figure>
-                <figure class="lookbook-slide"><img loading="lazy" decoding="async" src="js/design-engine/content/img/preview/dress-techAvant.jpg" alt="" width="448" height="560"><figcaption class="mono-label">Tech Avant</figcaption></figure>
-        </div>
-    </section>
-
     <!-- 7 · COMMUNITY — ein Hub: Kreationen entdecken (filterbar) → mitmachen.
          (Früher zwei getrennte Sektionen Galerie + Beitreten; zusammengeführt.) -->
     <section class="gallery community-hub" id="community" aria-labelledby="community-heading">
+        <!-- Modul B · dritter Aurora-Orb (eigene Position, gleiche Bausteine). -->
+        <div class="aurora aurora--community" aria-hidden="true"></div>
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number mono-label section-label" data-i18n="gal.label">[ COMMUNITY ]</span>
-                <h2 id="community-heading" data-i18n="gal.h2">Keine zwei Visionen sind gleich</h2>
+                <h2 id="community-heading" data-reveal="blur" data-i18n="gal.h2">Keine zwei Visionen sind gleich</h2>
                 <p data-i18n="gal.intro">Kreationen aus der Community — sieh sie an, lass dich inspirieren oder remixe sie als Start deiner eigenen Evolution.</p>
             </div>
             <div class="gallery-filters" id="gallery-filters" role="group" data-i18n-aria-label="gal.filter_aria" aria-label="Kreationen nach Typ filtern" data-reveal></div>
@@ -592,8 +648,34 @@
 
     <!-- 10 · FINALER CTA — kein Standard-Footer-Ende, ein letzter Moment. -->
     <section class="final-cta" aria-labelledby="final-heading">
+        <!-- f02 · Schlussakkord-Ring: Pfad mit Ankerpunkten + Aurora-Saum + einem
+             Lichtfunken auf der Kreisbahn rahmt die finale Frage (Reel-Motiv,
+             in UR-Teal). Sehr langsame Rotation lässt die Anker mitwandern. -->
+        <div class="final-ring" aria-hidden="true">
+            <svg viewBox="0 0 900 900" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <linearGradient id="urGradRing" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#2779a8"/><!-- --accent-2 -->
+                        <stop offset="50%" stop-color="#2a9d8f"/><!-- --accent -->
+                        <stop offset="100%" stop-color="#64d6c4"/><!-- --accent-3 -->
+                    </linearGradient>
+                    <filter id="urRingGlow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="6"/>
+                    </filter>
+                </defs>
+                <g class="frg-rot">
+                    <circle class="frg-glow" cx="450" cy="450" r="430"/>
+                    <circle class="frg-line" cx="450" cy="450" r="430" pathLength="1"/>
+                    <circle class="frg-spark" cx="450" cy="450" r="430" pathLength="1"/>
+                    <circle class="urc-anchor" cx="854" cy="597" r="5"/>
+                    <circle class="urc-anchor" cx="78" cy="665" r="5"/>
+                    <circle class="urc-anchor" cx="413" cy="22" r="5"/>
+                    <circle class="urc-anchor" cx="525" cy="873" r="5"/>
+                </g>
+            </svg>
+        </div>
         <div class="container final-inner">
-            <h2 id="final-heading" class="final-headline" data-reveal data-i18n-html="final.h2_html">Bereit, die Zukunft der Mode zu erschaffen?</h2>
+            <h2 id="final-heading" class="final-headline" data-reveal="liquid" data-i18n-html="final.h2_html">Bereit, die Zukunft der Mode zu erschaffen?</h2>
             <p class="final-sub" data-reveal data-i18n="final.sub">Jede Idee beginnt mit jemandem, der bereit ist, sich etwas anderes vorzustellen.</p>
             <a href="#design" class="manifesto-cta final-btn" data-reveal data-i18n-html="final.cta_html">UR Create starten <span aria-hidden="true">&#8594;</span></a>
         </div>
@@ -980,7 +1062,7 @@
     <script src="js/design-engine/flow.js"></script>
     <script src="js/app.js"></script>
     <script src="js/flair.js"></script>
-    <script src="js/ur-create.js"></script>
+    <script src="js/ur-create.js?v=20260611-weave"></script>
     <script src="js/ambient-ticker.js"></script>
 </body>
 </html>

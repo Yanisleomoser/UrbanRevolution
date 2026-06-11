@@ -3229,6 +3229,46 @@ html.is-touch { scroll-behavior: auto; }
     }
 }
 
+/* ── Modul C · Reveal-Upgrade (Blur + Rise) ────────────────────────────────
+   Variante des bestehenden Reveal-Systems (animations.js unverändert): nur die
+   Elemente mit data-reveal="blur" bekommen zusätzlich einen Blur-Rise. Selektor
+   matcht exakt den Wert "blur" → attributlose data-reveal bleiben unangetastet. */
+[data-reveal="blur"] {
+    transform: translateY(22px);
+    filter: blur(10px);
+    transition:
+        opacity 1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        transform 1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        filter 1s var(--ease-out, cubic-bezier(0.16,1,0.3,1));
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform, filter;
+}
+[data-reveal="blur"].is-revealed { filter: blur(0); }
+
+/* f02 · „Liquid"-Variante für den Schlussakkord: Text materialisiert sich —
+   Blur + sanftes Verdichten (letter-spacing 0.06em → 0). Bewusst KEIN
+   feDisplacementMap auf i18n-HTML-Text (auf iOS Safari notorisch kaputt). */
+[data-reveal="liquid"] {
+    transform: translateY(18px);
+    filter: blur(14px);
+    letter-spacing: 0.06em;
+    transition:
+        opacity 1.1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        transform 1.1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        filter 1.1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        letter-spacing 1.1s var(--ease-out, cubic-bezier(0.16,1,0.3,1));
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform, filter;
+}
+[data-reveal="liquid"].is-revealed { filter: blur(0); letter-spacing: 0em; }
+/* Reduced-motion: der Basis-Guard neutralisiert opacity/transform/transition,
+   NICHT aber filter/letter-spacing → hier explizit, sonst bliebe die Headline
+   verschwommen bzw. gesperrt. */
+@media (prefers-reduced-motion: reduce) {
+    [data-reveal="blur"], [data-reveal="liquid"] { filter: none !important; }
+    [data-reveal="liquid"] { letter-spacing: 0em !important; }
+}
+
 /* Navbar gets a stronger background after the user has scrolled past
    the hero — JS toggles `.scrolled` on the .navbar element. */
 .navbar {
@@ -4756,7 +4796,11 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    Ruhig, cineastisch: eine Frage groß, viel Negativraum. Nur :root-Tokens.
    ============================================================ */
 .de-stage { max-width: 1120px; margin: 0 auto; padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; gap: var(--space-7); }
-.de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); }
+/* Modul D · Glow-Ring: weicher Teal-Glow + chromatischer Saum am Fortschritts-
+   kreis. Der Ring wird in flow.js gerendert (kein DOM-Zugriff hier) → der „zweite
+   Stroke\" ist als zweiter, enger Aqua-drop-shadow umgesetzt (gleiche Optik, rein
+   CSS). drop-shadow ist statisch → reduced-motion unkritisch. */
+.de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); filter: drop-shadow(0 0 8px rgba(42,157,143,.6)) /* --accent */ drop-shadow(0 0 2px rgba(100,214,196,.45)); /* --accent-3 chromatischer Saum */ }
 .de-ring-pct { fill: var(--text); font-size: 17px; font-weight: 700; }
 .de-ring-unit { fill: var(--text-dim); font-size: 10px; font-weight: 600; }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
@@ -5272,8 +5316,95 @@ footer.footer {
 .nav-cta { display: inline-block; padding: 0.5rem 1.1rem; border-radius: 999px; background: var(--gradient); color: #06121c !important; font-weight: 600; }
 
 /* 1 · Hero */
-.ur-hero { padding: calc(96px + env(safe-area-inset-top)) 0 56px; min-height: calc(86 * var(--svh, 1svh)); display: flex; align-items: center; }
-.ur-hero-grid { display: grid; gap: 40px; align-items: center; }
+.ur-hero { padding: calc(96px + env(safe-area-inset-top)) 0 56px; min-height: calc(86 * var(--svh, 1svh)); display: flex; align-items: center; position: relative; overflow: hidden; }
+.ur-hero-grid { display: grid; gap: 40px; align-items: center; position: relative; z-index: 1; }
+
+/* ── Modul A · Schnittmuster-Hero (SVG-Bezier-Layer) ───────────────────────── */
+.ur-hero-curves { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.ur-hero-curves svg { width: 100%; height: 100%; display: block; }
+.urc-glow { fill: none; stroke: url(#urGrad); stroke-width: 6; filter: url(#urCurveGlow); opacity: .5; }
+.urc-line { fill: none; stroke: url(#urGrad); stroke-width: 1.5; }
+/* Selbstzeichnen beim Laden (pathLength=1 normiert die Strichlänge), danach
+   sehr langsames Opacity-Atmen. Pro Kurve leicht gestaffelt. */
+.urc-glow, .urc-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: urcDraw 1.6s var(--ease-out) forwards; }
+.urc-line { animation: urcDraw 1.6s var(--ease-out) forwards, urcBreathe 8s ease-in-out infinite; }
+.urc-d1 { animation-delay: 0s, 1.8s; }
+.urc-d2 { animation-delay: .2s, 2s; }
+.urc-d3 { animation-delay: .4s, 2.2s; }
+.urc-anchor { fill: #eef4f8; /* helles Off-White, bewusst kein Token (SVG) */ transform-box: fill-box; transform-origin: center; animation: urcPulse 2.4s ease-in-out infinite alternate; }
+/* Lichtfunken: kurzes helles Dash-Segment, das den Stroke entlangläuft —
+   weil es Teil des Strokes ist, klebt es exakt an der morphenden Geometrie
+   (Reel-Referenz: Licht wandert an der Linie entlang). Erscheint nach dem
+   Draw-In, pro Kurve eigenes Tempo. */
+.urc-spark { fill: none; stroke: #eef4f8; /* Off-White-Lichtpunkt (SVG) */ stroke-width: 2.5; stroke-linecap: round; opacity: 0; stroke-dasharray: 0.05 0.95; stroke-dashoffset: 1; }
+.urc-s1 { animation: urcSparkFade .8s var(--ease-out) 2.2s forwards, urcSpark 8s linear 2.2s infinite; }
+.urc-s2 { animation: urcSparkFade .8s var(--ease-out) 2.6s forwards, urcSpark 10s linear 2.6s infinite; }
+.urc-s3 { animation: urcSparkFade .8s var(--ease-out) 3s forwards, urcSpark 12s linear 3s infinite; }
+@keyframes urcDraw { to { stroke-dashoffset: 0; } }
+@keyframes urcBreathe { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
+@keyframes urcPulse { from { transform: scale(.78); opacity: .7; } to { transform: scale(1.15); opacity: 1; } }
+@keyframes urcSpark { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes urcSparkFade { to { opacity: .9; } }
+@media (prefers-reduced-motion: reduce) {
+  .urc-glow, .urc-line { stroke-dashoffset: 0 !important; animation: none !important; }
+  .urc-anchor { animation: none !important; }
+  /* Funken sind reine Bewegungselemente — ohne Bewegung kein Informationswert. */
+  .urc-spark { animation: none !important; opacity: 0 !important; }
+}
+@media (max-width: 859px) { .ur-hero-curves { opacity: .5; } }
+
+/* ── Modul B · Aurora-Layer ────────────────────────────────────────────────
+   Weiche radial-gradient-Falloffs statt filter:blur (kein iOS-Safari-Jank);
+   Drift ausschließlich per transform (compositor-only). */
+.aurora { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.aurora::before, .aurora::after {
+  content: ""; position: absolute; width: min(55vw, 640px); height: min(55vw, 640px);
+  border-radius: 50%; will-change: transform;
+}
+.aurora::before { top: -12%; left: -8%; background: radial-gradient(closest-side, rgba(42,157,143,.42), transparent 70%); /* --accent */ animation: auroraDriftA 26s ease-in-out infinite alternate; }
+.aurora::after { bottom: -14%; right: -6%; background: radial-gradient(closest-side, rgba(39,121,168,.33), transparent 70%); /* --accent-2 */ animation: auroraDriftB 34s ease-in-out infinite alternate; }
+@keyframes auroraDriftA { from { transform: translate(0, 0) scale(1); } to { transform: translate(10%, 8%) scale(1.15); } }
+@keyframes auroraDriftB { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-12%, -8%) scale(1.1); } }
+/* Dritter Orb im Community-Hub: ein einzelner Orb, eigene Position. */
+.community-hub { position: relative; overflow: hidden; }
+.community-hub > .container { position: relative; z-index: 1; }
+.aurora--community::after { display: none; }
+.aurora--community::before { top: auto; bottom: -18%; left: auto; right: -10%; background: radial-gradient(closest-side, rgba(100,214,196,.24), transparent 70%); /* --accent-3 */ animation: auroraDriftB 30s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before, .aurora::after { animation: none !important; }
+}
+
+/* ── f13 · Border-Beam: Lichtbogen läuft um die Kante (Reel-Motiv „Connected",
+   hier = LIVE-Zustand des Showcase-Rahmens). Wrapper-Variante: statische Ring-
+   Maske auf .ur-beam, darin rotiert NUR der Conic-Gradient per transform
+   (compositor-only — keine Repaints). ────────────────────────────────────── */
+.ur-beam { position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; overflow: hidden;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude; }
+.ur-beam::before { content: ""; position: absolute; inset: -75%; /* deckt die Diagonale beim Rotieren ab */
+  background: conic-gradient(transparent 0 76%, rgba(39,121,168,0) 80%, rgba(42,157,143,.85) 90%, rgba(100,214,196,.95) 94%, transparent 100%); /* --accent-2 → --accent → --accent-3 */
+  animation: urBeamSpin 9s linear infinite; }
+@keyframes urBeamSpin { to { transform: rotate(1turn); } }
+
+/* Featured-Kachel im Community-Hub: gleiche Optik ohne Zusatz-Markup (Kachel
+   kommt aus ur-create.js) → Conic-Winkel via @property animiert. Browser ohne
+   @property zeigen einen statischen Bogen (würdevoller Fallback). */
+@property --ur-beam-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.gallery-tile.is-featured { position: relative; }
+.gallery-tile.is-featured::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--ur-beam-a), transparent 0 76%, rgba(39,121,168,0) 80%, rgba(42,157,143,.6) 90%, rgba(100,214,196,.75) 94%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: urBeamAngle 10s linear infinite; }
+@keyframes urBeamAngle { to { --ur-beam-a: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  /* Beam statisch sichtbar als dezenter Bogen, keine Bewegung. */
+  .ur-beam::before, .gallery-tile.is-featured::before { animation: none !important; }
+}
 .ur-hero-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(2.4rem, 7vw, 4.4rem); line-height: 1.06; margin: 14px 0 18px; }
 .ur-hero-sub { color: var(--text-muted); max-width: 46ch; font-size: 1.06rem; }
 .ur-hero-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 26px; }
@@ -5281,10 +5412,21 @@ footer.footer {
 /* position:relative + overflow:hidden → der absolut gesetzte .de-garment-wrap
    bleibt in SEINER Box; vorher füllte er die ganze Stage und überlappte die
    Caption (iPhone-Report). */
-.ur-hero-showcase { position: relative; overflow: hidden; height: clamp(270px, 40svh, 380px); display: flex; align-items: center; justify-content: center; }
-.ur-hero-showcase .de-garment-wrap { padding: var(--space-4, 14px); }
-.ur-hero-showcase svg { height: 100%; width: auto; filter: drop-shadow(0 10px 26px rgba(0,0,0,0.4)); }
-.ur-hero-caption { margin-top: 14px; text-align: center; color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.1em; white-space: nowrap; }
+.ur-hero-showcase { position: relative; overflow: hidden; border-radius: 12px; height: clamp(270px, 40svh, 380px); display: flex; align-items: center; justify-content: center; }
+/* Flat (technischer Schnitt) und echtes Foto deckungsgleich gestapelt — beide
+   zentriert auf dunklem Grund (Foto via contain, dessen Studio-Grund ~= --bg
+   blendet), damit die Webkante das EINE Stück verwandelt statt zwei Bilder zu
+   tauschen. Bewegung wird per Web Animations API (ur-create.js) gesteuert. */
+.ur-hero-flat, .ur-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ur-hero-flat { display: flex; align-items: center; justify-content: center; }
+.ur-hero-flat svg { height: 96%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
+.ur-hero-photo { object-fit: contain; border-radius: inherit; will-change: clip-path, filter; clip-path: inset(0 0 100% 0); }
+/* Leuchtende Webkante: dünner Gradient-Faden + Glow + weiche Schimmer-Bahn
+   darunter; fährt (JS: top 0→100 %) mit der Enthüllungskante nach unten. */
+.ur-hero-weave { position: absolute; left: 0; right: 0; top: 0; height: 0; opacity: 0; pointer-events: none; will-change: top, opacity; }
+.ur-hero-weave::before { content: ""; position: absolute; left: 6%; right: 6%; top: -1px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accent-2), var(--accent-3), var(--accent), transparent); box-shadow: 0 0 14px 2px rgba(100,214,196,0.55); }
+.ur-hero-weave::after { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 30px; background: linear-gradient(180deg, rgba(100,214,196,0.20), transparent); }
+.ur-hero-caption { margin-top: 14px; text-align: center; color: var(--text-muted); font-size: 0.82rem; line-height: 1.4; max-width: 38ch; margin-left: auto; margin-right: auto; }
 @media (min-width: 860px) { .ur-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 56px; } }
 
 .btn-ghost { padding: 0.8rem 1.4rem; border-radius: 999px; border: 1px solid var(--border, #25415a); background: transparent; color: var(--text); font: inherit; cursor: pointer; transition: border-color .2s var(--ease-out), background .2s var(--ease-out); }
@@ -5356,7 +5498,25 @@ footer.footer {
 .join-status { margin-top: 12px; color: var(--accent-3, #64d6c4); min-height: 1.2em; }
 
 /* 10 · Finaler CTA */
-.final-cta { padding: 110px 0 130px; text-align: center; background: radial-gradient(90% 70% at 50% 100%, rgba(39,121,168,0.16), transparent); }
+.final-cta { padding: 110px 0 130px; text-align: center; background: radial-gradient(90% 70% at 50% 100%, rgba(39,121,168,0.16), transparent); overflow: hidden; }
+/* ── f02 · Schlussakkord-Ring ──────────────────────────────────────────────
+   Kreispfad mit Ankerpunkten + Aurora-Saum rahmt die finale Frage; ein Licht-
+   funke läuft auf der Kreisbahn (Dash-Technik wie im Hero), die sehr langsame
+   Rotation lässt die Anker mitwandern. Auf Mobil ragt der Ring bewusst über
+   den Viewport hinaus (overflow:hidden oben fängt ihn ein — Reel-Optik). */
+.final-ring { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; }
+.final-ring svg { width: min(150vw, 760px); height: min(150vw, 760px); flex: none; }
+.final-inner { position: relative; z-index: 1; }
+.frg-rot { transform-box: fill-box; transform-origin: center; animation: frgSpin 90s linear infinite; }
+.frg-glow { fill: none; stroke: url(#urGradRing); stroke-width: 10; opacity: .45; filter: url(#urRingGlow); }
+.frg-line { fill: none; stroke: rgba(238,244,248,.55); /* Off-White-Pfadlinie (SVG) */ stroke-width: 1.2; }
+.frg-spark { fill: none; stroke: #eef4f8; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.04 0.96; stroke-dashoffset: 1; opacity: .9; animation: urcSpark 14s linear infinite; }
+@keyframes frgSpin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) {
+  .frg-rot { animation: none !important; }
+  /* Funke = reines Bewegungselement → aus; Ring + Anker bleiben statisch sichtbar. */
+  .frg-spark { animation: none !important; opacity: 0 !important; }
+}
 .final-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.1; max-width: 18ch; margin: 0 auto 16px; }
 .final-sub { color: var(--text-muted); max-width: 48ch; margin: 0 auto 30px; }
 .final-btn { font-size: 1.05rem; }
@@ -5373,9 +5533,34 @@ footer.footer {
 .de-concepts { margin: 18px 0 6px; }
 .de-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 10px; }
 .de-concept { margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.de-concept-pick { display: block; width: 100%; padding: 8px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out); }
+.de-concept-pick { position: relative; display: block; width: 100%; padding: 8px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out); }
+/* f05 · Karten gleiten gestaffelt herein (CSS-Animation greift automatisch,
+   wenn flow.js das Varianten-Grid mountet — kein JS-Eingriff). */
+.de-concept { animation: urConceptIn .5s var(--ease-out) backwards; }
+.de-concept:nth-child(2) { animation-delay: 90ms; }
+.de-concept:nth-child(3) { animation-delay: 180ms; }
+.de-concept:nth-child(4) { animation-delay: 270ms; }
+@keyframes urConceptIn { from { opacity: 0; transform: translateY(16px) scale(.97); } }
 .de-concept-pick:hover { border-color: var(--accent); transform: translateY(-2px); }
-.de-concept.is-selected .de-concept-pick { border-color: var(--accent-3, #64d6c4); box-shadow: 0 0 0 1px var(--accent-3, #64d6c4), 0 8px 24px rgba(0,0,0,0.35); }
+/* f05 · Gewählte Karte = Teal-Glas (Reel-Motiv Glas-Gradient-Karte): satte
+   Gradient-Fläche + Top-Highlight wie eine beleuchtete Glaskante. */
+.de-concept.is-selected .de-concept-pick { border-color: var(--accent-3, #64d6c4);
+  background:
+    linear-gradient(165deg, rgba(42,157,143,.30), rgba(39,121,168,.16) 52%, rgba(10,22,34,.55)),
+    radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%);
+  box-shadow: inset 0 1px 0 rgba(238,244,248,.22), 0 0 0 1px var(--accent-3, #64d6c4), 0 10px 28px rgba(0,0,0,.4); }
+/* f05 · Chromatischer KI-Sparkle am Eck der gewählten Karte (vierzackiger Stern
+   per clip-path). Bewusst NICHT im Evolve-Button: das DE-Label
+   „Weiterentwickeln" lässt auf 120px-Karten keinen Platz für ein Icon. */
+.de-concept.is-selected .de-concept-pick::after { content: ""; position: absolute; top: -6px; right: -6px; width: 14px; height: 14px;
+  background: linear-gradient(135deg, #64d6c4, #2779a8); /* --accent-3 → --accent-2 */
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: urSparkle 2.4s ease-in-out infinite; }
+@keyframes urSparkle { 0%, 100% { transform: scale(.8) rotate(0deg); opacity: .75; } 50% { transform: scale(1.15) rotate(45deg); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .de-concept { animation: none !important; }
+  .de-concept.is-selected .de-concept-pick::after { animation: none !important; }
+}
 .de-concept-stage svg { width: 100%; height: 132px; display: block; }
 .de-concept-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
 .de-concept-v { color: var(--accent-3, #64d6c4); font-size: 0.7rem; letter-spacing: 0.12em; }
@@ -5391,20 +5576,10 @@ footer.footer {
 .ur-hero-showcase .de-preview-badge { display: none; }
 
 /* Lookbook — editorialer Bildband (Scroll-Snap, sanftes Hover-Leben) */
-.lookbook { padding: 78px 0 70px; overflow: hidden; }
-.lookbook-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.7rem, 4.6vw, 2.6rem); margin: 10px 0 26px; }
-.lookbook-track { display: flex; gap: 18px; overflow-x: auto; padding: 6px max(24px, calc((100vw - 1160px) / 2)) 22px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.lookbook-track::-webkit-scrollbar { display: none; }
-.lookbook-slide { margin: 0; flex: 0 0 auto; width: clamp(220px, 62vw, 336px); scroll-snap-align: center; }
-.lookbook-slide img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-lg, 18px); border: 1px solid var(--border, #25415a); box-shadow: 0 14px 38px rgba(0,0,0,0.45); display: block; }
-.lookbook-slide figcaption { margin-top: 10px; color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.14em; }
 @media (prefers-reduced-motion: no-preference) {
-  .lookbook-slide img { transition: transform .45s var(--ease-out), box-shadow .45s var(--ease-out); }
-  .lookbook-slide:hover img { transform: translateY(-6px) scale(1.015); box-shadow: 0 22px 50px rgba(0,0,0,0.55); }
   .gallery-tile { transition: transform .3s var(--ease-out), border-color .3s var(--ease-out); }
   .gallery-tile:hover { transform: translateY(-4px); border-color: var(--accent); }
 }
-.lookbook-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
 
 /* Bugfix: [hidden] muss IMMER gewinnen — Klassen mit eigenem display
    (.manifesto-cta, .de-nav …) überstimmten sonst die UA-Regel, wodurch z. B.
@@ -5418,7 +5593,7 @@ footer.footer {
    · Final („die Zukunft erschaffen") → fließende Ozean-Fläche (vorwärts, Marke)
    Starker Navy-Scrim (in der vertikalen Mitte am dunkelsten, wo der Text sitzt)
    hält Kontrast/Lesbarkeit; Bilder liegen unter dem Fold, kein Layout-Shift. */
-.alternative, .vision, .final-cta { position: relative; isolation: isolate; }
+.alternative, .final-cta { position: relative; isolation: isolate; }
 .alternative::before, .final-cta::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background-position: center; background-size: cover; background-repeat: no-repeat;
@@ -5483,7 +5658,14 @@ footer.footer {
 .prob-scene-body { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.35rem, 4.4vw, 2.1rem); line-height: 1.22; margin: 0 0 16px; }
 .prob-fig { display: flex; flex-direction: column; gap: 2px; margin: 0; }
 .prob-fig-num { font-family: var(--font-display, 'Lora', serif); font-weight: 700; font-size: clamp(2.1rem, 9vw, 3.6rem); line-height: 1;
-  background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;
+  /* Modul D · Stat-Payoff: Glow blendet sich ein, wenn die Szene revealt. */
+  text-shadow: 0 0 0 transparent; transition: text-shadow 1s var(--ease-out); }
+.prob-scene.is-revealed .prob-fig-num { text-shadow: 0 0 18px rgba(100,214,196,.55), 0 0 44px rgba(100,214,196,.28); /* --accent-3, zweischichtig */ }
+@media (prefers-reduced-motion: reduce) {
+  /* Glow statisch ohne Übergang (Szene ist bei reduced-motion sofort revealt). */
+  .prob-fig-num { transition: none !important; }
+}
 .prob-fig-ctx { color: var(--text-muted); font-size: 0.95rem; }
 .prob-live { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; color: var(--text-muted); font-size: 0.78rem; letter-spacing: 0.06em; }
 .prob-foot { text-align: center; max-width: 720px; margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
