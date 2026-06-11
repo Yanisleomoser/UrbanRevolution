@@ -1007,6 +1007,92 @@
     }
   }
 
+  // ── „Weiter anpassen" — Inline-Editor im Ownership-Moment ─────────────────
+  // Bewusst eine Fassade: jedes Feld spiegelt seine Änderung auf das jeweils
+  // bestehende #design-/#measure-Control (Wert setzen + dessen Event auslösen,
+  // bzw. applyColor / preset-btn.click()). So bleibt EIN Zustand, alle bereits
+  // vorhandenen Subscriptions/Sync-Pfade greifen, nichts wird doppelt verdrahtet.
+  function populateOwnEditorOptions() {
+    const clone = (srcId, dstId) => {
+      const src = document.getElementById(srcId);
+      const dst = document.getElementById(dstId);
+      if (src && dst) dst.innerHTML = src.innerHTML;
+    };
+    clone("material-select", "oe-material");
+    clone("length-select", "oe-length");
+    const colors = document.getElementById("oe-colors");
+    if (colors && !colors.children.length) {
+      document.querySelectorAll("button.color-swatch").forEach((sw) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "oe-color";
+        b.dataset.color = sw.dataset.color;
+        b.style.background = sw.dataset.color;
+        b.setAttribute("aria-label", sw.getAttribute("aria-label") || sw.dataset.color);
+        b.setAttribute("aria-pressed", "false");
+        b.addEventListener("click", () => { applyColor(sw.dataset.color); syncOwnEditor(); resetOwnStage(); });
+        colors.appendChild(b);
+      });
+    }
+  }
+
+  // Reflect current state onto the editor controls without firing their events
+  // (setting .value / attributes does not dispatch), so there is no feedback loop.
+  function syncOwnEditor() {
+    const oeMat = document.getElementById("oe-material");
+    const mat = S.get("currentMaterial");
+    if (oeMat && mat) oeMat.value = mat;
+    const oeLen = document.getElementById("oe-length");
+    const len = S.get("currentLength");
+    if (oeLen && len) oeLen.value = len;
+    const oeFit = document.getElementById("oe-fit");
+    const fit = S.get("currentFit");
+    if (oeFit && fit !== null && fit !== undefined) oeFit.value = Math.round(fit * 100);
+    const color = S.get("currentColor");
+    document.querySelectorAll("#oe-colors .oe-color").forEach((b) =>
+      b.setAttribute("aria-pressed", b.dataset.color === color ? "true" : "false"));
+    const measurements = S.get("measurements");
+    const size = measurements ? Measurements.calculateSize(measurements) : null;
+    document.querySelectorAll("#oe-sizes .oe-size").forEach((b) =>
+      b.classList.toggle("is-active", b.dataset.size === size));
+  }
+
+  // After an edit the shown try-on render is stale → revert the stage to the
+  // example placeholder so it's clear the user re-generates to see the change.
+  function resetOwnStage() {
+    const img = document.getElementById("vto-result-img");
+    if (!img || img.hidden) return;
+    img.hidden = true;
+    const actions = document.getElementById("vto-result-actions");
+    if (actions) actions.hidden = true;
+    const example = document.getElementById("vto-example");
+    if (example) example.hidden = false;
+  }
+
+  function initOwnEditor() {
+    populateOwnEditorOptions();
+    const proxy = (srcId, targetId, evt) => {
+      const src = document.getElementById(srcId);
+      if (!src) return;
+      src.addEventListener(evt, () => {
+        const target = document.getElementById(targetId);
+        if (target) { target.value = src.value; target.dispatchEvent(new Event(evt, { bubbles: true })); }
+        resetOwnStage();
+      });
+    };
+    proxy("oe-material", "material-select", "change");
+    proxy("oe-length", "length-select", "change");
+    proxy("oe-fit", "fit-slider", "input");
+    document.querySelectorAll("#oe-sizes .oe-size").forEach((b) =>
+      b.addEventListener("click", () => {
+        const pb = document.querySelector(`.preset-btn[data-preset="${b.dataset.size}"]`);
+        if (pb) pb.click();
+        resetOwnStage();
+        syncOwnEditor();
+      }));
+    syncOwnEditor();
+  }
+
   function updateProductionPreview() {
     const measurements = S.get("measurements");
     if (!measurements) return;
@@ -1813,6 +1899,9 @@
     updateProductionPreview();
     updateVtoButtonState();
     updateOwnInfo();
+    // Re-clone the editor's option labels in the new language, then re-sync.
+    populateOwnEditorOptions();
+    syncOwnEditor();
     // Re-localize the preset persons' accessible names.
     document.querySelectorAll("#own-presets .own-preset").forEach((b, i) =>
       b.setAttribute("aria-label", t("own.preset_alt", { n: i + 1 })));
@@ -1853,6 +1942,7 @@
     initExportButtons();
     initVtoButton();
     initOwnershipChooser();
+    initOwnEditor();
     initLibrary();
     trackScrollSteps();
 
@@ -1862,7 +1952,7 @@
       // Keep the Ownership-moment design-info panel live as the design evolves.
       ["currentDesign", "currentType", "currentMaterial", "currentColor",
         "currentFit", "currentLength", "measurements"].forEach((key) =>
-        window.StateManager.subscribe(`${key}:change`, updateOwnInfo));
+        window.StateManager.subscribe(`${key}:change`, () => { updateOwnInfo(); syncOwnEditor(); }));
     }
     updateVtoButtonState();
     updateOwnInfo();

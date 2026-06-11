@@ -528,6 +528,42 @@
                 </div>
             </div>
 
+            <!-- „Weiter anpassen" — kompakter Inline-Editor. Reine Fassade: die
+                 Felder spiegeln auf die bestehenden #design-/#measure-Controls
+                 (Wert setzen + deren Event auslösen), damit alles in einem
+                 Zustand bleibt und nichts doppelt verdrahtet wird. -->
+            <details class="own-edit" data-reveal>
+                <summary class="own-edit-summary" data-i18n="own.edit_summary">Weiter anpassen</summary>
+                <div class="own-edit-body">
+                    <div class="own-edit-field">
+                        <span class="own-edit-label" data-i18n="own.info_color">Farbe</span>
+                        <div class="own-edit-colors" id="oe-colors" role="group" data-i18n-aria-label="own.info_color" aria-label="Farbe"></div>
+                    </div>
+                    <div class="own-edit-field">
+                        <label class="own-edit-label" for="oe-material" data-i18n="own.info_material">Material</label>
+                        <select id="oe-material"></select>
+                    </div>
+                    <div class="own-edit-field">
+                        <label class="own-edit-label" for="oe-fit" data-i18n="own.info_fit">Passform</label>
+                        <input type="range" id="oe-fit" min="0" max="100" value="50">
+                    </div>
+                    <div class="own-edit-field">
+                        <label class="own-edit-label" for="oe-length" data-i18n="own.info_length">Länge</label>
+                        <select id="oe-length"></select>
+                    </div>
+                    <div class="own-edit-field">
+                        <span class="own-edit-label" data-i18n="own.info_size">Größe</span>
+                        <div class="own-edit-sizes" id="oe-sizes" role="group" data-i18n-aria-label="own.info_size" aria-label="Größe">
+                            <button type="button" class="oe-size" data-size="S">S</button>
+                            <button type="button" class="oe-size" data-size="M">M</button>
+                            <button type="button" class="oe-size" data-size="L">L</button>
+                            <button type="button" class="oe-size" data-size="XL">XL</button>
+                        </div>
+                    </div>
+                    <p class="own-edit-hint" data-i18n="own.edit_hint">Änderungen sind sofort übernommen — generiere die Vorschau neu, um sie an dir zu sehen.</p>
+                </div>
+            </details>
+
             <div class="ownership-actions" data-reveal>
                 <button type="button" id="own-save" class="manifesto-cta" data-i18n="own.save">Meine Kreation speichern</button>
                 <button type="button" id="own-share" class="btn-ghost" data-i18n="own.share">Teilen</button>
