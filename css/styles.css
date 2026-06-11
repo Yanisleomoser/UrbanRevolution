@@ -5485,9 +5485,34 @@ footer.footer {
 .de-concepts { margin: 18px 0 6px; }
 .de-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 10px; }
 .de-concept { margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.de-concept-pick { display: block; width: 100%; padding: 8px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out); }
+.de-concept-pick { position: relative; display: block; width: 100%; padding: 8px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out); }
+/* f05 · Karten gleiten gestaffelt herein (CSS-Animation greift automatisch,
+   wenn flow.js das Varianten-Grid mountet — kein JS-Eingriff). */
+.de-concept { animation: urConceptIn .5s var(--ease-out) backwards; }
+.de-concept:nth-child(2) { animation-delay: 90ms; }
+.de-concept:nth-child(3) { animation-delay: 180ms; }
+.de-concept:nth-child(4) { animation-delay: 270ms; }
+@keyframes urConceptIn { from { opacity: 0; transform: translateY(16px) scale(.97); } }
 .de-concept-pick:hover { border-color: var(--accent); transform: translateY(-2px); }
-.de-concept.is-selected .de-concept-pick { border-color: var(--accent-3, #64d6c4); box-shadow: 0 0 0 1px var(--accent-3, #64d6c4), 0 8px 24px rgba(0,0,0,0.35); }
+/* f05 · Gewählte Karte = Teal-Glas (Reel-Motiv Glas-Gradient-Karte): satte
+   Gradient-Fläche + Top-Highlight wie eine beleuchtete Glaskante. */
+.de-concept.is-selected .de-concept-pick { border-color: var(--accent-3, #64d6c4);
+  background:
+    linear-gradient(165deg, rgba(42,157,143,.30), rgba(39,121,168,.16) 52%, rgba(10,22,34,.55)),
+    radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%);
+  box-shadow: inset 0 1px 0 rgba(238,244,248,.22), 0 0 0 1px var(--accent-3, #64d6c4), 0 10px 28px rgba(0,0,0,.4); }
+/* f05 · Chromatischer KI-Sparkle am Eck der gewählten Karte (vierzackiger Stern
+   per clip-path). Bewusst NICHT im Evolve-Button: das DE-Label
+   „Weiterentwickeln" lässt auf 120px-Karten keinen Platz für ein Icon. */
+.de-concept.is-selected .de-concept-pick::after { content: ""; position: absolute; top: -6px; right: -6px; width: 14px; height: 14px;
+  background: linear-gradient(135deg, #64d6c4, #2779a8); /* --accent-3 → --accent-2 */
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: urSparkle 2.4s ease-in-out infinite; }
+@keyframes urSparkle { 0%, 100% { transform: scale(.8) rotate(0deg); opacity: .75; } 50% { transform: scale(1.15) rotate(45deg); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .de-concept { animation: none !important; }
+  .de-concept.is-selected .de-concept-pick::after { animation: none !important; }
+}
 .de-concept-stage svg { width: 100%; height: 132px; display: block; }
 .de-concept-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
 .de-concept-v { color: var(--accent-3, #64d6c4); font-size: 0.7rem; letter-spacing: 0.12em; }
