@@ -493,6 +493,10 @@
 
   function renderDesignResult(design) {
     const output = document.getElementById("ai-output");
+    // The standalone "atelier" result card was retired — the morph engine is
+    // the design tool and the photoreal moment shows the design. If the card
+    // isn't in the DOM, there's nothing to render here.
+    if (!output) return;
 
     const type = design.type || S.get("currentType");
     const color = design.color || S.get("currentColor");
@@ -1005,6 +1009,108 @@
     } finally {
       btn.classList.remove("is-loading");
     }
+  }
+
+  // ── „Weiter anpassen" — Inline-Kalibrierung im Ownership-Moment ───────────
+  // Die einzige Anpass-Oberfläche (das alte #design-„Atelier"-Panel ist weg):
+  // setzt den Zustand direkt (S.set + Design-Objekt + updateProductionPreview),
+  // Farbe über applyColor, Größe über die Maß-Presets in #measure. EIN Zustand,
+  // die bestehenden Subscriptions hängen die Anzeige (Info-Panel/Spec) nach.
+  const OE_COLORS = ["#1a1a1a", "#ffffff", "#7c2d12", "#1e3a8a", "#365314", "#a16207", "#831843", "#6b21a8", "#f59e0b", "#dc2626"];
+  const OE_MATERIALS = ["cotton", "linen", "denim", "wool", "fleece", "silk", "polyester"];
+  const OE_LENGTHS = ["cropped", "regular", "long"];
+
+  function populateOwnEditorOptions() {
+    const oeMat = document.getElementById("oe-material");
+    if (oeMat) oeMat.innerHTML = OE_MATERIALS
+      .map((k) => `<option value="${k}">${escapeHtml(typeMaterialLabel(k))}</option>`).join("");
+    const oeLen = document.getElementById("oe-length");
+    if (oeLen) oeLen.innerHTML = OE_LENGTHS
+      .map((k) => `<option value="${k}">${escapeHtml(lengthLabel(k))}</option>`).join("");
+    const colors = document.getElementById("oe-colors");
+    if (!colors) return;
+    if (!colors.children.length) {
+      OE_COLORS.forEach((hex) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "oe-color";
+        b.dataset.color = hex;
+        b.style.background = hex;
+        b.setAttribute("aria-pressed", "false");
+        b.setAttribute("aria-label", colorAdjective(hex));
+        b.addEventListener("click", () => { applyColor(hex); syncOwnEditor(); resetOwnStage(); });
+        colors.appendChild(b);
+      });
+    } else {
+      // language switch → relocalise the colour names.
+      colors.querySelectorAll(".oe-color").forEach((b) =>
+        b.setAttribute("aria-label", colorAdjective(b.dataset.color)));
+    }
+  }
+
+  // Reflect current state onto the editor controls without firing their events
+  // (setting .value / attributes does not dispatch), so there is no feedback loop.
+  function syncOwnEditor() {
+    const oeMat = document.getElementById("oe-material");
+    const mat = S.get("currentMaterial");
+    if (oeMat && mat) oeMat.value = mat;
+    const oeLen = document.getElementById("oe-length");
+    const len = S.get("currentLength");
+    if (oeLen && len) oeLen.value = len;
+    const oeFit = document.getElementById("oe-fit");
+    const fit = S.get("currentFit");
+    if (oeFit && fit !== null && fit !== undefined) oeFit.value = Math.round(fit * 100);
+    const color = S.get("currentColor");
+    document.querySelectorAll("#oe-colors .oe-color").forEach((b) =>
+      b.setAttribute("aria-pressed", b.dataset.color === color ? "true" : "false"));
+    const measurements = S.get("measurements");
+    const size = measurements ? Measurements.calculateSize(measurements) : null;
+    document.querySelectorAll("#oe-sizes .oe-size").forEach((b) =>
+      b.classList.toggle("is-active", b.dataset.size === size));
+  }
+
+  // After an edit the shown try-on render is stale → revert the stage to the
+  // example placeholder so it's clear the user re-generates to see the change.
+  function resetOwnStage() {
+    const img = document.getElementById("vto-result-img");
+    if (!img || img.hidden) return;
+    img.hidden = true;
+    const actions = document.getElementById("vto-result-actions");
+    if (actions) actions.hidden = true;
+    const example = document.getElementById("vto-example");
+    if (example) example.hidden = false;
+  }
+
+  function initOwnEditor() {
+    populateOwnEditorOptions();
+    const oeMat = document.getElementById("oe-material");
+    if (oeMat) oeMat.addEventListener("change", () => {
+      if (!S.set("currentMaterial", oeMat.value)) return;
+      const d = S.get("currentDesign"); if (d) d.material = oeMat.value;
+      updateProductionPreview(); resetOwnStage();
+    });
+    const oeLen = document.getElementById("oe-length");
+    if (oeLen) oeLen.addEventListener("change", () => {
+      if (!S.set("currentLength", oeLen.value)) return;
+      const d = S.get("currentDesign"); if (d) d.length = oeLen.value;
+      updateProductionPreview(); resetOwnStage();
+    });
+    const oeFit = document.getElementById("oe-fit");
+    if (oeFit) oeFit.addEventListener("input", () => {
+      const fit = oeFit.value / 100;
+      if (!S.set("currentFit", fit)) return;
+      const d = S.get("currentDesign"); if (d) d.fit = fit;
+      updateProductionPreview(); resetOwnStage();
+    });
+    // Size reuses the measurement presets in #measure (still the source of truth).
+    document.querySelectorAll("#oe-sizes .oe-size").forEach((b) =>
+      b.addEventListener("click", () => {
+        const pb = document.querySelector(`.preset-btn[data-preset="${b.dataset.size}"]`);
+        if (pb) pb.click();
+        resetOwnStage();
+        syncOwnEditor();
+      }));
+    syncOwnEditor();
   }
 
   function updateProductionPreview() {
@@ -1813,6 +1919,9 @@
     updateProductionPreview();
     updateVtoButtonState();
     updateOwnInfo();
+    // Re-clone the editor's option labels in the new language, then re-sync.
+    populateOwnEditorOptions();
+    syncOwnEditor();
     // Re-localize the preset persons' accessible names.
     document.querySelectorAll("#own-presets .own-preset").forEach((b, i) =>
       b.setAttribute("aria-label", t("own.preset_alt", { n: i + 1 })));
@@ -1853,6 +1962,7 @@
     initExportButtons();
     initVtoButton();
     initOwnershipChooser();
+    initOwnEditor();
     initLibrary();
     trackScrollSteps();
 
@@ -1862,7 +1972,7 @@
       // Keep the Ownership-moment design-info panel live as the design evolves.
       ["currentDesign", "currentType", "currentMaterial", "currentColor",
         "currentFit", "currentLength", "measurements"].forEach((key) =>
-        window.StateManager.subscribe(`${key}:change`, updateOwnInfo));
+        window.StateManager.subscribe(`${key}:change`, () => { updateOwnInfo(); syncOwnEditor(); }));
     }
     updateVtoButtonState();
     updateOwnInfo();

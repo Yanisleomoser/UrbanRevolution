@@ -99,7 +99,7 @@
       const dna = window.DesignShare.decode(pairs[i].dna);
       if (dna) window.DesignPreview.renderInto(flatEl, dna, {});
     };
-    pairs.forEach((p) => { const im = new Image(); im.src = DIR + p.id + ".jpg"; }); // vorladen
+    pairs.forEach((p) => { const im = new Image(); im.src = DIR + p.id + ".webp"; }); // vorladen
 
     const HIDDEN = "inset(0 0 100% 0)"; // Foto komplett abgeschnitten (von unten)
     const SHOWN = "inset(0 0 0% 0)";
@@ -109,7 +109,7 @@
     const FLAT_GONE = "inset(100% 0 0 0)"; // Flat von oben weggeschnitten
     renderFlat(0);
     flatEl.style.clipPath = FLAT_FULL;
-    photoEl.src = DIR + pairs[0].id + ".jpg";
+    photoEl.src = DIR + pairs[0].id + ".webp";
     photoEl.style.clipPath = HIDDEN;
 
     // Reduced-motion / kein Flat-Renderer: direkt das Ergebnis (Foto), statisch.
@@ -170,7 +170,7 @@
       // nächstes Bild bereits VERDECKT (clip HIDDEN) setzen → kein Aufblitzen.
       clearAnims(photoEl); clearAnims(flatEl);
       flatEl.style.opacity = "1";
-      photoEl.src = DIR + pairs[next].id + ".jpg";
+      photoEl.src = DIR + pairs[next].id + ".webp";
       photoEl.style.clipPath = HIDDEN;
       photoEl.style.opacity = "1";
       photoEl.style.filter = "none";
