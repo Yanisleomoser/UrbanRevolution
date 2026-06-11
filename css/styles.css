@@ -5296,6 +5296,27 @@ footer.footer {
   .urc-anchor { animation: none !important; }
 }
 @media (max-width: 859px) { .ur-hero-curves { opacity: .5; } }
+
+/* ── Modul B · Aurora-Layer ────────────────────────────────────────────────
+   Weiche radial-gradient-Falloffs statt filter:blur (kein iOS-Safari-Jank);
+   Drift ausschließlich per transform (compositor-only). */
+.aurora { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.aurora::before, .aurora::after {
+  content: ""; position: absolute; width: min(55vw, 640px); height: min(55vw, 640px);
+  border-radius: 50%; will-change: transform;
+}
+.aurora::before { top: -12%; left: -8%; background: radial-gradient(closest-side, rgba(42,157,143,.28), transparent 70%); /* --accent */ animation: auroraDriftA 26s ease-in-out infinite alternate; }
+.aurora::after { bottom: -14%; right: -6%; background: radial-gradient(closest-side, rgba(39,121,168,.22), transparent 70%); /* --accent-2 */ animation: auroraDriftB 34s ease-in-out infinite alternate; }
+@keyframes auroraDriftA { from { transform: translate(0, 0) scale(1); } to { transform: translate(10%, 8%) scale(1.15); } }
+@keyframes auroraDriftB { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-12%, -8%) scale(1.1); } }
+/* Dritter Orb im Community-Hub: ein einzelner Orb, eigene Position. */
+.community-hub { position: relative; overflow: hidden; }
+.community-hub > .container { position: relative; z-index: 1; }
+.aurora--community::after { display: none; }
+.aurora--community::before { top: auto; bottom: -18%; left: auto; right: -10%; background: radial-gradient(closest-side, rgba(100,214,196,.16), transparent 70%); /* --accent-3 */ animation: auroraDriftB 30s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before, .aurora::after { animation: none !important; }
+}
 .ur-hero-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(2.4rem, 7vw, 4.4rem); line-height: 1.06; margin: 14px 0 18px; }
 .ur-hero-sub { color: var(--text-muted); max-width: 46ch; font-size: 1.06rem; }
 .ur-hero-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 26px; }
