@@ -5311,7 +5311,7 @@ footer.footer {
 .gallery-tile-name { font-weight: 600; font-size: 0.92rem; }
 .gallery-tile-by { color: var(--text-muted); font-size: 0.78rem; }
 .gallery-tile-actions { display: flex; gap: 8px; margin-top: auto; }
-.gallery-tile-actions a, .gallery-tile-actions button { flex: 1; min-width: 0; text-align: center; font-size: 0.78rem; letter-spacing: 0.08em; padding: 0.45rem 0.4rem; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; text-decoration: none; transition: border-color .2s; }
+.gallery-tile-actions a, .gallery-tile-actions button { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: 0.78rem; letter-spacing: 0.08em; padding: 0.45rem 0.4rem; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; text-decoration: none; transition: border-color .2s; }
 .gallery-tile-actions .is-remix { border-color: var(--accent); color: var(--accent-3, #64d6c4); }
 .gallery-tile-actions a:hover, .gallery-tile-actions button:hover { border-color: var(--accent); }
 .gallery-cta { margin-top: 30px; text-align: center; }
