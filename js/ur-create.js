@@ -124,13 +124,18 @@
     const EASE = "cubic-bezier(.65,0,.35,1)";
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const done = (anim) => anim.finished.catch(() => {}); // abgebrochene Animationen schlucken
+    // WICHTIG: fill:"forwards"-Animationen überschreiben inline-Styles UND
+    // sammeln sich an → vor jeder Phase die alten abbrechen, sonst bleibt z. B.
+    // ein Opacity:0 aus dem Übergang hängen und das Weben ist unsichtbar.
+    const clearAnims = (el) => el.getAnimations().forEach((a) => a.cancel());
 
     async function weaveIn() {
       const dur = 1850;
       try { if (photoEl.decode) await photoEl.decode(); } catch (_e) { /* egal */ }
-      photoEl.style.opacity = "1";
-      flatEl.style.opacity = "1";
-      weaveEl.style.opacity = "1";
+      clearAnims(photoEl); clearAnims(flatEl); clearAnims(weaveEl);
+      photoEl.style.opacity = "1"; photoEl.style.clipPath = HIDDEN; photoEl.style.filter = "none";
+      flatEl.style.opacity = "1"; flatEl.style.clipPath = FLAT_FULL;
+      weaveEl.style.opacity = "1"; weaveEl.style.top = "0%";
       // Foto wird von oben enthüllt, Flat KOMPLEMENTÄR von oben weggewebt → beide
       // grenzen exakt an der Webkante an (kein Überlappen/Ausfransen).
       const a = photoEl.animate([{ clipPath: HIDDEN }, { clipPath: SHOWN }],
@@ -152,16 +157,19 @@
     // nächsten Flat (kurz, sauber — der Star ist das Weben oben).
     async function toNextFlat(next) {
       renderFlat(next);
+      clearAnims(flatEl);
       flatEl.style.clipPath = FLAT_FULL;
       flatEl.style.opacity = "0";
       const fa = flatEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 520, easing: EASE, fill: "forwards" });
-      photoEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: EASE, fill: "forwards" });
+      const pa = photoEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: EASE, fill: "forwards" });
       await done(fa);
-      // Foto fürs nächste Weben vorbereiten (verdeckt: geclippt, wieder opak)
+      // Übergang fertig: Animationen abbauen, Basis-Styles inline festschreiben
+      // (sonst pinnt das forwards-Fill die Opacity und das nächste Weben ist leer).
+      pa.cancel(); clearAnims(flatEl);
+      flatEl.style.opacity = "1";
       photoEl.src = DIR + pairs[next].id + ".jpg";
       photoEl.style.clipPath = HIDDEN;
       photoEl.style.opacity = "1";
-      flatEl.style.opacity = "1";
     }
 
     let i = 0;

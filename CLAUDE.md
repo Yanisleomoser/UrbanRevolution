@@ -23,6 +23,19 @@ Sorgfalt erzeugt Tempo. Konkret, verbindlich:
   `fetch`) UND (b) sie sichtbar gerendert wird (Screenshot). Achtung-Falle:
   relative `url()` in einer CSS-Variable wird relativ zum **Stylesheet** (css/)
   aufgelöst, nicht zum Dokument → root-absolute Pfade (`/js/...`) nutzen.
+- **JEDE neue/geänderte Visualisierung, Sektion ODER Animation visuell selbst
+  prüfen — bevor sie „fertig" heißt.** Klassen-/State-Checks und zwei Standbilder
+  genügen NICHT (damit wurde schon eine kaputte „Animation" für fertig erklärt).
+  Pflicht: am echten Render (headless, `scripts/shoot.mjs` bzw. eigenes
+  Playwright-Skript) anschauen — und zwar:
+  • Statische Sektion → Screenshot Desktop + Mobil (≤ 480 px) ansehen.
+  • Bewegung/Übergang → die BEWEGUNG selbst prüfen, nicht den Endzustand:
+    dichte Frame-Serie über die volle Dauer (z. B. alle 80–120 ms) ODER den
+    animierten Wert in-page samplen (z. B. `clip-path`/`opacity`/`transform`
+    alle 100 ms loggen) und die Kurve ansehen. Mehrere Zwischenframes wirklich
+    öffnen und beurteilen, ob es flüssig wirkt — nicht nur, ob es „läuft".
+  • Ehrlich beurteilen: wirkt es billig/ruckelig/wie ein Sprung → ist es NICHT
+    fertig. Erst wenn das Auge (am Frame-Beleg) zustimmt, gilt es als erledigt.
 - **Auf Ideen des Users kritisch reagieren — nicht reflexhaft bejahen.** Den
   Vorschlag ernst prüfen, Schwächen/Risiken/Trade-offs offen benennen, bei
   Bedarf begründet widersprechen UND eine eigene, ggf. bessere Alternative
