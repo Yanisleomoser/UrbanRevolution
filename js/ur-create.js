@@ -131,11 +131,14 @@
 
     async function weaveIn() {
       const dur = 1850;
-      try { if (photoEl.decode) await photoEl.decode(); } catch (_e) { /* egal */ }
+      // ZUERST verdecken + alte (forwards-)Anims abräumen, DANN erst decoden —
+      // sonst blitzt das frisch gesetzte Foto während des decode-await kurz voll
+      // auf (alte clip-Anim stand noch auf SHOWN). Reihenfolge ist hier der Bug.
       clearAnims(photoEl); clearAnims(flatEl); clearAnims(weaveEl);
       photoEl.style.opacity = "1"; photoEl.style.clipPath = HIDDEN; photoEl.style.filter = "none";
       flatEl.style.opacity = "1"; flatEl.style.clipPath = FLAT_FULL;
-      weaveEl.style.opacity = "1"; weaveEl.style.top = "0%";
+      weaveEl.style.opacity = "0"; weaveEl.style.top = "0%";
+      try { if (photoEl.decode) await photoEl.decode(); } catch (_e) { /* egal */ }
       // Foto wird von oben enthüllt, Flat KOMPLEMENTÄR von oben weggewebt → beide
       // grenzen exakt an der Webkante an (kein Überlappen/Ausfransen).
       const a = photoEl.animate([{ clipPath: HIDDEN }, { clipPath: SHOWN }],
@@ -161,15 +164,16 @@
       flatEl.style.clipPath = FLAT_FULL;
       flatEl.style.opacity = "0";
       const fa = flatEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 520, easing: EASE, fill: "forwards" });
-      const pa = photoEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: EASE, fill: "forwards" });
+      photoEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: EASE, fill: "forwards" });
       await done(fa);
-      // Übergang fertig: Animationen abbauen, Basis-Styles inline festschreiben
-      // (sonst pinnt das forwards-Fill die Opacity und das nächste Weben ist leer).
-      pa.cancel(); clearAnims(flatEl);
+      // Übergang fertig: ALLE Foto-Anims weg (auch die alte clip-Anim auf SHOWN),
+      // nächstes Bild bereits VERDECKT (clip HIDDEN) setzen → kein Aufblitzen.
+      clearAnims(photoEl); clearAnims(flatEl);
       flatEl.style.opacity = "1";
       photoEl.src = DIR + pairs[next].id + ".jpg";
       photoEl.style.clipPath = HIDDEN;
       photoEl.style.opacity = "1";
+      photoEl.style.filter = "none";
     }
 
     let i = 0;

@@ -5420,7 +5420,7 @@ footer.footer {
 .ur-hero-flat, .ur-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ur-hero-flat { display: flex; align-items: center; justify-content: center; }
 .ur-hero-flat svg { height: 96%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
-.ur-hero-photo { object-fit: contain; border-radius: inherit; will-change: clip-path, filter; }
+.ur-hero-photo { object-fit: contain; border-radius: inherit; will-change: clip-path, filter; clip-path: inset(0 0 100% 0); }
 /* Leuchtende Webkante: dünner Gradient-Faden + Glow + weiche Schimmer-Bahn
    darunter; fährt (JS: top 0→100 %) mit der Enthüllungskante nach unten. */
 .ur-hero-weave { position: absolute; left: 0; right: 0; top: 0; height: 0; opacity: 0; pointer-events: none; will-change: top, opacity; }
