@@ -197,8 +197,7 @@
             </button>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#design" data-i18n="nav.create">UR Create</a></li>
-                <li><a href="#vision" data-i18n="nav.vision">Vision</a></li>
-                <li><a href="#gallery" data-i18n="nav.community">Community</a></li>
+                <li><a href="#community" data-i18n="nav.community">Community</a></li>
                 <li><a href="#design" class="nav-cta" data-i18n="nav.enter">UR Create starten</a></li>
                 <li class="nav-lang-item">
                     <button id="lang-toggle" class="lang-toggle" type="button" data-i18n-aria-label="nav.lang_aria" aria-label="Sprache wechseln">
@@ -528,7 +527,7 @@
             <h2 id="alt-heading" class="manifesto-headline" data-reveal data-i18n-html="alt.headline_html">Was wäre, wenn Mode <em>bei Menschen</em> begänne?</h2>
             <p class="manifesto-vision" data-reveal data-i18n="manifesto.vision">Urban Revolution macht aus weggeworfenen Kleidern neuen Stoff. Du beschreibst ein Stück, unsere KI entwirft es, ein Schweizer Schneider näht es nach deinen neun Maßen. Ein Kleidungsstück. Einmal gefertigt. Für dich — aus genau dem, was die Branche wegwirft. Kein neuer Rohstoff, keine Überproduktion, keine Deponie.</p>
             <div class="manifesto-actions" data-reveal>
-                <a href="#vision" class="manifesto-cta" data-i18n-html="alt.cta_html">Stell dir ein anderes System vor <span aria-hidden="true">&#8594;</span></a>
+                <a href="#community" class="manifesto-cta" data-i18n-html="alt.cta_html">Stell dir ein anderes System vor <span aria-hidden="true">&#8594;</span></a>
             </div>
         </div>
     </section>
@@ -554,65 +553,39 @@
         </div>
     </section>
 
-    <!-- 7 · VISION — interaktive Timeline von heute in die Zukunft. -->
-    <section class="vision" id="vision" aria-labelledby="vision-heading">
-        <div class="container">
-            <div class="section-header" data-reveal>
-                <span class="section-number mono-label section-label" data-i18n="vision.label">[ VISION ]</span>
-                <h2 id="vision-heading" data-i18n="vision.h2">Mode sollte bei Menschen beginnen</h2>
-            </div>
-            <ol class="vision-line" id="vision-line" data-reveal>
-                <li><button type="button" class="vision-stop is-active" data-stage="0" data-i18n="vision.s1">Heute</button></li>
-                <li><button type="button" class="vision-stop" data-stage="1" data-i18n="vision.s2">Überproduktion</button></li>
-                <li><button type="button" class="vision-stop" data-stage="2" data-i18n="vision.s3">Kreative Teilhabe</button></li>
-                <li><button type="button" class="vision-stop" data-stage="3" data-i18n="vision.s4">Bewusste Fertigung</button></li>
-                <li><button type="button" class="vision-stop" data-stage="4" data-i18n="vision.s5">Die Zukunft</button></li>
-            </ol>
-            <p class="vision-desc" id="vision-desc" aria-live="polite" data-reveal data-i18n="vision.d1">Mode beginnt heute in der Fabrik: erst die Ware, dann die Suche nach Käufern.</p>
-            <div class="vision-cta" data-reveal>
-                <a href="#community" class="manifesto-cta" data-i18n-html="vision.cta_html">Werde Teil der Revolution <span aria-hidden="true">&#8594;</span></a>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- 4 · COMMUNITY CREATIONS — publizierte Kreationen (Upstash-Galerie,
-         kuratierter Fallback ohne Backend). Remix = DNA weiterentwickeln. -->
-    <section class="gallery" id="gallery" aria-labelledby="gallery-heading">
+    <!-- 7 · COMMUNITY — ein Hub: Kreationen entdecken (filterbar) → mitmachen.
+         (Früher zwei getrennte Sektionen Galerie + Beitreten; zusammengeführt.) -->
+    <section class="gallery community-hub" id="community" aria-labelledby="community-heading">
         <div class="container">
             <div class="section-header" data-reveal>
                 <span class="section-number mono-label section-label" data-i18n="gal.label">[ COMMUNITY ]</span>
-                <h2 id="gallery-heading" data-i18n="gal.h2">Keine zwei Visionen sind gleich</h2>
+                <h2 id="community-heading" data-i18n="gal.h2">Keine zwei Visionen sind gleich</h2>
                 <p data-i18n="gal.intro">Kreationen aus der Community — sieh sie an, lass dich inspirieren oder remixe sie als Start deiner eigenen Evolution.</p>
             </div>
+            <div class="gallery-filters" id="gallery-filters" role="group" data-i18n-aria-label="gal.filter_aria" aria-label="Kreationen nach Typ filtern" data-reveal></div>
             <div class="gallery-grid" id="gallery-grid" data-reveal></div>
-            <div class="gallery-cta" data-reveal>
-                <a href="#community" class="manifesto-link" data-i18n-html="gal.why_html">Werde Teil davon <span aria-hidden="true">&#8595;</span></a>
-            </div>
-        </div>
-    </section>
 
-    <!-- 8+9 · COMMUNITY & JOIN — Teilhabe wählen, dann beitreten (Waitlist-API). -->
-    <section class="join" id="community" aria-labelledby="join-heading">
-        <div class="container join-inner">
-            <p class="mono-label section-label" data-reveal data-i18n="join.label">[ COMMUNITY ]</p>
-            <h2 id="join-heading" class="join-headline" data-reveal data-i18n="join.h2">Die Zukunft der Mode entsteht gemeinsam</h2>
-            <form id="join-form" class="join-form" data-reveal novalidate>
-                <fieldset class="join-choices">
-                    <legend class="visually-hidden" data-i18n="join.legend">Wie möchtest du teilnehmen?</legend>
-                    <label class="join-choice"><input type="checkbox" name="part" value="create" checked> <span data-i18n="join.p1">Designs erschaffen</span></label>
-                    <label class="join-choice"><input type="checkbox" name="part" value="follow"> <span data-i18n="join.p2">Die Reise verfolgen</span></label>
-                    <label class="join-choice"><input type="checkbox" name="part" value="ideas"> <span data-i18n="join.p3">Ideen beitragen</span></label>
-                    <label class="join-choice"><input type="checkbox" name="part" value="updates"> <span data-i18n="join.p4">Auf dem Laufenden bleiben</span></label>
-                </fieldset>
-                <div class="join-row">
-                    <label class="visually-hidden" for="join-email" data-i18n="join.email_label">E-Mail-Adresse</label>
-                    <input type="email" id="join-email" name="email" required data-i18n-placeholder="join.email_ph" placeholder="deine@email.ch" autocomplete="email">
-                    <button type="submit" class="manifesto-cta" data-i18n="join.cta">Urban Revolution beitreten</button>
-                </div>
-                <p class="join-consent"><label><input type="checkbox" id="join-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label></p>
-                <p class="join-status mono-label" id="join-status" aria-live="polite"></p>
-            </form>
+            <!-- Mitmachen: der Übergang vom Entdecken zum Teil-Werden. -->
+            <div class="community-join" data-reveal>
+                <h3 class="join-headline" id="join-heading" data-i18n="join.h2">Gemeinsam wird daraus eine Bewegung</h3>
+                <p class="community-join-sub" data-i18n="join.sub">Werde Teil der Menschen, die Mode neu denken — gestalte mit, verfolge die Reise oder bring deine Ideen ein.</p>
+                <form id="join-form" class="join-form" novalidate>
+                    <fieldset class="join-choices">
+                        <legend class="visually-hidden" data-i18n="join.legend">Wie möchtest du teilnehmen?</legend>
+                        <label class="join-choice"><input type="checkbox" name="part" value="create" checked> <span data-i18n="join.p1">Designs erschaffen</span></label>
+                        <label class="join-choice"><input type="checkbox" name="part" value="follow"> <span data-i18n="join.p2">Die Reise verfolgen</span></label>
+                        <label class="join-choice"><input type="checkbox" name="part" value="ideas"> <span data-i18n="join.p3">Ideen beitragen</span></label>
+                        <label class="join-choice"><input type="checkbox" name="part" value="updates"> <span data-i18n="join.p4">Auf dem Laufenden bleiben</span></label>
+                    </fieldset>
+                    <div class="join-row">
+                        <label class="visually-hidden" for="join-email" data-i18n="join.email_label">E-Mail-Adresse</label>
+                        <input type="email" id="join-email" name="email" required data-i18n-placeholder="join.email_ph" placeholder="deine@email.ch" autocomplete="email">
+                        <button type="submit" class="manifesto-cta" data-i18n="join.cta">Urban Revolution beitreten</button>
+                    </div>
+                    <p class="join-consent"><label><input type="checkbox" id="join-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label></p>
+                    <p class="join-status mono-label" id="join-status" aria-live="polite"></p>
+                </form>
+            </div>
         </div>
     </section>
 

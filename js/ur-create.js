@@ -7,10 +7,10 @@
  *  · Hero-Showcase   — eine endlos morphende Konzept-Evolution (GarmentSVG)
  *  · Ownership-Moment — blendet sich ein, sobald eine Kreation existiert
  *                       (StateManager currentDesign); Save · Share · Publish
- *  · Community-Galerie— /api/gallery (Upstash) mit kuratiertem Fallback;
- *                       VIEW/REMIX öffnen die DNA in UR Create (Share-URL)
+ *  · Community-Hub    — /api/gallery (Upstash) mit kuratiertem Fallback,
+ *                       Typ-Filter + Beitreten; VIEW/REMIX öffnen die DNA in
+ *                       UR Create (Share-URL)
  *  · Problem-Karten   — Schritt-für-Schritt-Story
- *  · Vision-Timeline  — Stationen wechseln den Beschreibungstext
  *  · Join             — POST /api/waitlist { email, consent }
  *  · Sticky-CTA       — mobil, erscheint nach dem Hero
  *  · make-real        — klappt den Maß-/Produktions-Pfad auf
@@ -37,6 +37,10 @@
     }
   }
   const decode = (s) => (window.DesignShare ? window.DesignShare.decode(s) : null);
+  // Galerie-Items können aus dem öffentlichen Publish-Endpoint stammen → Name/
+  // Autor vor dem Einfügen als HTML escapen (defensiv gegen eingeschleustes Markup).
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
 
   // Aktuelle Journey-DNA (für Share/Publish) aus dem von flow.js gepflegten
   // localStorage-Eintrag lesen — ohne flow.js anzufassen.
@@ -171,8 +175,11 @@
     if (makeReal) makeReal.addEventListener("click", () => { openMakeReal(); location.hash = "#measure"; });
   }
 
-  // ── 3 · Community-Galerie ──────────────────────────────────────────────────
+  // ── 3 · Community-Galerie (mit Typ-Filter) ─────────────────────────────────
   let galleryReady = false;
+  let galleryItems = null;   // dekodierte Items: { it, dna, category }
+  let galleryFilter = "all"; // aktiver Kleidungstyp-Filter
+
   async function renderGallery() {
     const grid = $("#gallery-grid");
     if (!grid) return;
@@ -184,18 +191,54 @@
     } catch (_e) {
       items = await loadCurated();
     }
-    const all = published.concat(items).slice(0, 24);
-    if (!all.length) {
+    // Session-Veröffentlichungen zuerst, dann Backend/kuratiert; je Item die DNA
+    // einmal dekodieren (Typ für den Filter, Geometrie für die Kachel).
+    galleryItems = published.concat(items).slice(0, 24).map((it) => {
+      const dna = decode(it.d);
+      return { it, dna, category: (dna && dna.category) || "" };
+    });
+    buildFilters();
+    paintGallery();
+  }
+
+  // Filter-Chips aus den tatsächlich vorhandenen Typen (in CONFIG-Reihenfolge).
+  // Bei < 2 Typen keine Leiste (ein einzelner Filter wäre sinnlos).
+  function buildFilters() {
+    const bar = $("#gallery-filters");
+    if (!bar || !galleryItems) return;
+    const present = new Set(galleryItems.map((x) => x.category).filter(Boolean));
+    const order = (window.CONFIG && window.CONFIG.GARMENT_TYPES) || [];
+    const types = order.filter((k) => present.has(k));
+    if (types.length < 2) { bar.innerHTML = ""; bar.hidden = true; return; }
+    bar.hidden = false;
+    const chip = (key, label) =>
+      `<button type="button" class="gallery-chip${galleryFilter === key ? " is-active" : ""}" data-filter="${key}" aria-pressed="${galleryFilter === key ? "true" : "false"}">${label}</button>`;
+    bar.innerHTML = chip("all", t("gal.filter_all")) +
+      types.map((k) => chip(k, t("type." + k))).join("");
+    bar.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
+      galleryFilter = b.getAttribute("data-filter");
+      buildFilters();
+      paintGallery();
+    }));
+  }
+
+  function paintGallery() {
+    const grid = $("#gallery-grid");
+    if (!grid || !galleryItems) return;
+    const view = galleryFilter === "all"
+      ? galleryItems
+      : galleryItems.filter((x) => x.category === galleryFilter);
+    if (!view.length) {
       grid.innerHTML = `<p class="gallery-empty">${t("gal.empty")}</p>`;
       return;
     }
-    grid.innerHTML = all.map((it) => {
-      const dna = decode(it.d);
+    grid.innerHTML = view.map(({ it, dna }, idx) => {
       const svg = flatFor(dna);
-      const name = it.name ? it.name : "—";
-      const by = it.by ? it.by : t("gal.anon");
+      const name = it.name ? esc(it.name) : "—";
+      const by = it.by ? esc(it.by) : t("gal.anon");
       const safe = encodeURIComponent(it.d);
-      return `<article class="gallery-tile">
+      // Erste Kachel der Ansicht wird hervorgehoben (größer, als Eyecatcher).
+      return `<article class="gallery-tile${idx === 0 ? " is-featured" : ""}">
         <div class="gallery-tile-stage">${svg}</div>
         <p class="gallery-tile-name">${name}</p>
         <p class="gallery-tile-by">${by}</p>
@@ -240,21 +283,7 @@
     render();
   }
 
-  // ── 5 · Vision-Timeline ────────────────────────────────────────────────────
-  function visionTimeline() {
-    const line = $("#vision-line");
-    const desc = $("#vision-desc");
-    if (!line || !desc) return;
-    const stops = $$(".vision-stop", line);
-    const select = (stop) => {
-      stops.forEach((s) => s.classList.toggle("is-active", s === stop));
-      const n = Number.parseInt(stop.getAttribute("data-stage"), 10) || 0;
-      desc.textContent = t("vision.d" + (n + 1));
-    };
-    stops.forEach((s) => s.addEventListener("click", () => select(s)));
-  }
-
-  // ── 6 · Join (Waitlist) ────────────────────────────────────────────────────
+  // ── 5 · Join (Waitlist) ────────────────────────────────────────────────────
   function joinForm() {
     const form = $("#join-form");
     if (!form) return;
@@ -317,11 +346,10 @@
     renderGallery();
     galleryReady = true;
     problemCards();
-    visionTimeline();
     joinForm();
     stickyCta();
     makeRealLinks();
-    // Sprache umgeschaltet → dynamische Texte (Vision-Desc, Galerie-Buttons) neu.
+    // Sprache umgeschaltet → dynamische Texte (Filter-Chips, Galerie-Buttons) neu.
     window.addEventListener("language:change", () => { if (galleryReady) renderGallery(); });
   }
 

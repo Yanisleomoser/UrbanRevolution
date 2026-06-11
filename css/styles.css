@@ -5329,19 +5329,25 @@ footer.footer {
 @keyframes probIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .prob-card.is-active { animation: none; } }
 
-/* 7 · Vision-Timeline */
-.vision { padding: 72px 0; }
-.vision-line { list-style: none; padding: 0; margin: 0 0 22px; display: flex; flex-wrap: wrap; gap: 10px; }
-.vision-line li { flex: 1 1 auto; }
-.vision-stop { width: 100%; padding: 0.85rem 0.6rem; border-radius: 12px; border: 1px solid var(--border, #25415a); background: transparent; color: var(--text-muted); font: inherit; font-size: 0.86rem; letter-spacing: 0.06em; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out), background .2s var(--ease-out); }
-.vision-stop.is-active { border-color: var(--accent); color: var(--text); background: linear-gradient(180deg, rgba(42,157,143,0.14), transparent); }
-.vision-desc { min-height: 3.2em; max-width: 60ch; color: var(--text-muted); font-size: 1.05rem; }
-.vision-cta { margin-top: 26px; }
+/* 7 · Community-Hub: Typ-Filter-Chips + hervorgehobene Kachel + Mitmachen-Block.
+   (Galerie + Beitreten wurden zu einer Sektion zusammengeführt.) */
+.gallery-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.gallery-filters[hidden] { display: none; }
+.gallery-chip { padding: 0.4rem 0.95rem; border-radius: 999px; border: 1px solid var(--border, #25415a); background: transparent; color: var(--text-muted); font: inherit; font-size: 0.8rem; letter-spacing: 0.04em; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out), background .2s var(--ease-out); }
+.gallery-chip:hover { border-color: var(--accent); color: var(--text); }
+.gallery-chip.is-active { border-color: var(--accent); color: var(--text); background: linear-gradient(180deg, rgba(42,157,143,0.16), transparent); }
+/* Erste Kachel der Ansicht hervorgehoben: über zwei Spalten, größere Bühne. */
+.gallery-tile.is-featured { grid-column: span 2; }
+.gallery-tile.is-featured .gallery-tile-stage svg { height: 240px; }
+@media (max-width: 540px) {
+  .gallery-tile.is-featured { grid-column: span 1; }
+  .gallery-tile.is-featured .gallery-tile-stage svg { height: 200px; }
+}
 
-/* 8+9 · Join */
-.join { padding: 80px 0; background: linear-gradient(180deg, transparent, rgba(39,121,168,0.07) 45%, transparent); }
-.join-inner { max-width: 680px; text-align: center; }
-.join-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.8rem, 5vw, 2.7rem); margin: 12px 0 26px; }
+/* Mitmachen: der Übergang vom Entdecken zum Teil-Werden (zentriert, abgesetzt). */
+.community-join { max-width: 680px; margin: 56px auto 0; padding-top: 44px; border-top: 1px solid var(--border, #25415a); text-align: center; }
+.community-join-sub { color: var(--text-muted); max-width: 52ch; margin: 0 auto 26px; }
+.join-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.8rem, 5vw, 2.7rem); margin: 12px 0 14px; }
 .join-choices { border: none; padding: 0; margin: 0 0 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
 .join-choice { display: flex; align-items: center; gap: 10px; padding: 0.85rem 1rem; border: 1px solid var(--border, #25415a); border-radius: 12px; cursor: pointer; font-size: 0.92rem; text-align: left; transition: border-color .2s; }
 .join-choice:hover { border-color: var(--accent); }
@@ -5415,7 +5421,7 @@ footer.footer {
    Starker Navy-Scrim (in der vertikalen Mitte am dunkelsten, wo der Text sitzt)
    hält Kontrast/Lesbarkeit; Bilder liegen unter dem Fold, kein Layout-Shift. */
 .alternative, .vision, .final-cta { position: relative; isolation: isolate; }
-.alternative::before, .vision::before, .final-cta::before {
+.alternative::before, .final-cta::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background-position: center; background-size: cover; background-repeat: no-repeat;
 }
@@ -5432,11 +5438,6 @@ footer.footer {
   background-image:
     linear-gradient(180deg, rgba(10,22,34,0.9) 0%, rgba(10,22,34,0.64) 26%, rgba(10,22,34,0.5) 54%, rgba(10,22,34,0.66) 84%, var(--bg, #0a1622) 100%),
     url("../js/design-engine/content/img/bg/alternative.jpg");
-}
-.vision::before {
-  background-image:
-    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.66) 32%, rgba(10,22,34,0.72) 70%, var(--bg, #0a1622) 100%),
-    url("../js/design-engine/content/img/bg/vision.jpg");
 }
 .final-cta::before {
   background-image:
@@ -5457,7 +5458,6 @@ footer.footer {
 /* #6 Ambiente-Hintergründe: thematisch sinnvoller Bildausschnitt je Sektion
    (4:5-Quellen werden als cover beschnitten — Fokus gezielt setzen). */
 .alternative::before { background-position: center 55%; }
-.vision::before { background-position: center; }
 .final-cta::before { background-position: center bottom; }
 
 /* ─── Problem = Beleg, zusammengeführt: scroll-getriebene Szenen ───────────
