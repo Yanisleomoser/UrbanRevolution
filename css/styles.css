@@ -5354,6 +5354,38 @@ footer.footer {
 @media (prefers-reduced-motion: reduce) {
   .aurora::before, .aurora::after { animation: none !important; }
 }
+
+/* ── f13 · Border-Beam: Lichtbogen läuft um die Kante (Reel-Motiv „Connected",
+   hier = LIVE-Zustand des Showcase-Rahmens). Wrapper-Variante: statische Ring-
+   Maske auf .ur-beam, darin rotiert NUR der Conic-Gradient per transform
+   (compositor-only — keine Repaints). ────────────────────────────────────── */
+.ur-beam { position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; overflow: hidden;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude; }
+.ur-beam::before { content: ""; position: absolute; inset: -75%; /* deckt die Diagonale beim Rotieren ab */
+  background: conic-gradient(transparent 0 76%, rgba(39,121,168,0) 80%, rgba(42,157,143,.85) 90%, rgba(100,214,196,.95) 94%, transparent 100%); /* --accent-2 → --accent → --accent-3 */
+  animation: urBeamSpin 9s linear infinite; }
+@keyframes urBeamSpin { to { transform: rotate(1turn); } }
+
+/* Featured-Kachel im Community-Hub: gleiche Optik ohne Zusatz-Markup (Kachel
+   kommt aus ur-create.js) → Conic-Winkel via @property animiert. Browser ohne
+   @property zeigen einen statischen Bogen (würdevoller Fallback). */
+@property --ur-beam-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.gallery-tile.is-featured { position: relative; }
+.gallery-tile.is-featured::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--ur-beam-a), transparent 0 76%, rgba(39,121,168,0) 80%, rgba(42,157,143,.6) 90%, rgba(100,214,196,.75) 94%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: urBeamAngle 10s linear infinite; }
+@keyframes urBeamAngle { to { --ur-beam-a: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  /* Beam statisch sichtbar als dezenter Bogen, keine Bewegung. */
+  .ur-beam::before, .gallery-tile.is-featured::before { animation: none !important; }
+}
 .ur-hero-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(2.4rem, 7vw, 4.4rem); line-height: 1.06; margin: 14px 0 18px; }
 .ur-hero-sub { color: var(--text-muted); max-width: 46ch; font-size: 1.06rem; }
 .ur-hero-actions { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-top: 26px; }
