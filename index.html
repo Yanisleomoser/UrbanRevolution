@@ -219,9 +219,12 @@
         <!-- Modul B · Aurora: weiche radial-gradient-Orbs (KEIN filter:blur →
              kein iOS-Safari-Jank), Drift nur per transform (compositor-only). -->
         <div class="aurora" aria-hidden="true"></div>
-        <!-- Modul A · Schnittmuster-Hero: selbstzeichnende Bezier-Kurven (Armloch-/
-             Seitennaht-Charakter) mit Teal-Gradient-Glow + Ankerpunkten. Rein
-             dekorativer Hintergrund-Layer, überlagert NICHT #hero-showcase. -->
+        <!-- Modul A · Schnittmuster-Hero: LEBENDE Bezier-Kurven (Armloch-/Seiten-
+             naht-Charakter) — die Kontrollpunkte morphen endlos (SMIL, läuft auch
+             in Safari; CSS d:path() tut das nicht), Endpunkte + Anker bleiben fix.
+             Lichtfunken wandern als Dash-Segment AUF dem Stroke entlang → kleben
+             geometrisch exakt an der morphenden Linie. Teal-Gradient + Glow.
+             Rein dekorativer Hintergrund-Layer, überlagert NICHT #hero-showcase. -->
         <div class="ur-hero-curves" aria-hidden="true">
             <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
                 <defs>
@@ -235,14 +238,35 @@
                     </filter>
                 </defs>
                 <!-- Kurve 1 · Seitennaht -->
-                <path class="urc-glow urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700"/>
-                <path class="urc-line urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700"/>
+                <path class="urc-glow urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
+                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
+                </path>
+                <path class="urc-line urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
+                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
+                </path>
+                <path class="urc-spark urc-s1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
+                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
+                </path>
                 <!-- Kurve 2 · Armloch -->
-                <path class="urc-glow urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560"/>
-                <path class="urc-line urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560"/>
+                <path class="urc-glow urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
+                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
+                </path>
+                <path class="urc-line urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
+                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
+                </path>
+                <path class="urc-spark urc-s2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
+                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
+                </path>
                 <!-- Kurve 3 · Saum -->
-                <path class="urc-glow urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720"/>
-                <path class="urc-line urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                <path class="urc-glow urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
+                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                </path>
+                <path class="urc-line urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
+                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                </path>
+                <path class="urc-spark urc-s3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
+                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
+                </path>
                 <circle class="urc-anchor" cx="90" cy="70" r="4"/>
                 <circle class="urc-anchor" cx="430" cy="700" r="4"/>
                 <circle class="urc-anchor" cx="520" cy="80" r="4"/>
@@ -267,6 +291,18 @@
             </div>
         </div>
     </section>
+    <script>
+        /* Reduced-Motion-Guard für die SMIL-Kurven-Morphs oben: SMIL hört nicht
+           auf CSS-Media-Queries → SVG-Uhr pausieren (statisch sichtbar). */
+        (function () {
+            var svg = document.querySelector(".ur-hero-curves svg");
+            if (!svg || !svg.pauseAnimations) return;
+            var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+            var apply = function () { if (mq.matches) svg.pauseAnimations(); else svg.unpauseAnimations(); };
+            apply();
+            if (mq.addEventListener) mq.addEventListener("change", apply);
+        })();
+    </script>
 
     <section id="design" class="section design-section">
         <div class="container">

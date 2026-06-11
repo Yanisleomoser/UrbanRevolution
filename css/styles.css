@@ -3234,12 +3234,12 @@ html.is-touch { scroll-behavior: auto; }
    Elemente mit data-reveal="blur" bekommen zusätzlich einen Blur-Rise. Selektor
    matcht exakt den Wert "blur" → attributlose data-reveal bleiben unangetastet. */
 [data-reveal="blur"] {
-    transform: translateY(14px);
-    filter: blur(6px);
+    transform: translateY(22px);
+    filter: blur(10px);
     transition:
-        opacity .7s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
-        transform .7s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
-        filter .7s var(--ease-out, cubic-bezier(0.16,1,0.3,1));
+        opacity 1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        transform 1s var(--ease-out, cubic-bezier(0.16,1,0.3,1)),
+        filter 1s var(--ease-out, cubic-bezier(0.16,1,0.3,1));
     transition-delay: var(--reveal-delay, 0ms);
     will-change: opacity, transform, filter;
 }
@@ -5313,12 +5313,24 @@ footer.footer {
 .urc-d2 { animation-delay: .2s, 2s; }
 .urc-d3 { animation-delay: .4s, 2.2s; }
 .urc-anchor { fill: #eef4f8; /* helles Off-White, bewusst kein Token (SVG) */ transform-box: fill-box; transform-origin: center; animation: urcPulse 2.4s ease-in-out infinite alternate; }
+/* Lichtfunken: kurzes helles Dash-Segment, das den Stroke entlangläuft —
+   weil es Teil des Strokes ist, klebt es exakt an der morphenden Geometrie
+   (Reel-Referenz: Licht wandert an der Linie entlang). Erscheint nach dem
+   Draw-In, pro Kurve eigenes Tempo. */
+.urc-spark { fill: none; stroke: #eef4f8; /* Off-White-Lichtpunkt (SVG) */ stroke-width: 2.5; stroke-linecap: round; opacity: 0; stroke-dasharray: 0.05 0.95; stroke-dashoffset: 1; }
+.urc-s1 { animation: urcSparkFade .8s var(--ease-out) 2.2s forwards, urcSpark 8s linear 2.2s infinite; }
+.urc-s2 { animation: urcSparkFade .8s var(--ease-out) 2.6s forwards, urcSpark 10s linear 2.6s infinite; }
+.urc-s3 { animation: urcSparkFade .8s var(--ease-out) 3s forwards, urcSpark 12s linear 3s infinite; }
 @keyframes urcDraw { to { stroke-dashoffset: 0; } }
 @keyframes urcBreathe { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
 @keyframes urcPulse { from { transform: scale(.78); opacity: .7; } to { transform: scale(1.15); opacity: 1; } }
+@keyframes urcSpark { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes urcSparkFade { to { opacity: .9; } }
 @media (prefers-reduced-motion: reduce) {
   .urc-glow, .urc-line { stroke-dashoffset: 0 !important; animation: none !important; }
   .urc-anchor { animation: none !important; }
+  /* Funken sind reine Bewegungselemente — ohne Bewegung kein Informationswert. */
+  .urc-spark { animation: none !important; opacity: 0 !important; }
 }
 @media (max-width: 859px) { .ur-hero-curves { opacity: .5; } }
 
@@ -5330,15 +5342,15 @@ footer.footer {
   content: ""; position: absolute; width: min(55vw, 640px); height: min(55vw, 640px);
   border-radius: 50%; will-change: transform;
 }
-.aurora::before { top: -12%; left: -8%; background: radial-gradient(closest-side, rgba(42,157,143,.28), transparent 70%); /* --accent */ animation: auroraDriftA 26s ease-in-out infinite alternate; }
-.aurora::after { bottom: -14%; right: -6%; background: radial-gradient(closest-side, rgba(39,121,168,.22), transparent 70%); /* --accent-2 */ animation: auroraDriftB 34s ease-in-out infinite alternate; }
+.aurora::before { top: -12%; left: -8%; background: radial-gradient(closest-side, rgba(42,157,143,.42), transparent 70%); /* --accent */ animation: auroraDriftA 26s ease-in-out infinite alternate; }
+.aurora::after { bottom: -14%; right: -6%; background: radial-gradient(closest-side, rgba(39,121,168,.33), transparent 70%); /* --accent-2 */ animation: auroraDriftB 34s ease-in-out infinite alternate; }
 @keyframes auroraDriftA { from { transform: translate(0, 0) scale(1); } to { transform: translate(10%, 8%) scale(1.15); } }
 @keyframes auroraDriftB { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-12%, -8%) scale(1.1); } }
 /* Dritter Orb im Community-Hub: ein einzelner Orb, eigene Position. */
 .community-hub { position: relative; overflow: hidden; }
 .community-hub > .container { position: relative; z-index: 1; }
 .aurora--community::after { display: none; }
-.aurora--community::before { top: auto; bottom: -18%; left: auto; right: -10%; background: radial-gradient(closest-side, rgba(100,214,196,.16), transparent 70%); /* --accent-3 */ animation: auroraDriftB 30s ease-in-out infinite alternate; }
+.aurora--community::before { top: auto; bottom: -18%; left: auto; right: -10%; background: radial-gradient(closest-side, rgba(100,214,196,.24), transparent 70%); /* --accent-3 */ animation: auroraDriftB 30s ease-in-out infinite alternate; }
 @media (prefers-reduced-motion: reduce) {
   .aurora::before, .aurora::after { animation: none !important; }
 }
@@ -5554,7 +5566,7 @@ footer.footer {
   background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;
   /* Modul D · Stat-Payoff: Glow blendet sich ein, wenn die Szene revealt. */
   text-shadow: 0 0 0 transparent; transition: text-shadow 1s var(--ease-out); }
-.prob-scene.is-revealed .prob-fig-num { text-shadow: 0 0 24px rgba(100,214,196,.35); /* --accent-3 */ }
+.prob-scene.is-revealed .prob-fig-num { text-shadow: 0 0 18px rgba(100,214,196,.55), 0 0 44px rgba(100,214,196,.28); /* --accent-3, zweischichtig */ }
 @media (prefers-reduced-motion: reduce) {
   /* Glow statisch ohne Übergang (Szene ist bei reduced-motion sofort revealt). */
   .prob-fig-num { transition: none !important; }
