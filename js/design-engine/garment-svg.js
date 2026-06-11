@@ -92,9 +92,16 @@ const GarmentSVG = (() => {
     }
     // Sheen overlay: bright diagonal highlight + soft shadow side.
     defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${r(sheen * 0.5)}"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${r(sheen * 0.16)}"/></linearGradient>`;
+    // Volume/round-body shading: a soft centre highlight falling off to shaded
+    // side seams (horizontal), so the flat reads as a garment ON a body with
+    // depth instead of a paper cut-out — the main "looks real, not cheap" lift.
+    // Subtle and tied to fabric weight so matte cottons stay flat, glossy
+    // synthetics catch more light (closer to the photoreal renders).
+    const volStr = clamp(0.12 + sheen * 0.22, 0.12, 0.34);
+    defs += `<linearGradient id="${id}v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="${r(volStr)}"/><stop offset="0.22" stop-color="#000" stop-opacity="${r(volStr * 0.35)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="${r(volStr * 0.7)}"/><stop offset="0.78" stop-color="#000" stop-opacity="${r(volStr * 0.35)}"/><stop offset="1" stop-color="#000" stop-opacity="${r(volStr)}"/></linearGradient>`;
     let pat = "";
     if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
-    return { defs, fill, opacity, pat, sheen: `url(#${id}s)` };
+    return { defs, fill, opacity, pat, sheen: `url(#${id}s)`, vol: `url(#${id}v)` };
   }
 
   // scale 0.12..1 → tile factor ~0.6..1.6 so "Mustergröße" visibly resizes.
@@ -146,9 +153,12 @@ const GarmentSVG = (() => {
     // armpit edge) instead of drawing limbs; splay/cuff shrink with the length
     // so short sleeves still read as real limbs, not stubs.
     const lenT = clamp(sleeveLen / 170, 0, 1);
-    const splay = sleeveless ? 0 : (cfg.splay + (w.drop ? 5 : 0)) * lerp(0.55, 1, lenT);
+    // Sleeves DRAPE down close to the body (how a garment photographs) instead
+    // of splaying into a wide T: only a small outward offset at the cuff, and
+    // the cuff tapers in from the shoulder so the limb reads as a hanging tube.
+    const splay = sleeveless ? 0 : (cfg.splay * 0.42 + (w.drop ? 3 : 0)) * lerp(0.55, 1, lenT);
     const coX = sleeveless ? w.chestHalf : w.shoulderHalf + splay;   // outer cuff edge
-    const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.7, 1, lenT)); // inner cuff edge
+    const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.82, 1.15, lenT)); // inner cuff edge
     const wristY = sleeveless ? armpitY : shoulderY + sleeveLen + (w.drop ? 6 : 0);
     const collar = p.collar || cfg.defCollar;
     const neckHalf = neckHalfFor(collar, cfg);
@@ -300,9 +310,11 @@ const GarmentSVG = (() => {
     const hipHalf = 44 + vol * 7;
     const legTop = hipHalf;
     // CONTINUOUS slim↔wide morph (no step jumps) so the fit slider visibly
-    // reshapes the leg frame by frame: skinny clearly tapers, wide-leg is full.
-    const thighHalf = lerp(14, 33, fit) + vol * 6;
-    const ankleHalf = clamp(lerp(7, thighHalf * 0.96, fit), 6, thighHalf);
+    // reshapes the leg frame by frame. Wide-leg must stay FULL down to the hem
+    // (the photoreal wide trousers fall straight, not taper to sticks), so the
+    // ankle width tracks the leg-top width at high fit instead of pinching in.
+    const thighHalf = lerp(13, 40, fit) + vol * 6;
+    const ankleHalf = clamp(lerp(7, legTop * 0.92, fit) + Math.max(0, vol) * 4, 6, legTop);
     const crotchY = topY + 96;
     return { fit, vol, topY, hemY, hipHalf, legTop, thighHalf, ankleHalf, crotchY };
   }
@@ -374,8 +386,11 @@ const GarmentSVG = (() => {
     const waistHalf = w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84);
     // CONTINUOUS A-line ↔ column morph: low fit = strong flare from the waist,
     // high fit = the hem stays at waist width (true straight sheath) — the
-    // silhouette slider visibly sweeps the skirt instead of snapping.
-    const skirtHalf = lerp(w.chestHalf * 1.85, waistHalf * 1.06, w.fit);
+    // silhouette slider visibly sweeps the skirt instead of snapping. Slip /
+    // column sub-archetypes are slim bias columns (the photoreal slip is a
+    // narrow drape, NOT a wide A-line), so their flare cap is much tighter.
+    const slim = p.subArchetype === "slip" || p.subArchetype === "column";
+    const skirtHalf = lerp(w.chestHalf * (slim ? 1.12 : 1.85), waistHalf * 1.04, w.fit);
     const sleeveLen = sleeveLenFor(p, cfg);
     const sleeveless = sleeveLen <= 2;
     const lenT = clamp(sleeveLen / 170, 0, 1);
@@ -433,6 +448,7 @@ const GarmentSVG = (() => {
     const seamOp = r(lerp(0.4, 1, reveal));
     const body = paths.map((d) =>
       `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
+      (f.vol ? `<path d="${d}" fill="${f.vol}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "")
     ).join("");
