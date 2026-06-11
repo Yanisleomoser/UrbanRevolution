@@ -71,15 +71,27 @@
   // ── 1 · Hero-Showcase — endlose Konzept-Evolution ──────────────────────────
   async function heroShowcase() {
     const el = $("#hero-showcase");
-    if (!el || !window.DesignPreview) return;
-    const items = await loadCurated();
-    const dnas = items.map((i) => decode(i.d)).filter(Boolean);
-    if (!dnas.length) return;
+    if (!el) return;
+    // Kuratierte Studio-Fotos (ehemals Lookbook) statt Live-Flat: schöneres,
+    // fotorealistisches Erstbild. Crossfade-Rotation; reduced-motion / <2 →
+    // erstes Foto statisch. Bilddateien liegen in img/preview/ (auch von der
+    // Design-Engine genutzt) — hier nur referenziert.
+    const DIR = "js/design-engine/content/img/preview/";
+    const PHOTOS = [
+      "jacket-techAvant", "dress-softCouture", "hoodie-y2kStreet", "shirt-quietMinimal",
+      "pants-utility", "tshirt-sport", "jacket-softCouture", "dress-techAvant",
+    ];
+    el.innerHTML = PHOTOS.map((name, n) =>
+      `<img class="ur-hero-photo${n === 0 ? " is-active" : ""}" src="${DIR}${name}.jpg" alt="" width="448" height="560" loading="${n === 0 ? "eager" : "lazy"}" decoding="async">`
+    ).join("");
+    const imgs = Array.from(el.querySelectorAll(".ur-hero-photo"));
+    if (reduce() || imgs.length < 2) return;
     let i = 0;
-    const show = () => window.DesignPreview.renderInto(el, dnas[i % dnas.length], {});
-    show();
-    if (reduce() || dnas.length < 2) return;
-    setInterval(() => { i += 1; show(); }, 3200);
+    setInterval(() => {
+      imgs[i].classList.remove("is-active");
+      i = (i + 1) % imgs.length;
+      imgs[i].classList.add("is-active");
+    }, 3600);
   }
 
   // ── 2 · Ownership-Moment ───────────────────────────────────────────────────
