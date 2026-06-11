@@ -5554,7 +5554,11 @@ footer.footer {
 }
 
 /* „Weiter anpassen" — kompakter Inline-Editor (Fassade über #design/#measure) */
-.own-edit { max-width: 1040px; margin: 8px auto 0; text-align: left; }
+.own-edit { max-width: none; margin: 0; text-align: left; }
+/* The calibrate editor now lives in the moment's (narrow) side column → single
+   column, full width of the column. */
+.own-side-col .own-edit-body { grid-template-columns: 1fr; }
+.own-choose-lead { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 14px; }
 .own-edit-summary {
     cursor: pointer;
     list-style: none;

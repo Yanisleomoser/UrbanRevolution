@@ -378,87 +378,6 @@
                     </div>
                 </details>
 
-                <div class="result-panel" data-reveal>
-                    <div id="ai-output" class="ai-output" aria-live="polite" aria-busy="false">
-                        <div class="output-placeholder">
-                            <div class="pulse-icon">✦</div>
-                            <p data-i18n="design.output_placeholder">Dein KI-generiertes Design erscheint hier</p>
-                        </div>
-                    </div>
-
-                    <div class="customize-controls" id="customize-controls" style="display:none;">
-                        <h3 data-i18n="design.customize_h3">Anpassungen</h3>
-                        <div class="control-group">
-                            <label data-i18n="design.primary_color">Primärfarbe</label>
-                            <div class="color-palette" role="group" data-i18n-aria-label="design.primary_color" aria-label="Primärfarbe">
-                                <button type="button" class="color-swatch" data-color="#1a1a1a" style="background:#1a1a1a" aria-pressed="false" data-i18n-aria-label="color.#1a1a1a"></button>
-                                <button type="button" class="color-swatch" data-color="#ffffff" style="background:#ffffff" aria-pressed="false" data-i18n-aria-label="color.#ffffff"></button>
-                                <button type="button" class="color-swatch" data-color="#7c2d12" style="background:#7c2d12" aria-pressed="false" data-i18n-aria-label="color.#7c2d12"></button>
-                                <button type="button" class="color-swatch" data-color="#1e3a8a" style="background:#1e3a8a" aria-pressed="false" data-i18n-aria-label="color.#1e3a8a"></button>
-                                <button type="button" class="color-swatch" data-color="#365314" style="background:#365314" aria-pressed="false" data-i18n-aria-label="color.#365314"></button>
-                                <button type="button" class="color-swatch" data-color="#a16207" style="background:#a16207" aria-pressed="false" data-i18n-aria-label="color.#a16207"></button>
-                                <button type="button" class="color-swatch" data-color="#831843" style="background:#831843" aria-pressed="false" data-i18n-aria-label="color.#831843"></button>
-                                <button type="button" class="color-swatch" data-color="#6b21a8" style="background:#6b21a8" aria-pressed="false" data-i18n-aria-label="color.#6b21a8"></button>
-                                <button type="button" class="color-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-pressed="false" data-i18n-aria-label="color.#f59e0b"></button>
-                                <button type="button" class="color-swatch" data-color="#dc2626" style="background:#dc2626" aria-pressed="false" data-i18n-aria-label="color.#dc2626"></button>
-                                <label class="color-swatch color-swatch-custom" id="custom-color-swatch" data-i18n-title="color.custom" title="Custom">
-                                    <input type="color" id="custom-color" value="#1a1a1a" data-i18n-aria-label="color.custom" aria-label="Custom">
-                                    <span class="custom-color-plus" aria-hidden="true">+</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="material-select" data-i18n="design.material_label">Material</label>
-                            <select id="material-select">
-                                <option value="cotton" data-i18n="material.cotton">Bio-Baumwolle</option>
-                                <option value="linen" data-i18n="material.linen">Leinen</option>
-                                <option value="denim" data-i18n="material.denim">Denim</option>
-                                <option value="wool" data-i18n="material.wool">Wolle</option>
-                                <option value="fleece" data-i18n="material.fleece">Fleece</option>
-                                <option value="silk" data-i18n="material.silk">Seide</option>
-                                <option value="polyester" data-i18n="material.polyester">Recycled Polyester</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label for="pattern-select" data-i18n="design.pattern_label">Muster</label>
-                            <select id="pattern-select">
-                                <option value="solid" data-i18n="pattern.solid">Uni</option>
-                                <option value="stripes_h" data-i18n="pattern.stripes_h">Querstreifen</option>
-                                <option value="stripes_v" data-i18n="pattern.stripes_v">Längsstreifen</option>
-                                <option value="dots" data-i18n="pattern.dots">Punkte</option>
-                                <option value="plaid" data-i18n="pattern.plaid">Karo</option>
-                                <option value="camo" data-i18n="pattern.camo">Camouflage</option>
-                                <option value="gradient" data-i18n="pattern.gradient">Farbverlauf</option>
-                                <option value="heather" data-i18n="pattern.heather">Meliert</option>
-                                <option value="floral" data-i18n="pattern.floral">Blumenmuster</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label for="fit-slider" data-i18n="design.fit_label">Passform</label>
-                            <div class="fit-slider">
-                                <input type="range" id="fit-slider" min="0" max="100" value="50">
-                                <div class="fit-labels">
-                                    <span data-i18n="fit.slim">Slim</span>
-                                    <span data-i18n="fit.regular">Regular</span>
-                                    <span data-i18n="fit.oversized">Oversized</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label for="length-select" data-i18n="design.length_label">Länge</label>
-                            <select id="length-select">
-                                <option value="cropped" data-i18n="length.cropped">Cropped</option>
-                                <option value="regular" data-i18n="length.regular" selected>Regular</option>
-                                <option value="long" data-i18n="length.long">Lang</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label for="print-input" data-i18n="design.print_label">Aufschrift</label>
-                            <input type="text" id="print-input" class="print-input" maxlength="24" autocomplete="off" data-i18n-placeholder="design.print_placeholder" placeholder="z. B. dein Name, ein Wort …">
-                            <p class="control-hint" data-i18n="design.print_hint">Erscheint vorne auf dem Stück · max. 24 Zeichen</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -500,20 +419,6 @@
                 </div>
 
                 <div class="own-side-col">
-                    <div class="own-chooser">
-                        <h3 class="own-side-title" data-i18n="own.see_title">Sieh es an dir.</h3>
-                        <button type="button" id="own-upload-btn" class="own-upload-btn" data-i18n="own.upload_own">Eigenes Foto hochladen</button>
-                        <p class="own-upload-hint" data-i18n="own.upload_hint">Ganzkörper, gerade Haltung. Dein Foto bleibt auf deinem Gerät, bis du die Vorschau startest.</p>
-                        <p class="own-or" data-i18n="own.or_pick">Oder wähle eine Person</p>
-                        <div class="own-presets" id="own-presets" role="radiogroup" data-i18n-aria-label="own.presets_label" aria-label="Vorschau-Personen">
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-1"><img src="assets/presets/f-1.jpg" alt="" loading="lazy" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-2"><img src="assets/presets/f-2.jpg" alt="" loading="lazy" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-3"><img src="assets/presets/f-3.jpg" alt="" loading="lazy" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-1"><img src="assets/presets/m-1.jpg" alt="" loading="lazy" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-2"><img src="assets/presets/m-2.jpg" alt="" loading="lazy" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-3"><img src="assets/presets/m-3.jpg" alt="" loading="lazy" width="160" height="240"></button>
-                        </div>
-                    </div>
                     <div class="own-info">
                         <h4 class="own-side-title" data-i18n="own.info_title">Dein Design</h4>
                         <dl class="own-info-grid">
@@ -525,44 +430,58 @@
                             <div><dt data-i18n="own.info_size">Größe</dt><dd id="oi-size">—</dd></div>
                         </dl>
                     </div>
+
+                    <!-- Kalibrieren vor der Anprobe — kompakter Inline-Editor. Reine
+                         Fassade über State (Farbe/Material/Passform/Länge/Größe). -->
+                    <details class="own-edit" data-reveal>
+                        <summary class="own-edit-summary" data-i18n="own.edit_summary">Weiter anpassen</summary>
+                        <div class="own-edit-body">
+                            <div class="own-edit-field">
+                                <span class="own-edit-label" data-i18n="own.info_color">Farbe</span>
+                                <div class="own-edit-colors" id="oe-colors" role="group" data-i18n-aria-label="own.info_color" aria-label="Farbe"></div>
+                            </div>
+                            <div class="own-edit-field">
+                                <label class="own-edit-label" for="oe-material" data-i18n="own.info_material">Material</label>
+                                <select id="oe-material"></select>
+                            </div>
+                            <div class="own-edit-field">
+                                <label class="own-edit-label" for="oe-fit" data-i18n="own.info_fit">Passform</label>
+                                <input type="range" id="oe-fit" min="0" max="100" value="50">
+                            </div>
+                            <div class="own-edit-field">
+                                <label class="own-edit-label" for="oe-length" data-i18n="own.info_length">Länge</label>
+                                <select id="oe-length"></select>
+                            </div>
+                            <div class="own-edit-field">
+                                <span class="own-edit-label" data-i18n="own.info_size">Größe</span>
+                                <div class="own-edit-sizes" id="oe-sizes" role="group" data-i18n-aria-label="own.info_size" aria-label="Größe">
+                                    <button type="button" class="oe-size" data-size="S">S</button>
+                                    <button type="button" class="oe-size" data-size="M">M</button>
+                                    <button type="button" class="oe-size" data-size="L">L</button>
+                                    <button type="button" class="oe-size" data-size="XL">XL</button>
+                                </div>
+                            </div>
+                            <p class="own-edit-hint" data-i18n="own.edit_hint">Änderungen sind sofort übernommen — generiere die Vorschau neu, um sie an dir zu sehen.</p>
+                        </div>
+                    </details>
+
+                    <div class="own-chooser">
+                        <h3 class="own-side-title" data-i18n="own.see_title">Sieh es an dir.</h3>
+                        <p class="own-choose-lead" data-i18n="own.see_sub">Wähle eine der Vorschau-Personen — oder lade dein eigenes Ganzkörperfoto hoch.</p>
+                        <div class="own-presets" id="own-presets" role="radiogroup" data-i18n-aria-label="own.presets_label" aria-label="Vorschau-Personen">
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-1"><img src="assets/presets/f-1.jpg" alt="" loading="lazy" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-2"><img src="assets/presets/f-2.jpg" alt="" loading="lazy" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-3"><img src="assets/presets/f-3.jpg" alt="" loading="lazy" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-1"><img src="assets/presets/m-1.jpg" alt="" loading="lazy" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-2"><img src="assets/presets/m-2.jpg" alt="" loading="lazy" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-3"><img src="assets/presets/m-3.jpg" alt="" loading="lazy" width="160" height="240"></button>
+                        </div>
+                        <p class="own-or" data-i18n="own.or_pick">oder</p>
+                        <button type="button" id="own-upload-btn" class="own-upload-btn" data-i18n="own.upload_own">Eigenes Foto hochladen</button>
+                        <p class="own-upload-hint" data-i18n="own.upload_hint">Ganzkörper, gerade Haltung. Dein Foto bleibt auf deinem Gerät, bis du die Vorschau startest.</p>
+                    </div>
                 </div>
             </div>
-
-            <!-- „Weiter anpassen" — kompakter Inline-Editor. Reine Fassade: die
-                 Felder spiegeln auf die bestehenden #design-/#measure-Controls
-                 (Wert setzen + deren Event auslösen), damit alles in einem
-                 Zustand bleibt und nichts doppelt verdrahtet wird. -->
-            <details class="own-edit" data-reveal>
-                <summary class="own-edit-summary" data-i18n="own.edit_summary">Weiter anpassen</summary>
-                <div class="own-edit-body">
-                    <div class="own-edit-field">
-                        <span class="own-edit-label" data-i18n="own.info_color">Farbe</span>
-                        <div class="own-edit-colors" id="oe-colors" role="group" data-i18n-aria-label="own.info_color" aria-label="Farbe"></div>
-                    </div>
-                    <div class="own-edit-field">
-                        <label class="own-edit-label" for="oe-material" data-i18n="own.info_material">Material</label>
-                        <select id="oe-material"></select>
-                    </div>
-                    <div class="own-edit-field">
-                        <label class="own-edit-label" for="oe-fit" data-i18n="own.info_fit">Passform</label>
-                        <input type="range" id="oe-fit" min="0" max="100" value="50">
-                    </div>
-                    <div class="own-edit-field">
-                        <label class="own-edit-label" for="oe-length" data-i18n="own.info_length">Länge</label>
-                        <select id="oe-length"></select>
-                    </div>
-                    <div class="own-edit-field">
-                        <span class="own-edit-label" data-i18n="own.info_size">Größe</span>
-                        <div class="own-edit-sizes" id="oe-sizes" role="group" data-i18n-aria-label="own.info_size" aria-label="Größe">
-                            <button type="button" class="oe-size" data-size="S">S</button>
-                            <button type="button" class="oe-size" data-size="M">M</button>
-                            <button type="button" class="oe-size" data-size="L">L</button>
-                            <button type="button" class="oe-size" data-size="XL">XL</button>
-                        </div>
-                    </div>
-                    <p class="own-edit-hint" data-i18n="own.edit_hint">Änderungen sind sofort übernommen — generiere die Vorschau neu, um sie an dir zu sehen.</p>
-                </div>
-            </details>
 
             <div class="ownership-actions" data-reveal>
                 <button type="button" id="own-save" class="manifesto-cta" data-i18n="own.save">Meine Kreation speichern</button>

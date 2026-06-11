@@ -493,6 +493,10 @@
 
   function renderDesignResult(design) {
     const output = document.getElementById("ai-output");
+    // The standalone "atelier" result card was retired — the morph engine is
+    // the design tool and the photoreal moment shows the design. If the card
+    // isn't in the DOM, there's nothing to render here.
+    if (!output) return;
 
     const type = design.type || S.get("currentType");
     const color = design.color || S.get("currentColor");
@@ -1007,32 +1011,40 @@
     }
   }
 
-  // ── „Weiter anpassen" — Inline-Editor im Ownership-Moment ─────────────────
-  // Bewusst eine Fassade: jedes Feld spiegelt seine Änderung auf das jeweils
-  // bestehende #design-/#measure-Control (Wert setzen + dessen Event auslösen,
-  // bzw. applyColor / preset-btn.click()). So bleibt EIN Zustand, alle bereits
-  // vorhandenen Subscriptions/Sync-Pfade greifen, nichts wird doppelt verdrahtet.
+  // ── „Weiter anpassen" — Inline-Kalibrierung im Ownership-Moment ───────────
+  // Die einzige Anpass-Oberfläche (das alte #design-„Atelier"-Panel ist weg):
+  // setzt den Zustand direkt (S.set + Design-Objekt + updateProductionPreview),
+  // Farbe über applyColor, Größe über die Maß-Presets in #measure. EIN Zustand,
+  // die bestehenden Subscriptions hängen die Anzeige (Info-Panel/Spec) nach.
+  const OE_COLORS = ["#1a1a1a", "#ffffff", "#7c2d12", "#1e3a8a", "#365314", "#a16207", "#831843", "#6b21a8", "#f59e0b", "#dc2626"];
+  const OE_MATERIALS = ["cotton", "linen", "denim", "wool", "fleece", "silk", "polyester"];
+  const OE_LENGTHS = ["cropped", "regular", "long"];
+
   function populateOwnEditorOptions() {
-    const clone = (srcId, dstId) => {
-      const src = document.getElementById(srcId);
-      const dst = document.getElementById(dstId);
-      if (src && dst) dst.innerHTML = src.innerHTML;
-    };
-    clone("material-select", "oe-material");
-    clone("length-select", "oe-length");
+    const oeMat = document.getElementById("oe-material");
+    if (oeMat) oeMat.innerHTML = OE_MATERIALS
+      .map((k) => `<option value="${k}">${escapeHtml(typeMaterialLabel(k))}</option>`).join("");
+    const oeLen = document.getElementById("oe-length");
+    if (oeLen) oeLen.innerHTML = OE_LENGTHS
+      .map((k) => `<option value="${k}">${escapeHtml(lengthLabel(k))}</option>`).join("");
     const colors = document.getElementById("oe-colors");
-    if (colors && !colors.children.length) {
-      document.querySelectorAll("button.color-swatch").forEach((sw) => {
+    if (!colors) return;
+    if (!colors.children.length) {
+      OE_COLORS.forEach((hex) => {
         const b = document.createElement("button");
         b.type = "button";
         b.className = "oe-color";
-        b.dataset.color = sw.dataset.color;
-        b.style.background = sw.dataset.color;
-        b.setAttribute("aria-label", sw.getAttribute("aria-label") || sw.dataset.color);
+        b.dataset.color = hex;
+        b.style.background = hex;
         b.setAttribute("aria-pressed", "false");
-        b.addEventListener("click", () => { applyColor(sw.dataset.color); syncOwnEditor(); resetOwnStage(); });
+        b.setAttribute("aria-label", colorAdjective(hex));
+        b.addEventListener("click", () => { applyColor(hex); syncOwnEditor(); resetOwnStage(); });
         colors.appendChild(b);
       });
+    } else {
+      // language switch → relocalise the colour names.
+      colors.querySelectorAll(".oe-color").forEach((b) =>
+        b.setAttribute("aria-label", colorAdjective(b.dataset.color)));
     }
   }
 
@@ -1071,18 +1083,26 @@
 
   function initOwnEditor() {
     populateOwnEditorOptions();
-    const proxy = (srcId, targetId, evt) => {
-      const src = document.getElementById(srcId);
-      if (!src) return;
-      src.addEventListener(evt, () => {
-        const target = document.getElementById(targetId);
-        if (target) { target.value = src.value; target.dispatchEvent(new Event(evt, { bubbles: true })); }
-        resetOwnStage();
-      });
-    };
-    proxy("oe-material", "material-select", "change");
-    proxy("oe-length", "length-select", "change");
-    proxy("oe-fit", "fit-slider", "input");
+    const oeMat = document.getElementById("oe-material");
+    if (oeMat) oeMat.addEventListener("change", () => {
+      if (!S.set("currentMaterial", oeMat.value)) return;
+      const d = S.get("currentDesign"); if (d) d.material = oeMat.value;
+      updateProductionPreview(); resetOwnStage();
+    });
+    const oeLen = document.getElementById("oe-length");
+    if (oeLen) oeLen.addEventListener("change", () => {
+      if (!S.set("currentLength", oeLen.value)) return;
+      const d = S.get("currentDesign"); if (d) d.length = oeLen.value;
+      updateProductionPreview(); resetOwnStage();
+    });
+    const oeFit = document.getElementById("oe-fit");
+    if (oeFit) oeFit.addEventListener("input", () => {
+      const fit = oeFit.value / 100;
+      if (!S.set("currentFit", fit)) return;
+      const d = S.get("currentDesign"); if (d) d.fit = fit;
+      updateProductionPreview(); resetOwnStage();
+    });
+    // Size reuses the measurement presets in #measure (still the source of truth).
     document.querySelectorAll("#oe-sizes .oe-size").forEach((b) =>
       b.addEventListener("click", () => {
         const pb = document.querySelector(`.preset-btn[data-preset="${b.dataset.size}"]`);
