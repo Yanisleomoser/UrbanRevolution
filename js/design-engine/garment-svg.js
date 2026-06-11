@@ -153,9 +153,12 @@ const GarmentSVG = (() => {
     // armpit edge) instead of drawing limbs; splay/cuff shrink with the length
     // so short sleeves still read as real limbs, not stubs.
     const lenT = clamp(sleeveLen / 170, 0, 1);
-    const splay = sleeveless ? 0 : (cfg.splay + (w.drop ? 5 : 0)) * lerp(0.55, 1, lenT);
+    // Sleeves DRAPE down close to the body (how a garment photographs) instead
+    // of splaying into a wide T: only a small outward offset at the cuff, and
+    // the cuff tapers in from the shoulder so the limb reads as a hanging tube.
+    const splay = sleeveless ? 0 : (cfg.splay * 0.42 + (w.drop ? 3 : 0)) * lerp(0.55, 1, lenT);
     const coX = sleeveless ? w.chestHalf : w.shoulderHalf + splay;   // outer cuff edge
-    const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.7, 1, lenT)); // inner cuff edge
+    const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.82, 1.15, lenT)); // inner cuff edge
     const wristY = sleeveless ? armpitY : shoulderY + sleeveLen + (w.drop ? 6 : 0);
     const collar = p.collar || cfg.defCollar;
     const neckHalf = neckHalfFor(collar, cfg);
@@ -383,8 +386,11 @@ const GarmentSVG = (() => {
     const waistHalf = w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84);
     // CONTINUOUS A-line ↔ column morph: low fit = strong flare from the waist,
     // high fit = the hem stays at waist width (true straight sheath) — the
-    // silhouette slider visibly sweeps the skirt instead of snapping.
-    const skirtHalf = lerp(w.chestHalf * 1.85, waistHalf * 1.06, w.fit);
+    // silhouette slider visibly sweeps the skirt instead of snapping. Slip /
+    // column sub-archetypes are slim bias columns (the photoreal slip is a
+    // narrow drape, NOT a wide A-line), so their flare cap is much tighter.
+    const slim = p.subArchetype === "slip" || p.subArchetype === "column";
+    const skirtHalf = lerp(w.chestHalf * (slim ? 1.12 : 1.85), waistHalf * 1.04, w.fit);
     const sleeveLen = sleeveLenFor(p, cfg);
     const sleeveless = sleeveLen <= 2;
     const lenT = clamp(sleeveLen / 170, 0, 1);
