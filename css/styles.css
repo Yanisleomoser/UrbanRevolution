@@ -5413,17 +5413,19 @@ footer.footer {
    bleibt in SEINER Box; vorher füllte er die ganze Stage und überlappte die
    Caption (iPhone-Report). */
 .ur-hero-showcase { position: relative; overflow: hidden; border-radius: 12px; height: clamp(270px, 40svh, 380px); display: flex; align-items: center; justify-content: center; }
-/* Flat (technischer Schnitt) und echtes Foto übereinander gestapelt; per Klasse
-   am Showcase wird zwischen ihnen aufgelöst (Dissolve). */
+/* Flat (technischer Schnitt) und echtes Foto deckungsgleich gestapelt — beide
+   zentriert auf dunklem Grund (Foto via contain, dessen Studio-Grund ~= --bg
+   blendet), damit die Webkante das EINE Stück verwandelt statt zwei Bilder zu
+   tauschen. Bewegung wird per Web Animations API (ur-create.js) gesteuert. */
 .ur-hero-flat, .ur-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ur-hero-flat { display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(.98); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
-.ur-hero-flat svg { height: 86%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
-.ur-hero-photo { object-fit: cover; border-radius: inherit; opacity: 0; transform: scale(1.02); transition: opacity .9s var(--ease-out), transform .9s var(--ease-out); }
-.ur-hero-showcase.show-flat .ur-hero-flat { opacity: 1; transform: none; }
-.ur-hero-showcase.show-photo .ur-hero-photo { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) {
-  .ur-hero-flat, .ur-hero-photo { transition: none; transform: none; }
-}
+.ur-hero-flat { display: flex; align-items: center; justify-content: center; }
+.ur-hero-flat svg { height: 96%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
+.ur-hero-photo { object-fit: contain; border-radius: inherit; will-change: clip-path, filter; }
+/* Leuchtende Webkante: dünner Gradient-Faden + Glow + weiche Schimmer-Bahn
+   darunter; fährt (JS: top 0→100 %) mit der Enthüllungskante nach unten. */
+.ur-hero-weave { position: absolute; left: 0; right: 0; top: 0; height: 0; opacity: 0; pointer-events: none; will-change: top, opacity; }
+.ur-hero-weave::before { content: ""; position: absolute; left: 6%; right: 6%; top: -1px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accent-2), var(--accent-3), var(--accent), transparent); box-shadow: 0 0 14px 2px rgba(100,214,196,0.55); }
+.ur-hero-weave::after { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 30px; background: linear-gradient(180deg, rgba(100,214,196,0.20), transparent); }
 .ur-hero-caption { margin-top: 14px; text-align: center; color: var(--text-muted); font-size: 0.82rem; line-height: 1.4; max-width: 38ch; margin-left: auto; margin-right: auto; }
 @media (min-width: 860px) { .ur-hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 56px; } }
 

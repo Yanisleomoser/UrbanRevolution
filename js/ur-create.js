@@ -68,11 +68,13 @@
     return curated;
   }
 
-  // ── 1 · Hero-Showcase — Flat → echtes Foto (das Produktversprechen sichtbar) ──
-  // Pro Stück: erst der technische Flat (GarmentSVG, aus derselben DNA), dann
-  // löst er sich auf und das passende Studio-Foto materialisiert an gleicher
-  // Stelle — „aus deiner Skizze wird dein Lieblingsstück". Datenquelle:
-  // hero-pairs.json (DNA speist Flat UND Foto-Prompt → Foto == Flat).
+  // ── 1 · Hero-Showcase — Flat → echtes Foto, gewebt ─────────────────────────
+  // Pro Stück: der technische Flat (GarmentSVG, aus derselben DNA) UND das
+  // passende Studio-Foto stehen deckungsgleich übereinander (beide zentriert auf
+  // dunklem Grund). Eine leuchtende „Webkante" fährt von oben nach unten —
+  // darüber wird das echte Bild gewoben (per clip-path enthüllt, vorn unscharf →
+  // scharf), darunter bleibt der Flat. So verwandelt sich der Stoff flüssig vom
+  // Schnitt ins reale Stück. Datenquelle: hero-pairs.json (DNA == Foto).
   async function heroShowcase() {
     const stage = $("#hero-showcase");
     if (!stage) return;
@@ -86,9 +88,11 @@
 
     stage.innerHTML =
       '<div class="ur-hero-flat" aria-hidden="true"></div>' +
-      '<img class="ur-hero-photo" alt="" decoding="async">';
+      '<img class="ur-hero-photo" alt="" decoding="async">' +
+      '<div class="ur-hero-weave" aria-hidden="true"></div>';
     const flatEl = stage.querySelector(".ur-hero-flat");
     const photoEl = stage.querySelector(".ur-hero-photo");
+    const weaveEl = stage.querySelector(".ur-hero-weave");
     const canFlat = !!(window.DesignPreview && window.DesignShare);
     const renderFlat = (i) => {
       if (!canFlat) return;
@@ -97,33 +101,80 @@
     };
     pairs.forEach((p) => { const im = new Image(); im.src = DIR + p.id + ".jpg"; }); // vorladen
 
-    let i = 0;
-    renderFlat(0);
-    photoEl.src = DIR + pairs[0].id + ".jpg";
+    const HIDDEN = "inset(0 0 100% 0)"; // Foto komplett abgeschnitten (von unten)
+    const SHOWN = "inset(0 0 0% 0)";
 
-    // Reduced-motion / kein Flat-Renderer: zeige direkt das Ergebnis (Foto), statisch.
-    if (reduce() || !canFlat || pairs.length < 1) {
-      stage.classList.add("show-photo");
+    // Erststand: erstes Stück, Flat sichtbar, Foto verdeckt.
+    const FLAT_FULL = "inset(0% 0 0 0)";   // Flat ganz sichtbar
+    const FLAT_GONE = "inset(100% 0 0 0)"; // Flat von oben weggeschnitten
+    renderFlat(0);
+    flatEl.style.clipPath = FLAT_FULL;
+    photoEl.src = DIR + pairs[0].id + ".jpg";
+    photoEl.style.clipPath = HIDDEN;
+
+    // Reduced-motion / kein Flat-Renderer: direkt das Ergebnis (Foto), statisch.
+    if (reduce() || !canFlat || !("animate" in photoEl)) {
+      photoEl.style.clipPath = SHOWN;
+      flatEl.style.clipPath = FLAT_GONE;
       return;
     }
 
-    stage.classList.add("show-flat");
-    const FLAT_MS = 1900;  // Flat steht
-    const PHOTO_MS = 2900; // Foto steht
-    const toPhoto = () => {
-      stage.classList.remove("show-flat");
-      stage.classList.add("show-photo");      // Flat löst sich auf, Foto materialisiert
-      setTimeout(nextPiece, PHOTO_MS);
-    };
-    function nextPiece() {
-      i = (i + 1) % pairs.length;
-      renderFlat(i);                           // neuen Flat hinter dem Foto vorbereiten
-      stage.classList.remove("show-photo");
-      stage.classList.add("show-flat");        // neuer Flat blendet ein, altes Foto aus
-      setTimeout(() => { photoEl.src = DIR + pairs[i].id + ".jpg"; }, 750); // Quelle tauschen, sobald verdeckt
-      setTimeout(toPhoto, FLAT_MS);
+    // Gleichmäßiger, sanfter Sweep (kein Front-Load → die Webkante WANDERT
+    // sichtbar, statt das Bild vorzuschnappen).
+    const EASE = "cubic-bezier(.65,0,.35,1)";
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const done = (anim) => anim.finished.catch(() => {}); // abgebrochene Animationen schlucken
+
+    async function weaveIn() {
+      const dur = 1850;
+      try { if (photoEl.decode) await photoEl.decode(); } catch (_e) { /* egal */ }
+      photoEl.style.opacity = "1";
+      flatEl.style.opacity = "1";
+      weaveEl.style.opacity = "1";
+      // Foto wird von oben enthüllt, Flat KOMPLEMENTÄR von oben weggewebt → beide
+      // grenzen exakt an der Webkante an (kein Überlappen/Ausfransen).
+      const a = photoEl.animate([{ clipPath: HIDDEN }, { clipPath: SHOWN }],
+        { duration: dur, easing: EASE, fill: "forwards" });
+      flatEl.animate([{ clipPath: FLAT_FULL }, { clipPath: FLAT_GONE }],
+        { duration: dur, easing: EASE, fill: "forwards" });
+      // frisch enthüllter Stoff: unscharf → scharf (verdichtet sich zum echten Bild)
+      photoEl.animate(
+        [{ filter: "blur(12px) saturate(1.4) brightness(1.15)" }, { filter: "blur(0px) saturate(1) brightness(1)" }],
+        { duration: dur, easing: EASE, fill: "forwards" });
+      weaveEl.animate([{ top: "0%" }, { top: "100%" }], { duration: dur, easing: EASE, fill: "forwards" });
+      weaveEl.animate([{ opacity: 0 }, { opacity: 1, offset: 0.1 }, { opacity: 1, offset: 0.9 }, { opacity: 0 }],
+        { duration: dur, easing: "linear", fill: "forwards" });
+      await done(a);
+      weaveEl.style.opacity = "0";
     }
-    setTimeout(toPhoto, FLAT_MS);
+
+    // Übergang zum nächsten Stück: weiches Crossfade vom fertigen Foto zum
+    // nächsten Flat (kurz, sauber — der Star ist das Weben oben).
+    async function toNextFlat(next) {
+      renderFlat(next);
+      flatEl.style.clipPath = FLAT_FULL;
+      flatEl.style.opacity = "0";
+      const fa = flatEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 520, easing: EASE, fill: "forwards" });
+      photoEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, easing: EASE, fill: "forwards" });
+      await done(fa);
+      // Foto fürs nächste Weben vorbereiten (verdeckt: geclippt, wieder opak)
+      photoEl.src = DIR + pairs[next].id + ".jpg";
+      photoEl.style.clipPath = HIDDEN;
+      photoEl.style.opacity = "1";
+      flatEl.style.opacity = "1";
+    }
+
+    let i = 0;
+    /* eslint-disable no-await-in-loop */
+    (async function loop() {
+      while (true) {
+        await weaveIn();        // Schnitt → echtes Stück gewebt (Star)
+        await wait(2600);       // das fertige Stück hält
+        i = (i + 1) % pairs.length;
+        await toNextFlat(i);    // Crossfade zum nächsten Schnitt
+        await wait(550);        // kurz der reine Schnitt
+      }
+    })();
   }
 
   // ── 2 · Ownership-Moment ───────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 {
-  "_comment": "Hero Flat->Foto-Paare. Jede DNA rendert den Flat (GarmentSVG) UND speist den Foto-Prompt -> Foto zeigt garantiert dasselbe Stueck. Trend vor Palette. Fotos: img/hero/{id}.jpg via build-image-library.mjs --only=hero (prompt + img-library.hero_style).",
+  "_comment": "Hero Flat->Foto-Paare. Jede DNA rendert den Flat (GarmentSVG) UND speist den Foto-Prompt -> Foto zeigt dasselbe Stueck. Trend vor Palette. Fotos via build-image-library --only=heropair.",
   "pairs": [
     {
       "id": "hoodie",
@@ -8,7 +8,7 @@
     },
     {
       "id": "pants",
-      "dna": "eyJhcmNoZXR5cGVXZWlnaHRzIjp7InF1aWV0TWluaW1hbCI6MCwidGVjaEF2YW50IjowLCJ5MmtTdHJlZXQiOjAsInNvZnRDb3V0dXJlIjowLCJ1dGlsaXR5IjowLCJzcG9ydCI6MH0sImNhdGVnb3J5IjoicGFudHMiLCJzdWJBcmNoZXR5cGUiOiJ0YWlsb3JlZCIsInNpbGhvdWV0dGUiOnsiZml0IjowLjJ9LCJsZW5ndGgiOiJsb25nIiwiZmFicmljIjp7Im1hdGVyaWFsIjoid29vbCJ9LCJjb2xvciI6eyJzY2hlbWUiOiJtb25vIiwic3RvcHMiOlsiIzNhM2Y0NSJdfSwiY29uc3RydWN0aW9uIjp7InBvY2tldHMiOiJzbGFudCIsIndhaXN0YmFuZCI6InBsZWF0ZWQiLCJoZW0iOiJwbGFpbiJ9LCJpbnRlbnQiOnsiZW5lcmd5IjowLjV9fQ",
+      "dna": "eyJhcmNoZXR5cGVXZWlnaHRzIjp7InF1aWV0TWluaW1hbCI6MCwidGVjaEF2YW50IjowLCJ5MmtTdHJlZXQiOjAsInNvZnRDb3V0dXJlIjowLCJ1dGlsaXR5IjowLCJzcG9ydCI6MH0sImNhdGVnb3J5IjoicGFudHMiLCJzdWJBcmNoZXR5cGUiOiJ0YWlsb3JlZCIsInNpbGhvdWV0dGUiOnsiZml0IjoxLCJ2b2x1bWUiOiJoaWdoIn0sImxlbmd0aCI6ImxvbmciLCJmYWJyaWMiOnsibWF0ZXJpYWwiOiJ3b29sIn0sImNvbG9yIjp7InNjaGVtZSI6Im1vbm8iLCJzdG9wcyI6WyIjM2EzZjQ1Il19LCJjb25zdHJ1Y3Rpb24iOnsicG9ja2V0cyI6InNsYW50Iiwid2Fpc3RiYW5kIjoicGxlYXRlZCIsImhlbSI6InBsYWluIn0sImludGVudCI6eyJlbmVyZ3kiOjAuNX19",
       "prompt": "ONLY a pair of trousers and nothing else, a lower-body garment by itself with no top, no shirt and no jacket — relaxed wide straight-leg high-waisted tailored designer trousers in deep charcoal grey wool, pressed front crease, floor-length, presented alone on an invisible lower-body trouser form, waistband at the very top, wide hems at the bottom, elevated minimalist tailoring"
     },
     {
