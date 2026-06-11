@@ -5412,15 +5412,18 @@ footer.footer {
 /* position:relative + overflow:hidden → der absolut gesetzte .de-garment-wrap
    bleibt in SEINER Box; vorher füllte er die ganze Stage und überlappte die
    Caption (iPhone-Report). */
-.ur-hero-showcase { position: relative; overflow: hidden; border-radius: 12px; height: clamp(270px, 40svh, 380px); display: flex; align-items: center; justify-content: center; }
+/* Portrait-Rahmen, der das (Hochformat-)Stück eng fasst, statt es in einer
+   breiten Landschafts-Box schweben zu lassen → Flat und Foto füllen denselben
+   Rahmen, die Webkante verwandelt EIN deckungsgleiches Stück. */
+.ur-hero-showcase { position: relative; overflow: hidden; border-radius: 12px; aspect-ratio: 3 / 4; height: auto; width: min(88%, 330px); max-height: 70svh; margin-inline: auto; display: flex; align-items: center; justify-content: center; }
 /* Flat (technischer Schnitt) und echtes Foto deckungsgleich gestapelt — beide
    zentriert auf dunklem Grund (Foto via contain, dessen Studio-Grund ~= --bg
    blendet), damit die Webkante das EINE Stück verwandelt statt zwei Bilder zu
    tauschen. Bewegung wird per Web Animations API (ur-create.js) gesteuert. */
 .ur-hero-flat, .ur-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ur-hero-flat { display: flex; align-items: center; justify-content: center; }
-.ur-hero-flat svg { height: 96%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
-.ur-hero-photo { object-fit: contain; border-radius: inherit; will-change: clip-path, filter; clip-path: inset(0 0 100% 0); }
+.ur-hero-flat svg { height: 86%; width: auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
+.ur-hero-photo { object-fit: cover; border-radius: inherit; will-change: clip-path, filter; clip-path: inset(0 0 100% 0); }
 /* Leuchtende Webkante: dünner Gradient-Faden + Glow + weiche Schimmer-Bahn
    darunter; fährt (JS: top 0→100 %) mit der Enthüllungskante nach unten. */
 .ur-hero-weave { position: absolute; left: 0; right: 0; top: 0; height: 0; opacity: 0; pointer-events: none; will-change: top, opacity; }
