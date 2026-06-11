@@ -204,10 +204,8 @@
     let revealed = false;
     const reveal = (design) => {
       if (sec.hidden) sec.hidden = false;
-      // Mit der ersten Kreation öffnet sich auch die fotorealistische Vorschau —
-      // vorher wäre sie Output ohne Input (leere Stage, toter Anprobe-Dialog).
-      const prevSec = $("#preview");
-      if (prevSec && prevSec.hidden) prevSec.hidden = false;
+      // Die fotorealistische Anprobe lebt jetzt IM Ownership-Moment (eine
+      // Sektion) — sie wird mit ihm sichtbar, kein separates #preview mehr.
       const nameEl = $("#own-name");
       if (nameEl && design && design.name) nameEl.textContent = "„" + design.name + "“";
       if (!revealed) {
@@ -437,7 +435,7 @@
     if (mr && mr.hidden) mr.hidden = false;
   }
   function makeRealLinks() {
-    const ids = ["#measure", "#preview", "#production", "#faq"];
+    const ids = ["#measure", "#production", "#faq"];
     const check = () => { if (ids.includes(location.hash)) openMakeReal(); };
     document.addEventListener("click", (e) => {
       const a = e.target.closest && e.target.closest('a[href^="#"]');

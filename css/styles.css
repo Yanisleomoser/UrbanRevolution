@@ -5443,6 +5443,121 @@ footer.footer {
 .ownership-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
 .ownership-next { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; margin-top: 26px; }
 
+/* Ownership-Moment · die fotorealistische Anprobe + „Wer trägt es?"-Auswahl
+   + Design-Infos in EINER ruhigen Sektion. Zwei Spalten (Stage links, Auswahl
+   + Infos rechts), die auf Mobil sauber untereinander stapeln. */
+.own-show {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 22px;
+    max-width: 1040px;
+    margin: 34px auto 6px;
+    text-align: left;
+}
+.own-stage-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.own-stage-col .vto-stage {
+    min-height: 440px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.own-stage-col .vto-stage .vto-result-img { max-height: 560px; }
+.own-stage-col .vto-btn { width: 100%; }
+.own-stage-col .vto-disclaimer { text-align: left; }
+
+.own-side-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.own-chooser,
+.own-info {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+.own-side-title {
+    font-family: var(--font-display, 'Lora', serif);
+    font-size: 1.15rem;
+    margin: 0 0 12px;
+}
+.own-upload-btn {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: var(--radius-sm, 10px);
+    border: 1px solid transparent;
+    background: var(--gradient);
+    color: #06121d;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.own-upload-btn:hover { transform: translateY(-2px); }
+.own-upload-hint { color: var(--text-muted); font-size: 0.82rem; margin: 10px 0 0; }
+.own-or {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 18px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.own-or::before,
+.own-or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.own-presets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+.own-preset {
+    position: relative;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm, 10px);
+    background: #0e1c2b;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 2 / 3;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.own-preset img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.own-preset:hover { transform: translateY(-2px); }
+.own-preset.is-selected {
+    border-color: var(--accent-3, #64d6c4);
+    box-shadow: 0 0 0 2px rgba(100, 214, 196, 0.35);
+}
+.own-preset.is-loading { opacity: 0.6; cursor: progress; }
+.own-preset:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: 2px; }
+
+.own-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin: 0; }
+.own-info-grid > div { min-width: 0; }
+.own-info-grid dt {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 3px;
+}
+.own-info-grid dd {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.oi-swatch {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-block;
+    flex: none;
+}
+
+@media (max-width: 860px) {
+    .own-show { grid-template-columns: 1fr; }
+    .own-stage-col .vto-stage { min-height: 360px; }
+}
+
 /* 4 · Galerie */
 .gallery { padding: 72px 0; }
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
