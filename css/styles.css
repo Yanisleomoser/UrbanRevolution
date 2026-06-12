@@ -6069,6 +6069,16 @@ html:not(.fx) .lp-loader { display: none; }
     gap: 14px;
     margin-top: 38px;
 }
+.lp-hero-hint {
+    margin-top: 22px;
+    font-size: 11.5px;
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-muted);
+}
+/* Der Tap-Morph ist Bewegung — ohne Bewegung kein irreführender Hinweis */
+@media (prefers-reduced-motion: reduce) {
+    .lp-hero-hint { display: none; }
+}
 .lp-scroll-cue {
     position: absolute;
     left: 50%;

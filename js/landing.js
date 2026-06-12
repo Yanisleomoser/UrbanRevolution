@@ -253,6 +253,125 @@
     let running = false;
     const pointer = { x: -9999, y: -9999, active: false };
 
+    // ── Kleidungs-Silhouetten (64×64-Raster, wie die Typ-Icons im Studio).
+    //    Tap/Klick: die Punkte fliegen auf die Kontur und verbinden sich
+    //    der Reihe nach zum Stück; nach kurzem Halten lösen sie sich wieder.
+    const GARMENTS = [
+      { key: "tshirt", chains: [{ closed: true, pts: [[16, 16], [24, 8], [40, 8], [48, 16], [56, 22], [48, 30], [48, 56], [16, 56], [16, 30], [8, 22]] }] },
+      { key: "hoodie", chains: [{ closed: true, pts: [[20, 14], [32, 6], [44, 14], [52, 22], [58, 28], [50, 34], [50, 58], [14, 58], [14, 34], [6, 28], [12, 22]] }] },
+      { key: "pants", chains: [{ closed: true, pts: [[16, 8], [48, 8], [46, 32], [44, 58], [34, 58], [32, 34], [30, 58], [20, 58], [18, 32]] }] },
+      {
+        key: "jacket",
+        chains: [
+          { closed: true, pts: [[16, 14], [24, 8], [40, 8], [48, 14], [56, 22], [50, 28], [50, 58], [14, 58], [14, 28], [8, 22]] },
+          { closed: false, pts: [[32, 10], [32, 58]] },
+        ],
+      },
+      { key: "dress", chains: [{ closed: true, pts: [[22, 12], [28, 8], [36, 8], [42, 12], [40, 24], [52, 58], [12, 58], [24, 24]] }] },
+      {
+        key: "shirt",
+        chains: [
+          { closed: true, pts: [[18, 14], [28, 8], [36, 8], [46, 14], [54, 22], [48, 28], [48, 56], [16, 56], [16, 28], [10, 22]] },
+          { closed: false, pts: [[28, 8], [32, 16], [36, 8]] },
+        ],
+      },
+    ];
+    let mode = "drift";          // "drift" | "form"
+    let garmentIdx = -1;         // zykliert pro Tap durchs Sortiment
+    let formStart = 0;
+    let formChains = [];         // [[Partikel, …], …] in Kontur-Reihenfolge
+    let formLabel = "";
+    let formCenter = { x: 0, y: 0, s: 0 };
+    const FORM_HOLD = 4200;      // ms bis zur Auflösung
+
+    // Polylinie gleichmäßig in n Punkte zerlegen (für die Punkt-Kontur).
+    function resample(pts, closed, n) {
+      const P = closed ? pts.concat([pts[0]]) : pts;
+      const segs = [];
+      let total = 0;
+      for (let i = 0; i < P.length - 1; i++) {
+        const L = Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]);
+        segs.push(L);
+        total += L;
+      }
+      const out = [];
+      const stepLen = total / n;
+      let seg = 0, acc = 0;
+      for (let k = 0; k < n; k++) {
+        const target = Math.min(k * stepLen, total - 0.001);
+        while (seg < segs.length - 1 && acc + segs[seg] < target) { acc += segs[seg]; seg++; }
+        const t = segs[seg] ? (target - acc) / segs[seg] : 0;
+        out.push([P[seg][0] + (P[seg + 1][0] - P[seg][0]) * t, P[seg][1] + (P[seg + 1][1] - P[seg][1]) * t]);
+      }
+      return out;
+    }
+
+    function formGarment(tapX, tapY) {
+      if (reduceMotion || !particles.length) return;
+      garmentIdx = (garmentIdx + 1) % GARMENTS.length;
+      const g = GARMENTS[garmentIdx];
+
+      // Größe + Position: am Tap zentriert, aber vollständig im Canvas.
+      const s = Math.max(170, Math.min(0.52 * Math.min(w, h), 380));
+      const cx = Math.min(Math.max(tapX, s / 2 + 24), w - s / 2 - 24);
+      const cy = Math.min(Math.max(tapY, s / 2 + 24), h - s / 2 - 24);
+      formCenter = { x: cx, y: cy, s };
+      formLabel = window.I18N ? window.I18N.t("type." + g.key) : g.key;
+
+      // Punkte-Budget proportional zur Konturlänge auf die Ketten verteilen.
+      const budget = Math.min(particles.length - 4, 96);
+      const lens = g.chains.map((c) => {
+        const P = c.closed ? c.pts.concat([c.pts[0]]) : c.pts;
+        let L = 0;
+        for (let i = 0; i < P.length - 1; i++) L += Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]);
+        return L;
+      });
+      const totalLen = lens.reduce((a, b) => a + b, 0);
+
+      const free = particles.slice();
+      formChains = g.chains.map((chain, ci) => {
+        const n = Math.max(chain.closed ? 12 : 4, Math.round(budget * (lens[ci] / totalLen)));
+        const targets = resample(chain.pts, chain.closed, n);
+        const assigned = [];
+        for (const [gx, gy] of targets) {
+          if (!free.length) break;
+          const tx = cx + (gx - 32) * (s / 64);
+          const ty = cy + (gy - 32) * (s / 64);
+          // Greedy: nächstes freies Partikel — kurze, ruhige Flugwege.
+          let best = 0, bestD = Infinity;
+          for (let i = 0; i < free.length; i++) {
+            const d = (free[i].x - tx) ** 2 + (free[i].y - ty) ** 2;
+            if (d < bestD) { bestD = d; best = i; }
+          }
+          const p = free.splice(best, 1)[0];
+          p.tx = tx;
+          p.ty = ty;
+          p.forming = true;
+          assigned.push(p);
+        }
+        return { closed: chain.closed, parts: assigned };
+      });
+      free.forEach((p) => { p.forming = false; });
+      mode = "form";
+      formStart = performance.now();
+    }
+
+    function releaseForm() {
+      // Drift-Parameter aus der aktuellen Position zurückrechnen, damit die
+      // Punkte ohne Sprung weiterkreisen (Umkehrung der Ellipse in step()).
+      const cx = w / 2, cy = h / 2;
+      for (const p of particles) {
+        if (!p.forming) continue;
+        p.forming = false;
+        const ex = (p.x - cx) / 1.25, ey = (p.y - cy) / 0.85;
+        p.angle = Math.atan2(ey, ex);
+        p.baseRadius = Math.max(30, Math.hypot(ex, ey));
+        p.wobble = Math.random() * Math.PI * 2;
+      }
+      formChains = [];
+      mode = "drift";
+    }
+
     function resize() {
       const rect = canvas.getBoundingClientRect();
       dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -261,6 +380,8 @@
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      mode = "drift";
+      formChains = [];
       seed();
       if (reduceMotion) {
         // Standbild: Positionen einmalig berechnen, genau einmal zeichnen.
@@ -284,19 +405,28 @@
           color: COLORS[(Math.random() * COLORS.length) | 0],
           x: 0,
           y: 0,
+          tx: 0,
+          ty: 0,
+          forming: false,
         };
       });
     }
 
     function step(dt) {
       const cx = w / 2, cy = h / 2;
+      const pull = 1 - Math.exp(-dt / 150); // sanfter Zuflug zur Kontur
       for (const p of particles) {
+        if (p.forming) {
+          p.x += (p.tx - p.x) * pull;
+          p.y += (p.ty - p.y) * pull;
+          continue;
+        }
         p.angle += p.speed * dt;
         p.wobble += 0.0008 * dt;
         const r = p.baseRadius + Math.sin(p.wobble) * 14;
         p.x = cx + Math.cos(p.angle) * r * 1.25; // leicht elliptisch (Breitbild)
         p.y = cy + Math.sin(p.angle) * r * 0.85;
-        if (pointer.active) {
+        if (pointer.active && mode === "drift") {
           const dx = pointer.x - p.x, dy = pointer.y - p.y;
           const d2 = dx * dx + dy * dy;
           const reach = 200;
@@ -312,7 +442,7 @@
 
     function frame() {
       ctx.clearRect(0, 0, w, h);
-      // Verbindungslinien — das „Gewebe"
+      // Verbindungslinien — das ambient „Gewebe"
       ctx.lineWidth = 1;
       for (let i = 0; i < particles.length; i++) {
         const a = particles[i];
@@ -330,8 +460,35 @@
           }
         }
       }
+      // Kontur: die Punkte der Reihe nach verbinden — „die Fäden nähen"
+      if (mode === "form" && formChains.length) {
+        const e = performance.now() - formStart;
+        const reveal = Math.min(1, Math.max(0, (e - 260) / 700)); // Naht zieht sich zu
+        const fade = Math.min(1, Math.max(0, (FORM_HOLD - e) / 350));
+        const alpha = reveal * fade;
+        if (alpha > 0.01) {
+          ctx.lineWidth = 1.4;
+          ctx.strokeStyle = `rgba(100, 214, 196, ${(0.55 * alpha).toFixed(3)})`;
+          for (const chain of formChains) {
+            const pts = chain.parts;
+            const upto = Math.max(2, Math.ceil(pts.length * reveal));
+            ctx.beginPath();
+            for (let i = 0; i < upto && i < pts.length; i++) {
+              if (i === 0) ctx.moveTo(pts[0].x, pts[0].y);
+              else ctx.lineTo(pts[i].x, pts[i].y);
+            }
+            if (chain.closed && reveal >= 1) ctx.closePath();
+            ctx.stroke();
+          }
+          // Name des Stücks unter der Silhouette
+          ctx.font = "500 12px Poppins, system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillStyle = `rgba(159, 182, 198, ${(0.9 * alpha).toFixed(3)})`;
+          ctx.fillText(formLabel.toUpperCase(), formCenter.x, formCenter.y + formCenter.s / 2 + 26);
+        }
+      }
       for (const p of particles) {
-        ctx.globalAlpha = 0.7;
+        ctx.globalAlpha = p.forming ? 0.95 : 0.7;
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -345,6 +502,7 @@
       if (!running) return;
       const dt = Math.min(50, t - last || 16);
       last = t;
+      if (mode === "form" && t - formStart > FORM_HOLD) releaseForm();
       step(dt);
       frame();
       raf = requestAnimationFrame(loop);
@@ -379,6 +537,14 @@
       pointer.active = true;
     }, { passive: true });
     hero.addEventListener("pointerleave", () => { pointer.active = false; });
+
+    // Tap/Klick irgendwo im Hero (außer auf Links/Buttons): die Punkte
+    // verbinden sich zur Silhouette des nächsten Kleidungsstücks.
+    hero.addEventListener("pointerdown", (e) => {
+      if (e.target.closest && e.target.closest("a, button")) return;
+      const rect = canvas.getBoundingClientRect();
+      formGarment(e.clientX - rect.left, e.clientY - rect.top);
+    }, { passive: true });
 
     window.addEventListener("resize", resize, { passive: true });
     resize();
