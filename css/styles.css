@@ -5762,30 +5762,6 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
     .community-sphere .sphere-head { padding-top: 64px; }
 }
 
-/* 10 · Finaler CTA */
-.final-cta { padding: 110px 0 130px; text-align: center; background: radial-gradient(90% 70% at 50% 100%, rgba(39,121,168,0.16), transparent); overflow: hidden; }
-/* ── f02 · Schlussakkord-Ring ──────────────────────────────────────────────
-   Kreispfad mit Ankerpunkten + Aurora-Saum rahmt die finale Frage; ein Licht-
-   funke läuft auf der Kreisbahn (Dash-Technik wie im Hero), die sehr langsame
-   Rotation lässt die Anker mitwandern. Auf Mobil ragt der Ring bewusst über
-   den Viewport hinaus (overflow:hidden oben fängt ihn ein — Reel-Optik). */
-.final-ring { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 0; }
-.final-ring svg { width: min(150vw, 760px); height: min(150vw, 760px); flex: none; }
-.final-inner { position: relative; z-index: 1; }
-.frg-rot { transform-box: fill-box; transform-origin: center; animation: frgSpin 90s linear infinite; }
-.frg-glow { fill: none; stroke: url(#urGradRing); stroke-width: 10; opacity: .45; filter: url(#urRingGlow); }
-.frg-line { fill: none; stroke: rgba(238,244,248,.55); /* Off-White-Pfadlinie (SVG) */ stroke-width: 1.2; }
-.frg-spark { fill: none; stroke: #eef4f8; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.04 0.96; stroke-dashoffset: 1; opacity: .9; animation: urcSpark 14s linear infinite; }
-@keyframes frgSpin { to { transform: rotate(1turn); } }
-@media (prefers-reduced-motion: reduce) {
-  .frg-rot { animation: none !important; }
-  /* Funke = reines Bewegungselement → aus; Ring + Anker bleiben statisch sichtbar. */
-  .frg-spark { animation: none !important; opacity: 0 !important; }
-}
-.final-headline { font-family: var(--font-display, 'Lora', serif); font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.1; max-width: 18ch; margin: 0 auto 16px; }
-.final-sub { color: var(--text-muted); max-width: 48ch; margin: 0 auto 30px; }
-.final-btn { font-size: 1.05rem; }
-
 /* Make-real (eingeklappter Atelier-Pfad) */
 .make-real[hidden] { display: none; }
 
@@ -5855,38 +5831,6 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
    „Zeig die Alternative" schon bei Karte 1/4 sichtbar war (iPhone-Report). */
 .prob-controls [hidden], #ownership [hidden], .ownership-actions [hidden] { display: none !important; }
 
-/* Premium-Ambiente: echte, ozean-gegradete Fotografie als ruhige Tiefe hinter
-   den Erzähl-Sektionen — THEMATISCH zum jeweiligen Text gewählt:
-   · Alternative („wenn Mode bei Menschen begänne") → Schneider-Atelier (Handwerk)
-   · Vision („Mode beginnt bei Menschen", Zukunft) → luftiger, heller Raum
-   · Final („die Zukunft erschaffen") → fließende Ozean-Fläche (vorwärts, Marke)
-   Starker Navy-Scrim (in der vertikalen Mitte am dunkelsten, wo der Text sitzt)
-   hält Kontrast/Lesbarkeit; Bilder liegen unter dem Fold, kein Layout-Shift. */
-.alternative, .final-cta { position: relative; isolation: isolate; }
-.alternative::before, .final-cta::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-position: center; background-size: cover; background-repeat: no-repeat;
-}
-/* Dedizierte Breitbild-Hintergründe (img/bg/, 3:2, dunkel/cineastisch) — der
-   Scrim ist leichter als bei den alten 4:5-Crops, weil die Bilder selbst dunkel
-   sind und oben Negativraum für Text tragen. Verläuft an den Rändern in --bg. */
-/* Heller Pivot-Hintergrund: dieses Foto ist bewusst licht/hoffnungsvoll (der
-   Wendepunkt von Problem zu Lösung). Der Scrim ist daher anders gebaut als bei
-   den dunklen bg-Bildern — er hält nur so viel Navy-Schleier, wie weißer Text
-   über dem Tageslicht braucht (oben dichter hinter Eyebrow/Headline, zur
-   Bildmitte hin lichter, damit das helle Atelier sichtbar bleibt), und
-   verläuft unten weich in --bg. */
-.alternative::before {
-  background-image:
-    linear-gradient(180deg, rgba(10,22,34,0.9) 0%, rgba(10,22,34,0.64) 26%, rgba(10,22,34,0.5) 54%, rgba(10,22,34,0.66) 84%, var(--bg, #0a1622) 100%),
-    url("../js/design-engine/content/img/bg/alternative.jpg");
-}
-.final-cta::before {
-  background-image:
-    linear-gradient(180deg, var(--bg, #0a1622) 0%, rgba(10,22,34,0.6) 38%, rgba(10,22,34,0.8) 100%),
-    url("../js/design-engine/content/img/bg/final.jpg");
-}
-
 /* ─── UX-Scan-Feinschliff (präziser Audit) ─────────────────────────────────
    #4 Touch-Ziele werden über html.is-touch oben gelöst (Projekt-Muster). */
 /* #5 Concept-Studio: Grid-/Flex-Kinder dürfen schrumpfen (min-width:0). Der
@@ -5895,11 +5839,6 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 .de-concept { min-width: 0; }
 .de-concept-evolve { min-width: 0; }
 .de-concept-actions { align-items: stretch; }
-
-/* #6 Ambiente-Hintergründe: thematisch sinnvoller Bildausschnitt je Sektion
-   (4:5-Quellen werden als cover beschnitten — Fokus gezielt setzen). */
-.alternative::before { background-position: center 55%; }
-.final-cta::before { background-position: center bottom; }
 
 /* ─── Problem = Beleg, zusammengeführt: scroll-getriebene Szenen ───────────
    Eine Sektion, vier Szenen. Jede: ehrliches, HELLES Dokumentar-Bild (Inhalt
