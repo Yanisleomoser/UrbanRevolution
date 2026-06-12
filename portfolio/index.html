@@ -1,0 +1,182 @@
+<!doctype html>
+<!-- Experiment: fiktives UI/UX-Designer-Portfolio (Awwwards-Studie) — eigenständige
+     Seite im gallery/-Muster, lädt NICHTS aus der Haupt-App. GSAP via CDN. -->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Mira Solane — UI/UX &amp; Product Designer</title>
+    <meta name="description" content="Portfolio study — Mira Solane, a fictional UI/UX designer. Interfaces that feel inevitable.">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#0a1622">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232779a8'/%3E%3Cstop offset='50%25' stop-color='%232a9d8f'/%3E%3Cstop offset='100%25' stop-color='%2364d6c4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='26' font-weight='700' text-anchor='middle' fill='%230a1622'%3EMS%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap">
+
+    <link rel="stylesheet" href="portfolio.css">
+</head>
+<body>
+    <a class="skip-link" href="#work">Skip to content</a>
+
+    <canvas id="ambience" aria-hidden="true"></canvas>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="nav">
+        <a class="wordmark" href="#top" aria-label="Mira Solane — top of page">
+            Mira&nbsp;Solane<span class="wordmark-sub">UI / UX</span>
+        </a>
+        <nav aria-label="Primary">
+            <a href="#work">Work</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <main id="top">
+
+        <!-- ============ HERO ============ -->
+        <section class="hero" aria-label="Intro">
+            <p class="hero-eyebrow" data-intro>
+                <span class="dot" aria-hidden="true"></span>
+                Product &amp; interface designer — Zürich
+            </p>
+            <h1 class="hero-title">
+                <span class="line"><span class="line-inner">I design</span></span>
+                <span class="line"><span class="line-inner">interfaces that feel</span></span>
+                <span class="line"><span class="line-inner"><em class="grad">inevitable.</em></span></span>
+            </h1>
+            <p class="hero-sub" data-intro>
+                Eight years of making the complex feel calm — for ateliers,
+                banks and people who notice the details.
+            </p>
+            <div class="hero-cta" data-intro>
+                <a class="btn-ghost" href="#work">Selected work</a>
+                <a class="btn-ghost btn-quiet" href="mailto:hello@mirasolane.ch">hello@mirasolane.ch</a>
+            </div>
+            <div class="scroll-cue" data-intro aria-hidden="true">
+                <span class="scroll-cue-line"></span>scroll
+            </div>
+        </section>
+
+        <!-- ============ MARQUEE ============ -->
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee-track">
+                <span>UI Design · UX Research · Design Systems · Motion · Prototyping ·&nbsp;</span><span>UI Design · UX Research · Design Systems · Motion · Prototyping ·&nbsp;</span>
+            </div>
+        </div>
+
+        <!-- ============ WORK ============ -->
+        <section class="work" id="work" aria-label="Selected work">
+            <header class="section-head" data-reveal>
+                <p class="eyebrow">Selected work</p>
+                <h2>Four projects,<br>chosen slowly.</h2>
+            </header>
+
+            <ul class="work-list">
+                <li class="work-item" data-reveal>
+                    <a class="work-card" href="#contact" aria-label="Tidal — mobile banking, case study">
+                        <figure class="work-visual wv-1" aria-hidden="true">
+                            <span class="wv-orb"></span><span class="wv-ring"></span>
+                            <span class="wv-bars"><i></i><i></i><i></i><i></i></span>
+                        </figure>
+                        <div class="work-meta">
+                            <span class="work-index">01</span>
+                            <h3>Tidal</h3>
+                            <p>A calmer way to bank — one balance, one decision per screen.</p>
+                            <span class="work-tags">Mobile app · 2025</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="work-item" data-reveal>
+                    <a class="work-card" href="#contact" aria-label="Atelier OS — design system, case study">
+                        <figure class="work-visual wv-2" aria-hidden="true">
+                            <span class="wv-grid"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                            <span class="wv-stitch"></span>
+                        </figure>
+                        <div class="work-meta">
+                            <span class="work-index">02</span>
+                            <h3>Atelier OS</h3>
+                            <p>A design system for made-to-measure couture — tokens, flats, fittings.</p>
+                            <span class="work-tags">Design system · 2024</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="work-item" data-reveal>
+                    <a class="work-card" href="#contact" aria-label="Wavelength — music discovery, case study">
+                        <figure class="work-visual wv-3" aria-hidden="true">
+                            <span class="wv-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                        </figure>
+                        <div class="work-meta">
+                            <span class="work-index">03</span>
+                            <h3>Wavelength</h3>
+                            <p>Music discovery that listens to you first — not the charts.</p>
+                            <span class="work-tags">Web app · 2024</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="work-item" data-reveal>
+                    <a class="work-card" href="#contact" aria-label="Northlight — travel journal, case study">
+                        <figure class="work-visual wv-4" aria-hidden="true">
+                            <span class="wv-horizon"></span><span class="wv-sun"></span>
+                        </figure>
+                        <div class="work-meta">
+                            <span class="work-index">04</span>
+                            <h3>Northlight</h3>
+                            <p>A travel journal that remembers the light, not the itinerary.</p>
+                            <span class="work-tags">iOS · 2023</span>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </section>
+
+        <!-- ============ ABOUT / MANIFESTO ============ -->
+        <section class="about" id="about" aria-label="About">
+            <p class="eyebrow" data-reveal>About</p>
+            <p class="manifesto" id="manifesto">
+                Good design is invisible until it is gone. I spend my days
+                making the complex feel calm — one screen, one decision,
+                one detail at a time. Designed for humans. Not for metrics.
+            </p>
+            <dl class="stats" data-reveal>
+                <div><dt>8</dt><dd>years in practice</dd></div>
+                <div><dt>40+</dt><dd>products shipped</dd></div>
+                <div><dt>12</dt><dd>design awards</dd></div>
+            </dl>
+        </section>
+
+        <!-- ============ CAPABILITIES ============ -->
+        <section class="caps" aria-label="Capabilities">
+            <header class="section-head" data-reveal>
+                <p class="eyebrow">Capabilities</p>
+            </header>
+            <ul class="caps-list">
+                <li data-reveal><span class="cap-n">01</span><span class="cap-t">Product strategy</span><span class="cap-d">From fuzzy brief to sharp bet</span></li>
+                <li data-reveal><span class="cap-n">02</span><span class="cap-t">Interface design</span><span class="cap-d">Screens that explain themselves</span></li>
+                <li data-reveal><span class="cap-n">03</span><span class="cap-t">Design systems</span><span class="cap-d">Tokens, components, governance</span></li>
+                <li data-reveal><span class="cap-n">04</span><span class="cap-t">Motion &amp; prototyping</span><span class="cap-d">The feel, before the build</span></li>
+            </ul>
+        </section>
+
+        <!-- ============ CONTACT ============ -->
+        <section class="contact" id="contact" aria-label="Contact">
+            <p class="eyebrow" data-reveal>Contact</p>
+            <h2 class="contact-title" data-reveal>
+                Let's make something<br><em class="grad">quietly radical.</em>
+            </h2>
+            <a class="contact-mail" data-reveal href="mailto:hello@mirasolane.ch">hello@mirasolane.ch</a>
+        </section>
+    </main>
+
+    <footer class="foot">
+        <p>© 2026 Mira Solane — a fictional portfolio study.</p>
+        <a href="/">← Urban Revolution</a>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+    <script src="portfolio.js"></script>
+</body>
+</html>
