@@ -2250,18 +2250,9 @@ input[aria-invalid="true"] {
        inputs grid not inside the collapse. */
     .measure-inputs { grid-template-columns: 1fr 1fr; }
 
-    /* Step-3 teaser: the wide 16:9 shot was being cover-cropped to a tall
-       phone box (only a sliver of the figure showed). Let the stage hug its
-       content and give the example image its true 16:9 ratio so the whole
-       look is visible; the generated result keeps its natural portrait size.
-       Selectors are deliberately more specific than the base #vto-example /
-       .vto-stage rules (which sit later in the file) so these win the cascade. */
-    .preview-container .vto-stage { min-height: 0; }
-    .preview-container .vto-stage .vto-result-img { min-height: 0; max-height: 75svh; }
-    .vto-stage #vto-example.has-image {
-        min-height: 0;
-        aspect-ratio: 16 / 9;
-    }
+    /* Step-3 teaser on phones: the portrait teaser fills the stacked stage with
+       `cover`; the generated result keeps its natural portrait size. */
+    .vto-stage .vto-result-img { min-height: 0; max-height: 75svh; }
 
     .hero-inner {
         padding: var(--space-11) var(--space-5) var(--space-8);
@@ -2578,17 +2569,20 @@ input[aria-invalid="true"] {
     max-width: 360px;
 }
 /* Static teaser image for the no-photo state; .has-image hides the placeholder
-   text and pins the BEISPIEL badge over the photo. */
+   text and pins the BEISPIEL badge over the photo. Portrait crop (vto-teaser)
+   so it fills the portrait stage with `cover` on every device — the old wide
+   16:9 source got cover-cropped to an empty sliver in the tall two-column
+   stage on iPad/Safari. */
 #vto-example.has-image {
     width: 100%;
     height: 100%;
     /* Override the .vto-example 460px cap so the photo fills the whole stage
        instead of being boxed into a narrow centred column. */
     max-width: none;
-    min-height: 600px;
     padding: 0;
-    background-image: url("../assets/hero-wide.jpg");
+    background-image: url("../assets/vto-teaser.jpg");
     background-size: cover;
+    background-repeat: no-repeat;
     background-position: center;
     justify-content: flex-end;
     align-items: flex-start;
