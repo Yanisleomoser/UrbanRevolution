@@ -260,9 +260,10 @@ SOURCES.forEach(([src, title, tag], i) => {
 /* ---------- Blicksteuerung — Lenis-artiges Easing ---------- */
 
 // Start-Blick: yaw 1.2 rahmt im seeded Layout die dichteste Kartenwand;
-// das Intro gleitet von 0.65 dorthin.
+// das Intro gleitet von 0.65 dorthin (Ziel wird erst beim Veil-Lift gesetzt,
+// damit die Fahrt sichtbar ist und nicht hinterm Veil passiert).
 const rot = { yaw: 0.65, pitch: 0 };           // tatsächliche Kamera-Rotation
-const target = { yaw: 1.2, pitch: 0 };         // Zielwert (Drag/Wheel/Tasten)
+const target = { yaw: 0.65, pitch: 0 };        // Zielwert (Drag/Wheel/Tasten)
 const vel = { yaw: 0, pitch: 0 };              // Trägheit nach dem Loslassen
 const state = {
     dragging: false,
@@ -589,12 +590,13 @@ manager.onLoad = () => {
         overwrite: "auto",
         onUpdate: () => { veilCount.textContent = String(Math.round(progress.shown)); },
     })
+        .add(() => { target.yaw = 1.2; })
         .to(veil, {
             yPercent: -100,
             duration: dur(0.9),
             ease: "power4.inOut",
             onComplete: () => { veil.style.display = "none"; },
-        })
+        }, "<")
         .add(() => {
             if (REDUCED) {
                 rot.yaw = target.yaw;
@@ -607,19 +609,19 @@ manager.onLoad = () => {
                     {
                         x: m.userData.w,
                         y: m.userData.h,
-                        duration: 1.1,
+                        duration: 1.15,
                         ease: "back.out(1.35)",
-                        delay: Math.random() * 0.5,
+                        delay: Math.random() * 0.7,
                         overwrite: "auto",
                     });
             });
             gsap.fromTo(camera, { fov: 88 }, {
                 fov: FOV,
-                duration: 1.7,
+                duration: 1.9,
                 ease: "power3.out",
                 onUpdate: () => camera.updateProjectionMatrix(),
             });
-        }, "-=0.55");
+        }, "-=0.4");
     if (FINE_POINTER) gsap.set(cursorEl, { autoAlpha: 1 });
     else gsap.set(cursorEl, { autoAlpha: 0 });
 };
