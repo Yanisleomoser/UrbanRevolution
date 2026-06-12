@@ -742,6 +742,7 @@ const I18N = (() => {
       "landing.stats_src_html": "Quellen: <a href=\"https://www.ellenmacarthurfoundation.org/a-new-textiles-economy\" target=\"_blank\" rel=\"noopener\">Ellen MacArthur Foundation</a> · <a href=\"https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion\" target=\"_blank\" rel=\"noopener\">UNEP</a>",
       "landing.cta_title_html": "Trag etwas, das es <em>nur einmal</em> gibt.",
       "landing.cta_sub": "Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Maß, aus recycelter Kleidung.",
+      "landing.tap_hint": "Tipp ins Bild — die Fäden formen dein nächstes Stück.",
       "landing.orb_aria": "UR Create starten — öffnet das Atelier",
     },
 
@@ -1466,6 +1467,7 @@ const I18N = (() => {
       "landing.stats_src_html": "Sources: <a href=\"https://www.ellenmacarthurfoundation.org/a-new-textiles-economy\" target=\"_blank\" rel=\"noopener\">Ellen MacArthur Foundation</a> · <a href=\"https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion\" target=\"_blank\" rel=\"noopener\">UNEP</a>",
       "landing.cta_title_html": "Wear something that exists <em>only once</em>.",
       "landing.cta_sub": "Describe your idea — UR Create turns it into your piece. Made to measure, from recycled clothing.",
+      "landing.tap_hint": "Tap anywhere — the threads weave your next piece.",
       "landing.orb_aria": "Start UR Create — opens the atelier",
     },
   };
