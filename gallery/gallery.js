@@ -283,6 +283,8 @@ const clampPitch = () => {
     target.pitch = Math.min(PITCH_LIMIT, Math.max(-PITCH_LIMIT, target.pitch));
 };
 
+const lastPointer = { x: 0, y: 0 };
+
 function onDown(e) {
     if (state.open || state.intro || state.pointerId !== null) return;
     state.pointerId = e.pointerId;
@@ -290,6 +292,8 @@ function onDown(e) {
     state.moved = 0;
     state.downAt = performance.now();
     vel.yaw = vel.pitch = 0;
+    lastPointer.x = e.clientX;
+    lastPointer.y = e.clientY;
     state.lastInteract = performance.now();
     document.body.classList.add("is-dragging");
     canvas.setPointerCapture(e.pointerId);
@@ -300,15 +304,20 @@ function onMove(e) {
     pointer.y = e.clientY;
     pointer.inside = true;
     if (!state.dragging || e.pointerId !== state.pointerId) return;
-    const dx = e.movementX ?? 0;
-    const dy = e.movementY ?? 0;
+    // Deltas aus clientX/Y: movementX ist auf iOS-Safari für Touch-Pointer
+    // unzuverlässig (0/ganzzahlig gerundet) → fühlte sich ruckelig an.
+    const dx = e.clientX - lastPointer.x;
+    const dy = e.clientY - lastPointer.y;
+    lastPointer.x = e.clientX;
+    lastPointer.y = e.clientY;
     state.moved += Math.abs(dx) + Math.abs(dy);
-    target.yaw += dx * DRAG_YAW;
-    target.pitch += dy * DRAG_PITCH;
+    const s = e.pointerType === "touch" ? 1.3 : 1;
+    target.yaw += dx * DRAG_YAW * s;
+    target.pitch += dy * DRAG_PITCH * s;
     clampPitch();
     // Geschwindigkeit der letzten Bewegungen mitschreiben → Trägheit.
-    vel.yaw = vel.yaw * 0.72 + dx * DRAG_YAW * 0.28;
-    vel.pitch = vel.pitch * 0.72 + dy * DRAG_PITCH * 0.28;
+    vel.yaw = vel.yaw * 0.8 + dx * DRAG_YAW * s * 0.2;
+    vel.pitch = vel.pitch * 0.8 + dy * DRAG_PITCH * s * 0.2;
     state.lastInteract = performance.now();
     if (state.moved > 60 && state.hintShown) {
         state.hintShown = false;
@@ -506,7 +515,7 @@ function tick() {
         target.yaw += vel.yaw * dt * 60;
         target.pitch += vel.pitch * dt * 60;
         clampPitch();
-        const decay = Math.exp(-dt * 3.4);
+        const decay = Math.exp(-dt * 2.6);   // länger ausrollen (flüssiger)
         vel.yaw *= decay;
         vel.pitch *= decay;
     }
@@ -517,7 +526,7 @@ function tick() {
     }
 
     // Lenis-Gefühl: exponentielles Nachziehen, framerate-unabhängig.
-    const k = 1 - Math.exp(-dt * (state.open ? 7.5 : 5.2));
+    const k = 1 - Math.exp(-dt * (state.open ? 7.5 : 4.3));   // weicheres Nachziehen
     rot.yaw += (target.yaw - rot.yaw) * k;
     rot.pitch += (target.pitch - rot.pitch) * k;
     camera.rotation.set(rot.pitch, rot.yaw, 0);

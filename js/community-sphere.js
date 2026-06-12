@@ -282,24 +282,33 @@ async function boot() {
         state.moved = 0;
         state.downAt = performance.now();
         vel.yaw = vel.pitch = 0;
+        last.x = e.clientX;
+        last.y = e.clientY;
         wake();
         section.classList.add("is-dragging");
         canvas.setPointerCapture(e.pointerId);
     });
 
     const pointer = { x: 0, y: 0, inside: false };
+    const last = { x: 0, y: 0 };
     globalThis.addEventListener("pointermove", (e) => {
         pointer.x = e.clientX;
         pointer.y = e.clientY;
         if (!state.dragging || e.pointerId !== state.pointerId) return;
-        const dx = e.movementX ?? 0;
-        const dy = e.movementY ?? 0;
+        // Deltas selbst aus clientX/Y bilden: movementX ist auf iOS-Safari für
+        // Touch-Pointer unzuverlässig (0/ganzzahlig) → Ruckeln. clientX ist
+        // subpixel-genau und überall konsistent.
+        const dx = e.clientX - last.x;
+        const dy = e.clientY - last.y;
+        last.x = e.clientX;
+        last.y = e.clientY;
         state.moved += Math.abs(dx) + Math.abs(dy);
-        target.yaw += dx * 0.0042;
-        target.pitch += dy * 0.0026;
+        const s = e.pointerType === "touch" ? 1.3 : 1;   // Daumen-Swipe trägt weiter
+        target.yaw += dx * 0.0042 * s;
+        target.pitch += dy * 0.0026 * s;
         clampPitch();
-        vel.yaw = vel.yaw * 0.72 + dx * 0.0042 * 0.28;
-        vel.pitch = vel.pitch * 0.72 + dy * 0.0026 * 0.28;
+        vel.yaw = vel.yaw * 0.8 + dx * 0.0042 * s * 0.2;
+        vel.pitch = vel.pitch * 0.8 + dy * 0.0026 * s * 0.2;
         wake();
     });
 
@@ -434,7 +443,7 @@ async function boot() {
             target.yaw += vel.yaw * dt * 60;
             target.pitch += vel.pitch * dt * 60;
             clampPitch();
-            const decay = Math.exp(-dt * 3.2);
+            const decay = Math.exp(-dt * 2.5);   // länger ausrollen (flüssiger)
             vel.yaw *= decay;
             vel.pitch *= decay;
         }
@@ -444,7 +453,7 @@ async function boot() {
             target.yaw += dt * 0.016;
         }
 
-        const k = 1 - Math.exp(-dt * 5.4);
+        const k = 1 - Math.exp(-dt * 4.3);   // weicheres Nachziehen (Lenis-Gefühl)
         rot.yaw += (target.yaw - rot.yaw) * k;
         rot.pitch += (target.pitch - rot.pitch) * k;
         camera.rotation.set(rot.pitch, rot.yaw, 0);

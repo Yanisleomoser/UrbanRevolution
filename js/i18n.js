@@ -122,9 +122,6 @@ const I18N = (() => {
       "prob.f4_num": "75 h",
       "prob.f4_ctx": "pro Woche, oft unter Existenzlohn (Public Eye)",
       "prob.bridge": "Das ist das System, das wir ersetzen.",
-      "alt.label": "[ DIE ALTERNATIVE ]",
-      "alt.headline_html": "Mode, die <em>beim Menschen</em> beginnt.",
-      "alt.cta_html": "Stell dir ein anderes System vor <span aria-hidden=\"true\">→</span>",
       "join.label": "[ COMMUNITY ]",
       "join.h2": "Gemeinsam wird daraus eine Bewegung",
       "join.sub": "Werde Teil der Menschen, die Mode neu denken — gestalte mit, verfolge die Reise oder bring deine Ideen ein.",
@@ -142,9 +139,6 @@ const I18N = (() => {
       "join.err_email": "Bitte gib eine gültige E-Mail-Adresse ein.",
       "join.err_consent": "Bitte bestätige die Einwilligung.",
       "join.err": "Etwas ging schief. Bitte später erneut versuchen.",
-      "final.h2_html": "Bereit, die Zukunft der Mode zu erschaffen?",
-      "final.sub": "Jede Idee beginnt mit jemandem, der bereit ist, sich etwas anderes vorzustellen.",
-      "final.cta_html": "UR Create starten <span aria-hidden=\"true\">→</span>",
 
       // ── Hero ──
       "hero.eyebrow": "GERETTETE FASER · KI-DESIGN · NACH MASS",
@@ -820,9 +814,6 @@ const I18N = (() => {
       "prob.f4_num": "75 h",
       "prob.f4_ctx": "a week, often below a living wage (Public Eye)",
       "prob.bridge": "This is the system we replace.",
-      "alt.label": "[ THE ALTERNATIVE ]",
-      "alt.headline_html": "What if fashion started <em>with people?</em>",
-      "alt.cta_html": "Imagine a different system <span aria-hidden=\"true\">→</span>",
       "join.label": "[ COMMUNITY ]",
       "join.h2": "Together, this becomes a movement",
       "join.sub": "Join the people rethinking fashion — create alongside us, follow the journey, or bring your ideas.",
@@ -840,9 +831,6 @@ const I18N = (() => {
       "join.err_email": "Please enter a valid email address.",
       "join.err_consent": "Please confirm consent.",
       "join.err": "Something went wrong. Please try again later.",
-      "final.h2_html": "Ready to create the future of fashion?",
-      "final.sub": "Every idea begins with someone willing to imagine something different.",
-      "final.cta_html": "Enter UR Create <span aria-hidden=\"true\">→</span>",
 
       // ── Hero ──
       "hero.eyebrow": "RESCUED FIBRE · AI DESIGN · MADE TO MEASURE",
