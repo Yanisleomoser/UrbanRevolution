@@ -344,9 +344,11 @@ section { padding: clamp(90px, 14vw, 160px) clamp(20px, 5vw, 48px); }
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: clamp(80px, 12vw, 120px) 0 60px;
+    /* Kompakt halten: auf kurzen Viewports muss Kopf + Kreis + Stations-
+       text gemeinsam in eine (gepinnte) Viewport-Höhe passen. */
+    padding: clamp(56px, 9vw, 120px) 0 clamp(24px, 4vw, 60px);
 }
-.loop-head { margin-bottom: clamp(28px, 5vw, 56px); }
+.loop-head { margin-bottom: clamp(16px, 3.5vw, 56px); }
 .loop-title {
     font-family: var(--font-display);
     font-weight: 500;
@@ -357,7 +359,7 @@ section { padding: clamp(90px, 14vw, 160px) clamp(20px, 5vw, 48px); }
 .loop-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(28px, 5vw, 64px);
+    gap: clamp(18px, 4vw, 64px);
     align-items: center;
     max-width: 1160px;
 }
@@ -367,12 +369,27 @@ section { padding: clamp(90px, 14vw, 160px) clamp(20px, 5vw, 48px); }
 }
 .loop-visual { position: relative; display: grid; place-items: center; }
 .loop-svg {
-    width: min(62vw, 300px);
+    /* Auch an der Viewport-HÖHE deckeln — sonst drückt der Kreis auf
+       kurzen Screens den Stationstext unter den gepinnten Fold. */
+    width: min(56vw, 280px, 34vh);
+    width: min(56vw, 280px, calc(var(--svh, 1vh) * 34));
     height: auto;
     color: var(--text);
 }
 @media (min-width: 880px) {
-    .loop-svg { width: min(36vw, 440px); }
+    .loop-svg {
+        width: min(36vw, 440px, 56vh);
+        width: min(36vw, 440px, calc(var(--svh, 1vh) * 56));
+    }
+}
+/* Kurze, breite Viewports (Telefon quer, eingebettete Webviews):
+   Kreis und Text nebeneinander statt untereinander. */
+@media (max-height: 540px) and (min-width: 500px) and (max-width: 879px) {
+    .loop-grid { grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); }
+    .loop-svg {
+        width: min(30vw, 38vh);
+        width: min(30vw, calc(var(--svh, 1vh) * 38));
+    }
 }
 .loop-track { stroke: var(--border); }
 .loop-dots circle {
@@ -422,9 +439,17 @@ html:not(.fx) .loop-count { display: none; }
 
 /* fx: Stationen überlagern sich und blenden je Viertel um;
    ohne fx bleiben sie eine normale, vollständig sichtbare Liste. */
-html.fx .loop-steps { position: relative; min-height: 230px; }
+html.fx .loop-steps { position: relative; min-height: 200px; }
 @media (min-width: 880px) {
     html.fx .loop-steps { min-height: 260px; }
+}
+/* Auf sehr kurzen Viewports zählt jede Zeile: kompaktere Stationen */
+@media (max-height: 600px) {
+    html.fx .loop-steps { min-height: 150px; }
+    .loop-step-title { font-size: clamp(20px, 3vw, 28px); margin-bottom: 6px; }
+    .loop-step-text { font-size: 13.5px; }
+    .loop-title { font-size: clamp(24px, 4vw, 40px); }
+    .loop-count { display: none; }
 }
 html.fx .loop-step {
     position: absolute;
