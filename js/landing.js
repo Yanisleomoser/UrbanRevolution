@@ -282,8 +282,7 @@
     let formChains = [];         // [[Partikel, …], …] in Kontur-Reihenfolge
     let formLabel = "";
     let formCenter = { x: 0, y: 0, s: 0 };
-    let formRot = 0;             // Y-Achsen-Rotation der 3D-Punktwolke
-    const FORM_HOLD = 6800;      // ms bis zur Auflösung (genug für die Drehung)
+    const FORM_HOLD = 4200;      // ms bis zur Auflösung
 
     // Polylinie gleichmäßig in n Punkte zerlegen (für die Punkt-Kontur).
     function resample(pts, closed, n) {
@@ -336,13 +335,8 @@
         const assigned = [];
         for (const [gx, gy] of targets) {
           if (!free.length) break;
-          // 3D-Modellkoordinaten (Ursprung Mitte): X/Y aus dem 64er-Raster,
-          // Z wölbt die Fläche wie Stoff über einer Büste nach vorn.
-          const mx = (gx - 32) * (s / 64);
-          const my = (gy - 32) * (s / 64);
-          const mz = -Math.cos(((gx - 32) / 32) * 1.2) * (s / 6.4);
-          const tx = cx + mx;
-          const ty = cy + my;
+          const tx = cx + (gx - 32) * (s / 64);
+          const ty = cy + (gy - 32) * (s / 64);
           // Greedy: nächstes freies Partikel — kurze, ruhige Flugwege.
           let best = 0, bestD = Infinity;
           for (let i = 0; i < free.length; i++) {
@@ -350,12 +344,8 @@
             if (d < bestD) { bestD = d; best = i; }
           }
           const p = free.splice(best, 1)[0];
-          p.mx = mx;
-          p.my = my;
-          p.mz = mz;
           p.tx = tx;
           p.ty = ty;
-          p.z = 0;
           p.forming = true;
           assigned.push(p);
         }
@@ -363,7 +353,6 @@
       });
       free.forEach((p) => { p.forming = false; });
       mode = "form";
-      formRot = 0;
       formStart = performance.now();
     }
 
@@ -374,7 +363,6 @@
       for (const p of particles) {
         if (!p.forming) continue;
         p.forming = false;
-        p.z = 0;
         const ex = (p.x - cx) / 1.25, ey = (p.y - cy) / 0.85;
         p.angle = Math.atan2(ey, ex);
         p.baseRadius = Math.max(30, Math.hypot(ex, ey));
@@ -419,10 +407,6 @@
           y: 0,
           tx: 0,
           ty: 0,
-          mx: 0,
-          my: 0,
-          mz: 0,
-          z: 0,
           forming: false,
         };
       });
@@ -431,25 +415,6 @@
     function step(dt) {
       const cx = w / 2, cy = h / 2;
       const pull = 1 - Math.exp(-dt / 150); // sanfter Zuflug zur Kontur
-      if (mode === "form") {
-        // 3D: Nach dem Zusammenfügen PENDELT die Punktwolke um die eigene
-        // (Y-)Achse (±28°, wie ein Stück auf dem Display-Ständer) —
-        // perspektivisch projiziert. Volle Drehung wäre edge-on unleserlich.
-        const e = performance.now() - formStart;
-        const sway = Math.min(1, Math.max(0, (e - 950) / 700)); // erst formen, dann schwenken
-        formRot = 0.5 * sway * Math.sin((e - 950) / 640);
-        const cr = Math.cos(formRot), sr = Math.sin(formRot);
-        const fov = formCenter.s * 2.4; // Perspektivstärke relativ zur Größe
-        for (const p of particles) {
-          if (!p.forming) continue;
-          const xr = p.mx * cr + p.mz * sr;
-          const zr = -p.mx * sr + p.mz * cr;
-          const persp = fov / (fov + zr);
-          p.tx = formCenter.x + xr * persp;
-          p.ty = formCenter.y + p.my * persp;
-          p.z = zr / (formCenter.s / 2); // −1 (vorn) … +1 (hinten)
-        }
-      }
       for (const p of particles) {
         if (p.forming) {
           p.x += (p.tx - p.x) * pull;
@@ -483,9 +448,6 @@
         const a = particles[i];
         for (let j = i + 1; j < particles.length; j++) {
           const b = particles[j];
-          // Geformte Punkte nicht kreuz und quer vernetzen — sonst ertrinkt
-          // die Silhouette im Geflecht; ihre Struktur ist die Naht-Linie.
-          if (a.forming && b.forming) continue;
           const dx = a.x - b.x, dy = a.y - b.y;
           const d2 = dx * dx + dy * dy;
           if (d2 < LINK_DIST * LINK_DIST) {
@@ -505,8 +467,8 @@
         const fade = Math.min(1, Math.max(0, (FORM_HOLD - e) / 350));
         const alpha = reveal * fade;
         if (alpha > 0.01) {
-          ctx.lineWidth = 1.6;
-          ctx.strokeStyle = `rgba(100, 214, 196, ${(0.7 * alpha).toFixed(3)})`;
+          ctx.lineWidth = 1.4;
+          ctx.strokeStyle = `rgba(100, 214, 196, ${(0.55 * alpha).toFixed(3)})`;
           for (const chain of formChains) {
             const pts = chain.parts;
             const upto = Math.max(2, Math.ceil(pts.length * reveal));
@@ -526,12 +488,10 @@
         }
       }
       for (const p of particles) {
-        // Tiefen-Hinweis: vordere Punkte größer und heller, hintere zurückhaltend.
-        const front = p.forming ? Math.min(1, Math.max(0, (1 - p.z) / 2)) : 0;
-        ctx.globalAlpha = p.forming ? 0.45 + 0.55 * front : 0.7;
+        ctx.globalAlpha = p.forming ? 0.95 : 0.7;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * (p.forming ? 0.75 + 0.65 * front : 1), 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
@@ -588,25 +548,6 @@
 
     window.addEventListener("resize", resize, { passive: true });
     resize();
-
-    // Diagnose-Hook (nur mit ?weavedebug in der URL; kostet sonst nichts).
-    if (location.search.indexOf("weavedebug") !== -1) {
-      window.__weave = {
-        state() {
-          const f = particles.filter((p) => p.forming);
-          const p = f[0] || particles[0];
-          return {
-            mode,
-            formRot: Number(formRot.toFixed(3)),
-            forming: f.length,
-            elapsed: mode === "form" ? Math.round(performance.now() - formStart) : 0,
-            sample: p
-              ? { x: Math.round(p.x), y: Math.round(p.y), tx: Math.round(p.tx), ty: Math.round(p.ty), z: Number((p.z || 0).toFixed(2)) }
-              : null,
-          };
-        },
-      };
-    }
   }
 
   /* ── Start ───────────────────────────────────────────────── */
