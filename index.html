@@ -853,40 +853,76 @@
     </section>
 
 
-    <!-- 7 · COMMUNITY — ein Hub: Kreationen entdecken (filterbar) → mitmachen.
-         (Früher zwei getrennte Sektionen Galerie + Beitreten; zusammengeführt.) -->
-    <section class="gallery community-hub" id="community" aria-labelledby="community-heading">
+    <!-- 7 · COMMUNITY — die Kugel-Galerie: fotorealistische Kreationen schweben
+         an der Innenwand einer Sphäre (Three.js + GSAP, lazy via js/community-sphere.js).
+         Ziehen dreht den Blick, Tippen öffnet das Design; Join lebt als CTA +
+         Overlay im Erlebnis. (Früher Filter+Grid + separater Join-Block.) -->
+    <section class="community-hub community-sphere" id="community" aria-labelledby="community-heading">
         <!-- Modul B · dritter Aurora-Orb (eigene Position, gleiche Bausteine). -->
         <div class="aurora aurora--community" aria-hidden="true"></div>
-        <div class="container">
+        <canvas class="sphere-canvas" id="community-canvas" tabindex="0" data-i18n-aria-label="sphere.canvas_aria" aria-label="Schwebende Community-Designs — ziehen oder Pfeiltasten zum Drehen, Tippen öffnet"></canvas>
+        <div class="sphere-vignette" aria-hidden="true"></div>
+        <div class="container sphere-head">
             <div class="section-header" data-reveal>
                 <span class="section-number mono-label section-label" data-i18n="gal.label">[ COMMUNITY ]</span>
                 <h2 id="community-heading" data-reveal="blur" data-i18n="gal.h2">Keine zwei Visionen sind gleich</h2>
                 <p data-i18n="gal.intro">Kreationen aus der Community — sieh sie an, lass dich inspirieren oder remixe sie als Start deiner eigenen Evolution.</p>
             </div>
-            <div class="gallery-filters" id="gallery-filters" role="group" data-i18n-aria-label="gal.filter_aria" aria-label="Kreationen nach Typ filtern" data-reveal></div>
-            <div class="gallery-grid" id="gallery-grid" data-reveal></div>
+        </div>
+        <div class="sphere-foot">
+            <p class="sphere-hint mono-label" data-i18n="sphere.hint">Ziehen zum Erkunden · Tippen zum Öffnen</p>
+            <button type="button" class="sphere-cta" id="sphere-join-cta" data-i18n="sphere.cta">Werde Teil davon</button>
+        </div>
+        <div class="sphere-label" id="sphere-label" aria-hidden="true">
+            <span class="sphere-label-name" id="sphere-label-name"></span>
+            <span class="sphere-label-meta" id="sphere-label-meta"></span>
+        </div>
 
-            <!-- Mitmachen: der Übergang vom Entdecken zum Teil-Werden. -->
-            <div class="community-join" data-reveal>
-                <h3 class="join-headline" id="join-heading" data-i18n="join.h2">Gemeinsam wird daraus eine Bewegung</h3>
-                <p class="community-join-sub" data-i18n="join.sub">Werde Teil der Menschen, die Mode neu denken — gestalte mit, verfolge die Reise oder bring deine Ideen ein.</p>
-                <form id="join-form" class="join-form" novalidate>
-                    <fieldset class="join-choices">
-                        <legend class="visually-hidden" data-i18n="join.legend">Wie möchtest du teilnehmen?</legend>
-                        <label class="join-choice"><input type="checkbox" name="part" value="create" checked> <span data-i18n="join.p1">Designs erschaffen</span></label>
-                        <label class="join-choice"><input type="checkbox" name="part" value="follow"> <span data-i18n="join.p2">Die Reise verfolgen</span></label>
-                        <label class="join-choice"><input type="checkbox" name="part" value="ideas"> <span data-i18n="join.p3">Ideen beitragen</span></label>
-                        <label class="join-choice"><input type="checkbox" name="part" value="updates"> <span data-i18n="join.p4">Auf dem Laufenden bleiben</span></label>
-                    </fieldset>
-                    <div class="join-row">
-                        <label class="visually-hidden" for="join-email" data-i18n="join.email_label">E-Mail-Adresse</label>
-                        <input type="email" id="join-email" name="email" required data-i18n-placeholder="join.email_ph" placeholder="deine@email.ch" autocomplete="email">
-                        <button type="submit" class="manifesto-cta" data-i18n="join.cta">Urban Revolution beitreten</button>
+        <!-- Detail-Overlay: eine angetippte Community-Kreation. -->
+        <div class="sphere-detail" id="sphere-detail" role="dialog" aria-modal="true" aria-labelledby="sphere-detail-name" hidden>
+            <div class="sphere-backdrop" data-sphere-close aria-hidden="true"></div>
+            <figure class="sphere-detail-card">
+                <button type="button" class="sphere-close" data-sphere-close data-i18n-aria-label="sphere.close" aria-label="Schließen">&times;</button>
+                <div class="sphere-detail-media"><img id="sphere-detail-img" alt=""></div>
+                <figcaption class="sphere-detail-info">
+                    <p class="mono-label sphere-detail-kicker" data-i18n="sphere.detail_kicker">Community-Kreation</p>
+                    <h3 class="sphere-detail-name" id="sphere-detail-name"></h3>
+                    <p class="sphere-detail-meta" id="sphere-detail-meta"></p>
+                    <p class="sphere-detail-line" data-i18n="sphere.detail_line">Einzelstück aus recycelter Kleidung — entworfen in UR&nbsp;Create. Made for one. Not for all.</p>
+                    <div class="sphere-detail-actions">
+                        <a class="manifesto-cta" href="#design" id="sphere-detail-create" data-i18n="sphere.detail_cta">Eigene Vision erschaffen</a>
+                        <button type="button" class="sphere-detail-join" id="sphere-detail-join" data-i18n="sphere.detail_join">Oder werde Teil der Community</button>
                     </div>
-                    <p class="join-consent"><label><input type="checkbox" id="join-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label></p>
-                    <p class="join-status mono-label" id="join-status" aria-live="polite"></p>
-                </form>
+                </figcaption>
+            </figure>
+        </div>
+
+        <!-- Join-Overlay: das Waitlist-Formular, jetzt als Moment im Erlebnis.
+             IDs/Keys unverändert — js/ur-create.js (joinForm) bindet wie zuvor. -->
+        <div class="sphere-join" id="sphere-join" role="dialog" aria-modal="true" aria-labelledby="join-heading" hidden>
+            <div class="sphere-backdrop" data-join-close aria-hidden="true"></div>
+            <div class="sphere-join-card">
+                <button type="button" class="sphere-close" data-join-close data-i18n-aria-label="sphere.close" aria-label="Schließen">&times;</button>
+                <div class="community-join">
+                    <h3 class="join-headline" id="join-heading" data-i18n="join.h2">Gemeinsam wird daraus eine Bewegung</h3>
+                    <p class="community-join-sub" data-i18n="join.sub">Werde Teil der Menschen, die Mode neu denken — gestalte mit, verfolge die Reise oder bring deine Ideen ein.</p>
+                    <form id="join-form" class="join-form" novalidate>
+                        <fieldset class="join-choices">
+                            <legend class="visually-hidden" data-i18n="join.legend">Wie möchtest du teilnehmen?</legend>
+                            <label class="join-choice"><input type="checkbox" name="part" value="create" checked> <span data-i18n="join.p1">Designs erschaffen</span></label>
+                            <label class="join-choice"><input type="checkbox" name="part" value="follow"> <span data-i18n="join.p2">Die Reise verfolgen</span></label>
+                            <label class="join-choice"><input type="checkbox" name="part" value="ideas"> <span data-i18n="join.p3">Ideen beitragen</span></label>
+                            <label class="join-choice"><input type="checkbox" name="part" value="updates"> <span data-i18n="join.p4">Auf dem Laufenden bleiben</span></label>
+                        </fieldset>
+                        <div class="join-row">
+                            <label class="visually-hidden" for="join-email" data-i18n="join.email_label">E-Mail-Adresse</label>
+                            <input type="email" id="join-email" name="email" required data-i18n-placeholder="join.email_ph" placeholder="deine@email.ch" autocomplete="email">
+                            <button type="submit" class="manifesto-cta" data-i18n="join.cta">Urban Revolution beitreten</button>
+                        </div>
+                        <p class="join-consent"><label><input type="checkbox" id="join-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label></p>
+                        <p class="join-status mono-label" id="join-status" aria-live="polite"></p>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
@@ -1025,5 +1061,17 @@
     <script src="js/flair.js"></script>
     <script src="js/ur-create.js?v=20260611-weave"></script>
     <script src="js/ambient-ticker.js"></script>
+
+    <!-- Community-Sphäre: three/gsap werden erst per dynamic import geladen,
+         wenn die Sektion in Sichtweite scrollt (js/community-sphere.js). -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js",
+            "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.13.0/+esm"
+        }
+    }
+    </script>
+    <script type="module" src="js/community-sphere.js"></script>
 </body>
 </html>
