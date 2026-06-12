@@ -5734,8 +5734,8 @@ footer.footer {
 
 /* Concept-Studio (Direktive Schritte 3+4): Varianten-Grid + EVOLVE-Kette */
 .de-concepts { margin: 18px 0 6px; }
-.de-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 10px; }
-.de-concept { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.de-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 10px; }
+.de-concept { margin: 0; display: flex; flex-direction: column; gap: 6px; position: relative; }
 .de-concept-pick { position: relative; display: block; width: 100%; padding: 8px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out); }
 /* f05 · Karten gleiten gestaffelt herein (CSS-Animation greift automatisch,
    wenn flow.js das Varianten-Grid mountet — kein JS-Eingriff). */
@@ -5769,9 +5769,13 @@ footer.footer {
 .de-concept-v { color: var(--accent-3, #64d6c4); font-size: 0.7rem; letter-spacing: 0.12em; }
 .de-concept-tag { font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
 .de-concept-actions { display: flex; gap: 6px; }
-.de-concept-evolve { flex: 1; padding: 0.5rem 0.4rem; border-radius: 10px; border: 1px solid var(--accent); background: linear-gradient(180deg, rgba(42,157,143,0.16), transparent); color: var(--text); font: inherit; font-size: 0.78rem; letter-spacing: 0.06em; cursor: pointer; transition: background .2s; }
+.de-concept-evolve { flex: 1; padding: 0.5rem 0.4rem; border-radius: 10px; border: 1px solid var(--accent); background: linear-gradient(180deg, rgba(42,157,143,0.16), transparent); color: var(--text); font: inherit; font-size: 0.78rem; letter-spacing: 0.04em; cursor: pointer; transition: background .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 .de-concept-evolve:hover { background: rgba(42,157,143,0.28); }
-.de-concept-back { padding: 0.5rem 0.6rem; border-radius: 10px; border: 1px solid var(--border, #25415a); background: transparent; color: var(--text-muted); cursor: pointer; }
+/* ↩ "one version back" — a compact corner chip on the tile, NOT a row sibling,
+   so the long "Weiterentwickeln" label keeps the full action-row width and the
+   two never overlap on narrow tiles (iPad/phone). */
+.de-concept-back { position: absolute; top: 9px; left: 9px; z-index: 3; width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: 1px solid var(--border, #25415a); background: rgba(10,22,34,0.74); color: var(--text); cursor: pointer; font-size: 0.95rem; line-height: 1; }
+.de-concept-back:hover { border-color: var(--accent-3, #64d6c4); color: var(--accent-3, #64d6c4); }
 .de-concepts-hint { margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); }
 @media (prefers-reduced-motion: reduce) { .de-concept-pick, .de-concept-pick:hover { transition: none; transform: none; } }
 
@@ -5823,13 +5827,12 @@ footer.footer {
 
 /* ─── UX-Scan-Feinschliff (präziser Audit) ─────────────────────────────────
    #4 Touch-Ziele werden über html.is-touch oben gelöst (Projekt-Muster). */
-/* #5 Concept-Studio: Grid-/Flex-Kinder dürfen schrumpfen (min-width:0), sonst
-   läuft der ↩-Button über den Kartenrand (iPhone-Report). Pfeil = kompakte,
-   gleich hohe Sekundärtaste. */
+/* #5 Concept-Studio: Grid-/Flex-Kinder dürfen schrumpfen (min-width:0). Der
+   ↩-Pfeil ist als absolute Eck-Chip aus der Aktionszeile genommen (siehe
+   .de-concept-back oben), damit „Weiterentwickeln" die volle Breite behält. */
 .de-concept { min-width: 0; }
 .de-concept-evolve { min-width: 0; }
 .de-concept-actions { align-items: stretch; }
-.de-concept-back { flex: 0 0 auto; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 
 /* #6 Ambiente-Hintergründe: thematisch sinnvoller Bildausschnitt je Sektion
    (4:5-Quellen werden als cover beschnitten — Fokus gezielt setzen). */
