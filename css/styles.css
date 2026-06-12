@@ -5700,6 +5700,68 @@ footer.footer {
 .join-consent { margin-top: 14px; font-size: 0.8rem; color: var(--text-muted); }
 .join-status { margin-top: 12px; color: var(--accent-3, #64d6c4); min-height: 1.2em; }
 
+/* ── Community-Sphäre — Kugel-Galerie ersetzt Filter+Grid ──────────────────
+   Volle Sektionshöhe, Canvas füllt den Raum; Scroll läuft durch (kein
+   Wheel-Hijack, touch-action: pan-y), nur Ziehen/Tippen interagiert.
+   Overlays (Detail/Join) liegen fixed über der Seite, ≤ 250 ms Übergänge. */
+/* Höhe = Viewport minus Anker-Versatz (scroll-margin-top 72px): so sitzt die
+   Sektion nach einem Nav-Sprung exakt im Fold, CTA inklusive. */
+.community-sphere { padding: 0; min-height: calc(100svh - 72px - env(safe-area-inset-top)); display: flex; flex-direction: column; }
+.community-sphere .sphere-head { position: relative; z-index: 2; padding-top: 76px; pointer-events: none; }
+.community-sphere .section-header { margin-bottom: 0; }
+.community-sphere .section-header p { max-width: 56ch; }
+.sphere-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; z-index: 1; }
+.sphere-canvas:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: -3px; }
+.community-sphere.is-dragging .sphere-canvas { cursor: grabbing; }
+.community-sphere.has-hover .sphere-canvas { cursor: pointer; }
+.sphere-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(115% 80% at 50% 46%, transparent 52%, rgba(4, 10, 17, 0.5) 100%); }
+.sphere-foot { position: relative; z-index: 2; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 28px 20px calc(30px + env(safe-area-inset-bottom)); pointer-events: none; }
+.sphere-hint { color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; }
+.sphere-cta { pointer-events: auto; font: inherit; font-size: 0.92rem; font-weight: 600; color: var(--text); background: rgba(10, 22, 34, 0.55); border: 1px solid var(--border, #25415a); border-radius: 999px; padding: 0.8rem 1.6rem; cursor: pointer; backdrop-filter: blur(8px); transition: border-color 0.22s ease, transform 0.22s ease; }
+.sphere-cta:hover { border-color: var(--accent-3, #64d6c4); transform: translateY(-2px); }
+.sphere-label { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; display: flex; flex-direction: column; gap: 3px; opacity: 0; transition: opacity 0.2s ease; will-change: transform; }
+.sphere-label.is-on { opacity: 1; }
+.sphere-label-name { font-weight: 600; font-size: 0.9rem; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); }
+.sphere-label-meta { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9); }
+@media (pointer: coarse) { .sphere-label { display: none; } }
+
+/* Overlays: Detail + Join — gleiche Hülle, eigener Inhalt.
+   Wichtig: [hidden] muss das display:flex schlagen, sonst liegt das
+   unsichtbare Overlay über der ganzen Seite und frisst alle Klicks. */
+.sphere-detail, .sphere-join { position: fixed; inset: 0; z-index: 140; display: flex; align-items: center; justify-content: center; padding: 18px; }
+.sphere-detail[hidden], .sphere-join[hidden] { display: none; }
+.sphere-backdrop { position: absolute; inset: 0; background: rgba(4, 10, 17, 0.72); backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.22s ease; }
+.sphere-detail-card, .sphere-join-card { position: relative; opacity: 0; transform: translateY(18px) scale(0.985); transition: opacity 0.22s ease, transform 0.24s ease; }
+.sphere-detail.is-open .sphere-backdrop, .sphere-join.is-open .sphere-backdrop { opacity: 1; }
+.sphere-detail.is-open .sphere-detail-card, .sphere-join.is-open .sphere-join-card { opacity: 1; transform: none; }
+html.sphere-lock, html.sphere-lock body { overflow: hidden; }
+
+.sphere-close { position: absolute; top: 12px; right: 12px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border, #25415a); background: rgba(10, 22, 34, 0.65); color: var(--text); font-size: 1.3rem; line-height: 1; cursor: pointer; transition: border-color 0.2s ease; }
+.sphere-close:hover { border-color: var(--accent-3, #64d6c4); }
+
+.sphere-detail-card { margin: 0; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); width: min(920px, 100%); max-height: min(86svh, 720px); background: var(--bg-card, #14283b); border: 1px solid var(--border, #25415a); border-radius: var(--radius-lg, 18px); overflow: hidden; box-shadow: var(--shadow-lg, 0 30px 80px rgba(0, 0, 0, 0.5)); }
+.sphere-detail-media { min-height: 0; }
+.sphere-detail-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sphere-detail-info { padding: clamp(22px, 4vw, 40px); display: flex; flex-direction: column; gap: 12px; justify-content: center; min-width: 0; }
+.sphere-detail-kicker { color: var(--accent-3, #64d6c4); }
+.sphere-detail-name { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.7rem, 4vw, 2.5rem); margin: 0; line-height: 1.08; }
+.sphere-detail-meta { color: var(--text-muted); font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0; }
+.sphere-detail-line { color: var(--text-muted); margin: 4px 0 8px; }
+.sphere-detail-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.sphere-detail-join { background: none; border: none; padding: 0; font: inherit; font-size: 0.85rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sphere-detail-join:hover { color: var(--text); }
+
+.sphere-join-card { width: min(720px, 100%); max-height: 86svh; overflow-y: auto; background: var(--bg-card, #14283b); border: 1px solid var(--border, #25415a); border-radius: var(--radius-lg, 18px); padding: clamp(22px, 4vw, 40px); box-shadow: var(--shadow-lg, 0 30px 80px rgba(0, 0, 0, 0.5)); }
+.sphere-join-card .community-join { margin: 0; padding-top: 0; border-top: none; max-width: none; }
+
+@media (max-width: 700px) {
+    .sphere-detail-card { grid-template-columns: 1fr; overflow-y: auto; }
+    .sphere-detail-media { max-height: 38svh; }
+    .sphere-detail-media img { max-height: 38svh; }
+    .community-sphere .sphere-head { padding-top: 64px; }
+}
+
 /* 10 · Finaler CTA */
 .final-cta { padding: 110px 0 130px; text-align: center; background: radial-gradient(90% 70% at 50% 100%, rgba(39,121,168,0.16), transparent); overflow: hidden; }
 /* ── f02 · Schlussakkord-Ring ──────────────────────────────────────────────

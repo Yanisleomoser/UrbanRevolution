@@ -421,9 +421,14 @@
     if (!cta || !hero) return;
     const onScroll = () => {
       const past = window.scrollY > hero.offsetHeight * 0.8;
-      const design = $("#design");
-      const atCreate = design && design.getBoundingClientRect().top < window.innerHeight && design.getBoundingClientRect().bottom > 0;
-      cta.hidden = !past || atCreate;
+      const inView = (el) => {
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        return r.top < window.innerHeight && r.bottom > 0;
+      };
+      // In UR Create und in der Community-Sphäre hat der Moment eigene CTAs —
+      // dort tritt der Sticky-Button zurück.
+      cta.hidden = !past || inView($("#design")) || inView($("#community"));
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
