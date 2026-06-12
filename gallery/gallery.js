@@ -38,6 +38,28 @@ const SOURCES = [
     [A("story/act4.jpg"), "Act IV — Renewal", "Editorial"],
 ];
 
+// Varianten 2 + 3 jeder Quelle: engere Ausschnitte mit eigenem Titel.
+const THIRD_TITLES = [
+    ["Tidal — First Toile", "Toile"],
+    ["Halcyon — Lining", "Process"],
+    ["Meridian — Drape", "Toile"],
+    ["Undertow — Shell", "Process"],
+    ["Riptide — Collar", "Detail"],
+    ["Salt Air", "Editorial"],
+    ["Cutting Table", "Archive"],
+    ["Second Skin II", "Fittings"],
+    ["Portrait Study 01", "Editorial"],
+    ["Portrait Study 02", "Editorial"],
+    ["Portrait Study 03", "Editorial"],
+    ["Portrait Study 04", "Editorial"],
+    ["Portrait Study 05", "Editorial"],
+    ["Portrait Study 06", "Editorial"],
+    ["Excess — Texture", "Texture"],
+    ["Descent — Texture", "Texture"],
+    ["Return — Texture", "Texture"],
+    ["Renewal — Texture", "Texture"],
+];
+
 const SECOND_TITLES = [
     ["Tidal Coat — Detail", "Archive"],
     ["Cut & Resolve", "Process"],
@@ -150,49 +172,66 @@ const dust = (() => {
 
 /* ---------- Karten an der Kugel-Innenwand ---------- */
 
-// 3 Breitengrad-Bänder × 12 Längengrade, mit Jitter — wirkt wie ein
+// 3 Breitengrad-Bänder × 18 Längengrade, mit Jitter — wirkt wie ein
 // organisches Raster (so hängt auch das phantom.land-Original).
 const slots = [];
 {
-    const bands = [-0.46, 0, 0.46];
+    const bands = [-0.5, 0, 0.5];
+    const offsets = [0, Math.PI / 18, Math.PI / 36];
     for (let b = 0; b < bands.length; b++) {
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 18; i++) {
             slots.push({
-                yaw: i * (Math.PI / 6) + (b % 2 ? Math.PI / 12 : 0) + rand(-0.085, 0.085),
-                pitch: bands[b] + rand(-0.085, 0.085),
-                radius: RADIUS + rand(-1.1, 1.1),
-                scale: rand(0.82, 1.26),
+                yaw: i * (Math.PI / 9) + offsets[b] + rand(-0.07, 0.07),
+                pitch: bands[b] + rand(-0.09, 0.09),
+                radius: RADIUS + rand(-1.4, 0.9),
+                scale: rand(0.72, 1.38),
             });
         }
     }
-    // Slots mischen, damit Bildpaare nicht nebeneinander hängen.
+    // Slots mischen, damit Bild-Varianten nicht nebeneinander hängen.
     for (let i = slots.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
         [slots[i], slots[j]] = [slots[j], slots[i]];
     }
 }
 
-THREE.Cache.enabled = true;
 const manager = new THREE.LoadingManager();
-const loader = new THREE.TextureLoader(manager);
+const imageLoader = new THREE.ImageLoader(manager);
 const geometry = new THREE.PlaneGeometry(1, 1);
 const cards = [];
 
+// Pro Karte ein eigener, klein gerechneter Ausschnitt (Canvas) statt der
+// vollen JPEGs — 54 GPU-Texturen bleiben so auch auf Phones bezahlbar.
+function makeCardTexture(img, zoom, ox, oy) {
+    const sw = img.width * zoom;
+    const sh = img.height * zoom;
+    const sx = (img.width - sw) * ox;
+    const sy = (img.height - sh) * oy;
+    const long = 560;
+    const scale = Math.min(1, long / Math.max(sw, sh));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(2, Math.round(sw * scale));
+    canvas.height = Math.max(2, Math.round(sh * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return tex;
+}
+
 SOURCES.forEach(([src, title, tag], i) => {
-    [0, 1].forEach((variant) => {
-        const slot = slots[i * 2 + variant];
-        const [vTitle, vTag] = variant ? SECOND_TITLES[i] : [title, tag];
-        loader.load(src, (tex) => {
-            tex.colorSpace = THREE.SRGBColorSpace;
-            tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-            if (variant) {
-                // Engerer Ausschnitt → zweite Karte liest sich als eigenes Motiv.
-                tex.repeat.set(0.74, 0.74);
-                tex.offset.set(rand(0.02, 0.24), rand(0.1, 0.26));
-            }
-            const img = tex.image;
-            const aspect = Math.min(1.85, Math.max(0.62, img.width / img.height));
-            const h = (2.6 / Math.sqrt(aspect)) * slot.scale;
+    imageLoader.load(src, (img) => {
+        const variants = [
+            { naming: [title, tag], zoom: 1 },
+            { naming: SECOND_TITLES[i], zoom: 0.72 },
+            { naming: THIRD_TITLES[i], zoom: 0.56 },
+        ];
+        variants.forEach((v, variant) => {
+            const slot = slots[i * 3 + variant];
+            const tex = makeCardTexture(img, v.zoom, rand(0.1, 0.9), rand(0.05, 0.45));
+            const aspect = Math.min(1.85, Math.max(0.62, tex.image.width / tex.image.height));
+            const h = (2.95 / Math.sqrt(aspect)) * slot.scale;
             const w = h * aspect;
             const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false });
             const mesh = new THREE.Mesh(geometry, mat);
@@ -205,13 +244,12 @@ SOURCES.forEach(([src, title, tag], i) => {
             mesh.lookAt(0, 0, 0);
             mesh.scale.set(w, h, 1);
             mesh.userData = {
-                title: vTitle,
-                tag: vTag,
+                title: v.naming[0],
+                tag: v.naming[1],
                 year: 2024 + Math.floor(rng() * 3),
                 src,
                 w,
                 h,
-                hover: 0,
             };
             scene.add(mesh);
             cards.push(mesh);
@@ -221,8 +259,10 @@ SOURCES.forEach(([src, title, tag], i) => {
 
 /* ---------- Blicksteuerung — Lenis-artiges Easing ---------- */
 
-const rot = { yaw: -0.55, pitch: 0.05 };       // tatsächliche Kamera-Rotation
-const target = { yaw: 0, pitch: 0 };           // Zielwert (Drag/Wheel/Tasten)
+// Start-Blick: yaw 1.2 rahmt im seeded Layout die dichteste Kartenwand;
+// das Intro gleitet von 0.65 dorthin.
+const rot = { yaw: 0.65, pitch: 0 };           // tatsächliche Kamera-Rotation
+const target = { yaw: 1.2, pitch: 0 };         // Zielwert (Drag/Wheel/Tasten)
 const vel = { yaw: 0, pitch: 0 };              // Trägheit nach dem Loslassen
 const state = {
     dragging: false,
@@ -402,14 +442,18 @@ function openCard(mesh) {
             y: n.y * RADIUS * 0.45,
             z: n.z * RADIUS * 0.45,
             duration: dur(1.05),
+            overwrite: "auto",
         }, 0)
         .to(camera, {
             fov: 58,
             duration: dur(1.05),
+            overwrite: "auto",
             onUpdate: () => camera.updateProjectionMatrix(),
         }, 0)
         .to([hint, cursorEl], { autoAlpha: 0, duration: dur(0.3) }, 0)
-        .fromTo(detail, { yPercent: 102 }, { yPercent: 0, duration: dur(0.85), ease: "power3.inOut" }, 0.42)
+        // y:0 mitsetzen — GSAP übernimmt das CSS-translateY(102%) sonst als
+        // Basis-y und das Overlay käme nie oben an.
+        .fromTo(detail, { y: 0, yPercent: 102 }, { y: 0, yPercent: 0, duration: dur(0.85), ease: "power3.inOut" }, 0.42)
         .fromTo(detailImg, { scale: 1.18 }, { scale: 1, duration: dur(1.1), ease: "power3.out" }, 0.62)
         .fromTo(words, { yPercent: 112 }, { yPercent: 0, duration: dur(0.7), ease: "power3.out", stagger: 0.055 }, 0.78)
         .fromTo(
@@ -428,17 +472,19 @@ function closeCard() {
         onComplete: () => {
             state.open = false;
             activeCard = null;
+            state.lastInteract = performance.now();
             detail.setAttribute("aria-hidden", "true");
             detail.style.visibility = "hidden";
             document.body.classList.remove("is-open");
             canvas.focus({ preventScroll: true });
         },
     });
-    tl.to(detail, { yPercent: 102, duration: dur(0.7), ease: "power3.in" }, 0)
-        .to(camera.position, { x: 0, y: 0, z: 0, duration: dur(1.0) }, 0.15)
+    tl.to(detail, { y: 0, yPercent: 102, duration: dur(0.7), ease: "power3.in" }, 0)
+        .to(camera.position, { x: 0, y: 0, z: 0, duration: dur(1.0), overwrite: "auto" }, 0.15)
         .to(camera, {
             fov: FOV,
             duration: dur(1.0),
+            overwrite: "auto",
             onUpdate: () => camera.updateProjectionMatrix(),
         }, 0.15)
         .to(cursorEl, { autoAlpha: FINE_POINTER ? 1 : 0, duration: dur(0.3) }, 0.6);
@@ -486,7 +532,7 @@ function tick() {
 
     // Nicht-fokussierte Karten beim Öffnen wegdimmen.
     for (const m of cards) {
-        const targetOpacity = state.open ? (m === activeCard ? 1 : 0.08) : 1;
+        const targetOpacity = state.open ? (m === activeCard ? 1 : 0.05) : 1;
         const o = m.material.opacity;
         if (Math.abs(o - targetOpacity) > 0.001) {
             m.material.opacity = o + (targetOpacity - o) * Math.min(1, dt * 6);
