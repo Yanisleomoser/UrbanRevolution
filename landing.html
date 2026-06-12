@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a1622">
+    <meta name="color-scheme" content="dark">
+
+    <title>Urban Revolution — Circular Couture aus Zürich</title>
+    <meta name="description" content="Circular Couture aus Zürich: KI-entworfene Einzelstücke nach Maß, gefertigt aus recycelter Kleidung. Made for one. Not for all.">
+    <meta name="author" content="Urban Revolution">
+
+    <!-- Open Graph — beim Teilen auf Facebook, LinkedIn, iMessage, Slack -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Urban Revolution">
+    <meta property="og:title" content="Urban Revolution — Circular Couture aus Zürich">
+    <meta property="og:description" content="KI-entworfene Einzelstücke nach Maß, aus Kleidung, die schon existiert. Made for one. Not for all.">
+    <meta property="og:url" content="https://revolveurban.com/landing.html">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:image" content="https://revolveurban.com/assets/logo.png">
+    <meta property="og:image:width" content="1080">
+    <meta property="og:image:height" content="1080">
+    <meta property="og:image:alt" content="Urban Revolution — Logo">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Urban Revolution — Circular Couture aus Zürich">
+    <meta name="twitter:description" content="KI-entworfene Einzelstücke nach Maß, aus recycelter Kleidung. Made for one. Not for all.">
+    <meta name="twitter:image" content="https://revolveurban.com/assets/logo.png">
+
+    <link rel="canonical" href="https://revolveurban.com/landing.html">
+
+    <!-- Favicons — identisch zur Haupt-App (Inline-SVG mit Markenverlauf) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232a9d8f'/%3E%3Cstop offset='50%25' stop-color='%232779a8'/%3E%3Cstop offset='100%25' stop-color='%2364d6c4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Poppins,sans-serif' font-size='24' font-weight='800' text-anchor='middle' fill='white'%3EUR%3C/text%3E%3C/svg%3E">
+
+    <!-- Stabiles Viewport-Höhen-Token (--svh) wie in index.html: nur bei
+         echter BREITEN-Änderung neu berechnen, nie beim Toolbar-Einblenden
+         von In-App-Browsern (höhenstabile Seite beim Scrollen). -->
+    <script>
+      (function () {
+        try {
+          var de = document.documentElement, lastW = -1;
+          function setSVH() {
+            de.style.setProperty("--svh", (window.innerHeight * 0.01) + "px");
+            lastW = window.innerWidth;
+          }
+          setSVH();
+          window.addEventListener("resize", function () {
+            if (window.innerWidth !== lastW) setSVH();
+          }, { passive: true });
+          window.addEventListener("orientationchange", setSVH);
+        } catch (e) { /* no-op — CSS fällt auf svh/vh zurück */ }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="css/landing.css">
+
+    <!-- Markentypografie: Lora (Display) + Poppins (Body) — wie die Haupt-App -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap"></noscript>
+</head>
+<body>
+    <a class="skip-link" href="#main-content" data-i18n="nav.skip">Zum Inhalt springen</a>
+
+    <!-- Lese-Fortschritt (dekorativ) -->
+    <div class="progress-bar" id="progress-bar" aria-hidden="true"></div>
+
+    <!-- Preloader: Logo-Kreis zeichnet sich, dann Übergang in den Hero.
+         Wird bei reduced motion / ohne GSAP sofort entfernt. -->
+    <div class="loader" id="loader" aria-hidden="true">
+        <svg class="mark mark--loader" viewBox="0 0 200 200" aria-hidden="true">
+            <path class="mark-arc" d="M126.2 43.8 A62 62 0 1 1 46.3 131" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+            <path class="mark-dashes" d="M40.1 84 A62 62 0 0 1 91.4 38.6" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square" stroke-dasharray="2 15"/>
+            <g class="mark-needle" transform="rotate(16 100 100)">
+                <path d="M93.5 12 A6.5 6.5 0 0 1 106.5 12 L102.2 100 L100 136 L97.8 100 Z" fill="currentColor"/>
+                <rect class="mark-eye" x="97.5" y="20" width="5" height="30" rx="2.5"/>
+            </g>
+        </svg>
+    </div>
+
+    <header class="nav" id="nav">
+        <a class="nav-brand" href="#top" aria-label="Urban Revolution">
+            <svg class="mark mark--nav" viewBox="0 0 200 200" aria-hidden="true">
+                <path d="M126.2 43.8 A62 62 0 1 1 46.3 131" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+                <path d="M40.1 84 A62 62 0 0 1 91.4 38.6" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square" stroke-dasharray="2 15"/>
+                <g transform="rotate(16 100 100)">
+                    <path d="M93.5 12 A6.5 6.5 0 0 1 106.5 12 L102.2 100 L100 136 L97.8 100 Z" fill="currentColor"/>
+                    <rect class="mark-eye" x="97.5" y="20" width="5" height="30" rx="2.5"/>
+                </g>
+            </svg>
+            <span class="nav-wordmark">Urban Revolution</span>
+        </a>
+        <div class="nav-actions">
+            <button class="lang-btn" id="lang-toggle" type="button" data-i18n-aria-label="nav.lang_aria" aria-label="Sprache wechseln">EN</button>
+            <a class="btn btn--primary btn--nav" href="index.html" data-i18n="nav.enter">UR Create starten</a>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- ── Hero — interaktives Faden-Partikelfeld + Tagline ── -->
+        <section class="hero" id="top">
+            <canvas class="hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
+            <div class="hero-inner">
+                <p class="hero-eyebrow" data-i18n="landing.eyebrow">Circular Couture · Zürich</p>
+                <h1 class="hero-title">
+                    <span class="hero-mask"><span class="hero-line" data-i18n="landing.h1_line1">Made for one.</span></span>
+                    <span class="hero-mask"><span class="hero-line hero-line--grad" data-i18n="landing.h1_line2">Not for all.</span></span>
+                </h1>
+                <p class="hero-sub" data-i18n="landing.sub">KI-entworfene Einzelstücke nach Maß — aus Kleidung, die schon existiert. Keine Überproduktion. Kein Abfall. Nur deins.</p>
+                <div class="hero-ctas">
+                    <a class="btn btn--primary" href="index.html" data-i18n="nav.enter">UR Create starten</a>
+                    <a class="btn btn--ghost" href="#manifesto" data-i18n="landing.cta_secondary">Das Manifest</a>
+                </div>
+            </div>
+            <div class="scroll-cue" aria-hidden="true">
+                <span data-i18n="landing.scroll">Scrollen</span>
+                <span class="scroll-cue-line"></span>
+            </div>
+        </section>
+
+        <!-- ── Laufband (dekorativ) ── -->
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee-track">
+                <span class="marquee-text" data-i18n="landing.marquee">AI · 3D · Couture · Recycelt · Zürich · Made for one. Not for all. ·</span>
+                <span class="marquee-text" data-i18n="landing.marquee">AI · 3D · Couture · Recycelt · Zürich · Made for one. Not for all. ·</span>
+                <span class="marquee-text" data-i18n="landing.marquee">AI · 3D · Couture · Recycelt · Zürich · Made for one. Not for all. ·</span>
+            </div>
+        </div>
+
+        <!-- ── Manifest — Wort-für-Wort-Reveal beim Scrollen ── -->
+        <section class="manifesto" id="manifesto">
+            <p class="section-label" data-i18n="landing.manifesto_label">Manifest</p>
+            <p class="manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden: produzieren, tragen, wegwerfen. Wir biegen die Linie zurück zum Kreis. Jedes Stück beginnt als Kleidung, die schon gelebt hat — und wird zu etwas, das es nur einmal gibt. Entworfen von KI. Gefertigt von Hand. Gemacht für dich.</p>
+        </section>
+
+        <!-- ── Der Kreislauf — gepinnte Kreis-Reise (4 Stationen) ── -->
+        <section class="loop" id="loop">
+            <div class="loop-pin" id="loop-pin">
+                <div class="loop-head">
+                    <p class="section-label" data-i18n="landing.loop_label">Der Kreislauf</p>
+                    <h2 class="loop-title" data-i18n="landing.loop_title">Vier Stationen. Ein Kreis.</h2>
+                </div>
+                <div class="loop-grid">
+                    <div class="loop-visual">
+                        <svg class="loop-svg" viewBox="0 0 320 320" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="loop-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#2779a8"/>
+                                    <stop offset="50%" stop-color="#2a9d8f"/>
+                                    <stop offset="100%" stop-color="#64d6c4"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="loop-track" cx="160" cy="160" r="130" fill="none" stroke-width="2" stroke-dasharray="2 10"/>
+                            <circle class="loop-progress" id="loop-progress" cx="160" cy="160" r="130" fill="none" stroke="url(#loop-grad)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 160 160)"/>
+                            <g class="loop-needle" id="loop-needle" transform="rotate(16 160 160)">
+                                <path d="M149.5 64 A10.5 10.5 0 0 1 170.5 64 L163.5 206 L160 264 L156.5 206 Z" fill="currentColor"/>
+                                <rect class="loop-eye" x="156" y="77" width="8" height="48" rx="4"/>
+                            </g>
+                            <g class="loop-dots" id="loop-dots">
+                                <circle cx="160" cy="30" r="7"/>
+                                <circle cx="290" cy="160" r="7"/>
+                                <circle cx="160" cy="290" r="7"/>
+                                <circle cx="30" cy="160" r="7"/>
+                            </g>
+                        </svg>
+                        <p class="loop-count" aria-hidden="true"><span id="loop-num">01</span><span class="loop-count-total"> / 04</span></p>
+                    </div>
+                    <ol class="loop-steps" id="loop-steps" data-i18n-aria-label="landing.loop_aria" aria-label="Die vier Stationen des Kreislaufs">
+                        <li class="loop-step is-active">
+                            <span class="loop-step-index" aria-hidden="true">01</span>
+                            <h3 class="loop-step-title" data-i18n="landing.stage1_title">Getragen</h3>
+                            <p class="loop-step-text" data-i18n="landing.stage1_text">Jedes Stück beginnt als Kleidung mit Geschichte — gesammelt statt deponiert.</p>
+                        </li>
+                        <li class="loop-step">
+                            <span class="loop-step-index" aria-hidden="true">02</span>
+                            <h3 class="loop-step-title" data-i18n="landing.stage2_title">Zurückgewonnen</h3>
+                            <p class="loop-step-text" data-i18n="landing.stage2_text">Stoffe, Knöpfe, Nähte: Wir zerlegen Altkleider in Rohmaterial für Neues.</p>
+                        </li>
+                        <li class="loop-step">
+                            <span class="loop-step-index" aria-hidden="true">03</span>
+                            <h3 class="loop-step-title" data-i18n="landing.stage3_title">Neu gedacht</h3>
+                            <p class="loop-step-text" data-i18n="landing.stage3_text">Du beschreibst deine Idee — die KI entwirft daraus ein Einzelstück nach deinen Maßen.</p>
+                        </li>
+                        <li class="loop-step">
+                            <span class="loop-step-index" aria-hidden="true">04</span>
+                            <h3 class="loop-step-title" data-i18n="landing.stage4_title">Wiedergeboren</h3>
+                            <p class="loop-step-text" data-i18n="landing.stage4_text">Ein Schweizer Atelier fertigt dein Stück von Hand. Made for one. Not for all.</p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Die Zahlen — belegte Fast-Fashion-Fakten ── -->
+        <section class="stats" id="facts" data-reveal>
+            <p class="section-label" data-i18n="landing.stats_label">Die Zahlen</p>
+            <h2 class="stats-title" data-i18n="landing.stats_title">Warum es eine Revolution braucht</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <p class="stat-value"><span class="stat-prefix">&lt;</span><span class="stat-num" data-count="1">1</span><span class="stat-unit">%</span></p>
+                    <p class="stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                </div>
+                <div class="stat">
+                    <p class="stat-value"><span class="stat-num" data-count="1">1</span></p>
+                    <p class="stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                </div>
+                <div class="stat">
+                    <p class="stat-value"><span class="stat-prefix">≤</span><span class="stat-num" data-count="8">8</span><span class="stat-unit">%</span></p>
+                    <p class="stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+                </div>
+            </div>
+            <p class="stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+        </section>
+
+        <!-- ── Finale — magnetischer Kreis-CTA ── -->
+        <section class="finale" data-reveal>
+            <h2 class="finale-title" data-i18n-html="landing.cta_title_html">Trag etwas, das es <em>nur einmal</em> gibt.</h2>
+            <p class="finale-sub" data-i18n="landing.cta_sub">Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Maß, aus recycelter Kleidung.</p>
+            <a class="cta-orb" id="cta-orb" href="index.html" data-i18n-aria-label="landing.orb_aria" aria-label="UR Create starten — öffnet das Atelier">
+                <svg class="cta-orb-ring" viewBox="0 0 200 200" aria-hidden="true">
+                    <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 9"/>
+                </svg>
+                <span class="cta-orb-label" data-i18n="nav.enter">UR Create starten</span>
+                <span class="cta-orb-arrow" aria-hidden="true">→</span>
+            </a>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-meta" data-i18n-html="footer.meta_html">© 2026 Urban Revolution · Designed in Zürich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · Hergestellt mit <span aria-label="Liebe">♥</span> und KI</p>
+    </footer>
+
+    <!-- Skripte: i18n zuerst (übersetzt die DOM), dann GSAP (CDN, wie MediaPipe
+         build-frei), dann der Landing-Controller. -->
+    <script src="js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+    <script src="js/landing.js"></script>
+</body>
+</html>
