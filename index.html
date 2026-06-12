@@ -73,11 +73,7 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260611-weave">
-
-    <!-- Preload the LCP hero image (first gallery slide) so it paints fast.
-         Slides 2–6 are deferred (data-src, fetched on first crossfade). -->
-    <link rel="preload" as="image" href="assets/hero-1.jpg" fetchpriority="high">
+    <link rel="stylesheet" href="css/styles.css?v=20260612-nav">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -184,128 +180,180 @@
 <body>
     <a href="#main-content" class="skip-link" data-i18n="nav.skip">Zum Inhalt springen</a>
     <div class="scroll-thread" aria-hidden="true"></div>
-    <nav class="navbar" data-i18n-aria-label="nav.aria" aria-label="Hauptnavigation">
+
+    <!-- Preloader: Logo-Kreis zeichnet sich (nur mit GSAP + ohne reduced
+         motion; sonst per CSS unsichtbar). Sicherheitsnetz in landing.js. -->
+    <div class="lp-loader" id="loader" aria-hidden="true">
+        <svg class="lp-mark" viewBox="0 0 200 200" aria-hidden="true">
+            <path class="lp-mark-arc" d="M126.2 43.8 A62 62 0 1 1 46.3 131" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+            <path class="lp-mark-dashes" d="M40.1 84 A62 62 0 0 1 91.4 38.6" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square" stroke-dasharray="2 15"/>
+            <g class="lp-mark-needle" transform="rotate(16 100 100)">
+                <path d="M93.5 12 A6.5 6.5 0 0 1 106.5 12 L102.2 100 L100 136 L97.8 100 Z" fill="currentColor"/>
+                <rect class="lp-mark-eye" x="97.5" y="20" width="5" height="30" rx="2.5"/>
+            </g>
+        </svg>
+    </div>
+    <nav class="navbar lp-nav" data-i18n-aria-label="nav.aria" aria-label="Hauptnavigation">
         <div class="nav-container">
-            <div class="logo">
-                <span class="logo-mark">UR</span>
-                <span class="logo-text">Urban Revolution</span>
+            <a class="lp-brand" href="#top" aria-label="Urban Revolution">
+                <svg class="lp-mark lp-mark--nav" viewBox="0 0 200 200" aria-hidden="true">
+                    <path d="M126.2 43.8 A62 62 0 1 1 46.3 131" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M40.1 84 A62 62 0 0 1 91.4 38.6" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square" stroke-dasharray="2 15"/>
+                    <g transform="rotate(16 100 100)">
+                        <path d="M93.5 12 A6.5 6.5 0 0 1 106.5 12 L102.2 100 L100 136 L97.8 100 Z" fill="currentColor"/>
+                        <rect class="lp-mark-eye" x="97.5" y="20" width="5" height="30" rx="2.5"/>
+                    </g>
+                </svg>
+                <span class="lp-wordmark">Urban Revolution</span>
+            </a>
+            <div class="lp-nav-actions">
+                <a class="lp-btn lp-btn--ghost lp-btn--nav" href="#community" data-i18n="nav.community">Community</a>
+                <button id="lang-toggle" class="lang-toggle" type="button" data-i18n-aria-label="nav.lang_aria" aria-label="Sprache wechseln">
+                    <span class="lang-opt" data-lang="de">DE</span>
+                    <span class="lang-sep" aria-hidden="true">/</span>
+                    <span class="lang-opt" data-lang="en">EN</span>
+                </button>
+                <a href="#design" class="lp-btn lp-btn--primary lp-btn--nav" data-i18n="nav.enter">UR Create starten</a>
             </div>
-            <button id="nav-toggle" class="nav-toggle" data-i18n-aria-label="nav.toggle_open" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-links">
-                <span class="nav-toggle-bar"></span>
-                <span class="nav-toggle-bar"></span>
-                <span class="nav-toggle-bar"></span>
-            </button>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="#design" data-i18n="nav.create">UR Create</a></li>
-                <li><a href="#community" data-i18n="nav.community">Community</a></li>
-                <li><a href="#design" class="nav-cta" data-i18n="nav.enter">UR Create starten</a></li>
-                <li class="nav-lang-item">
-                    <button id="lang-toggle" class="lang-toggle" type="button" data-i18n-aria-label="nav.lang_aria" aria-label="Sprache wechseln">
-                        <span class="lang-opt" data-lang="de">DE</span>
-                        <span class="lang-sep" aria-hidden="true">/</span>
-                        <span class="lang-opt" data-lang="en">EN</span>
-                    </button>
-                </li>
-            </ul>
         </div>
     </nav>
 
     <main id="main-content">
     <!-- Direktive-Architektur: Hero → UR Create → Ownership → Problem → Community (Kugel-Galerie, mit Join). Made-to-Measure (Maße/Vorschau/Produktion/FAQ) faltet sich hinter UR Create auf. -->
 
-    <!-- 1 · HERO — Produktversprechen. Links Statement + CTA, rechts eine live
-         laufende UR-Create-Evolution (GarmentSVG-Morph-Schaufenster). -->
-    <section class="ur-hero" id="top" aria-labelledby="urhero-heading">
-        <!-- Modul B · Aurora: weiche radial-gradient-Orbs (KEIN filter:blur →
-             kein iOS-Safari-Jank), Drift nur per transform (compositor-only). -->
-        <div class="aurora" aria-hidden="true"></div>
-        <!-- Modul A · Schnittmuster-Hero: LEBENDE Bezier-Kurven (Armloch-/Seiten-
-             naht-Charakter) — die Kontrollpunkte morphen endlos (SMIL, läuft auch
-             in Safari; CSS d:path() tut das nicht), Endpunkte + Anker bleiben fix.
-             Lichtfunken wandern als Dash-Segment AUF dem Stroke entlang → kleben
-             geometrisch exakt an der morphenden Linie. Teal-Gradient + Glow.
-             Rein dekorativer Hintergrund-Layer, überlagert NICHT #hero-showcase. -->
-        <div class="ur-hero-curves" aria-hidden="true">
-            <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-                <defs>
-                    <linearGradient id="urGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#2779a8"/><!-- --accent-2 -->
-                        <stop offset="50%" stop-color="#2a9d8f"/><!-- --accent -->
-                        <stop offset="100%" stop-color="#64d6c4"/><!-- --accent-3 -->
-                    </linearGradient>
-                    <filter id="urCurveGlow" x="-30%" y="-30%" width="160%" height="160%">
-                        <feGaussianBlur stdDeviation="4"/>
-                    </filter>
-                </defs>
-                <!-- Kurve 1 · Seitennaht -->
-                <path class="urc-glow urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
-                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
-                </path>
-                <path class="urc-line urc-d1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
-                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
-                </path>
-                <path class="urc-spark urc-s1" pathLength="1" d="M 90 70 C 300 240, 250 470, 430 700">
-                    <animate attributeName="d" dur="16s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 90 70 C 300 240, 250 470, 430 700; M 90 70 C 380 160, 150 540, 430 700; M 90 70 C 220 340, 360 380, 430 700; M 90 70 C 300 240, 250 470, 430 700"/>
-                </path>
-                <!-- Kurve 2 · Armloch -->
-                <path class="urc-glow urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
-                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
-                </path>
-                <path class="urc-line urc-d2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
-                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
-                </path>
-                <path class="urc-spark urc-s2" pathLength="1" d="M 520 80 C 760 200, 700 430, 900 560">
-                    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 520 80 C 760 200, 700 430, 900 560; M 520 80 C 640 320, 820 300, 900 560; M 520 80 C 840 120, 620 500, 900 560; M 520 80 C 760 200, 700 430, 900 560"/>
-                </path>
-                <!-- Kurve 3 · Saum -->
-                <path class="urc-glow urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
-                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
-                </path>
-                <path class="urc-line urc-d3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
-                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
-                </path>
-                <path class="urc-spark urc-s3" pathLength="1" d="M 980 120 C 1120 300, 1040 540, 1160 720">
-                    <animate attributeName="d" dur="24s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.33;0.66;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1" values="M 980 120 C 1120 300, 1040 540, 1160 720; M 980 120 C 1040 420, 1140 420, 1160 720; M 980 120 C 1180 220, 980 580, 1160 720; M 980 120 C 1120 300, 1040 540, 1160 720"/>
-                </path>
-                <circle class="urc-anchor" cx="90" cy="70" r="4"/>
-                <circle class="urc-anchor" cx="430" cy="700" r="4"/>
-                <circle class="urc-anchor" cx="520" cy="80" r="4"/>
-                <circle class="urc-anchor" cx="900" cy="560" r="4"/>
-                <circle class="urc-anchor" cx="980" cy="120" r="4"/>
-                <circle class="urc-anchor" cx="1160" cy="720" r="4"/>
-            </svg>
-        </div>
-        <div class="container ur-hero-grid">
-            <div class="ur-hero-copy">
-                <p class="mono-label section-label" data-reveal data-i18n="hero2.eyebrow">[ URBAN REVOLUTION ]</p>
-                <h1 id="urhero-heading" class="ur-hero-headline" data-reveal="blur" data-i18n-html="hero2.headline_html">Erschaffe die <span class="gradient-text">Zukunft der Mode</span></h1>
-                <p class="ur-hero-sub" data-reveal data-i18n="hero2.sub">Entwirf einzigartige Mode-Konzepte mit UR Create — und entdecke eine neue Alternative zu massenproduzierter Mode.</p>
-                <div class="ur-hero-actions" data-reveal>
-                    <a href="#design" class="manifesto-cta" data-i18n-html="hero2.cta_html">UR Create starten <span aria-hidden="true">&#8594;</span></a>
-                    <a href="#problem" class="manifesto-link" data-i18n-html="hero2.link_html">Warum das wichtig ist <span aria-hidden="true">&#8595;</span></a>
-                </div>
+    <!-- 1 · LANDING-EXPERIENCE — Preloader (im body-Ende), Hero mit
+         interaktivem Faden-Partikelfeld, Manifest, Kreislauf, Zahlen, Finale.
+         Die CTAs öffnen das UR-Create-Studio (#studio, unten). -->
+    <section class="lp-hero" id="top">
+        <canvas class="lp-hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
+        <div class="lp-hero-inner">
+            <p class="lp-hero-eyebrow" data-i18n="landing.eyebrow">Circular Couture · Zürich</p>
+            <h1 class="lp-hero-title">
+                <span class="lp-hero-mask"><span class="lp-hero-line" data-i18n="landing.h1_line1">Made for one.</span></span>
+                <span class="lp-hero-mask"><span class="lp-hero-line lp-hero-line--grad" data-i18n="landing.h1_line2">Not for all.</span></span>
+            </h1>
+            <p class="lp-hero-sub" data-i18n="landing.sub">KI-entworfene Einzelstücke nach Maß — aus Kleidung, die schon existiert. Keine Überproduktion. Kein Abfall. Nur deins.</p>
+            <div class="lp-hero-ctas">
+                <a class="lp-btn lp-btn--primary" href="#design" data-i18n="nav.enter">UR Create starten</a>
+                <a class="lp-btn lp-btn--ghost" href="#manifesto" data-i18n="landing.cta_secondary">Das Manifest</a>
             </div>
-            <div class="ur-hero-stage" aria-hidden="true">
-                <!-- f13 · Border-Beam: ein Lichtbogen läuft langsam um die Kante
-                     des LIVE-Rahmens — macht „live" sichtbar statt behauptet. -->
-                <div class="ur-beam" aria-hidden="true"></div>
-                <div id="hero-showcase" class="ur-hero-showcase"></div>
-                <p class="ur-hero-caption" data-i18n="hero2.caption">Sieh, wie aus deinem Design dein Lieblingsstück entsteht.</p>
+        </div>
+        <div class="lp-scroll-cue" aria-hidden="true">
+            <span data-i18n="landing.scroll">Scrollen</span>
+            <span class="lp-scroll-cue-line"></span>
+        </div>
+    </section>
+
+    <!-- Laufband (dekorativ) -->
+    <div class="lp-marquee" aria-hidden="true">
+        <div class="lp-marquee-track">
+            <span class="lp-marquee-text" data-i18n="landing.marquee">AI · 3D · Couture · Recycelt · Zürich · Made for one. Not for all. ·</span>
+            <span class="lp-marquee-text" data-i18n="landing.marquee">AI · 3D · Couture · Recycelt · Zürich · Made for one. Not for all. ·</span>
+            <span class="lp-marquee-text" data-i18n="landing.marquee">AI · 3D · Couture · Recycelt · Zürich · Made for one. Not for all. ·</span>
+        </div>
+    </div>
+
+    <!-- Manifest — Wort-für-Wort-Reveal beim Scrollen -->
+    <section class="lp-manifesto lp-block" id="manifesto">
+        <p class="lp-label" data-i18n="landing.manifesto_label">Manifest</p>
+        <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden: produzieren, tragen, wegwerfen. Wir biegen die Linie zurück zum Kreis. Jedes Stück beginnt als Kleidung, die schon gelebt hat — und wird zu etwas, das es nur einmal gibt. Entworfen von KI. Gefertigt von Hand. Gemacht für dich.</p>
+    </section>
+
+    <!-- Der Kreislauf — gepinnte Kreis-Reise (4 Stationen) -->
+    <section class="lp-loop" id="loop">
+        <div class="lp-loop-pin" id="loop-pin">
+            <div class="lp-loop-head">
+                <p class="lp-label" data-i18n="landing.loop_label">Der Kreislauf</p>
+                <h2 class="lp-loop-title" data-i18n="landing.loop_title">Vier Stationen. Ein Kreis.</h2>
+            </div>
+            <div class="lp-loop-grid">
+                <div class="lp-loop-visual">
+                    <svg class="lp-loop-svg" viewBox="0 0 320 320" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="loop-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#2779a8"/>
+                                <stop offset="50%" stop-color="#2a9d8f"/>
+                                <stop offset="100%" stop-color="#64d6c4"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="lp-loop-track" cx="160" cy="160" r="130" fill="none" stroke-width="2" stroke-dasharray="2 10"/>
+                        <circle class="lp-loop-progress" id="loop-progress" cx="160" cy="160" r="130" fill="none" stroke="url(#loop-grad)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 160 160)"/>
+                        <g class="lp-loop-needle" id="loop-needle" transform="rotate(16 160 160)">
+                            <path d="M149.5 64 A10.5 10.5 0 0 1 170.5 64 L163.5 206 L160 264 L156.5 206 Z" fill="currentColor"/>
+                            <rect class="lp-loop-eye" x="156" y="77" width="8" height="48" rx="4"/>
+                        </g>
+                        <g class="lp-loop-dots" id="loop-dots">
+                            <circle cx="160" cy="30" r="7"/>
+                            <circle cx="290" cy="160" r="7"/>
+                            <circle cx="160" cy="290" r="7"/>
+                            <circle cx="30" cy="160" r="7"/>
+                        </g>
+                    </svg>
+                    <p class="lp-loop-count" aria-hidden="true"><span id="loop-num">01</span><span class="lp-loop-count-total"> / 04</span></p>
+                </div>
+                <ol class="lp-loop-steps" id="loop-steps" data-i18n-aria-label="landing.loop_aria" aria-label="Die vier Stationen des Kreislaufs">
+                    <li class="lp-loop-step is-active">
+                        <span class="lp-loop-step-index" aria-hidden="true">01</span>
+                        <h3 class="lp-loop-step-title" data-i18n="landing.stage1_title">Getragen</h3>
+                        <p class="lp-loop-step-text" data-i18n="landing.stage1_text">Jedes Stück beginnt als Kleidung mit Geschichte — gesammelt statt deponiert.</p>
+                    </li>
+                    <li class="lp-loop-step">
+                        <span class="lp-loop-step-index" aria-hidden="true">02</span>
+                        <h3 class="lp-loop-step-title" data-i18n="landing.stage2_title">Zurückgewonnen</h3>
+                        <p class="lp-loop-step-text" data-i18n="landing.stage2_text">Stoffe, Knöpfe, Nähte: Wir zerlegen Altkleider in Rohmaterial für Neues.</p>
+                    </li>
+                    <li class="lp-loop-step">
+                        <span class="lp-loop-step-index" aria-hidden="true">03</span>
+                        <h3 class="lp-loop-step-title" data-i18n="landing.stage3_title">Neu gedacht</h3>
+                        <p class="lp-loop-step-text" data-i18n="landing.stage3_text">Du beschreibst deine Idee — die KI entwirft daraus ein Einzelstück nach deinen Maßen.</p>
+                    </li>
+                    <li class="lp-loop-step">
+                        <span class="lp-loop-step-index" aria-hidden="true">04</span>
+                        <h3 class="lp-loop-step-title" data-i18n="landing.stage4_title">Wiedergeboren</h3>
+                        <p class="lp-loop-step-text" data-i18n="landing.stage4_text">Ein Schweizer Atelier fertigt dein Stück von Hand. Made for one. Not for all.</p>
+                    </li>
+                </ol>
             </div>
         </div>
     </section>
-    <script>
-        /* Reduced-Motion-Guard für die SMIL-Kurven-Morphs oben: SMIL hört nicht
-           auf CSS-Media-Queries → SVG-Uhr pausieren (statisch sichtbar). */
-        (function () {
-            var svg = document.querySelector(".ur-hero-curves svg");
-            if (!svg || !svg.pauseAnimations) return;
-            var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-            var apply = function () { if (mq.matches) svg.pauseAnimations(); else svg.unpauseAnimations(); };
-            apply();
-            if (mq.addEventListener) mq.addEventListener("change", apply);
-        })();
-    </script>
+
+    <!-- Die Zahlen — belegte Fast-Fashion-Fakten -->
+    <section class="lp-stats lp-block" id="facts" data-lp-reveal>
+        <p class="lp-label" data-i18n="landing.stats_label">Die Zahlen</p>
+        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Warum es eine Revolution braucht</h2>
+        <div class="lp-stats-grid">
+            <div class="lp-stat">
+                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+            </div>
+            <div class="lp-stat">
+                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+            </div>
+            <div class="lp-stat">
+                <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+            </div>
+        </div>
+        <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+    </section>
+
+    <!-- Finale — magnetischer Kreis-CTA, öffnet das Studio -->
+    <section class="lp-finale lp-block" data-lp-reveal>
+        <h2 class="lp-finale-title" data-i18n-html="landing.cta_title_html">Trag etwas, das es <em>nur einmal</em> gibt.</h2>
+        <p class="lp-finale-sub" data-i18n="landing.cta_sub">Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Maß, aus recycelter Kleidung.</p>
+        <a class="lp-cta-orb" id="cta-orb" href="#design" data-i18n-aria-label="landing.orb_aria" aria-label="UR Create starten — öffnet das Atelier">
+            <svg class="lp-cta-orb-ring" viewBox="0 0 200 200" aria-hidden="true">
+                <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 9"/>
+            </svg>
+            <span class="lp-cta-orb-label" data-i18n="nav.enter">UR Create starten</span>
+            <span class="lp-cta-orb-arrow" aria-hidden="true">→</span>
+        </a>
+    </section>
+
+    <!-- ── UR-CREATE-STUDIO — verborgen, bis ein CTA es öffnet (js/landing.js).
+         Alle inneren Flows (Engine, Ownership, Maße, Produktion) unverändert. ── -->
+    <div id="studio" hidden>
 
     <section id="design" class="section design-section">
         <div class="container">
@@ -703,142 +751,11 @@
             </div>
         </div>
     </section>
-    <section class="trust-strip" data-i18n-aria-label="trust.aria" aria-label="Markenmerkmale">
-        <div class="container">
-            <ul class="trust-list" data-reveal-stagger>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L4 6 L4 12 C4 17 8 21 12 22 C16 21 20 17 20 12 L20 6 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12 L11 14 L15 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t1_title">Maßgefertigt</h4>
-                        <p data-i18n="trust.t1_body">Jedes Stück nach deinen 9 Körpermaßen — keine Standardgrößen, kein Kompromiss</p>
-                    </div>
-                </li>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3 C15 6 15 18 12 21 M12 3 C9 6 9 18 12 21 M3 12 L21 12" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t2_title">Designed in Zürich</h4>
-                        <p data-i18n="trust.t2_body">Schweizer Atelier, transparente Produktion in CHF, faire Lieferzeit unter 14 Tagen</p>
-                    </div>
-                </li>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 2 L14 8 L20 9 L15.5 13 L17 19 L12 16 L7 19 L8.5 13 L4 9 L10 8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t3_title">KI + Handwerk</h4>
-                        <p data-i18n="trust.t3_body">Generative Designs treffen auf echte Schneider — kein Print-on-Demand, kein Fast-Fashion</p>
-                    </div>
-                </li>
-                <li class="trust-item" data-reveal>
-                    <span class="trust-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10 L21 10 M8 14 L11 14 M8 17 L13 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                    </span>
-                    <div>
-                        <h4 data-i18n="trust.t4_title">100 % Privatsphäre</h4>
-                        <p data-i18n="trust.t4_body">Maßerkennung clientseitig — dein Foto verlässt nie dein Gerät, außer du klickst opt-in</p>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </section>
-    <section id="faq" class="section faq-section">
-        <div class="container">
-            <div class="section-header" data-reveal>
-                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.faq">[ FAQ ]</span>
-                <h2 data-i18n="faq.h2">Häufige Fragen</h2>
-                <p data-i18n="faq.intro">Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
-            </div>
-            <div class="faq-list" data-reveal-stagger>
-                <details class="faq-item" data-reveal>
-                    <summary data-i18n="faq.q1">Wie lange dauert die Produktion?</summary>
-                    <p data-i18n="faq.a1">In der Regel 7 bis 14 Werktage zwischen Bestellung und Versand. Komplexere Stücke (mehrlagige Jacken, aufwändige Stickerei) können bis zu 21 Tage benötigen — die geschätzte Lieferzeit zeigen wir dir nach der Generierung.</p>
-                </details>
-                <details class="faq-item" data-reveal>
-                    <summary data-i18n="faq.q2">Was passiert mit meinem Foto?</summary>
-                    <p data-i18n="faq.a2">Für die Maßerkennung läuft alles direkt in deinem Browser über MediaPipe — das Foto verlässt nie dein Gerät und wird nicht gespeichert. Nur wenn du explizit die fotorealistische Vorschau anforderst, wird das Foto einmalig an Replicate (US-Server) gesendet und nach der Generierung sofort wieder verworfen.</p>
-                </details>
-                <details class="faq-item" data-reveal>
-                    <summary data-i18n="faq.q3">Was kostet ein maßgeschneidertes Stück?</summary>
-                    <p data-i18n="faq.a3">Der Preis hängt von Stofftyp, Schnittkomplexität und gewählten Maßen ab. Eine Spanne in CHF zeigen wir dir live in der Spec-Sheet-Vorschau — typisch CHF 145–220 für T-Shirts und Hemden, CHF 220–450 für Hosen und Jacken, CHF 380–680 für Mäntel und Kleider.</p>
-                </details>
-                <details class="faq-item" data-reveal>
-                    <summary data-i18n="faq.q4">Was, wenn ich nicht gemessen wurde?</summary>
-                    <p data-i18n="faq.a4">Drei Wege zu deinen Maßen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder eine Größenpresets (S/M/L/XL) als Startpunkt, die du danach anpassen kannst. Schneider erhalten alle Werte in der Produktions-Spec.</p>
-                </details>
-                <details class="faq-item" data-reveal>
-                    <summary data-i18n="faq.q5">Wo wird gefertigt?</summary>
-                    <p data-i18n="faq.a5">Aktuell arbeiten wir mit Schneider-Ateliers in der Schweiz und Norditalien zusammen — fair entlohnt, traceable Lieferketten, nachhaltige Materialien wo möglich. Für jede Bestellung sehen wir genau, wer welches Stück nach welcher Spec fertigt.</p>
-                </details>
-                <details class="faq-item" data-reveal>
-                    <summary data-i18n="faq.q6">Kann ich gespeicherte Designs später nochmal bestellen?</summary>
-                    <p data-i18n="faq.a6">Ja — alle Designs landen in deiner Bibliothek (lokal in deinem Browser), du kannst sie jederzeit wieder laden, anpassen und neu bestellen. Die fotorealistische Vorschau wird auf Wunsch automatisch ans Design angehängt.</p>
-                </details>
-            </div>
-        </div>
-    </section>
-
-    </div>
+    </div><!-- /#make-real -->
+    </div><!-- /#studio -->
 
 
 
-    <!-- 5 · THE PROBLEM — interaktive Story-Karten, darunter die zitierte
-         Fakten-Bande als Beleg (Quellen bleiben intakt). -->
-    <!-- 5 · DAS PROBLEM — eine Sektion: vier scroll-getriebene Szenen, je ein
-         Missstand + seine belegte Zahl, über einem ehrlichen Dokumentar-Bild
-         (hell, inhaltlich — bewusst nicht düster). Quellen am Ende. Der Live-
-         Zähler hat hier seinen einzigen Auftritt (Szene 2). -->
-    <section class="problem" id="problem" aria-labelledby="prob-heading">
-        <div class="container prob-head" data-reveal>
-            <span class="section-number mono-label section-label" data-i18n="prob.label">[ DAS PROBLEM ]</span>
-            <h2 id="prob-heading" data-reveal="blur" data-i18n="prob.h2">Die Industrie produziert mehr, als die Welt braucht</h2>
-            <p class="prob-intro" data-i18n="prob.intro">Vier Tatsachen — jede mit einer Zahl, die niemand sehen will.</p>
-        </div>
-
-        <div class="prob-scenes">
-            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/overproduction.jpg');">
-                <div class="prob-scene-inner">
-                    <p class="prob-kicker mono-label" data-i18n="prob.c1_k">01 · Überproduktion</p>
-                    <p class="prob-scene-body" data-i18n="prob.c1_b">Millionen Kleidungsstücke werden produziert, bevor Nachfrage existiert.</p>
-                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f1_num">92 Mio. Tonnen</span><span class="prob-fig-ctx" data-i18n="prob.f1_ctx">Kleidung landen jedes Jahr im Müll</span></p>
-                </div>
-            </article>
-
-            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/unsold.jpg');">
-                <div class="prob-scene-inner">
-                    <p class="prob-kicker mono-label" data-i18n="prob.c2_k">02 · Unverkaufte Ware</p>
-                    <p class="prob-scene-body" data-i18n="prob.c2_b">Produkte liegen in Lagern und warten auf Käufer, die nie kommen.</p>
-                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f2_num">1 Lkw / Sekunde</span><span class="prob-fig-ctx" data-i18n="prob.f2_ctx">Textilien, verbrannt oder vergraben</span></p>
-                    <p class="prob-live" aria-hidden="true"><span class="ticker-pulse"></span><span class="tnum" data-ticker-kg>0</span>&nbsp;<span data-i18n="ticker.unit">kg</span> · <span data-i18n="prob.since">seit du hier bist</span></p>
-                </div>
-            </article>
-
-            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/waste.jpg');">
-                <div class="prob-scene-inner">
-                    <p class="prob-kicker mono-label" data-i18n="prob.c4_k">03 · Abfall</p>
-                    <p class="prob-scene-body" data-i18n="prob.c4_b">Berge aus Alttextilien wachsen — fast nichts davon wird je wiederverwendet.</p>
-                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f3_num">&lt; 1 %</span><span class="prob-fig-ctx" data-i18n="prob.f3_ctx">der Alttextilien werden zu neuer Kleidung</span></p>
-                </div>
-            </article>
-
-            <article class="prob-scene" data-reveal style="--img: url('/js/design-engine/content/img/problem/human.jpg');">
-                <div class="prob-scene-inner">
-                    <p class="prob-kicker mono-label" data-i18n="prob.c5_k">04 · Der wahre Preis</p>
-                    <p class="prob-scene-body" data-i18n="prob.c5_b">Hinter billiger Mode steht ein Mensch — nicht nur eine Maschine.</p>
-                    <p class="prob-fig"><span class="prob-fig-num" data-i18n="prob.f4_num">75 h</span><span class="prob-fig-ctx" data-i18n="prob.f4_ctx">pro Woche, oft unter Existenzlohn (Public Eye)</span></p>
-                </div>
-            </article>
-        </div>
-
-        <div class="container prob-foot" data-reveal>
-            <p class="prob-bridge" data-i18n="prob.bridge">Das ist das System, das wir ersetzen.</p>
-            <p class="facts-sources mono-label" data-i18n-html="facts.sources_html">[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons</p>
-            <a href="#community" class="manifesto-cta" data-i18n-html="prob.show_html">Zeig die Alternative <span aria-hidden="true">&#8594;</span></a>
-        </div>
-    </section>
 
     <!-- 7 · COMMUNITY — die Kugel-Galerie: fotorealistische Kreationen schweben
          an der Innenwand einer Sphäre (Three.js + GSAP, lazy via js/community-sphere.js).
@@ -947,11 +864,9 @@
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_atelier" aria-label="Atelier">
                     <h5 data-i18n="footer.col_atelier">Atelier</h5>
                     <ul>
-                        <li><a href="#problem" data-i18n="nav.mission">Problem</a></li>
                         <li><a href="#design" data-i18n="footer.design_start">Design starten</a></li>
                         <li><a href="#measure" data-i18n="footer.measure">Körpermaße</a></li>
                         <li><a href="#production" data-i18n="nav.production">Produktion</a></li>
-                        <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
                     </ul>
                 </nav>
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_more" aria-label="Mehr">
@@ -1011,6 +926,12 @@
     <script src="js/flair.js"></script>
     <script src="js/ur-create.js?v=20260611-weave"></script>
     <script src="js/ambient-ticker.js"></script>
+    <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
+         dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
+         Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+    <script src="js/landing.js"></script>
 
     <!-- Community-Sphäre: three/gsap werden erst per dynamic import geladen,
          wenn die Sektion in Sichtweite scrollt (js/community-sphere.js). -->
