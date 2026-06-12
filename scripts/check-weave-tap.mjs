@@ -23,12 +23,15 @@ for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile
   // Drei Garments durchtippen, je eine kurze Frame-Serie der Formation
   for (let g = 0; g < 3; g++) {
     await page.mouse.click(vp.width * 0.55, vp.height * 0.45);
-    for (const [fi, wait] of [[0, 300], [1, 500], [2, 900]].values()) {
+    // Frames: Zuflug → geformt → 3D-Schwenk. Achtung: jeder Screenshot
+    // kostet ~0.5–0.8s extra — die echte elapsed-Zeit liegt deutlich über
+    // der Summe der waits (Frame 5 ≈ 6.4s, kurz vor der Auflösung).
+    for (const [fi, wait] of [[0, 300], [1, 500], [2, 900], [3, 1300], [4, 1600]].values()) {
       await page.waitForTimeout(wait);
       await page.screenshot({ path: `screenshots/tap-${vp.name}-g${g}-f${fi}.png` });
     }
-    // Auflösung abwarten (FORM_HOLD 4200ms + Puffer)
-    await page.waitForTimeout(3200);
+    // Auflösung abwarten (FORM_HOLD 6800ms + Puffer)
+    await page.waitForTimeout(3000);
   }
   await page.screenshot({ path: `screenshots/tap-${vp.name}-released.png` });
   console.log(`[${vp.name}] errors: ${errors.length ? "\n  " + errors.join("\n  ") : "none"}`);
