@@ -306,4 +306,7 @@ const Pose = (() => {
     return { init, detect, estimateMeasurements, samplePersonalization, drawPoseOverlay };
 })();
 
-window.Pose = Pose;
+if (typeof window !== "undefined") window.Pose = Pose;
+// Dual export so the pure measurement math (estimateMeasurements) can be
+// unit-tested under Node without a DOM (mirrors the design-engine modules).
+if (typeof module !== "undefined" && module.exports) module.exports = Pose;

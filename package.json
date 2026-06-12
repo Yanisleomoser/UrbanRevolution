@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx serve .",
     "build": "echo 'Static site - no build needed'",
-    "test": "node test/engine-test.cjs && node test/core-test.cjs && node test/ai-test.cjs && node test/export-test.cjs && node test/i18n-test.cjs && node test/state-test.cjs && node test/persistence-test.cjs && node test/share-test.cjs && node test/api-test.mjs && node test/api-validation-test.mjs",
+    "test": "node test/engine-test.cjs && node test/core-test.cjs && node test/ai-test.cjs && node test/export-test.cjs && node test/i18n-test.cjs && node test/state-test.cjs && node test/persistence-test.cjs && node test/share-test.cjs && node test/pose-test.cjs && node test/api-test.mjs && node test/api-validation-test.mjs",
     "lint": "echo 'No linter configured'",
     "validate:css": "node scripts/validate-css.mjs css/styles.css",
     "validate:html": "htmlhint index.html impressum.html datenschutz.html"
