@@ -5714,8 +5714,13 @@ footer.footer {
 .sphere-canvas:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: -3px; }
 .community-sphere.is-dragging .sphere-canvas { cursor: grabbing; }
 .community-sphere.has-hover .sphere-canvas { cursor: pointer; }
+/* Scrims oben/unten trennen Header + Hint/CTA von den vorbeiziehenden
+   Karten (Lesbarkeit), die Mitte bleibt frei für die Sphäre. */
 .sphere-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 1;
-    background: radial-gradient(115% 80% at 50% 46%, transparent 52%, rgba(4, 10, 17, 0.5) 100%); }
+    background:
+        linear-gradient(180deg, rgba(4, 10, 17, 0.85), rgba(4, 10, 17, 0.35) 15%, transparent 30%),
+        linear-gradient(0deg, rgba(4, 10, 17, 0.8), rgba(4, 10, 17, 0.3) 13%, transparent 26%),
+        radial-gradient(115% 80% at 50% 46%, transparent 52%, rgba(4, 10, 17, 0.5) 100%); }
 .sphere-foot { position: relative; z-index: 2; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 28px 20px calc(30px + env(safe-area-inset-bottom)); pointer-events: none; }
 .sphere-hint { color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; }
 .sphere-cta { pointer-events: auto; font: inherit; font-size: 0.92rem; font-weight: 600; color: var(--text); background: rgba(10, 22, 34, 0.55); border: 1px solid var(--border, #25415a); border-radius: 999px; padding: 0.8rem 1.6rem; cursor: pointer; backdrop-filter: blur(8px); transition: border-color 0.22s ease, transform 0.22s ease; }
@@ -5760,6 +5765,12 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
     .sphere-detail-media { max-height: 38svh; }
     .sphere-detail-media img { max-height: 38svh; }
     .community-sphere .sphere-head { padding-top: 64px; }
+    /* Schmale Viewports: Header/Foot belegen mehr der Sektion — Scrims tiefer
+       ziehen, damit Titel + Intro nie auf einer hellen Karte liegen. */
+    .sphere-vignette { background:
+        linear-gradient(180deg, rgba(4, 10, 17, 0.92), rgba(4, 10, 17, 0.55) 22%, transparent 42%),
+        linear-gradient(0deg, rgba(4, 10, 17, 0.88), rgba(4, 10, 17, 0.4) 16%, transparent 30%),
+        radial-gradient(115% 80% at 50% 46%, transparent 52%, rgba(4, 10, 17, 0.5) 100%); }
 }
 
 /* Make-real (eingeklappter Atelier-Pfad) */
