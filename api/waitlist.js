@@ -30,6 +30,26 @@ const TS_KEY = "urev:waitlist:ts";
 // Basic, permissive email shape check (real validation is delivery anyway).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Trim + lowercase the submitted email (or "" for anything non-string).
+export function normalizeEmail(raw) {
+    return typeof raw === "string" ? raw.trim().toLowerCase() : "";
+}
+
+// Pure validation of a signup payload — the DSGVO-load-bearing gate. Returns
+// the normalised email on success, or a coded rejection (same codes the client
+// maps via err.*). Split out of the handler so it can be unit-tested without a
+// Redis/network round-trip.
+export function validateSignup(payload) {
+    const email = normalizeEmail(payload && payload.email);
+    if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
+        return { ok: false, status: 400, message: "Invalid email", code: "invalid_email" };
+    }
+    if (!payload || payload.consent !== true) {
+        return { ok: false, status: 400, message: "Consent required", code: "consent_required" };
+    }
+    return { ok: true, email };
+}
+
 export default async function handler(request) {
     const url = process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -62,13 +82,9 @@ export default async function handler(request) {
         return jsonError(400, "Body must be JSON", "invalid_email");
     }
 
-    const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
-    if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
-        return jsonError(400, "Invalid email", "invalid_email");
-    }
-    if (payload.consent !== true) {
-        return jsonError(400, "Consent required", "consent_required");
-    }
+    const check = validateSignup(payload);
+    if (!check.ok) return jsonError(check.status, check.message, check.code);
+    const email = check.email;
 
     try {
         // One round-trip: add to the set, record the timestamp, read the count.
