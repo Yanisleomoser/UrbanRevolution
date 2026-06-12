@@ -9,7 +9,7 @@
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
 
-const url = "http://localhost:8080/landing.html";
+const url = "http://localhost:8080/";
 mkdirSync("screenshots", { recursive: true });
 const browser = await chromium.launch({ args: ["--no-sandbox"] });
 
@@ -18,7 +18,7 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, ignoreHTTPSErrors: true });
   await page.goto(url, { waitUntil: "domcontentloaded" });
   for (let i = 0; i < 6; i++) {
-    await page.screenshot({ path: `screenshots/landing-loader-${i}.png` });
+    await page.screenshot({ path: `screenshots/home-loader-${i}.png` });
     await page.waitForTimeout(220);
   }
   await page.close();
@@ -34,10 +34,10 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
   const title = await page.title();
   const btn = await page.textContent("#lang-toggle");
   console.log("EN: title =", JSON.stringify(title), "| toggle zeigt:", btn);
-  await page.screenshot({ path: "screenshots/landing-en-hero.png" });
+  await page.screenshot({ path: "screenshots/home-en-hero.png" });
   await page.locator("#manifesto").scrollIntoViewIfNeeded();
   await page.waitForTimeout(600);
-  await page.screenshot({ path: "screenshots/landing-en-manifesto.png" });
+  await page.screenshot({ path: "screenshots/home-en-manifesto.png" });
   await page.close();
 }
 
@@ -54,10 +54,10 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
     return getComputedStyle(l).display !== "none" && !l.classList.contains("is-done");
   });
   console.log("reduced-motion: Loader sichtbar?", loaderVisible, "| pageerrors:", errors.length);
-  await page.screenshot({ path: "screenshots/landing-reduced-hero.png" });
+  await page.screenshot({ path: "screenshots/home-reduced-hero.png" });
   await page.locator("#loop").scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: "screenshots/landing-reduced-loop.png" });
+  await page.screenshot({ path: "screenshots/home-reduced-loop.png" });
   await ctx.close();
 }
 
@@ -72,10 +72,10 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
   await page.waitForTimeout(1500);
   const fx = await page.evaluate(() => document.documentElement.classList.contains("fx"));
   console.log("no-gsap: fx-Klasse?", fx, "| pageerrors:", errors.join("; ") || "keine");
-  await page.screenshot({ path: "screenshots/landing-nogsap-hero.png" });
+  await page.screenshot({ path: "screenshots/home-nogsap-hero.png" });
   await page.locator("#loop").scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: "screenshots/landing-nogsap-loop.png" });
+  await page.screenshot({ path: "screenshots/home-nogsap-loop.png" });
   await page.close();
 }
 

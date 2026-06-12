@@ -8,7 +8,7 @@
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
 
-const url = process.argv[2] || "http://localhost:8080/landing.html";
+const url = process.argv[2] || "http://localhost:8080/";
 mkdirSync("screenshots", { recursive: true });
 
 const viewports = [
@@ -28,14 +28,14 @@ for (const vp of viewports) {
 
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForTimeout(3200); // Loader + Hero-Intro fertig
-  await page.screenshot({ path: `screenshots/landing-${vp.name}-1-hero.png` });
+  await page.screenshot({ path: `screenshots/home-${vp.name}-1-hero.png` });
 
   // Manifest mittig
   await page.locator("#manifesto").scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
   await page.mouse.wheel(0, 200);
   await page.waitForTimeout(700);
-  await page.screenshot({ path: `screenshots/landing-${vp.name}-2-manifesto.png` });
+  await page.screenshot({ path: `screenshots/home-${vp.name}-2-manifesto.png` });
 
   // Kreislauf: gepinnt — Frame-Serie über die volle Scroll-Strecke
   const pinTop = await page.evaluate(() => {
@@ -46,20 +46,20 @@ for (const vp of viewports) {
   for (let i = 0; i <= 5; i++) {
     await page.evaluate(([y]) => window.scrollTo(0, y), [pinTop + (span * i) / 5]);
     await page.waitForTimeout(650);
-    await page.screenshot({ path: `screenshots/landing-${vp.name}-3-loop-${i}.png` });
+    await page.screenshot({ path: `screenshots/home-${vp.name}-3-loop-${i}.png` });
   }
 
   await page.locator("#facts").scrollIntoViewIfNeeded();
   await page.waitForTimeout(1700);
-  await page.screenshot({ path: `screenshots/landing-${vp.name}-4-stats.png` });
+  await page.screenshot({ path: `screenshots/home-${vp.name}-4-stats.png` });
 
-  await page.locator(".finale").scrollIntoViewIfNeeded();
+  await page.locator(".lp-finale").scrollIntoViewIfNeeded();
   await page.waitForTimeout(900);
-  await page.screenshot({ path: `screenshots/landing-${vp.name}-5-finale.png` });
+  await page.screenshot({ path: `screenshots/home-${vp.name}-5-finale.png` });
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(600);
-  await page.screenshot({ path: `screenshots/landing-${vp.name}-6-footer.png` });
+  await page.screenshot({ path: `screenshots/home-${vp.name}-6-footer.png` });
 
   console.log(`[${vp.name}] errors: ${errors.length ? "\n  " + errors.join("\n  ") : "none"}`);
   await page.close();

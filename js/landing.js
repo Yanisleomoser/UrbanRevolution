@@ -1,12 +1,16 @@
 /**
- * Urban Revolution — Landing-Page-Controller (landing.html)
+ * Urban Revolution — Landing-Experience-Controller (index.html)
+ *
+ * Steuert die Marken-Landing oberhalb des UR-Create-Studios:
+ * Preloader-Logo-Draw, Hero-Intro + Faden-Partikelfeld, Manifest-Wort-Scrub,
+ * gepinnte Kreislauf-Sektion, Zahlen-Count-up, magnetischer Kreis-CTA —
+ * und den STUDIO-REVEAL: das Studio (#studio) ist verborgen, bis ein CTA
+ * (Anker auf #design/#measure/#production) oder ein Share-/Deep-Link es öffnet.
  *
  * Progressive Enhancement in drei Stufen:
- *   1. Ohne JS / ohne GSAP: alles ist sichtbar und benutzbar (reines CSS).
+ *   1. Ohne JS / ohne GSAP: alles sichtbar und benutzbar (reines CSS).
  *   2. Mit GSAP, aber prefers-reduced-motion: keine Bewegung, Inhalte sofort.
- *   3. html.fx (GSAP + Bewegung erlaubt): Preloader-Logo-Draw, Hero-Intro,
- *      Manifest-Wort-Scrub, gepinnte Kreislauf-Sektion, Zahlen-Count-up,
- *      magnetischer Kreis-CTA und das interaktive Faden-Partikelfeld.
+ *   3. html.fx (GSAP + Bewegung erlaubt): volle Animationen.
  *
  * Kein Modul-Export nötig — reiner Seiten-Controller (wie app.js Side-Effects).
  */
@@ -23,56 +27,35 @@
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
 
-  /* ── Titel & Sprache ─────────────────────────────────────── */
+  /* ── Studio-Reveal ───────────────────────────────────────── */
 
-  function applyTitle() {
-    // I18N.apply() setzt head.title (App-Titel) — Landing-Titel übersteuern.
-    if (window.I18N) document.title = window.I18N.t("landing.head.title");
+  // Anker, die ins Studio führen (Maße/Produktion liegen im #make-real,
+  // das ur-create.js seinerseits aufklappt — hier nur den Wrapper öffnen).
+  const STUDIO_ANCHORS = ["design", "ownership", "measure", "production"];
+
+  function revealStudio() {
+    const studio = document.getElementById("studio");
+    if (!studio || !studio.hidden) return;
+    studio.hidden = false;
+    // Engine & Co. haben im display:none-Zustand mit 0-Maßen initialisiert —
+    // einmal nachmessen lassen, dann die Scroll-Trigger neu rechnen.
+    window.dispatchEvent(new Event("resize"));
+    if (fx) ScrollTrigger.refresh();
   }
 
-  function syncLangButton() {
-    const btn = document.getElementById("lang-toggle");
-    if (!btn || !window.I18N) return;
-    // Der Button zeigt die Sprache, ZU der gewechselt wird.
-    btn.textContent = window.I18N.getLang() === "de" ? "EN" : "DE";
-  }
-
-  function initLang() {
-    const btn = document.getElementById("lang-toggle");
-    if (!btn || !window.I18N) return;
-    btn.addEventListener("click", () => {
-      window.I18N.setLang(window.I18N.getLang() === "de" ? "en" : "de");
+  function initStudioReveal() {
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a) return;
+      if (STUDIO_ANCHORS.includes((a.getAttribute("href") || "").slice(1))) revealStudio();
     });
-    window.addEventListener("language:change", () => {
-      applyTitle();
-      syncLangButton();
-      buildManifesto(); // data-i18n hat die Wort-Spans überschrieben
-      if (fx) ScrollTrigger.refresh();
-    });
-    applyTitle();
-    syncLangButton();
-  }
-
-  /* ── Lese-Fortschritt + Nav-Hintergrund ──────────────────── */
-
-  function initScrollChrome() {
-    const bar = document.getElementById("progress-bar");
-    const nav = document.getElementById("nav");
-    let ticking = false;
-    function update() {
-      ticking = false;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-      if (bar) bar.style.transform = `scaleX(${p})`;
-      if (nav) nav.classList.toggle("is-scrolled", window.scrollY > 24);
-    }
-    window.addEventListener("scroll", () => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(update);
-      }
-    }, { passive: true });
-    update();
+    const check = () => {
+      const h = location.hash || "";
+      // Share-Links (#dna=…) und Studio-Anker öffnen das Studio direkt.
+      if (/[#&]dna=/.test(h) || STUDIO_ANCHORS.includes(h.slice(1))) revealStudio();
+    };
+    window.addEventListener("hashchange", check);
+    check();
   }
 
   /* ── Preloader + Hero-Intro ──────────────────────────────── */
@@ -80,12 +63,11 @@
   function heroIntro() {
     if (!fx) return;
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    tl.from(".hero-line", { yPercent: 115, duration: 1.0, stagger: 0.12 }, 0)
-      .from(".hero-eyebrow", { opacity: 0, y: 14, duration: 0.7 }, 0.25)
-      .from(".hero-sub", { opacity: 0, y: 18, duration: 0.7 }, 0.55)
-      .from(".hero-ctas", { opacity: 0, y: 18, duration: 0.7 }, 0.7)
-      .from(".nav", { opacity: 0, y: -12, duration: 0.6 }, 0.6)
-      .from(".scroll-cue", { opacity: 0, duration: 0.8 }, 1.0);
+    tl.from(".lp-hero-line", { yPercent: 115, duration: 1.0, stagger: 0.12 }, 0)
+      .from(".lp-hero-eyebrow", { opacity: 0, y: 14, duration: 0.7 }, 0.25)
+      .from(".lp-hero-sub", { opacity: 0, y: 18, duration: 0.7 }, 0.55)
+      .from(".lp-hero-ctas", { opacity: 0, y: 18, duration: 0.7 }, 0.7)
+      .from(".lp-scroll-cue", { opacity: 0, duration: 0.8 }, 1.0);
   }
 
   function initLoader() {
@@ -98,23 +80,22 @@
 
     const done = () => {
       loader.classList.add("is-done");
-      loader.setAttribute("aria-hidden", "true");
       heroIntro();
     };
 
     if (seen) { done(); return; }
     try { sessionStorage.setItem("urev_landing_seen", "1"); } catch { /* egal */ }
 
-    const arc = loader.querySelector(".mark-arc");
-    const dashes = loader.querySelector(".mark-dashes");
-    const needle = loader.querySelector(".mark-needle");
+    const arc = loader.querySelector(".lp-mark-arc");
+    const dashes = loader.querySelector(".lp-mark-dashes");
+    const needle = loader.querySelector(".lp-mark-needle");
     const len = arc.getTotalLength();
     gsap.set(arc, { strokeDasharray: len, strokeDashoffset: len });
-    const tl = gsap.timeline({ onComplete: done });
-    tl.to(arc, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, 0)
+    gsap.timeline({ onComplete: done })
+      .to(arc, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, 0)
       .from(needle, { opacity: 0, y: -14, duration: 0.5, ease: "power2.out" }, 0.25)
       .from(dashes, { opacity: 0, duration: 0.4 }, 0.55)
-      .to(loader.querySelector(".mark"), { scale: 0.92, opacity: 0, duration: 0.35, ease: "power2.in" }, 1.15);
+      .to(loader.querySelector(".lp-mark"), { scale: 0.92, opacity: 0, duration: 0.35, ease: "power2.in" }, 1.15);
     // Sicherheitsnetz: Loader darf die Seite nie dauerhaft blockieren.
     setTimeout(() => { if (!loader.classList.contains("is-done")) done(); }, 3000);
   }
@@ -166,7 +147,7 @@
     const progress = document.getElementById("loop-progress");
     const needle = document.getElementById("loop-needle");
     const num = document.getElementById("loop-num");
-    const steps = Array.from(document.querySelectorAll(".loop-step"));
+    const steps = Array.from(document.querySelectorAll(".lp-loop-step"));
     const dots = Array.from(document.querySelectorAll("#loop-dots circle"));
     if (!pin || !progress) return;
 
@@ -203,7 +184,7 @@
 
   function initReveals() {
     if (!fx) return;
-    document.querySelectorAll("[data-reveal]").forEach((el) => {
+    document.querySelectorAll("[data-lp-reveal]").forEach((el) => {
       gsap.from(el, {
         opacity: 0,
         y: 44,
@@ -215,7 +196,7 @@
   }
 
   function initCounters() {
-    const nums = document.querySelectorAll(".stat-num[data-count]");
+    const nums = document.querySelectorAll(".lp-stat-num[data-count]");
     if (!nums.length) return;
     const run = (el) => {
       const target = parseInt(el.getAttribute("data-count"), 10) || 0;
@@ -381,7 +362,7 @@
     }
 
     // Nur animieren, wenn der Hero sichtbar und der Tab aktiv ist.
-    const hero = canvas.closest(".hero");
+    const hero = canvas.closest(".lp-hero");
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => (e.isIntersecting ? start() : stop()));
     }, { threshold: 0.05 });
@@ -406,8 +387,7 @@
   /* ── Start ───────────────────────────────────────────────── */
 
   function init() {
-    initLang();
-    initScrollChrome();
+    initStudioReveal();
     initLoader();
     buildManifesto();
     initLoop();
@@ -415,6 +395,11 @@
     initCounters();
     initOrb();
     initWeave();
+    // Sprachwechsel (app.js bedient den Toggle): Manifest-Spans neu aufbauen.
+    window.addEventListener("language:change", () => {
+      buildManifesto();
+      if (fx) ScrollTrigger.refresh();
+    });
     // Nach dem Font-Swap verschieben sich Layout-Höhen — Trigger neu messen.
     if (fx && document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => ScrollTrigger.refresh());
