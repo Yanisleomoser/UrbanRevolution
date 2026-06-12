@@ -5951,14 +5951,6 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 html:not(.fx) .lp-loader { display: none; }
 .lp-mark { color: var(--text); display: block; width: clamp(96px, 22vw, 140px); height: auto; }
 .lp-mark-eye, .lp-loop-eye { fill: var(--bg); }
-/* Gebogener Schriftzug am Fuß der Marke (Teil des Logos, wie im Original) */
-.lp-mark-word {
-    fill: currentColor;
-    font-family: var(--font-display);
-    font-size: 8px;
-    font-weight: 500;
-    letter-spacing: 1px;
-}
 
 /* ── Navbar im Landing-Stil (Nadel-Marke + Pill-Buttons) ── */
 .lp-brand {
@@ -5967,14 +5959,24 @@ html:not(.fx) .lp-loader { display: none; }
     gap: 10px;
     text-decoration: none;
 }
-.lp-mark--nav { width: 44px; height: 44px; flex: 0 0 auto; }
-.lp-mark--footer { width: 96px; height: 96px; flex: 0 0 auto; }
+.lp-mark--nav { width: 34px; height: 34px; flex: 0 0 auto; }
+.lp-wordmark {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text);
+    white-space: nowrap;
+}
 .lp-nav-actions { display: flex; align-items: center; gap: 10px; }
 .lp-btn--nav { padding: 9px 18px; font-size: 12.5px; white-space: nowrap; }
-/* Schmale Screens: der Nav-CTA weicht (Hero- und Sticky-CTA decken ihn ab) —
-   Nadel-Marke + Community bleiben. */
+/* Schmale Screens: erst weicht der Nav-CTA (Hero- und Sticky-CTA decken
+   ihn ab), dann der Schriftzug — Nadel-Marke + Community bleiben. */
 @media (max-width: 720px) {
     .lp-nav .lp-btn--primary.lp-btn--nav { display: none; }
+}
+@media (max-width: 480px) {
+    .lp-wordmark { display: none; }
 }
 
 /* ── Buttons ── */
