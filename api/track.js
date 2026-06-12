@@ -19,12 +19,25 @@ export const config = { runtime: "edge" };
 
 const EVENTS_KEY = "urev:tel:events";
 const NODES_KEY = "urev:tel:nodes";
-const ALLOWED = new Set([
+export const ALLOWED = new Set([
   "node_shown", "node_choice", "node_skip", "node_back",
   "journey_refine", "generate", "generate_ok", "generate_fail", "abandon",
 ]);
-const NODE_SUFFIX = { node_shown: "shown", node_choice: "choice", node_skip: "skip" };
-const sanitiseId = (v) => (typeof v === "string" ? v.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48) : "");
+export const NODE_SUFFIX = { node_shown: "shown", node_choice: "choice", node_skip: "skip" };
+export const sanitiseId = (v) => (typeof v === "string" ? v.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48) : "");
+
+// Build the Redis counter increments for one telemetry payload. Returns [] when
+// the event isn't whitelisted (the handler then 204s). Drops a per-node counter
+// only when the id survives sanitisation AND the event has a node suffix. Pure —
+// no network — so the whitelist + id sanitisation can be unit-tested directly.
+export function buildCommands(payload) {
+  const event = payload && typeof payload.event === "string" ? payload.event : "";
+  if (!ALLOWED.has(event)) return [];
+  const cmds = [["HINCRBY", EVENTS_KEY, event, 1]];
+  const id = sanitiseId(payload && payload.id);
+  if (id && NODE_SUFFIX[event]) cmds.push(["HINCRBY", NODES_KEY, `${id}:${NODE_SUFFIX[event]}`, 1]);
+  return cmds;
+}
 
 export default async function handler(request) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -56,11 +69,8 @@ export default async function handler(request) {
   if (!configured) return new Response(null, { status: 204 });
   try {
     const payload = await request.json();
-    const event = typeof payload.event === "string" ? payload.event : "";
-    if (!ALLOWED.has(event)) return new Response(null, { status: 204 });
-    const cmds = [["HINCRBY", EVENTS_KEY, event, 1]];
-    const id = sanitiseId(payload.id);
-    if (id && NODE_SUFFIX[event]) cmds.push(["HINCRBY", NODES_KEY, `${id}:${NODE_SUFFIX[event]}`, 1]);
+    const cmds = buildCommands(payload);
+    if (cmds.length === 0) return new Response(null, { status: 204 });
     await pipeline(url, token, cmds);
   } catch (err) {
     console.error(`[track] write failed: ${err.message}`);
@@ -69,7 +79,7 @@ export default async function handler(request) {
 }
 
 // Upstash REST flat-array HGETALL → object.
-function toObj(arr) {
+export function toObj(arr) {
   const out = {};
   if (Array.isArray(arr)) {
     for (let i = 0; i < arr.length; i += 2) out[arr[i]] = Number(arr[i + 1]);

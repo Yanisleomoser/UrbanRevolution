@@ -22,10 +22,32 @@ const PAGE = 24;        // pro GET ausgeliefert
 const MAX_DNA = 4000;   // Share-Strings sind ~200–600 Zeichen; Schutzlimit
 const MAX_NAME = 48;
 const MAX_BY = 24;
+// Share-Strings sind URL-sicheres Base64 (siehe share.js) — alles andere ablehnen.
+const DNA_RE = /^[A-Za-z0-9\-_=%.]+$/;
 
 function jsonError(status, message, code) {
   const body = code ? { error: message, code } : { error: message };
   return Response.json(body, { status });
+}
+
+// Validiert einen DNA-Share-String. Gibt den getrimmten String zurück, oder
+// null bei leer / zu lang / ungültigen Zeichen. Pur — für Unit-Tests ohne Netz.
+export function validateDna(raw) {
+  const d = typeof raw === "string" ? raw.trim() : "";
+  if (!d || d.length > MAX_DNA || !DNA_RE.test(d)) return null;
+  return d;
+}
+
+// Optionales Freitextfeld (Pseudonym/Name) auf seine Maximallänge begrenzen.
+export function clampField(raw, max) {
+  return typeof raw === "string" ? raw.slice(0, max).trim() : "";
+}
+
+// Redis-LRANGE-Zeilen in Galerie-Items parsen, korruptes JSON verwerfen.
+export function parseItems(raw) {
+  return (raw || [])
+    .map((s) => { try { return JSON.parse(s); } catch (_e) { return null; } })
+    .filter(Boolean);
 }
 
 export default async function handler(req) {
@@ -44,21 +66,17 @@ export default async function handler(req) {
     if (req.method === "GET") {
       if (!configured) return Response.json({ ok: true, items: null });
       const raw = (await redis(["LRANGE", KEY, "0", String(PAGE - 1)])) || [];
-      const items = raw.map((s) => { try { return JSON.parse(s); } catch (_e) { return null; } }).filter(Boolean);
-      return Response.json({ ok: true, items });
+      return Response.json({ ok: true, items: parseItems(raw) });
     }
 
     if (req.method === "POST") {
       if (!configured) return jsonError(503, "Gallery unavailable", "service_unavailable");
       let body;
       try { body = await req.json(); } catch (_e) { return jsonError(400, "Invalid JSON", "bad_request"); }
-      const d = typeof body.d === "string" ? body.d.trim() : "";
-      // Share-Strings sind URL-sicheres Base64 (siehe share.js) — alles andere ablehnen.
-      if (!d || d.length > MAX_DNA || !/^[A-Za-z0-9\-_=%.]+$/.test(d)) {
-        return jsonError(400, "Invalid creation data", "bad_request");
-      }
-      const name = typeof body.name === "string" ? body.name.slice(0, MAX_NAME).trim() : "";
-      const by = typeof body.by === "string" ? body.by.slice(0, MAX_BY).trim() : "";
+      const d = validateDna(body.d);
+      if (!d) return jsonError(400, "Invalid creation data", "bad_request");
+      const name = clampField(body.name, MAX_NAME);
+      const by = clampField(body.by, MAX_BY);
       const item = JSON.stringify({ d, name, by, ts: Date.now() });
       await redis(["LPUSH", KEY, item]);
       await redis(["LTRIM", KEY, "0", String(MAX_ITEMS - 1)]);
