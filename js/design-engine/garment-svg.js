@@ -157,7 +157,11 @@ const GarmentSVG = (() => {
     // Sleeves DRAPE down close to the body (how a garment photographs) instead
     // of splaying into a wide T: only a small outward offset at the cuff, and
     // the cuff tapers in from the shoulder so the limb reads as a hanging tube.
-    const splay = sleeveless ? 0 : (cfg.splay * 0.3 + (w.drop ? 3 : 0)) * lerp(0.55, 1, lenT);
+    // Splay scales INVERSELY with sleeve length (how garments photograph):
+    // short tee sleeves stick out at an angle from the shoulder, long sleeves
+    // hang nearly vertical — a constant small splay made short sleeves vanish
+    // into the torso (tee read as sleeveless).
+    const splay = sleeveless ? 0 : cfg.splay * lerp(0.72, 0.3, lenT) + (w.drop ? 3 : 0);
     const coX = sleeveless ? w.chestHalf : w.shoulderHalf + splay;   // outer cuff edge
     const ciX = sleeveless ? w.chestHalf : Math.max(w.chestHalf + 1, coX - cfg.cuffW * lerp(0.82, 1.15, lenT)); // inner cuff edge
     const wristY = sleeveless ? armpitY : shoulderY + sleeveLen + (w.drop ? 6 : 0);
