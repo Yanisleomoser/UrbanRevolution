@@ -140,8 +140,9 @@ scripts/validate-css.mjs# css-tree structural CSS check (CI)
                         # + npm test), validate-css, validate-html — see Deployment
 ```
 
-Unit tests: 8 offline suites in `test/` (DNA roundtrip, seam formulas, AI
-fallback, export scaling, i18n parity, state, persistence, API error mapping),
+Unit tests: 9 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+fallback, export scaling, i18n parity, state, persistence, share-link
+encode/decode, API error mapping),
 run via `npm test` in CI (test.yml). No network needed. CI additionally runs
 `deno lint` (configured via `deno.json`, with browser-incompatible rules
 excluded) plus structural HTML/CSS validators.
@@ -466,7 +467,7 @@ The functional PR checks (check name = job id):
 | PR check       | File               | Workflow name | What it runs                                        |
 | -------------- | ------------------ | ------------- | --------------------------------------------------- |
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
-| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (8 offline suites) |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (9 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights)   |
 
