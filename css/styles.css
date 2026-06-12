@@ -5710,20 +5710,19 @@ footer.footer {
 .community-sphere .sphere-head { position: relative; z-index: 2; padding-top: 76px; pointer-events: none; }
 .community-sphere .section-header { margin-bottom: 0; }
 .community-sphere .section-header p { max-width: 56ch; }
-/* Liquid-Glass: die Textblöcke der Sphäre liegen auf Milchglas — lesbar,
-   egal welche Karte gerade dahinter vorbeizieht (Scrims allein reichten
-   auf Tablet-Breite nicht). Basis-Deckung ~0.5, damit der Text auch ohne
-   backdrop-filter-Support auf dunklem Grund steht. */
+/* Kompakter Glas-Header: die Sphäre ist der Star — der Titel wird zur
+   schlanken, zentrierten Kapsel statt einer großen Karte. */
+.community-sphere .sphere-head { text-align: center; }
 .community-sphere .section-header {
     display: inline-block;
-    background: linear-gradient(165deg, rgba(18, 36, 52, 0.55), rgba(10, 22, 34, 0.42));
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid rgba(123, 162, 188, 0.18);
-    border-radius: var(--radius-lg, 18px);
-    padding: clamp(18px, 3vw, 28px) clamp(20px, 3.4vw, 34px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 50px rgba(4, 10, 17, 0.35);
+    padding: 0.8rem 1.8rem 0.95rem;
+    text-align: center;
+    max-width: min(92%, 620px);
 }
+.community-sphere .section-header::after { display: none; }
+.community-sphere .section-header .section-label { font-size: 0.58rem; margin-bottom: 6px; }
+.community-sphere .section-header h2 { font-size: clamp(1.25rem, 2.6vw, 1.65rem); margin-bottom: 4px; }
+.community-sphere .section-header p { font-size: 0.78rem; max-width: 58ch; margin: 0 auto; }
 .sphere-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; z-index: 1; }
 .sphere-canvas:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: -3px; }
 .community-sphere.is-dragging .sphere-canvas { cursor: grabbing; }
@@ -5736,15 +5735,26 @@ footer.footer {
         linear-gradient(0deg, rgba(4, 10, 17, 0.8), rgba(4, 10, 17, 0.3) 13%, transparent 26%),
         radial-gradient(115% 80% at 50% 46%, transparent 52%, rgba(4, 10, 17, 0.5) 100%); }
 .sphere-foot { position: relative; z-index: 2; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 28px 20px calc(30px + env(safe-area-inset-bottom)); pointer-events: none; }
-.sphere-hint { color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; text-align: center;
-    background: rgba(10, 22, 34, 0.5);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
-    border: 1px solid rgba(123, 162, 188, 0.14);
-    border-radius: 999px; padding: 0.55rem 1.15rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06); }
-.sphere-cta { pointer-events: auto; font: inherit; font-size: 0.92rem; font-weight: 600; color: var(--text); background: rgba(10, 22, 34, 0.55); border: 1px solid var(--border, #25415a); border-radius: 999px; padding: 0.8rem 1.6rem; cursor: pointer; -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07); transition: border-color 0.22s ease, transform 0.22s ease; }
-.sphere-cta:hover { border-color: var(--accent-3, #64d6c4); transform: translateY(-2px); }
+.sphere-hint { color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; text-align: center; padding: 0.55rem 1.15rem; }
+.sphere-cta { pointer-events: auto; font: inherit; font-size: 0.92rem; font-weight: 600; color: var(--text); padding: 0.8rem 1.6rem; cursor: pointer; transition: border-color 0.22s ease, transform 0.22s ease; }
+.sphere-cta:hover { border-color: rgba(100, 214, 196, 0.6); transform: translateY(-2px); }
+/* Liquid Glass (Apple-Look) — EIN Rezept, EINE Form (Kapsel) für alle
+   Text-Halter der Sphäre: stark verdichtetes Milchglas (blur + saturate),
+   weiße Hairline, Spekular-Kante oben. Basis-Deckung ~0.4 als Fallback
+   ohne backdrop-filter-Support. */
+.community-sphere .section-header,
+.sphere-hint,
+.sphere-cta {
+    background: rgba(14, 30, 46, 0.4);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 999px;
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.18),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.04),
+        0 12px 32px rgba(4, 10, 17, 0.45);
+}
 .sphere-label { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; display: flex; flex-direction: column; gap: 3px; opacity: 0; transition: opacity 0.2s ease; will-change: transform; }
 .sphere-label.is-on { opacity: 1; }
 .sphere-label-name { font-weight: 600; font-size: 0.9rem; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); }
@@ -5785,12 +5795,10 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
     .sphere-detail-media { max-height: 38svh; }
     .sphere-detail-media img { max-height: 38svh; }
     .community-sphere .sphere-head { padding-top: 64px; }
-    /* Schmale Viewports: Header/Foot belegen mehr der Sektion — Scrims tiefer
-       ziehen, damit Titel + Intro nie auf einer hellen Karte liegen. */
-    .sphere-vignette { background:
-        linear-gradient(180deg, rgba(4, 10, 17, 0.92), rgba(4, 10, 17, 0.55) 22%, transparent 42%),
-        linear-gradient(0deg, rgba(4, 10, 17, 0.88), rgba(4, 10, 17, 0.4) 16%, transparent 30%),
-        radial-gradient(115% 80% at 50% 46%, transparent 52%, rgba(4, 10, 17, 0.5) 100%); }
+    /* Telefon: nur Label + Titel in der Kapsel — das Intro würde sie zum
+       hohen Oval strecken; die Botschaft trägt das Detail-Overlay. */
+    .community-sphere .section-header p { display: none; }
+    .community-sphere .section-header h2 { margin-bottom: 0; }
 }
 
 /* Make-real (eingeklappter Atelier-Pfad) */
