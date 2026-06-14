@@ -35,7 +35,7 @@
   //   die Endpoint-URL kopieren ("https://formspree.io/f/<deine-id>") und unten
   //   eintragen. Solange der Platzhalter steht, meldet der Button neutral, dass
   //   die Anmeldung noch nicht aktiv ist (Hinweis nur in der Konsole).
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_FORM_ID";
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mnjyloyn";
   const formspreeReady = () =>
     !FORMSPREE_ENDPOINT.includes("REPLACE_WITH_FORM_ID") &&
     /^https:\/\/formspree\.io\/f\/[A-Za-z]\w+$/.test(FORMSPREE_ENDPOINT);
