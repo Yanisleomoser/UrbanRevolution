@@ -11,7 +11,7 @@
  *                       Typ-Filter + Beitreten; VIEW/REMIX öffnen die DNA in
  *                       UR Create (Share-URL)
  *  · Problem-Karten   — Schritt-für-Schritt-Story
- *  · Join             — POST /api/waitlist { email, consent }
+ *  · Join             — POST an Formspree (E-Mail + Einwilligung + Interessen)
  *  · Sticky-CTA       — mobil, erscheint nach dem Hero
  *  · make-real        — klappt den Maß-/Produktions-Pfad auf
  *
@@ -25,6 +25,20 @@
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   const reduce = () =>
     window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+
+  // ── Community-Anmeldung: Formspree-Endpoint ────────────────────────────────
+  // Die Beitreten-E-Mails laufen über Formspree (kein eigener Server, keine
+  // Upstash-Konfiguration nötig). Der Endpoint ist ÖFFENTLICH/clientseitig —
+  // KEIN Secret — und darf hier im Code stehen.
+  //
+  //   EINRICHTEN: auf https://formspree.io ein (kostenloses) Formular anlegen,
+  //   die Endpoint-URL kopieren ("https://formspree.io/f/<deine-id>") und unten
+  //   eintragen. Solange der Platzhalter steht, meldet der Button neutral, dass
+  //   die Anmeldung noch nicht aktiv ist (Hinweis nur in der Konsole).
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mnjyloyn";
+  const formspreeReady = () =>
+    !FORMSPREE_ENDPOINT.includes("REPLACE_WITH_FORM_ID") &&
+    /^https:\/\/formspree\.io\/f\/[A-Za-z]\w+$/.test(FORMSPREE_ENDPOINT);
 
   // DNA-Share-String → sauberer Flat-SVG (für Galerie + Hero-Showcase).
   function flatFor(dna) {
@@ -394,22 +408,44 @@
     if (!form) return;
     const status = $("#join-status");
     const setStatus = (key) => { if (status) status.textContent = t(key); };
+    const submitBtn = $("button[type=submit]", form);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = ($("#join-email") && $("#join-email").value || "").trim();
       const consent = $("#join-consent") && $("#join-consent").checked;
       if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setStatus("join.err_email"); return; }
       if (!consent) { setStatus("join.err_consent"); return; }
+      if (!formspreeReady()) {
+        console.warn(
+          "[join] Formspree-Endpoint nicht gesetzt — FORMSPREE_ENDPOINT in js/ur-create.js eintragen.",
+        );
+        setStatus("join.err");
+        return;
+      }
+      // Die gewählten Teilnahme-Optionen mitsenden (für den Kontext im Postfach).
+      const interests = $$('input[name="part"]:checked', form).map((i) => i.value).join(", ");
+      if (submitBtn) submitBtn.disabled = true;
       try {
-        const res = await fetch("/api/waitlist", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, consent: true }),
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            email,
+            consent: true,
+            interests,
+            _subject: "Neue Urban-Revolution-Anmeldung",
+          }),
         });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.ok) setStatus(data.status === "already" ? "join.already" : "join.ok");
-        else setStatus("join.err");
+        if (res.ok) {
+          setStatus("join.ok");
+          form.reset();
+        } else {
+          setStatus("join.err");
+        }
       } catch (_e) {
         setStatus("join.err");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   }
