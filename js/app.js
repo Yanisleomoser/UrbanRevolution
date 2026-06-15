@@ -1375,12 +1375,8 @@
   // the raw upstream reason (billing/credit/auth) to the browser — only a
   // code. Returns null for unknown codes so callers keep their own fallback.
   function codedErrorMessage(body) {
-    switch (body && body.code) {
-      case "service_unavailable": return t("err.service_unavailable");
-      case "rate_limited":        return t("err.rate_limited");
-      case "failed":              return t("err.failed");
-      default:                    return null;
-    }
+    const key = CONFIG.errorMessageKey(body && body.code);
+    return key ? t(key) : null;
   }
 
   function buildVtoPrompt(design) {

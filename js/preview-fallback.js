@@ -155,4 +155,5 @@ const PreviewFallback = (() => {
 
     return { svg };
 })();
-window.PreviewFallback = PreviewFallback;
+if (typeof window !== "undefined") window.PreviewFallback = PreviewFallback;
+if (typeof module !== "undefined" && module.exports) module.exports = PreviewFallback;

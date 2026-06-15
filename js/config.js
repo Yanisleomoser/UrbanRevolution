@@ -36,6 +36,17 @@ const CONFIG = (() => {
     // fabric impact in PRODUCTION_ESTIMATES.lengthFabricFactor below.
     const LENGTHS = ['cropped', 'regular', 'long'];
 
+    // Safe, coded errors the render Edge Functions (api/try-on.js,
+    // preview-design.js) return → the i18n key app.js (codedErrorMessage) shows
+    // the user. The raw upstream reason (billing/credit/auth) stays server-side;
+    // the browser only ever sees one of these neutral messages. Keep in sync
+    // with the `err.*` keys in i18n.js (the coded-error test pins this).
+    const ERROR_CODE_KEYS = {
+        service_unavailable: 'err.service_unavailable',
+        rate_limited: 'err.rate_limited',
+        failed: 'err.failed'
+    };
+
     // Max characters for a custom garment print/Aufschrift.
     const PRINT_MAX_LENGTH = 24;
 
@@ -138,6 +149,14 @@ const CONFIG = (() => {
         return str;
     }
 
+    // Map an Edge-Function error `code` to its i18n message key, or null when
+    // the code is unknown (caller then shows a generic raw-reason fallback).
+    function errorMessageKey(code) {
+        return Object.prototype.hasOwnProperty.call(ERROR_CODE_KEYS, code)
+            ? ERROR_CODE_KEYS[code]
+            : null;
+    }
+
     return {
         GARMENT_TYPES,
         MATERIALS,
@@ -145,6 +164,7 @@ const CONFIG = (() => {
         PATTERNS,
         LENGTHS,
         PRINT_MAX_LENGTH,
+        ERROR_CODE_KEYS,
         MEASUREMENT_PRESETS,
         MEASUREMENT_CONSTRAINTS,
         PRODUCTION_ESTIMATES,
@@ -153,7 +173,8 @@ const CONFIG = (() => {
         validateMaterial,
         validateColor,
         validateLength,
-        validatePrint
+        validatePrint,
+        errorMessageKey
     };
 })();
 
