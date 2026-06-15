@@ -27,6 +27,27 @@ function jsonError(status, message, code) {
   return Response.json(code ? { error: message, code } : { error: message }, { status });
 }
 
+// Pure gate + input validator. Returns a decision object (no Response) so the
+// offline suite can pin the SECURITY-CRITICAL ordering: the auth gate is
+// checked BEFORE the Replicate-config state, so an unauthorised caller can
+// never learn whether the token is set. `env` = { gateKey, apiKey }.
+function validateRequest(payload, env) {
+  const p = payload || {};
+  // Gate first — never reveal whether Replicate is configured to an unauthorised caller.
+  if (!env.gateKey || typeof p.key !== "string" || p.key !== env.gateKey) {
+    return { ok: false, status: 403, message: "Forbidden", code: "forbidden" };
+  }
+  if (!env.apiKey) {
+    return { ok: false, status: 503, message: "Image service unavailable", code: "service_unavailable" };
+  }
+  const prompt = typeof p.prompt === "string" ? p.prompt.trim() : "";
+  if (!prompt || prompt.length > 1500) {
+    return { ok: false, status: 400, message: "Missing or oversized prompt", code: "invalid_prompt" };
+  }
+  const aspect = ASPECTS.has(p.aspect) ? p.aspect : "4:5";
+  return { ok: true, prompt, aspect };
+}
+
 export default async function handler(request) {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
@@ -36,18 +57,12 @@ export default async function handler(request) {
   let payload;
   try { payload = await request.json(); } catch { return jsonError(400, "Body must be JSON"); }
 
-  // Gate first — never reveal whether Replicate is configured to an unauthorised caller.
-  if (!gateKey || typeof payload.key !== "string" || payload.key !== gateKey) {
-    return jsonError(403, "Forbidden", "forbidden");
+  const valid = validateRequest(payload, { gateKey, apiKey });
+  if (!valid.ok) {
+    if (valid.code === "service_unavailable") console.error("[gen-image] REPLICATE_API_TOKEN not configured");
+    return jsonError(valid.status, valid.message, valid.code);
   }
-  if (!apiKey) {
-    console.error("[gen-image] REPLICATE_API_TOKEN not configured");
-    return jsonError(503, "Image service unavailable", "service_unavailable");
-  }
-
-  const prompt = typeof payload.prompt === "string" ? payload.prompt.trim() : "";
-  if (!prompt || prompt.length > 1500) return jsonError(400, "Missing or oversized prompt", "invalid_prompt");
-  const aspect = ASPECTS.has(payload.aspect) ? payload.aspect : "4:5";
+  const { prompt, aspect } = valid;
 
   let res;
   try {
@@ -82,3 +97,7 @@ export default async function handler(request) {
   const imageUrl = Array.isArray(pred.output) ? pred.output[0] : pred.output;
   return Response.json({ imageUrl });
 }
+
+// Exported for unit tests (test/api-validation-test.mjs). Not used by the edge
+// runtime, which only invokes the default handler export.
+export { validateRequest };

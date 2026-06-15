@@ -632,7 +632,10 @@ const DesignFlow = (() => {
     });
   }
 
-  return { mount };
+  // `mount` is the only runtime entry point; the rest are pure helpers exposed
+  // purely so the offline test suite can exercise them headless (same seam
+  // convention as api/try-on.js exporting its error mappers).
+  return { mount, resolveEffects, shiftHex, mutateDna, ring };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

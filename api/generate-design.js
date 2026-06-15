@@ -24,6 +24,36 @@ const API_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-opus-4-8";
 const VALID_GARMENT_TYPES = ['tshirt', 'hoodie', 'shirt', 'pants', 'jacket', 'dress'];
 
+// Pure request validator — returns a decision object (no Response), so the
+// offline suite can exercise the prompt/type rules headless (same convention
+// as api/waitlist.js's validateSignup). `type` defaults to tshirt.
+function validateInput(payload) {
+    const { prompt, type } = payload || {};
+    if (!prompt || typeof prompt !== "string") {
+        return { ok: false, status: 400, message: "Missing or invalid prompt" };
+    }
+    if (prompt.length > 2000) {
+        return { ok: false, status: 400, message: "prompt must be under 2000 chars" };
+    }
+    const garmentType = typeof type === "string" ? type : "tshirt";
+    if (!VALID_GARMENT_TYPES.includes(garmentType)) {
+        return { ok: false, status: 400, message: `Invalid garment type: ${garmentType}. Allowed: ${VALID_GARMENT_TYPES.join(', ')}` };
+    }
+    return { ok: true, prompt, garmentType };
+}
+
+// Pull the design JSON out of the model's free-text reply (it may wrap the
+// object in prose). Returns the parsed design, or null if nothing parseable.
+function extractDesign(text) {
+    const jsonMatch = String(text || "").match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    try {
+        return JSON.parse(jsonMatch[0]);
+    } catch {
+        return null;
+    }
+}
+
 export default async function handler(request) {
     if (request.method !== "POST") {
         return new Response("Method not allowed", { status: 405 });
@@ -44,17 +74,11 @@ export default async function handler(request) {
         return jsonError(400, "Body must be JSON");
     }
 
-    const { prompt, type } = payload;
-    if (!prompt || typeof prompt !== "string") {
-        return jsonError(400, "Missing or invalid prompt");
+    const valid = validateInput(payload);
+    if (!valid.ok) {
+        return jsonError(valid.status, valid.message);
     }
-    if (prompt.length > 2000) {
-        return jsonError(400, "prompt must be under 2000 chars");
-    }
-    const garmentType = typeof type === "string" ? type : "tshirt";
-    if (!VALID_GARMENT_TYPES.includes(garmentType)) {
-        return jsonError(400, `Invalid garment type: ${garmentType}. Allowed: ${VALID_GARMENT_TYPES.join(', ')}`);
-    }
+    const { prompt, garmentType } = valid;
 
     const userPrompt =
         `Du bist Designer für Urban Revolution. Erstelle ein JSON-Design-Konzept für: ` +
@@ -104,16 +128,9 @@ export default async function handler(request) {
     }
 
     const text = data?.content?.[0]?.text || "";
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
+    const design = extractDesign(text);
+    if (!design) {
         return jsonError(502, "Anthropic returned no parseable design JSON");
-    }
-
-    let design;
-    try {
-        design = JSON.parse(jsonMatch[0]);
-    } catch {
-        return jsonError(502, "Anthropic design JSON was malformed");
     }
 
     return Response.json(design);
@@ -122,3 +139,7 @@ export default async function handler(request) {
 function jsonError(status, message) {
     return Response.json({ error: message }, { status });
 }
+
+// Exported for unit tests (test/api-validation-test.mjs). Not used by the edge
+// runtime, which only invokes the default handler export.
+export { validateInput, extractDesign };
