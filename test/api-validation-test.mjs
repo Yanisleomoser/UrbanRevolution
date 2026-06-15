@@ -13,6 +13,8 @@
 import { normalizeEmail, validateSignup } from "../api/waitlist.js";
 import { validateDna, clampField, parseItems } from "../api/gallery.js";
 import { buildCommands, sanitiseId, toObj, ALLOWED } from "../api/track.js";
+import { validateInput as validateDesignInput, extractDesign } from "../api/generate-design.js";
+import { validateRequest as validateGenImage } from "../api/gen-image.js";
 
 let failures = 0;
 function assert(cond, msg) {
@@ -118,6 +120,43 @@ assert(eq(toObj("nonsense"), {}), "string → {}");
 console.log("\n— track.ALLOWED whitelist —");
 assert(ALLOWED.has("generate_ok") && ALLOWED.has("abandon"), "expected events are whitelisted");
 assert(!ALLOWED.has("__proto__") && !ALLOWED.has(""), "unexpected keys are not whitelisted");
+
+console.log("\n— generate-design.validateInput (prompt + garment-type gate) —");
+{
+  const ok = validateDesignInput({ prompt: "a red linen jacket", type: "jacket" });
+  assert(ok.ok === true && ok.prompt === "a red linen jacket" && ok.garmentType === "jacket", "valid prompt + type → ok");
+  assert(validateDesignInput({ prompt: "x" }).garmentType === "tshirt", "missing type defaults to tshirt");
+  assert(validateDesignInput({}).ok === false && validateDesignInput({}).status === 400, "missing prompt → 400");
+  assert(validateDesignInput({ prompt: 5 }).ok === false, "non-string prompt → rejected");
+  assert(validateDesignInput({ prompt: "x".repeat(2001) }).message.includes("2000"), "over-long prompt → 2000-char message");
+  assert(validateDesignInput({ prompt: "x", type: "cape" }).message.includes("Invalid garment type"), "unknown garment type → rejected");
+  assert(validateDesignInput(null).ok === false, "null payload → rejected, no throw");
+}
+
+console.log("\n— generate-design.extractDesign (pull JSON out of the model reply) —");
+assert(eq(extractDesign('prose before {"name":"X","fit":0.3} prose after'), { name: "X", fit: 0.3 }), "extracts the JSON object from surrounding prose");
+assert(extractDesign("no json at all") === null, "no braces → null");
+assert(extractDesign("{ not valid json }") === null, "malformed JSON → null (no throw)");
+assert(extractDesign(null) === null, "null text → null");
+
+console.log("\n— gen-image.validateRequest (auth gate ordering + prompt rules) —");
+{
+  const env = { gateKey: "secret", apiKey: "tok" };
+  assert(validateGenImage({ key: "secret", prompt: " a mood shot " }, env).ok === true, "correct key + prompt → ok");
+  assert(validateGenImage({ key: "secret", prompt: " a mood shot " }, env).prompt === "a mood shot", "prompt is trimmed");
+  // SECURITY: the gate is checked BEFORE the token state, so a wrong key gets
+  // the same 'forbidden' whether or not Replicate is configured (no oracle).
+  assert(validateGenImage({ key: "nope" }, env).code === "forbidden", "wrong key → forbidden");
+  assert(validateGenImage({ key: "nope" }, { gateKey: "secret", apiKey: undefined }).code === "forbidden",
+    "wrong key with NO token still → forbidden (never reveals config state)");
+  assert(validateGenImage({ key: "secret" }, { gateKey: undefined, apiKey: "tok" }).code === "forbidden", "no gate configured → forbidden");
+  assert(validateGenImage({ key: 123 }, env).code === "forbidden", "non-string key → forbidden");
+  assert(validateGenImage({ key: "secret", prompt: "x" }, { gateKey: "secret" }).code === "service_unavailable", "authorised but no token → service_unavailable");
+  assert(validateGenImage({ key: "secret", prompt: "   " }, env).code === "invalid_prompt", "empty prompt → invalid_prompt");
+  assert(validateGenImage({ key: "secret", prompt: "x".repeat(1501) }, env).code === "invalid_prompt", "oversized prompt → invalid_prompt");
+  assert(validateGenImage({ key: "secret", prompt: "x", aspect: "16:9" }, env).aspect === "16:9", "valid aspect ratio is kept");
+  assert(validateGenImage({ key: "secret", prompt: "x", aspect: "5:5" }, env).aspect === "4:5", "unknown aspect ratio → 4:5 default");
+}
 
 if (failures > 0) {
   console.log(`\n✗ ${failures} assertion(s) failed`);
