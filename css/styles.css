@@ -23,8 +23,9 @@
     --radius: 14px;
     --radius-sm: 8px;
 
-    /* Left gutter the Living Seam (js/scroll-seam.js) stitches down. */
-    --seam-gutter: clamp(26px, 4.5vw, 42px);
+    /* Right gutter the Living Seam (js/scroll-seam.js) occupies — the needle
+       scrollbar. JS overrides this to match the real native scrollbar width. */
+    --seam-gutter: 18px;
 
     /* 4px-base spacing scale — use these instead of ad-hoc px values
        so vertical rhythm stays consistent as the design evolves. */
@@ -4214,20 +4215,31 @@ main { display: block; }
    (wired in js/flair.js; pure progressive enhancement)
    ============================================================ */
 
-/* Living Seam — a needle-and-thread that stitches the whole page together as
-   you scroll (built by js/scroll-seam.js). One continuous gesture that ties the
-   loader/loop needle motifs into the brand's central metaphor: the line sewn
-   back into a circle. Decorative (aria-hidden), pure progressive enhancement —
-   without JS the container stays empty and invisible; under reduced motion it
-   shows a calm, fully-stitched static seam with no needle travel. */
+/* Living Seam — the page's scrollbar, morphed into a needle and thread.
+   Built by js/scroll-seam.js: the native scrollbar is hidden cross-browser
+   (only once JS activates, so no-JS keeps it) and replaced by a needle that
+   rides the right edge at the true scroll position, stitching a gradient
+   thread behind it and lighting a knot at each station it passes. On a fine
+   pointer the needle is a real, draggable thumb — grab it to scrub, click the
+   track to jump — while native wheel + keyboard scrolling stay fully intact.
+   Decorative (aria-hidden); reduced motion keeps the native scrollbar and
+   shows a calm static seam with no needle travel. */
+
+/* Hide the native scrollbar cross-browser — only with JS + motion (the class
+   is added by scroll-seam.js once the needle takes over), so without JS or
+   under reduced motion the real scrollbar stays. Scrolling is never disabled. */
+html.seam-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+html.seam-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+html.seam-dragging { user-select: none; -webkit-user-select: none; }
+
 .scroll-seam {
     position: fixed;
     top: 0;
-    left: 0;
-    width: var(--seam-gutter, 34px);
+    right: 0;
+    width: var(--seam-gutter, 20px);
     height: calc(var(--svh, 1svh) * 100);
     z-index: 50;            /* above content, below navbar (100) + loader (150) */
-    pointer-events: none;
+    pointer-events: none;   /* only the transparent hit rects opt back in */
     opacity: 0;
     transition: opacity var(--duration-slow) var(--ease-out);
 }
@@ -4265,9 +4277,18 @@ main { display: block; }
     transform: scale(1);
 }
 
-/* The needle that leads the thread — the brand mark, in motion. */
-.scroll-seam-needle { color: var(--accent-3); filter: drop-shadow(0 0 4px rgba(100, 214, 196, 0.5)); }
+/* The needle that leads the thread — the brand mark, now the scrollbar thumb. */
+.scroll-seam-needle {
+    color: var(--accent-3);
+    filter: drop-shadow(0 0 4px rgba(100, 214, 196, 0.5));
+    transition: filter var(--duration-fast) var(--ease-out);
+}
 .scroll-seam-needle .seam-eye { fill: var(--bg); }
+.scroll-seam-needle.is-grabbing { filter: drop-shadow(0 0 9px rgba(100, 214, 196, 0.85)); }
+
+/* Transparent grab/click hit areas (fine pointer only; added by JS). */
+.scroll-seam-hit { fill: transparent; pointer-events: auto; cursor: grab; }
+.scroll-seam.is-dragging .scroll-seam-hit { cursor: grabbing; }
 
 @media (prefers-reduced-motion: reduce) {
     .scroll-seam-needle { display: none; }
