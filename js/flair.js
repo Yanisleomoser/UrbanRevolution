@@ -3,10 +3,12 @@
  *
  * Side-effect module (no global export), in the spirit of animations.js.
  * Everything here is pure progressive enhancement and degrades cleanly:
- *   - The scroll "thread" runs everywhere (a passive progress line).
  *   - Hero pointer tilt + aura run ONLY on a fine pointer (desktop), never on
  *     touch and never when prefers-reduced-motion is set.
  *   - The easter egg never animates under reduced motion.
+ *
+ * The scroll "thread" was promoted to its own module (js/scroll-seam.js) — the
+ * Living Seam that stitches the page together as you scroll.
  */
 (function () {
   "use strict";
@@ -16,27 +18,7 @@
   const finePointer = mq("(hover: hover) and (pointer: fine)");
   const isTouch = document.documentElement.classList.contains("is-touch");
 
-  // ── 1. Scroll "thread" — a thin gradient seam that sews itself shut as you
-  //    scroll the page. transform:scaleX is cheap (compositor-only). ──
-  function initScrollThread() {
-    const thread = document.querySelector(".scroll-thread");
-    if (!thread) return;
-    let ticking = false;
-    function update() {
-      const el = document.documentElement;
-      const max = el.scrollHeight - el.clientHeight;
-      const p = max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
-      thread.style.transform = "scaleX(" + p.toFixed(4) + ")";
-      ticking = false;
-    }
-    window.addEventListener("scroll", () => {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    }, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
-    update();
-  }
-
-  // ── 2 + 3. Hero pointer aura + holographic tilt of the photo card ──
+  // ── 1. Hero pointer aura + holographic tilt of the photo card ──
   function initHeroPointer() {
     if (reduced || isTouch || !finePointer) return;
     const hero = document.querySelector(".hero");
@@ -131,7 +113,6 @@
   }
 
   function init() {
-    initScrollThread();
     initHeroPointer();
     initCardSpotlight();
     initEasterEgg();

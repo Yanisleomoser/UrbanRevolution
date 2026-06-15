@@ -23,6 +23,9 @@
     --radius: 14px;
     --radius-sm: 8px;
 
+    /* Left gutter the Living Seam (js/scroll-seam.js) stitches down. */
+    --seam-gutter: clamp(26px, 4.5vw, 42px);
+
     /* 4px-base spacing scale — use these instead of ad-hoc px values
        so vertical rhythm stays consistent as the design evolves. */
     --space-1: 4px;
@@ -4211,19 +4214,63 @@ main { display: block; }
    (wired in js/flair.js; pure progressive enhancement)
    ============================================================ */
 
-/* Scroll "thread": a 2px gradient seam that sews shut as you scroll. */
-.scroll-thread {
+/* Living Seam — a needle-and-thread that stitches the whole page together as
+   you scroll (built by js/scroll-seam.js). One continuous gesture that ties the
+   loader/loop needle motifs into the brand's central metaphor: the line sewn
+   back into a circle. Decorative (aria-hidden), pure progressive enhancement —
+   without JS the container stays empty and invisible; under reduced motion it
+   shows a calm, fully-stitched static seam with no needle travel. */
+.scroll-seam {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 2px;
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-    background: linear-gradient(90deg, #2a9d8f, #2779a8, #64d6c4);
-    z-index: 1000;
+    width: var(--seam-gutter, 34px);
+    height: calc(var(--svh, 1svh) * 100);
+    z-index: 50;            /* above content, below navbar (100) + loader (150) */
     pointer-events: none;
-    will-change: transform;
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-out);
+}
+.scroll-seam.is-ready { opacity: 1; }
+.scroll-seam-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* The faint guide the stitch follows + the gradient stitch itself. */
+.scroll-seam-track { fill: none; stroke: rgba(100, 214, 196, 0.10); stroke-width: 1.5; }
+.scroll-seam-thread {
+    fill: none;
+    stroke: url(#seam-grad);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 5px rgba(100, 214, 196, 0.45));
+}
+
+/* Stitch "knots" light up as the seam passes each station. */
+.scroll-seam-knot {
+    fill: var(--bg);
+    stroke: rgba(100, 214, 196, 0.35);
+    stroke-width: 1.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0.5);
+    opacity: 0.4;
+    transition: opacity var(--duration-base) var(--ease-out),
+                transform var(--duration-base) var(--ease-out),
+                fill var(--duration-base) var(--ease-out),
+                stroke var(--duration-base) var(--ease-out);
+}
+.scroll-seam-knot.is-stitched {
+    fill: var(--accent-3);
+    stroke: var(--accent-3);
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* The needle that leads the thread — the brand mark, in motion. */
+.scroll-seam-needle { color: var(--accent-3); filter: drop-shadow(0 0 4px rgba(100, 214, 196, 0.5)); }
+.scroll-seam-needle .seam-eye { fill: var(--bg); }
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-seam-needle { display: none; }
 }
 
 /* Hero pointer aura — a soft neon spotlight that follows the cursor. Only
