@@ -56,9 +56,11 @@ KI-entworfene Einzelstücke nach Maß aus recycelter Kleidung — gegen Fast Fas
 Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. Sprachen: DE + EN.
 
 ## Architektur (nicht umbauen)
-- Kein Build-Framework. Klassische `<script>`-Module im `window.X = …`-Muster, in index.html eingebunden.
-- Design-Engine unter `js/design-engine/` (engine, dna, condition, inference, render-preview, summary, flow, garment-svg, modalities/, content/*.json). Datengetrieben: Nodes/Archetypen/Attribute/Bilder liegen in JSON.
-- State: `state-manager.js` (localStorage, Wiederaufnahme). KI: `ai.js` → Replicate (FLUX) / Anthropic-Proxy. Maße: `measurements.js` (9 Körpermaße). i18n: `i18n.js`. Telemetrie: `js/design-engine/telemetry.js` → `/api/track`. Fehler: Sentry (Loader im `<head>`).
+- Kein Build-Framework. Klassische `<script>`-Module im `window.X = …`-Muster, in index.html eingebunden. **Zwei Ausnahmen** (ES-Module, bewusst): `js/community-sphere.js` und die eigenständige Galerie-Seite `gallery/` — beide nutzen three.js (nur als ESM ausgeliefert) über die Import-Map + dynamisches `import()` (Lazy-Load). Sonst KEINE Module/Bundler einführen, ohne zu fragen.
+- **Landing-Experience** (`js/landing.js`, GSAP via CDN) ist die Startseite: Manifest → Kreislauf-Sektion → Zahlen → magnetischer Kreis-CTA. Das eigentliche **UR-Create-Studio** (`#studio`) ist `hidden`, bis ein CTA/Anker (`#design`/`#ownership`/`#measure`/`#production`) oder ein Share-/Deep-Link es per `revealStudio()` aufklappt. Progressive Enhancement: ohne JS/GSAP alles sichtbar; mit `prefers-reduced-motion` keine Bewegung; nur `html.fx` bekommt die volle Animation.
+- **UR-Create-Verdrahtung** (`js/ur-create.js`, Side-Effect, rein additiv) verbindet Hero-Showcase, Ownership-Moment, Community-Hub (`/api/gallery`), Problem-Karten, Join (Formspree) und `make-real` mit der Engine — ohne app.js/flow.js zu ändern.
+- Design-Engine unter `js/design-engine/` (engine, dna, condition, inference, render-preview, summary, flow, garment-svg, share, telemetry, modalities/, content/*.json). Datengetrieben: Nodes/Archetypen/Attribute/Bilder liegen in JSON.
+- State: `state-manager.js` (localStorage, Wiederaufnahme). KI: `ai.js` → Replicate (FLUX) / Anthropic-Proxy. Maße: `measurements.js` (9 Körpermaße). i18n: `i18n.js`. Telemetrie: `js/design-engine/telemetry.js` → `/api/track` (+ Admin-Dashboard `insights.html`). Fehler: Sentry (Loader im `<head>`).
 
 ## Design-System — NUR bestehende :root-Tokens
 - Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2779A8` → Teal `#2A9D8F` → Aqua `#64D6C4` (`--gradient`, „Ocean Depths").
@@ -92,30 +94,43 @@ Urban Revolution is a single-page web app — an "AI couture atelier." The
 user writes a free-text prompt describing a garment, the app turns it into
 a structured design concept, captures the user's measurements, renders a
 live 2D technical-flat preview (the data-driven Design Engine), and produces
-a printable production spec sheet for a tailor. The landing experience opens
-with a **manifesto** that frames the brand's anti-fast-fashion mission,
-followed by the cited evidence band and the adaptive design journey.
+a printable production spec sheet for a tailor.
+
+The **landing experience** (`js/landing.js`, GSAP) is the front door:
+preloader logo-draw → hero with a thread-particle field → manifesto
+word-scrub → pinned circular-economy section → counted-up stats → a
+magnetic circle CTA. The **UR-Create studio** (`#studio`) stays `hidden`
+until a CTA/anchor or a share/deep-link reveals it. The page closes with a
+**community sphere** — a WebGL globe (`js/community-sphere.js`) whose inner
+wall holds floating creations.
 
 **Stack:** vanilla HTML / CSS / JS. No bundler, no transpiler. The
 `package.json` only exists so Vercel runs `npm install` to pull
-`@vercel/speed-insights` / `@vercel/analytics`; the app itself has no build
-step. MediaPipe and Vercel analytics load from CDNs at runtime. Two Vercel
-Edge Functions (`api/`) proxy the AI calls.
+`@vercel/speed-insights` (+ `css-tree`/`htmlhint` dev deps for CI); the app
+itself has no build step. MediaPipe, GSAP, three.js and Vercel analytics
+load from CDNs at runtime (three.js + GSAP via an `importmap`). Seven Vercel
+Edge Functions (`api/`) proxy the AI/storage calls.
 UI copy is **bilingual German/English** (`I18N`, default `de`,
 `toLocaleDateString` follows the active locale).
 
 ## Layout
 
 ```
-index.html              # The atelier app; sections + import map + script tags
+index.html              # The atelier app; landing + studio + sections, import map + script tags
 impressum.html          # German legal page (Impressum)
 datenschutz.html        # German privacy policy (DSGVO + Swiss)
+insights.html           # Design-Engine telemetry dashboard (admin, behind ?key=, noindex)
+gallery/                # Standalone WebGL sphere gallery study (own index.html/js/css, ES module)
 css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
+manifest.webmanifest    # PWA manifest · icon.svg · robots.txt · sitemap.xml
 api/
   generate-design.js    # Edge Function — Anthropic proxy for design JSON
   preview-design.js     # Edge Function — Replicate (FLUX 1.1 Pro) garment render
   try-on.js             # Edge Function — Replicate proxy for photoreal VTO
-  waitlist.js           # Edge Function — waitlist signups → Upstash Redis
+  gen-image.js          # Edge Function — KEY-gated raw FLUX text→image (build the image library)
+  gallery.js            # Edge Function — community creations (DNA strings) → Upstash Redis
+  track.js              # Edge Function — aggregate-only journey telemetry → Upstash Redis
+  waitlist.js           # Edge Function — waitlist signups → Upstash Redis (frontend retired)
 js/
   config.js             # Source of truth — constants, presets, validators (window.CONFIG)
   i18n.js               # Bilingual DE/EN dictionary + DOM hydration (window.I18N)
@@ -128,14 +143,19 @@ js/
   library.js            # localStorage saved designs (max 20, + optional VTO url)
   preview-fallback.js   # Client-side $0 studio SVG when the paid render is down
   animations.js         # IntersectionObserver scroll-reveal (side effect)
-  flair.js              # Pointer/scroll micro-interactions + easter egg (side effect)
   app.js                # Main controller — wires DOM events to StateManager
+  flair.js              # Pointer/scroll micro-interactions + easter egg (side effect)
+  landing.js            # Landing-experience controller + studio reveal (GSAP, side effect)
+  ur-create.js          # Wires UR-Create sections (hero/ownership/community/join) to the engine
+  ambient-ticker.js     # Live cited textile-waste counter (kg/sec, side effect)
+  community-sphere.js   # WebGL community globe (ES module — three.js + GSAP, lazy)
   design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
-  og-image.png          # Social share image
-  story/                # Documentary photos (Acts I–IV) — see CREDITS.md
+  og-image.png          # Social share image · logo.png · hero-*.jpg · vto-*.jpg · presets/
+  story/                # Documentary photos (Acts I–IV) — see assets/story/CREDITS.md
 vercel.json             # Hosting config — no build, /api/ runs as edge functions
-scripts/validate-css.mjs# css-tree structural CSS check (CI)
+scripts/                # CI: validate-css.mjs · build/QA: shoot*, build-image-library,
+                        # gen-presets, strip-hero-bg, audit*, verify-*, check-* (headless)
 .github/workflows/      # CI only: deno(test), test.yml(validate = build-no-op
                         # + npm test), validate-css, validate-html — see Deployment
 ```
@@ -170,12 +190,19 @@ window.Foo = Foo;
 | `library.js`      | `window.Library`        | classic         |
 | `preview-fallback.js`| `window.PreviewFallback` | classic      |
 | `animations.js`   | (none — side effect)    | classic         |
-| `flair.js`        | (none — side effect)    | classic         |
 | `app.js`          | (none — controller)     | classic         |
+| `flair.js`        | (none — side effect)    | classic         |
+| `landing.js`      | (none — side effect)    | classic         |
+| `ur-create.js`    | (none — side effect)    | classic         |
+| `ambient-ticker.js`| (none — side effect)   | classic         |
+| `community-sphere.js`| (none — side effect) | **ES module** (`type="module"`) |
 
-The live garment preview is a **data-driven 2D technical flat** built by the
-`js/design-engine/` modules (classic scripts, see below) — there is no WebGL
-/ Three.js renderer.
+The **live garment preview** (inside the studio) is a **data-driven 2D
+technical flat** built by the `js/design-engine/` modules (classic scripts,
+see below) — no WebGL there. WebGL/three.js is used only for the marketing
+**community sphere** (`community-sphere.js`) and the standalone **gallery
+study** (`gallery/`), both lazy-loaded ES modules. Those two are the *only*
+ES modules in the project — everything else stays classic IIFE-with-global.
 
 **Load order in `index.html` matters** — every classic module reads
 `window.CONFIG` at IIFE evaluation time, so `config.js` must load first.
@@ -186,7 +213,8 @@ subscribe to its events). The bottom-of-body order is:
 ```
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → animations →
-design-engine/* (dna … flow) → app → flair
+design-engine/* (dna … flow) → app → flair → ur-create → ambient-ticker →
+[importmap] → gsap + ScrollTrigger (CDN) → landing → community-sphere (module)
 ```
 
 Follow the IIFE-with-global pattern for new classic code; don't introduce a
@@ -211,17 +239,23 @@ When you add user-facing copy, add a key to **both** `de` and `en` in
 
 ## The true cost (fast-fashion evidence band)
 
-After the manifesto sits `<section class="cost">` (id `#cost`) — the
-**hard, cited evidence** behind the emotional film: the human cost (Public
-Eye's Shein investigation, a Swiss source), three sourced numbers (Ellen
-MacArthur Foundation / UNEP — fashion ≤ 8 % of global CO₂, a truckload of
-textiles dumped every second, < 1 % recycled into new clothing), a "worst
-emitters" carbon-intensity ranking (illustrative bars, attributed), then the
-turn to our model + CTA, closing with a linked sources line. Static markup,
-bilingual (`cost.*` i18n keys, DE + EN), entrance via the shared
-`[data-reveal]` pattern (reduced-motion shows everything immediately). The
-ranking bar widths are set inline via `--v`; keep numbers honest/illustrative
-and the sources line intact.
+The landing stats section `<section class="lp-stats" id="facts">` is the
+**hard, cited evidence** behind the emotional film: three sourced numbers
+(Ellen MacArthur Foundation / UNEP — < 1 % of clothing recycled into new
+clothing, a truckload of textiles dumped/burned every second, ≤ 8 % of
+global CO₂), counted up on reveal (`data-count`), closing with a linked
+sources line (`landing.stats_src_html`). Static markup, bilingual
+(`landing.stat*` / `landing.stats_*` i18n keys, plus legacy `cost.*` keys
+still referenced elsewhere), entrance via the landing `[data-lp-reveal]`
+pattern (reduced-motion shows everything immediately). Keep the numbers
+honest and the sources line intact.
+
+The figures are reinforced live by **`js/ambient-ticker.js`** — a side-effect
+module that turns the "1 truckload every second" fact into a running
+odometer: textile waste at ~2'918 kg/sec (92 Mio. t/year ÷ seconds/year)
+stepping up since page load, in one dramatic counter (`.cost-ticker`) plus
+compact "Live … kg" badges beside other section numbers. Swiss thousands
+grouping (`1'234'567`), bilingual via `ticker.*` i18n keys.
 
 ## AI design generation (`ai.js` + `api/generate-design.js`)
 
@@ -334,6 +368,68 @@ auto-dedupes) plus a timestamp hash, and returns `{ ok, status:
 - **DSGVO:** consent checkbox is required (server rejects
   `consent !== true` with `consent_required`); only email + timestamp are
   stored; covered in `datenschutz.html` §7.
+
+## Community gallery (`api/gallery.js` + `js/ur-create.js` + `js/community-sphere.js`)
+
+The community surface shares **published creations as compact DNA share
+strings** — the same URL-safe base64 format as `js/design-engine/share.js`,
+**no images, no PII** (the optional name is a free-chosen pseudonym).
+
+- **Backend (`api/gallery.js`):** Upstash Redis over REST (edge-native, like
+  `waitlist.js`), a `urev:gallery` ring buffer (max 60, 24 per GET).
+  `GET /api/gallery → { ok, items: [{ d, name, by, ts }] }` (newest first);
+  `POST /api/gallery { d, name?, by? }`. `validateDna` (exported, pure,
+  unit-testable) rejects empty / over-long / non-base64 strings. Graceful:
+  without Upstash env, GET returns `{ ok, items: null }` (client shows the
+  **curated fallback** `content/gallery-curated.json`) and POST returns the
+  neutral coded error.
+- **Hub wiring (`js/ur-create.js`):** fetches `/api/gallery`, renders each
+  item's DNA to a clean flat (`GarmentSVG`), offers type filters + VIEW/REMIX
+  (open the DNA in UR Create via the share URL). Save · Share · Publish live
+  in the Ownership-Moment, which appears once `StateManager.currentDesign`
+  exists.
+- **Community sphere (`js/community-sphere.js`, ES module):** the WebGL globe
+  in `#community`. Photoreal creations float on the inner wall; drag/arrow
+  keys rotate with Lenis-style easing; tap opens a detail overlay; the join
+  flow is a CTA + overlay. Lazy-loads three.js/GSAP and images only when the
+  section scrolls into view. Data sources: `/api/gallery` items **with** an
+  `img` field first, topped up with `content/community-showcase.json` (36
+  engine renders). Scroll stays free (no wheel hijack; `touch-action: pan-y`).
+  Reduced-motion + coarse-pointer aware.
+
+## Community join (Formspree) — `js/ur-create.js`
+
+The "join the community" email signup posts to **Formspree**
+(`FORMSPREE_ENDPOINT`), not the retired waitlist backend — no own server, no
+Upstash config. The endpoint is a **public client-side URL (not a secret)**
+and lives in the code; while the placeholder is set the button reports
+neutrally that signup isn't live yet (console hint only). Email + consent +
+interests.
+
+## Build-time image generator (`api/gen-image.js`)
+
+A one-off, **KEY-gated** raw text→image route used to build the Design-Engine
+image library (hero / mood / material / preview tiles) without exposing the
+Replicate token. Calls FLUX 1.1 Pro with the same server-side
+`REPLICATE_API_TOKEN`, but passes the prompt **verbatim** (no ghost-mannequin
+wrapper) so atmospheric/macro prompts render. Gated by `IMAGE_GEN_KEY`; if
+unset the route is **disabled (403)** — it never reveals whether Replicate is
+configured. Driven by `scripts/build-image-library.mjs` against
+`content/img-library.json`. Safe to remove once the library is built.
+
+## Telemetry & insights (`js/design-engine/telemetry.js` + `api/track.js` + `insights.html`)
+
+`DesignTelemetry.track(event, props)` emits **aggregate-only** journey signals
+(no PII, no photo/measurement data), respects Do-Not-Track, and sends to
+Vercel Web Analytics (`window.va`) **and** best-effort beacons to
+`/api/track`. The edge function increments **whitelisted** event counters
+(`ALLOWED` set) + sanitised node ids in Upstash (`urev:tel:*`);
+`buildCommands` / `sanitiseId` are exported and pure (unit-testable).
+`POST` is best-effort (204, never errors to the client); without Upstash it's
+silently swallowed. `GET ?key=<TELEMETRY_KEY>` returns the aggregates for the
+**admin `insights.html`** dashboard (noindex, on-brand via `styles.css`). The
+question logic does **not** learn across users on its own — these aggregates
+are the basis for *manual* node tuning.
 
 ## Persistence (`preferences.js`, `library.js`)
 
