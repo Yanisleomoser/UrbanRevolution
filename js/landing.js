@@ -17,6 +17,17 @@
 (() => {
   "use strict";
 
+  // Which URL fragments open the studio: a studio anchor, or a share/deep link
+  // carrying an encoded design (#dna=…). Pure + DOM-free, hoisted above any
+  // window access so it can be unit-tested headless (the rest is GSAP/canvas).
+  const STUDIO_ANCHORS = ["design", "ownership", "measure", "production"];
+  function shouldRevealForHash(hash) {
+    const h = String(hash || "");
+    return /[#&]dna=/.test(h) || STUDIO_ANCHORS.includes(h.replace(/^#/, ""));
+  }
+  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS };
+  if (typeof window === "undefined") return; // non-DOM (tests/SSR): nothing to mount
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hasGsap = typeof window.gsap !== "undefined" && typeof window.ScrollTrigger !== "undefined";
   const fx = hasGsap && !reduceMotion;
@@ -29,10 +40,9 @@
 
   /* ── Studio-Reveal ───────────────────────────────────────── */
 
-  // Anker, die ins Studio führen (Maße/Produktion liegen im #make-real,
-  // das ur-create.js seinerseits aufklappt — hier nur den Wrapper öffnen).
-  const STUDIO_ANCHORS = ["design", "ownership", "measure", "production"];
-
+  // STUDIO_ANCHORS + shouldRevealForHash are declared at the top (pure, hoisted
+  // for testability). Anchors lead into the studio; Maße/Produktion live in
+  // #make-real, which ur-create.js opens — here we only reveal the wrapper.
   function revealStudio() {
     const studio = document.getElementById("studio");
     if (!studio || !studio.hidden) return;
@@ -49,11 +59,8 @@
       if (!a) return;
       if (STUDIO_ANCHORS.includes((a.getAttribute("href") || "").slice(1))) revealStudio();
     });
-    const check = () => {
-      const h = location.hash || "";
-      // Share-Links (#dna=…) und Studio-Anker öffnen das Studio direkt.
-      if (/[#&]dna=/.test(h) || STUDIO_ANCHORS.includes(h.slice(1))) revealStudio();
-    };
+    // Share-Links (#dna=…) und Studio-Anker öffnen das Studio direkt.
+    const check = () => { if (shouldRevealForHash(location.hash)) revealStudio(); };
     window.addEventListener("hashchange", check);
     check();
   }

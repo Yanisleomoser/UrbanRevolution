@@ -17,14 +17,22 @@
  * language:change). Self-mounts; side-effect module.
  */
 (function () {
-    if (window.__urAmbientTicker) return;
-    window.__urAmbientTicker = true;
-
     const RATE = 2918; // kg of textiles wasted per second (92e9 kg ÷ 31.536e6 s)
-    const t0 = Date.now();
 
     // Swiss thousands grouping (1234567 → "1'234'567"), locale-independent.
     const swiss = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+
+    // Whole-second waste mass since a given elapsed time (ms). Floors to whole
+    // seconds so the odometer steps once per second; never negative.
+    const wasteKgAt = (elapsedMs) => Math.floor(Math.max(0, elapsedMs) / 1000) * RATE;
+
+    // Test seam (Node): expose the pure helpers and skip the DOM self-mount.
+    if (typeof module !== "undefined" && module.exports) { module.exports = { RATE, swiss, wasteKgAt }; return; }
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (window.__urAmbientTicker) return;
+    window.__urAmbientTicker = true;
+
+    const t0 = Date.now();
 
     const t = (key, fallback) =>
         (window.I18N && typeof I18N.t === "function" ? I18N.t(key) : null) || fallback;
@@ -77,7 +85,7 @@
     }
 
     function tick() {
-        const kg = swiss(Math.floor((Date.now() - t0) / 1000) * RATE);
+        const kg = swiss(wasteKgAt(Date.now() - t0));
         document.querySelectorAll("[data-ticker-kg]").forEach((e) => { e.textContent = kg; });
     }
 
