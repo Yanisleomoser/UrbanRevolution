@@ -1,0 +1,28 @@
+name: Coverage
+
+# Code-coverage gate (c8 over the offline unit suites). Measures which lines /
+# branches / functions of the *unit-testable* modules the tests actually
+# execute, and FAILS if coverage drops below the floor in .c8rc.json — so new
+# logic can't land untested and the number only ratchets up.
+#
+# Scope (see .c8rc.json): js/** + api/**, excluding the DOM/WebGL/animation
+# controllers (app.js, ur-create.js, community-sphere.js, flair.js,
+# animations.js, landing.js, design-engine/modalities/**) — those are exercised
+# by the e2e browser job, not by unit tests, so counting them here would be
+# misleading. c8 is a normal devDependency; no browser, no network.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --include=dev
+      - run: npm run coverage

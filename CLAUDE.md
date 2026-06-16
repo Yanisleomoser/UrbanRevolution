@@ -573,8 +573,18 @@ The functional PR checks (check name = job id):
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights)   |
 | `e2e`          | `e2e.yml`          | "E2E"         | `npm run e2e` — headless-Chromium browser smoke test (`scripts/e2e.mjs`) |
+| `coverage`     | `coverage.yml`     | "Coverage"    | `npm run coverage` — c8 over the unit suites, fails below the `.c8rc.json` floor |
 
-These five are the **entire** `.github/workflows/` set. The `e2e` job installs
+The `coverage` job runs `c8 npm test` and enforces a floor (lines/statements
+73 %, branches 77 %, functions 72 % — a few points below the current ~76 %
+baseline, so it ratchets up, never down). Scope lives in `.c8rc.json`: `js/**` +
+`api/**`, **excluding** the DOM/WebGL/animation controllers (`app.js`,
+`ur-create.js`, `community-sphere.js`, `flair.js`, `animations.js`, `landing.js`,
+`design-engine/modalities/**`) — those are e2e-covered, not unit-covered, so
+counting them would mislead. c8 is a normal devDependency (no browser, no
+network); `coverage/` is gitignored. Raise the floor as coverage improves.
+
+These six are the **entire** `.github/workflows/` set. The `e2e` job installs
 playwright-core + Chromium at job time (`npm install --no-save playwright-core`
 + `npx playwright install chromium`, mirroring the SessionStart hook) so the
 Vercel deploy stays lean — nothing browser-related lands in `package.json`. It
