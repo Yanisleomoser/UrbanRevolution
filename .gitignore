@@ -25,3 +25,7 @@ Thumbs.db
 *.swp
 *.swo
 screenshots/
+
+# Coverage (c8) — generated locally / in CI, never committed
+coverage/
+.nyc_output/

@@ -10,15 +10,21 @@
     "lint": "echo 'No linter configured'",
     "validate:css": "node scripts/validate-css.mjs css/styles.css",
     "validate:html": "htmlhint index.html impressum.html datenschutz.html",
-    "e2e": "node scripts/e2e.mjs"
+    "e2e": "node scripts/e2e.mjs",
+    "coverage": "c8 npm test"
   },
-  "keywords": ["fashion", "ai", "3d"],
+  "keywords": [
+    "fashion",
+    "ai",
+    "3d"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@vercel/speed-insights": "^1.0.0"
   },
   "devDependencies": {
+    "c8": "^11.0.0",
     "css-tree": "^3.2.1",
     "htmlhint": "^1.9.2"
   }
