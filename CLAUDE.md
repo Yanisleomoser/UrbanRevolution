@@ -154,16 +154,22 @@ assets/
   og-image.png          # Social share image · logo.png · hero-*.jpg · vto-*.jpg · presets/
   story/                # Documentary photos (Acts I–IV) — see assets/story/CREDITS.md
 vercel.json             # Hosting config — no build, /api/ runs as edge functions
-scripts/                # CI: validate-css.mjs · build/QA: shoot*, build-image-library,
-                        # gen-presets, strip-hero-bg, audit*, verify-*, check-* (headless)
-.github/workflows/      # CI only: deno(test), test.yml(validate = build-no-op
-                        # + npm test), validate-css, validate-html — see Deployment
+scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·
+                        # build/QA: shoot*, build-image-library, gen-presets,
+                        # strip-hero-bg, audit*, verify-*, check-* (headless)
+.github/workflows/      # CI: deno(test), test.yml(validate = build-no-op + npm
+                        # test), validate-css, validate-html, e2e — see Deployment
 ```
 
-Unit tests: 11 offline suites in `test/` (DNA roundtrip, seam formulas, AI
-fallback, export scaling, i18n parity, state, persistence, share-link
-encode/decode, pose measurement math, API error mapping, API input validation),
-run via `npm test` in CI (test.yml). No network needed. CI additionally runs
+Unit tests: 21 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+fallback + assembled-design contract, export scaling, i18n parity + t()
+interpolation, coded API-error → message, state, persistence, share-link
+encode/decode, pose math, garment-flat builder, journey-flow helpers,
+render-preview mappers, $0 preview fallback, client telemetry/DNT, waste-ticker
+math, landing studio-reveal predicate, API error mapping + input validation),
+run via `npm test` in CI (test.yml). No network needed. A separate `npm run e2e`
+(`e2e.yml`) drives the **real site in headless Chromium** end-to-end (see the CI
+table below). CI additionally runs
 `deno lint` (configured via `deno.json`, with browser-incompatible rules
 excluded) plus structural HTML/CSS validators.
 
@@ -563,11 +569,20 @@ The functional PR checks (check name = job id):
 | PR check       | File               | Workflow name | What it runs                                        |
 | -------------- | ------------------ | ------------- | --------------------------------------------------- |
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
-| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (11 offline suites) |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (21 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights)   |
+| `e2e`          | `e2e.yml`          | "E2E"         | `npm run e2e` — headless-Chromium browser smoke test (`scripts/e2e.mjs`) |
 
-These four are the **entire** `.github/workflows/` set. Removed template
+These five are the **entire** `.github/workflows/` set. The `e2e` job installs
+playwright-core + Chromium at job time (`npm install --no-save playwright-core`
++ `npx playwright install chromium`, mirroring the SessionStart hook) so the
+Vercel deploy stays lean — nothing browser-related lands in `package.json`. It
+boots the real site on a self-contained Node static server and asserts the flows
+the offline suites can't reach (clean boot, studio reveal via CTA **and** `#dna`
+deep-link, the data-driven journey mounting + rendering a question, DE/EN toggle,
+mobile no-overflow, zero uncaught app errors); desktop + mobile screenshots are
+uploaded as a CI artifact. Removed template
 clutter: `deploy.yml` + `jekyll-gh-pages.yml` (redundant Pages deploys),
 `npm-publish*.yml` (never ran), `copilot-setup-steps.yml` (broken scan), and
 `jekyll-docker.yml` (GitHub starter; built a `_site` that was never deployed —
