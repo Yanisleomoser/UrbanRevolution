@@ -1,0 +1,37 @@
+name: E2E
+
+# End-to-end browser smoke test (headless Chromium) — boots the real site and
+# drives it like a user: clean boot, studio reveal (CTA + #dna deep-link), the
+# data-driven design journey mounting, DE/EN toggle, mobile overflow. The layer
+# the offline unit suites can't reach.
+#
+# playwright-core + Chromium are installed at job time (NOT added to
+# package.json) so the Vercel deploy stays lean — the same approach as the
+# SessionStart hook (.claude/hooks/session-start.sh).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # Project dev deps (css-tree/htmlhint are unrelated here, but keeps the
+      # lockfile honest); then the browser driver + Chromium, transient.
+      - run: npm install --include=dev
+      - run: npm install --no-save --include=dev playwright-core
+      - run: npx --yes playwright@latest install --with-deps chromium
+      - run: npm run e2e
+      # Always upload the desktop + mobile screenshots so failures are diagnosable.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: screenshots/
+          if-no-files-found: ignore

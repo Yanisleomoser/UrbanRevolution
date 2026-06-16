@@ -9,7 +9,8 @@
     "test": "node test/engine-test.cjs && node test/core-test.cjs && node test/ai-test.cjs && node test/ai-generate-test.cjs && node test/export-test.cjs && node test/i18n-test.cjs && node test/i18n-t-test.cjs && node test/coded-error-test.cjs && node test/state-test.cjs && node test/persistence-test.cjs && node test/share-test.cjs && node test/pose-test.cjs && node test/garment-svg-test.cjs && node test/flow-test.cjs && node test/render-preview-test.cjs && node test/preview-fallback-test.cjs && node test/telemetry-test.cjs && node test/ambient-ticker-test.cjs && node test/landing-test.cjs && node test/api-test.mjs && node test/api-validation-test.mjs",
     "lint": "echo 'No linter configured'",
     "validate:css": "node scripts/validate-css.mjs css/styles.css",
-    "validate:html": "htmlhint index.html impressum.html datenschutz.html"
+    "validate:html": "htmlhint index.html impressum.html datenschutz.html",
+    "e2e": "node scripts/e2e.mjs"
   },
   "keywords": ["fashion", "ai", "3d"],
   "author": "",
