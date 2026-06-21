@@ -76,20 +76,18 @@
     <link rel="stylesheet" href="css/styles.css?v=20260612-weavetap">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
          MediaPipe) — full preconnect so the landing animation starts sooner. -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://replicate.delivery">
 
-    <!-- Markentypografie: Lora (Display/Headlines, aufrecht + kursiv für couture
-         statements) + Poppins (Body/UI). EINE Anfrage, nicht render-blockierend
-         (media=print onload), noscript-Fallback. Familien sind in styles.css als
-         --font-display / --font-body tokenisiert. -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap"></noscript>
+    <!-- Markentypografie: Lora (Display/Headlines, aufrecht + kursiv) + Poppins
+         (Body/UI), SELBST GEHOSTET (assets/fonts/, kein Google-CDN → keine
+         Besucher-IP an Google, DSGVO). font-display:swap je @font-face. Familien
+         sind in styles.css als --font-display / --font-body tokenisiert.
+         Generiert via scripts/fetch-fonts.mjs. -->
+    <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
          geladen, um auch Fehler beim Seitenaufbau zu erfassen. Datensparsam
