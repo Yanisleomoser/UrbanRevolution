@@ -9,7 +9,15 @@
       "Grep",
       "WebFetch",
       "WebSearch",
-      "mcp__github"
+      "mcp__github",
+      "mcp__Vercel__list_deployments",
+      "mcp__Vercel__get_deployment",
+      "mcp__Vercel__get_deployment_build_logs",
+      "mcp__Vercel__get_runtime_logs",
+      "mcp__Vercel__get_project",
+      "mcp__Vercel__list_projects",
+      "mcp__Vercel__web_fetch_vercel_url",
+      "mcp__Vercel__search_vercel_documentation"
     ]
   },
   "hooks": {
