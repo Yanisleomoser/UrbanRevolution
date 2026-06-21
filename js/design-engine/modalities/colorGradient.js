@@ -35,7 +35,7 @@
     let scheme = "mono";
     let stops = ["#1a1a1a"];
 
-    const q = V.el("h2", { class: "de-question" });
+    const q = V.el("h2", { class: "de-question", id: "de-scheme-q" });
     q.textContent = node.question ? node.question[lang] : "";
     host.appendChild(q);
 
@@ -48,16 +48,23 @@
       ctx.live(payloadFor(scheme, stops));
     };
 
-    const tabs = V.el("div", { class: "de-scheme-tabs", role: "tablist" });
+    // Single-choice between two schemes → a radiogroup (not a tablist: these
+    // toggle the palette in place, they don't switch tabpanels).
+    const tabs = V.el("div", { class: "de-scheme-tabs", role: "radiogroup", "aria-labelledby": "de-scheme-q" });
     [["mono", ctx.t("engine.scheme_mono")], ["duo-gradient", ctx.t("engine.scheme_duo")]].forEach(([id, label]) => {
-      const tab = V.el("button", { type: "button", class: "de-scheme-tab" });
+      const tab = V.el("button", { type: "button", class: "de-scheme-tab", role: "radio" });
       tab.textContent = label;
-      if (id === scheme) tab.classList.add("is-active");
+      const on = id === scheme;
+      tab.classList.toggle("is-active", on);
+      tab.setAttribute("aria-checked", on ? "true" : "false");
       tab.addEventListener("click", () => {
         scheme = id;
         stops = id === "mono" ? stops.slice(0, 1) : stops.slice(0, 2);
-        tabs.querySelectorAll(".de-scheme-tab").forEach((t) => t.classList.remove("is-active"));
-        tab.classList.add("is-active");
+        tabs.querySelectorAll(".de-scheme-tab").forEach((t) => {
+          const sel = t === tab;
+          t.classList.toggle("is-active", sel);
+          t.setAttribute("aria-checked", sel ? "true" : "false");
+        });
         paint();
       });
       tabs.appendChild(tab);
