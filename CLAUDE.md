@@ -81,7 +81,7 @@ Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. S
 
 ## Workflow
 - Erst kurzer Plan, dann inkrementell. Nach jeder Stufe auf Mobilbreite prüfen, keine Console-Fehler.
-- Jede Änderung über einen PR mit Vercel-Preview-Deployment; auf echtem iPhone prüfen, BEVOR nach `main` gemergt wird. Nicht direkt auf `main` pushen. (Diese Regel ersetzt für UI-Änderungen die ältere Auto-Merge-Notiz weiter unten.)
+- Jede Änderung über einen PR mit Vercel-Preview-Deployment; nicht direkt auf `main` pushen. Visuelle Änderungen IMMER selbst am Render prüfen (Headless Desktop + Mobil ≤ 480 px). Merge-Gate ist risikobasiert: Niedrigrisiko-Visuell → autonom mergen, sobald CI grün + Screenshots stimmen; Hochrisiko-Visuell (Animation, Scroll/Sticky/`svh`, iOS-Safari-Layout, große Redesigns) → vor dem Merge auf echtem iPhone prüfen lassen. (Details: Auto-merge policy weiter unten.)
 - Lokal: `python3 -m http.server 8080` (statisch) oder `npm run dev` (→ `npx serve .`). Die `/api/*`-Edge-Functions laufen nur via `vercel dev` / auf Vercel. Sentry (Loader im `<head>`) + Fehler-Tags (`area:ai|engine|preview|vto|measure|3d`) sind ohne lokalen Aufwand aktiv; Session-Replay bewusst aus.
 - CI (Pflicht, grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`, Workflow „Tests"), `validate-css`, `validate-html` — siehe „Deployment" unten.
 
@@ -638,11 +638,20 @@ feature branches. Don't open PRs unless explicitly asked.
 
 ### Auto-merge policy (standing instruction from the user)
 
-> **Aktualisiert (siehe Projekt-Regeln · Workflow oben):** Für **UI-/Frontend-
-> Änderungen** gilt jetzt zuerst der iPhone-Preview-Check — PR öffnen, Vercel-
-> Preview verlinken und auf dem echten Gerät verifizieren lassen, BEVOR nach
-> `main` gemergt wird. Die autonome Auto-Merge-Regel unten gilt weiterhin für
-> rein nicht-visuelle Änderungen (Docs, CI, `api/`-Logik, Tests).
+> **Aktualisiert (risikobasiertes Gate, siehe Projekt-Regeln · Workflow oben):**
+> Maßgeblich ist das *Risiko* der Änderung, nicht „ist es UI". JEDE visuelle
+> Änderung wird vorher selbst am echten Render geprüft (Headless Desktop **+
+> Mobil ≤ 480 px**; bei Bewegung die Animation samplen, nicht nur Endzustände).
+> - **Niedrigrisiko-Visuell** (Copy, ein Label, Farben/Abstände, statisches
+>   Element) → autonom mergen, sobald CI grün ist und die eigenen Screenshots
+>   stimmen. Kein Warten.
+> - **Hochrisiko-Visuell** — was Headless-Chromium nicht belegen kann:
+>   Animations-/Übergangs-Feel, Scroll-/Sticky-/`svh`-Toolbar-Verhalten,
+>   iOS-Safari-spezifisches Layout, große strukturelle Redesigns → PR öffnen,
+>   Vercel-Preview verlinken und VOR dem Merge auf dem echten iPhone prüfen lassen.
+>
+> Rein nicht-visuelle Änderungen (Docs, CI, `api/`-Logik, Tests) mergen wie unten
+> beschrieben autonom ohne Rückfrage.
 
 **Default: Claude merges its own PRs autonomously — do NOT ask, do NOT wait
 for confirmation, do NOT just report "CI is green" and stop.** The user has
