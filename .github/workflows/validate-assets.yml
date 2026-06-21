@@ -1,0 +1,28 @@
+# Image-weight budget — fails the build if any shipped raster image exceeds
+# the anti-bloat ceiling for its path (e.g. a preset thumbnail regressing past
+# 40 KB). See scripts/check-asset-budget.mjs. No deps (Node fs only).
+name: Validate Assets
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check image-weight budget
+        run: node scripts/check-asset-budget.mjs assets
