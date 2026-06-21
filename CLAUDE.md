@@ -83,7 +83,7 @@ Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. S
 - Erst kurzer Plan, dann inkrementell. Nach jeder Stufe auf Mobilbreite prüfen, keine Console-Fehler.
 - Jede Änderung über einen PR mit Vercel-Preview-Deployment; nicht direkt auf `main` pushen. Visuelle Änderungen IMMER selbst am Render prüfen (Headless Desktop + Mobil ≤ 480 px). Merge-Gate ist risikobasiert: Niedrigrisiko-Visuell → autonom mergen, sobald CI grün + Screenshots stimmen; Hochrisiko-Visuell (Animation, Scroll/Sticky/`svh`, iOS-Safari-Layout, große Redesigns) → vor dem Merge auf echtem iPhone prüfen lassen. (Details: Auto-merge policy weiter unten.)
 - Lokal: `python3 -m http.server 8080` (statisch) oder `npm run dev` (→ `npx serve .`). Die `/api/*`-Edge-Functions laufen nur via `vercel dev` / auf Vercel. Sentry (Loader im `<head>`) + Fehler-Tags (`area:ai|engine|preview|vto|measure|3d`) sind ohne lokalen Aufwand aktiv; Session-Replay bewusst aus.
-- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`, Workflow „Tests"), `validate-css`, `validate-html` — siehe „Deployment" unten.
+- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`, Workflow „Tests"), `validate-css`, `validate-html`, `validate-assets` (Bild-Budget) — siehe „Deployment" unten.
 
 ---
 
@@ -572,6 +572,7 @@ The functional PR checks (check name = job id):
 | `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (21 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights)   |
+| `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
 | `e2e`          | `e2e.yml`          | "E2E"         | `npm run e2e` — headless-Chromium browser smoke test (`scripts/e2e.mjs`) |
 | `coverage`     | `coverage.yml`     | "Coverage"    | `npm run coverage` — c8 over the unit suites, fails below the `.c8rc.json` floor |
 
@@ -584,7 +585,7 @@ baseline, so it ratchets up, never down). Scope lives in `.c8rc.json`: `js/**` +
 counting them would mislead. c8 is a normal devDependency (no browser, no
 network); `coverage/` is gitignored. Raise the floor as coverage improves.
 
-These six are the **entire** `.github/workflows/` set. The `e2e` job installs
+These seven are the **entire** `.github/workflows/` set. The `e2e` job installs
 playwright-core + Chromium **+ `@axe-core/playwright`** at job time (`npm install
 --no-save playwright-core @axe-core/playwright axe-core` + `npx playwright install
 chromium`, mirroring the SessionStart hook) so the Vercel deploy stays lean —
@@ -668,7 +669,7 @@ is red and you're fixing it). Subscribing to a PR means driving it to merge,
 not narrating that you're waiting.
 
 A PR is mergeable when **all functional CI checks are green** — `test`,
-`validate`, `validate-css`, `validate-html` — and no review comment
+`validate`, `validate-css`, `validate-html`, `validate-assets` — and no review comment
 requests a change. The advisory **"Vercel Agent Review"** is non-blocking;
 address its points if valid, but it need not be green to merge. If any
 functional check is red, fix it first; never merge red CI.
