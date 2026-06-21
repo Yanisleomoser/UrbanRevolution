@@ -5601,6 +5601,12 @@ footer.footer {
 }
 .own-edit select,
 .own-edit input[type="range"] { width: 100%; }
+.own-edit-value {
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-top: -2px;
+}
 .own-edit select {
     padding: 9px 10px;
     border-radius: var(--radius-sm, 10px);

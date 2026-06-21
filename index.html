@@ -495,7 +495,8 @@
                             </div>
                             <div class="own-edit-field">
                                 <label class="own-edit-label" for="oe-fit" data-i18n="own.info_fit">Passform</label>
-                                <input type="range" id="oe-fit" min="0" max="100" value="50">
+                                <input type="range" id="oe-fit" min="0" max="100" value="50" aria-valuetext="Regular">
+                                <output class="own-edit-value" id="oe-fit-value" for="oe-fit" aria-hidden="true">Regular</output>
                             </div>
                             <div class="own-edit-field">
                                 <label class="own-edit-label" for="oe-length" data-i18n="own.info_length">Länge</label>
