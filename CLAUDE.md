@@ -585,13 +585,17 @@ counting them would mislead. c8 is a normal devDependency (no browser, no
 network); `coverage/` is gitignored. Raise the floor as coverage improves.
 
 These six are the **entire** `.github/workflows/` set. The `e2e` job installs
-playwright-core + Chromium at job time (`npm install --no-save playwright-core`
-+ `npx playwright install chromium`, mirroring the SessionStart hook) so the
-Vercel deploy stays lean — nothing browser-related lands in `package.json`. It
-boots the real site on a self-contained Node static server and asserts the flows
-the offline suites can't reach (clean boot, studio reveal via CTA **and** `#dna`
-deep-link, the data-driven journey mounting + rendering a question, DE/EN toggle,
-mobile no-overflow, zero uncaught app errors); desktop + mobile screenshots are
+playwright-core + Chromium **+ `@axe-core/playwright`** at job time (`npm install
+--no-save playwright-core @axe-core/playwright axe-core` + `npx playwright install
+chromium`, mirroring the SessionStart hook) so the Vercel deploy stays lean —
+nothing browser-related lands in `package.json`. It boots the real site on a
+self-contained Node static server and asserts the flows the offline suites can't
+reach (clean boot, studio reveal via CTA **and** `#dna` deep-link, the
+data-driven journey mounting + rendering a question, DE/EN toggle, mobile
+no-overflow, zero uncaught app errors) **plus an axe-core a11y gate** — no
+serious/critical WCAG 2 A/AA violations on the landing + revealed studio (desktop
++ mobile); moderate/minor are reported, not blocking (axe covers ~30-40% of WCAG,
+so it's the floor, not the ceiling). Desktop + mobile screenshots are
 uploaded as a CI artifact. Removed template
 clutter: `deploy.yml` + `jekyll-gh-pages.yml` (redundant Pages deploys),
 `npm-publish*.yml` (never ran), `copilot-setup-steps.yml` (broken scan), and

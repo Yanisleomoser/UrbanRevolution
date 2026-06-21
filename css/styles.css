@@ -2026,7 +2026,10 @@ input[aria-invalid="true"] {
     text-align: center;
 }
 
-.footer-meta-fine { color: var(--text-muted); opacity: 0.7; }
+/* No opacity: it would composite --text-muted below the 4.5:1 WCAG-AA
+   contrast floor on --bg (axe-core gate in scripts/e2e.mjs). The token
+   itself clears it (~5:1); fine print stays muted via the token, not alpha. */
+.footer-meta-fine { color: var(--text-muted); }
 
 /* Older `.footer-content` rule retained for legacy compatibility — the
    new layout uses `.footer-grid`. */
