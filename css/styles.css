@@ -2142,6 +2142,73 @@ input[aria-invalid="true"] {
 }
 .legal-back:hover { color: var(--text); }
 
+/* ============================================================
+   404 — Seite nicht gefunden (404.html)
+   Eigenständige, zweisprachige Fehlerseite. Nutzt die Landing-Chrome
+   (lp-nav / lp-btn / lang-toggle / footer) + markenkonforme Tokens. Die
+   data-l-Spans blenden je <html lang> die passende Sprache ein (rein CSS;
+   ohne JS bleibt das markup-seitige DE sichtbar → Progressive Enhancement).
+   ============================================================ */
+html[lang="de"] [data-l="en"],
+html[lang="en"] [data-l="de"] { display: none; }
+
+.nf-page {
+    position: relative;
+    /* svh statt vh: stabile Höhe trotz iOS-Toolbar, kein Sprung. Die Nav ist
+       fixed (0 Layout-Höhe) → padding-top hält den Text frei darunter. */
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: calc(64px + var(--space-9)) clamp(20px, 5vw, 48px) var(--space-9);
+    overflow: hidden;
+}
+.nf-aurora { opacity: 0.7; }
+.nf-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+}
+.nf-eyebrow {
+    display: block;
+    color: var(--accent-3);
+    margin-bottom: var(--space-5);
+}
+.nf-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(40px, 9vw, 92px);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tighter);
+    margin: 0;
+}
+.nf-title em {
+    font-style: italic;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-right: 0.06em;
+}
+.nf-sub {
+    max-width: 30rem;
+    margin: var(--space-6) auto 0;
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15px, 1.6vw, 17px);
+    line-height: 1.65;
+}
+.nf-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin-top: var(--space-8);
+}
+.nf-footer { background-color: rgba(10, 22, 34, 0.85); }
+
 /* ============ PRINT ============ */
 @media print {
     body * { visibility: hidden; }
