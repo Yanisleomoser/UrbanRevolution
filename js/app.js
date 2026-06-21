@@ -1683,6 +1683,7 @@
 
   let libraryEscHandler = null;
   let libraryFocusReturnEl = null;
+  let libraryTrapRelease = null;
 
   function saveCurrentDesign() {
     if (!window.Library) return;
@@ -1829,6 +1830,8 @@
     modal.hidden = false;
     libraryFocusReturnEl = document.activeElement;
     document.getElementById("library-modal-close")?.focus();
+    const content = modal.querySelector(".library-modal-content");
+    libraryTrapRelease = window.FocusTrap ? window.FocusTrap.activate(content) : null;
     libraryEscHandler = (e) => {
       if (e.key === "Escape") closeLibraryModal();
     };
@@ -1838,6 +1841,7 @@
   function closeLibraryModal() {
     const modal = document.getElementById("library-modal");
     if (modal) modal.hidden = true;
+    if (libraryTrapRelease) { libraryTrapRelease(); libraryTrapRelease = null; }
     if (libraryEscHandler) {
       document.removeEventListener("keydown", libraryEscHandler);
       libraryEscHandler = null;

@@ -195,6 +195,7 @@ window.Foo = Foo;
 | `preferences.js`  | `window.Preferences`    | classic         |
 | `library.js`      | `window.Library`        | classic         |
 | `preview-fallback.js`| `window.PreviewFallback` | classic      |
+| `focus-trap.js`   | `window.FocusTrap`      | classic         |
 | `animations.js`   | (none — side effect)    | classic         |
 | `app.js`          | (none — controller)     | classic         |
 | `flair.js`        | (none — side effect)    | classic         |
@@ -218,7 +219,7 @@ subscribe to its events). The bottom-of-body order is:
 
 ```
 config → i18n → state-manager → ai → measurements →
-pose → export → preferences → library → preview-fallback → animations →
+pose → export → preferences → library → preview-fallback → focus-trap → animations →
 design-engine/* (dna … flow) → app → flair → ur-create → ambient-ticker →
 [importmap] → gsap + ScrollTrigger (CDN) → landing → community-sphere (module)
 ```

@@ -30,6 +30,7 @@ const t = (key) => (window.I18N && window.I18N.t ? window.I18N.t(key) : key);
 /* ---------- Overlays (unabhängig vom 3D-Boot funktionsfähig) ---------- */
 
 let lastTrigger = null;
+const trapReleases = new WeakMap(); // overlay el → FocusTrap release fn
 const overlayOpen = () => Boolean(
     (detailEl && !detailEl.hidden) || (joinEl && !joinEl.hidden),
 );
@@ -42,11 +43,15 @@ function openOverlay(el, trigger) {
     document.documentElement.classList.add("sphere-lock");
     const close = el.querySelector(".sphere-close");
     if (close) close.focus({ preventScroll: true });
+    // Contain Tab within the dialog (focus-in/return handled above + in close).
+    if (window.FocusTrap) trapReleases.set(el, window.FocusTrap.activate(el));
 }
 
 function closeOverlay(el) {
     if (!el || el.hidden) return;
     el.classList.remove("is-open");
+    const release = trapReleases.get(el);
+    if (release) { release(); trapReleases.delete(el); }
     const done = () => {
         el.hidden = true;
         if (!overlayOpen()) document.documentElement.classList.remove("sphere-lock");
