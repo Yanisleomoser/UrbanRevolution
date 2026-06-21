@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a1622">
+    <meta name="color-scheme" content="dark">
+    <!-- 404 nicht indexieren, Links aber folgen. -->
+    <meta name="robots" content="noindex, follow">
+    <title>404 — Urban Revolution</title>
+    <meta name="description" content="Diese Seite wurde nicht gefunden — zurück zu Urban Revolution, dem AI Couture Atelier aus Zürich.">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232a9d8f'/%3E%3Cstop offset='50%25' stop-color='%232779a8'/%3E%3Cstop offset='100%25' stop-color='%2364d6c4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-family='Poppins,sans-serif' font-size='24' font-weight='800' text-anchor='middle' fill='white'%3EUR%3C/text%3E%3C/svg%3E">
+
+    <!-- Sprachwahl des Besuchers VOR dem Stylesheet anwenden (gleicher Key wie
+         i18n.js), damit die richtige Sprache ohne Aufblitzen erscheint. Ohne
+         JavaScript bleibt das markup-seitige DE sichtbar (Progressive Enhancement). -->
+    <script>
+      (function () {
+        try {
+          var l = localStorage.getItem("urev_lang");
+          if (l === "en" || l === "de") document.documentElement.lang = l;
+        } catch (e) { /* localStorage blockiert → DE-Default */ }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Selbst gehostete Schriften (assets/fonts/) — kein Google-CDN, DSGVO. -->
+    <link rel="stylesheet" href="/assets/fonts/fonts.css">
+</head>
+<body>
+    <a href="#nf-main" class="skip-link"><span data-l="de">Zum Inhalt springen</span><span data-l="en">Skip to content</span></a>
+
+    <nav class="navbar lp-nav" aria-label="Hauptnavigation">
+        <div class="nav-container">
+            <a class="lp-brand" href="index.html" aria-label="Urban Revolution — Startseite">
+                <svg class="lp-mark lp-mark--nav" viewBox="0 0 200 200" aria-hidden="true">
+                    <path d="M126.2 43.8 A62 62 0 1 1 46.3 131" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M40.1 84 A62 62 0 0 1 91.4 38.6" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="square" stroke-dasharray="2 15"/>
+                    <g transform="rotate(16 100 100)">
+                        <path d="M93.5 12 A6.5 6.5 0 0 1 106.5 12 L102.2 100 L100 136 L97.8 100 Z" fill="currentColor"/>
+                        <rect class="lp-mark-eye" x="97.5" y="20" width="5" height="30" rx="2.5"/>
+                    </g>
+                </svg>
+                <span class="lp-wordmark">Urban Revolution</span>
+            </a>
+            <div class="lp-nav-actions">
+                <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Sprache wechseln / Switch language">
+                    <span class="lang-opt" data-lang="de">DE</span>
+                    <span class="lang-sep" aria-hidden="true">/</span>
+                    <span class="lang-opt" data-lang="en">EN</span>
+                </button>
+                <a class="lp-btn lp-btn--ghost lp-btn--nav" href="index.html#design"><span data-l="de">UR Create starten</span><span data-l="en">Start UR Create</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <main id="nf-main" class="nf-page">
+        <div class="aurora nf-aurora" aria-hidden="true"></div>
+        <div class="nf-inner">
+            <p class="mono-label nf-eyebrow">404 · <span data-l="de">Seite nicht gefunden</span><span data-l="en">Page not found</span></p>
+            <h1 class="nf-title">Made for one. <em>Not this page.</em></h1>
+            <p class="nf-sub">
+                <span data-l="de">Diese Adresse führt ins Leere — die Seite wurde verschoben oder hat nie existiert. Dein nächstes Einzelstück wartet trotzdem.</span>
+                <span data-l="en">This address leads nowhere — the page moved or never existed. Your next one-of-a-kind piece is waiting all the same.</span>
+            </p>
+            <div class="nf-ctas">
+                <a class="lp-btn lp-btn--primary" href="index.html"><span data-l="de">Zur Startseite</span><span data-l="en">Back to home</span></a>
+                <a class="lp-btn lp-btn--ghost" href="index.html#design"><span data-l="de">Eigenes Stück erschaffen</span><span data-l="en">Create your own piece</span></a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer nf-footer">
+        <div class="container">
+            <div class="footer-meta">
+                <p>© 2026 Urban Revolution · <span data-l="de">Gestaltet in Zürich</span><span data-l="en">Designed in Zürich</span> · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Sprach-Umschalter: spiegelt den aktiven Zustand und persistiert die Wahl
+         im selben localStorage-Key wie die Hauptseite (urev_lang), damit die
+         Sprache zwischen 404 und Startseite konsistent bleibt. -->
+    <script>
+        (function () {
+            const toggle = document.getElementById("lang-toggle");
+            if (!toggle) return;
+            const root = document.documentElement;
+
+            function getLang() {
+                return root.lang === "en" ? "en" : "de";
+            }
+            function reflect() {
+                const lang = getLang();
+                toggle.querySelectorAll(".lang-opt").forEach((opt) => {
+                    const on = opt.dataset.lang === lang;
+                    opt.classList.toggle("is-active", on);
+                    if (on) opt.setAttribute("aria-current", "true");
+                    else opt.removeAttribute("aria-current");
+                });
+            }
+            function setLang(lang) {
+                if (lang !== "de" && lang !== "en") return;
+                root.lang = lang;
+                try { localStorage.setItem("urev_lang", lang); } catch (e) { /* no-op */ }
+                reflect();
+            }
+
+            reflect();
+            toggle.addEventListener("click", (e) => {
+                const opt = e.target.closest(".lang-opt");
+                setLang(opt ? opt.dataset.lang : getLang() === "de" ? "en" : "de");
+            });
+        })();
+    </script>
+</body>
+</html>

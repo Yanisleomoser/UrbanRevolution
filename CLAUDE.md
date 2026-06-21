@@ -120,6 +120,7 @@ index.html              # The atelier app; landing + studio + sections, import m
 impressum.html          # German legal page (Impressum)
 datenschutz.html        # German privacy policy (DSGVO + Swiss)
 insights.html           # Design-Engine telemetry dashboard (admin, behind ?key=, noindex)
+404.html                # Branded bilingual not-found page (self-contained, Vercel serves on 404)
 gallery/                # Standalone WebGL sphere gallery study (own index.html/js/css, ES module)
 css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
 manifest.webmanifest    # PWA manifest · icon.svg · robots.txt · sitemap.xml
@@ -572,7 +573,7 @@ The functional PR checks (check name = job id):
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
 | `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (21 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
-| `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights)   |
+| `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404)   |
 | `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
 | `e2e`          | `e2e.yml`          | "E2E"         | `npm run e2e` — headless-Chromium browser smoke test (`scripts/e2e.mjs`) |
 | `coverage`     | `coverage.yml`     | "Coverage"    | `npm run coverage` — c8 over the unit suites, fails below the `.c8rc.json` floor |

@@ -29,4 +29,4 @@ jobs:
         run: npm install --no-save htmlhint
 
       - name: Validate HTML structure
-        run: npx --no-install htmlhint index.html impressum.html datenschutz.html insights.html
+        run: npx --no-install htmlhint index.html impressum.html datenschutz.html insights.html 404.html
