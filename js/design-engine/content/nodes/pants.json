@@ -257,9 +257,9 @@
       "modality": "slider",
       "when": "category == 'pants' && pattern.type != 'none' && _confidence.pattern.type > 0.5 && _confidence.pattern.scale < 0.6",
       "priority": 0.4,
-      "question": { "de": "Wie groß das Muster?", "en": "Pattern scale?" },
+      "question": { "de": "Wie gross das Muster?", "en": "Pattern scale?" },
       "bind": "pattern.scale",
-      "axis": { "de": ["Fein", "Groß"], "en": ["Fine", "Bold"] }
+      "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
       "id": "pants_waistband",

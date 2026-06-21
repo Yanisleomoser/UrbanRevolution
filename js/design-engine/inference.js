@@ -34,7 +34,7 @@ const DesignInference = (() => {
     silk: { de: "Seide", en: "silk" }, fleece: { de: "Fleece", en: "fleece" }, linen: { de: "Leinen", en: "linen" },
     matte: { de: "matt", en: "matte" }, sheen: { de: "glänzend", en: "sheen" },
     mono: { de: "Uni", en: "solid" }, "duo-gradient": { de: "Verlauf", en: "gradient" }, multi: { de: "Mehrfarbig", en: "multi" },
-    zip: { de: "Reißverschluss", en: "zip" }, button: { de: "Knöpfe", en: "buttons" }, none: { de: "keins", en: "none" },
+    zip: { de: "Reissverschluss", en: "zip" }, button: { de: "Knöpfe", en: "buttons" }, none: { de: "keins", en: "none" },
     stand: { de: "Stehkragen", en: "stand" }, notched: { de: "Revers", en: "notched" }, hood: { de: "Kapuze", en: "hood" },
     tonal: { de: "tonal", en: "tonal" }, metal: { de: "Glanz-Metall", en: "shiny metal" }, matteHw: { de: "Matt-Metall", en: "matte metal" },
     stripe: { de: "Streifen", en: "stripe" }, camo: { de: "Camo", en: "camo" }, graphic: { de: "Grafik", en: "graphic" }, abstract: { de: "Abstrakt", en: "abstract" },
@@ -43,7 +43,7 @@ const DesignInference = (() => {
     sleeveless: { de: "ärmellos", en: "sleeveless" }, cap: { de: "Cap-Ärmel", en: "cap sleeves" }, short: { de: "kurz", en: "short" }, long: { de: "lang", en: "long" },
     chest: { de: "Brusttasche", en: "chest pocket" }, side: { de: "seitlich", en: "side" }, flap: { de: "Patten", en: "flap" }, cargo: { de: "Cargo", en: "cargo" }, kangaroo: { de: "Kängurutasche", en: "kangaroo" },
     straight: { de: "gerade", en: "straight" }, curved: { de: "gerundet", en: "curved" }, ribbed: { de: "gerippt", en: "ribbed" }, drawcord: { de: "Kordelzug", en: "drawcord" }, cuffed: { de: "Umschlag", en: "cuffed" }, elastic: { de: "elastisch", en: "elastic" },
-    belt: { de: "Gürtelschlaufen", en: "belt loops" }, fitted: { de: "betont", en: "fitted" }, natural: { de: "natürlich", en: "natural" }, relaxed: { de: "fließend", en: "relaxed" },
+    belt: { de: "Gürtelschlaufen", en: "belt loops" }, fitted: { de: "betont", en: "fitted" }, natural: { de: "natürlich", en: "natural" }, relaxed: { de: "fliessend", en: "relaxed" },
   };
 
   const valueWord = (v, lang) => {

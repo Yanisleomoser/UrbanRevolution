@@ -295,7 +295,7 @@
       "choices": [
         { "id": "fitted", "label": { "de": "Betont", "en": "Fitted" }, "effects": { "set": { "construction.waist": "fitted" }, "weight": { "softCouture": 0.15 } } },
         { "id": "natural", "label": { "de": "Natürlich", "en": "Natural" }, "effects": { "set": { "construction.waist": "natural" } } },
-        { "id": "relaxed", "label": { "de": "Fließend", "en": "Relaxed" }, "effects": { "set": { "construction.waist": "relaxed" }, "weight": { "quietMinimal": 0.1 } } }
+        { "id": "relaxed", "label": { "de": "Fliessend", "en": "Relaxed" }, "effects": { "set": { "construction.waist": "relaxed" }, "weight": { "quietMinimal": 0.1 } } }
       ]
     },
     {
@@ -381,9 +381,9 @@
       "modality": "slider",
       "when": "category == 'dress' && pattern.type != 'none' && _confidence.pattern.type > 0.5 && _confidence.pattern.scale < 0.6",
       "priority": 0.4,
-      "question": { "de": "Wie groß das Muster?", "en": "Pattern scale?" },
+      "question": { "de": "Wie gross das Muster?", "en": "Pattern scale?" },
       "bind": "pattern.scale",
-      "axis": { "de": ["Fein", "Groß"], "en": ["Fine", "Bold"] }
+      "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
       "id": "dress_signature",
