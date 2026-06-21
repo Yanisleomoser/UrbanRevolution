@@ -58,7 +58,7 @@ const CONFIG = (() => {
     };
 
     const MEASUREMENT_CONSTRAINTS = {
-        height: { min: 140, max: 220, label: 'Körpergröße' },
+        height: { min: 140, max: 220, label: 'Körpergrösse' },
         weight: { min: 40, max: 150, label: 'Gewicht' },
         chest: { min: 60, max: 160, label: 'Brustumfang' },
         waist: { min: 50, max: 150, label: 'Taillenumfang' },

@@ -40,7 +40,7 @@ const DesignSummary = (() => {
       long: { de: "lang", en: "long" },
     },
     closure: {
-      zip: { de: "Reißverschluss", en: "zip closure" }, button: { de: "Knopfleiste", en: "button closure" },
+      zip: { de: "Reissverschluss", en: "zip closure" }, button: { de: "Knopfleiste", en: "button closure" },
       half: { de: "Half-Placket", en: "half placket" }, none: { de: "offenem Schnitt", en: "open front" },
     },
     collar: {
@@ -151,7 +151,7 @@ const DesignSummary = (() => {
     const sentence = toSentence(dna, l);
     return l === "en"
       ? `Design a ${sentence} Sustainable, made-to-measure, one of one.`
-      : `Entwirf ${sentence} Nachhaltig, maßgeschneidert, ein Einzelstück.`;
+      : `Entwirf ${sentence} Nachhaltig, massgeschneidert, ein Einzelstück.`;
   }
 
   return { toSentence, toPrompt };

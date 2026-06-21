@@ -94,9 +94,9 @@
       "modality": "slider",
       "when": "category == 'jacket' && pattern.type != 'none' && _confidence.pattern.type > 0.5 && _confidence.pattern.scale < 0.6",
       "priority": 0.4,
-      "question": { "de": "Wie groß das Muster?", "en": "Pattern scale?" },
+      "question": { "de": "Wie gross das Muster?", "en": "Pattern scale?" },
       "bind": "pattern.scale",
-      "axis": { "de": ["Fein", "Groß"], "en": ["Fine", "Bold"] }
+      "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
       "id": "jacket_tap",
@@ -129,9 +129,9 @@
       "modality": "cards",
       "when": "category == 'jacket' && subArchetype != 'blazer' && _confidence.construction.closure < 0.6",
       "priority": 0.6,
-      "question": { "de": "Wie schließt sie?", "en": "How does it close?" },
+      "question": { "de": "Wie schliesst sie?", "en": "How does it close?" },
       "choices": [
-        { "id": "zip", "label": { "de": "Reißverschluss", "en": "Zip" }, "effects": { "set": { "construction.closure": "zip" }, "weight": { "techAvant": 0.1 } } },
+        { "id": "zip", "label": { "de": "Reissverschluss", "en": "Zip" }, "effects": { "set": { "construction.closure": "zip" }, "weight": { "techAvant": 0.1 } } },
         { "id": "button", "label": { "de": "Knöpfe", "en": "Buttons" }, "effects": { "set": { "construction.closure": "button" }, "weight": { "softCouture": 0.1 } } },
         { "id": "open", "label": { "de": "Offen", "en": "Open" }, "effects": { "set": { "construction.closure": "none" }, "weight": { "quietMinimal": 0.1 } } }
       ]
