@@ -1048,6 +1048,17 @@
     }
   }
 
+  // Mirror the fit slider's position as a human label — visibly (Slim/Regular/
+  // Oversized) and to assistive tech via aria-valuetext, so the raw 0–100 value
+  // is never the only feedback. Reuses fitLabel so it follows the active locale.
+  function updateFitFeedback(slider) {
+    if (!slider) return;
+    const label = fitLabel(slider.value / 100);
+    slider.setAttribute("aria-valuetext", label);
+    const out = document.getElementById("oe-fit-value");
+    if (out) out.textContent = label;
+  }
+
   // Reflect current state onto the editor controls without firing their events
   // (setting .value / attributes does not dispatch), so there is no feedback loop.
   function syncOwnEditor() {
@@ -1060,6 +1071,7 @@
     const oeFit = document.getElementById("oe-fit");
     const fit = S.get("currentFit");
     if (oeFit && fit !== null && fit !== undefined) oeFit.value = Math.round(fit * 100);
+    updateFitFeedback(oeFit);
     const color = S.get("currentColor");
     document.querySelectorAll("#oe-colors .oe-color").forEach((b) =>
       b.setAttribute("aria-pressed", b.dataset.color === color ? "true" : "false"));
@@ -1098,6 +1110,7 @@
     const oeFit = document.getElementById("oe-fit");
     if (oeFit) oeFit.addEventListener("input", () => {
       const fit = oeFit.value / 100;
+      updateFitFeedback(oeFit);
       if (!S.set("currentFit", fit)) return;
       const d = S.get("currentDesign"); if (d) d.fit = fit;
       updateProductionPreview(); resetOwnStage();
