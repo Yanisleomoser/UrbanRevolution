@@ -181,7 +181,47 @@ async function main() {
     await mpage.screenshot({ path: join(OUT, "e2e-mobile.png"), fullPage: false });
     await mctx.close();
 
-    // ── 7) Aggregate: zero uncaught app errors across every flow ──────────
+    // ── 7) Accessibility: axe-core finds no serious/critical violations ───
+    // a11y is a hard project rule (CLAUDE.md) — this turns it from a manual
+    // promise into an automated gate. axe catches ~30-40% of WCAG issues
+    // (contrast, labels, roles, landmarks); it is the floor, not the ceiling.
+    // Gates on serious+critical only (moderate/minor are reported, not blocking).
+    section("Accessibility: no serious/critical axe-core violations");
+    let AxeBuilder = null;
+    try { ({ AxeBuilder } = await import("@axe-core/playwright")); }
+    catch { console.log("    ⚠ a11y audit skipped — @axe-core/playwright not installed (CI installs it)"); }
+    if (AxeBuilder) {
+      const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+      const BLOCK = new Set(["serious", "critical"]);
+      // Audit under prefers-reduced-motion: it renders every animated element in
+      // its final, static, readable state — the contrast a user actually ends up
+      // with — instead of transient keyframes axe can't reason about (e.g. the
+      // landing manifesto word-scrub resting at opacity 0.13 before scroll). It is
+      // also a real supported mode, so we're checking a genuine user experience.
+      async function auditA11y(name, viewport, reveal) {
+        const c = await browser.newContext({ viewport, reducedMotion: "reduce" });
+        const p = await c.newPage();
+        await p.goto(base + "/index.html", { waitUntil: "networkidle", timeout: 30000 });
+        if (reveal) {
+          await p.evaluate(() => document.querySelector('a[href="#design"]')?.click());
+          await p.waitForFunction(() => document.getElementById("studio")?.hidden === false, { timeout: 5000 }).catch(() => {});
+        }
+        const { violations } = await new AxeBuilder({ page: p }).withTags(WCAG).analyze();
+        const blocking = violations.filter((v) => BLOCK.has(v.impact));
+        for (const v of blocking) {
+          console.log(`    • [${v.impact}] ${v.id} (${v.nodes.length}): ${v.help}`);
+          v.nodes.slice(0, 3).forEach((n) => console.log(`        ${n.target.join(" ")}`));
+        }
+        const moderate = violations.length - blocking.length;
+        assert(blocking.length === 0, `${name}: no serious/critical violations${moderate ? ` (${moderate} moderate/minor noted)` : ""}`);
+        await c.close();
+      }
+      await auditA11y("Landing (desktop)", { width: 1280, height: 900 });
+      await auditA11y("Studio revealed (desktop)", { width: 1280, height: 900 }, true);
+      await auditA11y("Landing (mobile)", { width: 390, height: 844 });
+    }
+
+    // ── 8) Aggregate: zero uncaught app errors across every flow ──────────
     section("No uncaught application errors across all flows");
     if (errors.length) errors.forEach((e) => console.log("    •", e));
     assert(errors.length === 0, `clean console/page across all flows (${errors.length} app error(s))`);
