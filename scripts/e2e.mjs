@@ -193,8 +193,13 @@ async function main() {
     if (AxeBuilder) {
       const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
       const BLOCK = new Set(["serious", "critical"]);
+      // Audit under prefers-reduced-motion: it renders every animated element in
+      // its final, static, readable state — the contrast a user actually ends up
+      // with — instead of transient keyframes axe can't reason about (e.g. the
+      // landing manifesto word-scrub resting at opacity 0.13 before scroll). It is
+      // also a real supported mode, so we're checking a genuine user experience.
       async function auditA11y(name, viewport, reveal) {
-        const c = await browser.newContext({ viewport });
+        const c = await browser.newContext({ viewport, reducedMotion: "reduce" });
         const p = await c.newPage();
         await p.goto(base + "/index.html", { waitUntil: "networkidle", timeout: 30000 });
         if (reveal) {
