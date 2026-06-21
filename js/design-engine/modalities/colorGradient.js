@@ -44,6 +44,7 @@
       preview.style.background = stops.length >= 2
         ? `linear-gradient(120deg, ${stops[0]}, ${stops[1]})`
         : stops[0] || "#1a1a1a";
+      markSelected();
       ctx.live(payloadFor(scheme, stops));
     };
 
@@ -63,16 +64,34 @@
     });
 
     const grid = V.el("div", { class: "de-palette" });
+    const swatches = [];
     palette.forEach((hex) => {
-      const sw = V.el("button", { type: "button", class: "de-palette-swatch", "aria-label": hex });
+      const sw = V.el("button", { type: "button", class: "de-palette-swatch", "aria-label": hex, "aria-pressed": "false" });
       sw.style.background = hex;
+      sw.dataset.hex = hex;
+      const badge = V.el("span", { class: "de-palette-order", "aria-hidden": "true" });
+      sw.appendChild(badge);
       sw.addEventListener("click", () => {
         if (scheme === "mono") stops = [hex];
         else { stops.push(hex); stops = stops.slice(-2); }
         paint();
       });
+      swatches.push(sw);
       grid.appendChild(sw);
     });
+
+    // Reflect the current stops on the swatch grid so the chosen colour(s) are
+    // visible at a glance — and, in gradient mode, in which order (1 → 2).
+    const markSelected = () => {
+      swatches.forEach((sw) => {
+        const idx = stops.indexOf(sw.dataset.hex);
+        const on = idx !== -1;
+        sw.classList.toggle("is-selected", on);
+        sw.setAttribute("aria-pressed", on ? "true" : "false");
+        const badge = sw.querySelector(".de-palette-order");
+        if (badge) badge.textContent = (on && scheme !== "mono") ? String(idx + 1) : "";
+      });
+    };
 
     host.appendChild(preview);
     host.appendChild(tabs);

@@ -4831,8 +4831,19 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-scheme-tab { border: 0; background: none; color: var(--text-dim); padding: var(--space-2) var(--space-5); border-radius: 999px; cursor: pointer; font-size: var(--text-sm); transition: all .2s var(--ease-out); }
 .de-scheme-tab.is-active { background: var(--gradient); color: #fff; }
 .de-palette { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.de-palette-swatch { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; transition: transform .15s var(--ease-out); }
+.de-palette-swatch { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; transition: transform .15s var(--ease-out); }
 .de-palette-swatch:hover { transform: scale(1.12); border-color: var(--text); }
+.de-palette-swatch:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: 2px; }
+/* Selected stop(s): a ring (with a bg gap so it reads on any swatch colour);
+   the order badge shows the gradient direction (1 → 2) in duo mode. */
+.de-palette-swatch.is-selected { border-color: transparent; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-3, #64d6c4); }
+.de-palette-order {
+    position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px;
+    padding: 0 4px; display: none; place-items: center; box-sizing: border-box;
+    border-radius: 999px; background: var(--gradient); color: #fff;
+    font-size: 10px; font-weight: 700; line-height: 1;
+}
+.de-palette-swatch.is-selected .de-palette-order:not(:empty) { display: grid; }
 
 .de-confirm { margin-top: var(--space-6); padding: var(--space-4) var(--space-8); border: 0; border-radius: 999px; background: var(--gradient); color: #fff; font-size: var(--text-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-glow); transition: transform .2s var(--ease-out); }
 .de-confirm:hover { transform: translateY(-2px); }
