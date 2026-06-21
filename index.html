@@ -78,9 +78,11 @@
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://replicate.delivery">
+    <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
+         MediaPipe) — full preconnect so the landing animation starts sooner. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://replicate.delivery">
 
     <!-- Markentypografie: Lora (Display/Headlines, aufrecht + kursiv für couture
          statements) + Poppins (Body/UI). EINE Anfrage, nicht render-blockierend
