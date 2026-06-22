@@ -565,6 +565,15 @@ run on Vercel (or `vercel dev`).
   in `index.html`). The two `/api/` functions run as Edge Functions. **This is the
   only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
   — the repo no longer has a Pages workflow.
+- **Security headers** (`vercel.json` `headers`, applied to `/(.*)`):
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `Permissions-Policy` locking unused
+  powerful features (`camera`/`microphone`/`geolocation`/`browsing-topics` — the
+  app uses none) and a **frame-ancestors-only** CSP (`'self' https://vercel.live`
+  — clickjacking protection that still lets the Vercel preview-feedback tool
+  frame previews). Deliberately **no** script/style/connect CSP: the app pulls
+  GSAP/three.js/MediaPipe/Sentry/Vercel from CDNs, so a strict CSP would need a
+  full allowlist — out of scope here. HSTS is already set by Vercel.
 
 The functional PR checks (check name = job id):
 
