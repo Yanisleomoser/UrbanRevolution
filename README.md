@@ -10,20 +10,26 @@ Urban Revolution ist eine Single-Page-Webapp — die Vision einer vollautonomen
 Kreislauf-Fabrik: weggeworfene Fast-Fashion wird automatisch sortiert, und autonome
 Roboter fertigen daraus das vom Kunden entworfene Stück. Der Nutzer
 beschreibt sein Wunschkleidungsstück per Text oder über eine adaptive Design-Reise; die
-KI macht daraus ein strukturiertes Designkonzept, eine live morphende 2D-Technik­zeichnung
+KI strukturiert die Idee zu einem produzierbaren Designkonzept, eine live morphende 2D-Technik­zeichnung
 (Fashion-Flat) zeigt das Stück, neun Körpermaße werden erfasst, und ein produktionsfertiges
 Spec-Sheet steuert die autonome Fertigung. Der Einstieg beginnt mit einem Manifest und einer
 zitierten Fakten-Sektion zur Fast-Fashion-Problematik.
+
+> **Rolle der KI (tragend):** Der **Nutzer entwirft** jedes Stück — Design und Stil
+> gehören ihm. Die KI macht **nur** zwei Dinge: sie sortiert/gewinnt weggeworfenes
+> Textil autonom zurück und fertigt das Stück autonom. Sie entwirft, „gestaltet" oder
+> „denkt" das Kleidungsstück **nicht** (eine künftige KI darf höchstens helfen, die
+> eigene Idee zu artikulieren — nie sie verfassen).
 
 Komplett zweisprachig (Deutsch/Englisch). Stack: reines HTML/CSS/JS ohne Bundler oder
 Build-Schritt; gehostet auf Vercel, KI-Aufrufe laufen über Edge Functions in `api/`.
 
 ## Features
 
-- **AI-Design-Generator** — Freie Text-Prompts werden zu strukturierten Designkonzepten
-  (Name, Beschreibung, Farbe, Material, Passform, Tags, Konstruktions-Notizen). Serverseitig
-  über die Anthropic Claude API (`api/generate-design.js`); ohne Key greift ein lokaler,
-  semantischer Offline-Fallback.
+- **KI-Konzept-Strukturierung** — Deine freien Text-Prompts werden zu strukturierten
+  Designkonzepten (Name, Beschreibung, Farbe, Material, Passform, Tags, Konstruktions-Notizen) —
+  du entwirfst, die KI strukturiert und fertigt. Serverseitig über die Anthropic Claude API
+  (`api/generate-design.js`); ohne Key greift ein lokaler, semantischer Offline-Fallback.
 - **Interaktive Design-Reise** — Eine adaptive, datengetriebene Fragenstrecke (This-or-That,
   Karten, Slider, Ranking, Hotspot, Farbverlauf). Jede Entscheidung verformt **live** eine
   saubere 2D-Technikzeichnung (Fashion-Flat); ein Reife-Ring zeigt den Fortschritt.

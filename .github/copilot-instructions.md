@@ -7,7 +7,7 @@
 
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, **kein Framework**,
-**kein Build-Step**). KI-entworfene Einzelstücke nach Maß aus recycelter
+**kein Build-Step**). Selbst entworfene Einzelstücke nach Maß aus recycelter
 Kleidung — gegen Fast Fashion, für echtes Textil-Recycling.
 Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
 
