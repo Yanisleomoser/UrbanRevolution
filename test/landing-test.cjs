@@ -19,8 +19,8 @@ function assert(cond, msg) {
 const { shouldRevealForHash, STUDIO_ANCHORS } = Landing;
 
 console.log("\n— the documented studio anchors all reveal the studio —");
-assert(Array.isArray(STUDIO_ANCHORS) && STUDIO_ANCHORS.length === 4, "four studio anchors are exported");
-["design", "ownership", "measure", "production"].forEach((a) => {
+assert(Array.isArray(STUDIO_ANCHORS) && STUDIO_ANCHORS.length === 5, "five studio anchors are exported");
+["design", "ownership", "measure", "production", "faq"].forEach((a) => {
   assert(STUDIO_ANCHORS.includes(a), `'${a}' is a studio anchor`);
   assert(shouldRevealForHash("#" + a) === true, `#${a} → reveal`);
 });
