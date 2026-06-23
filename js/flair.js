@@ -16,17 +16,23 @@
   const finePointer = mq("(hover: hover) and (pointer: fine)");
   const isTouch = document.documentElement.classList.contains("is-touch");
 
-  // ── 1. Scroll "thread" — a thin gradient seam that sews itself shut as you
-  //    scroll the page. transform:scaleX is cheap (compositor-only). ──
+  // ── 1. Scroll "thread" — a vertical gradient seam down the page edge that
+  //    sews itself shut as you scroll (scaleY ∝ total scroll progress), with a
+  //    glowing "needle" dot riding the sewn edge. transform:scaleY is
+  //    compositor-cheap; the needle's top is the one layout-light write.
+  //    Hidden under reduced motion (CSS) — we also skip the work here. ──
   function initScrollThread() {
-    const thread = document.querySelector(".scroll-thread");
-    if (!thread) return;
+    if (reduced) return;
+    const fill = document.querySelector(".scroll-thread-fill");
+    const needle = document.querySelector(".scroll-thread-needle");
+    if (!fill) return;
     let ticking = false;
     function update() {
       const el = document.documentElement;
       const max = el.scrollHeight - el.clientHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
-      thread.style.transform = "scaleX(" + p.toFixed(4) + ")";
+      fill.style.transform = "scaleY(" + p.toFixed(4) + ")";
+      if (needle) needle.style.top = (p * 100).toFixed(3) + "%";
       ticking = false;
     }
     window.addEventListener("scroll", () => {

@@ -4284,18 +4284,48 @@ main { display: block; }
    ============================================================ */
 
 /* Scroll "thread": a 2px gradient seam that sews shut as you scroll. */
+/* Naht-Faden — eine senkrechte „Stich"-Naht am Seitenrand, die sich beim
+   Scrollen zunäht (scaleY ∝ Gesamt-Scrollfortschritt). Gestrichelte Maske =
+   Stiche; ein glühender „Nadel"-Punkt sitzt an der genähten Kante. Die ganze
+   Seite verbindende Durchgangslinie — das Pendant zum sich schließenden Kreis. */
 .scroll-thread {
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-    background: linear-gradient(90deg, #2a9d8f, #2779a8, #64d6c4);
+    left: 10px;
+    width: 2px;
+    height: 100vh;
+    height: 100svh;
     z-index: 1000;
     pointer-events: none;
+    background: var(--border); /* noch nicht genähte Spur, sehr dezent */
+    -webkit-mask: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 11px);
+    mask: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 11px);
+}
+.scroll-thread-fill {
+    position: absolute;
+    inset: 0;
+    transform: scaleY(0);
+    transform-origin: 50% 0;
+    background: linear-gradient(180deg, #2a9d8f, #2779a8, #64d6c4);
     will-change: transform;
+}
+.scroll-thread-needle {
+    position: fixed;
+    top: 0;
+    left: 11px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 9px 1px rgba(100, 214, 196, 0.9) /* --accent-3 */, 0 0 4px rgba(100, 214, 196, 0.7);
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+    will-change: top;
+}
+/* Bewegung: ohne Bewegung keine Naht — Inhalt bleibt vollständig sichtbar. */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-thread, .scroll-thread-needle { display: none; }
 }
 
 /* Hero pointer aura — a soft neon spotlight that follows the cursor. Only
