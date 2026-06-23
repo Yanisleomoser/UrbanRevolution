@@ -6424,6 +6424,83 @@ html.fx .lp-loop-step.is-active {
 }
 .lp-stats-sources a { color: var(--text-dim); }
 
+/* ── KI, richtig eingesetzt (AI, done right) ── */
+.lp-aidr { max-width: 1100px; margin: 0 auto; }
+.lp-aidr-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(30px, 5vw, 56px);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    max-width: 22ch;
+    margin-bottom: clamp(34px, 5vw, 60px);
+}
+.lp-aidr-title em { font-style: italic; color: var(--accent-3); }
+.lp-aidr-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 3vw, 28px);
+    margin-bottom: clamp(36px, 6vw, 64px);
+}
+@media (min-width: 760px) {
+    .lp-aidr-grid { grid-template-columns: 1fr 1fr; }
+}
+.lp-aidr-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: clamp(24px, 3.5vw, 40px);
+}
+/* "Das Übliche" — flach und zurückgenommen */
+.lp-aidr-card.is-dim { background: transparent; }
+.lp-aidr-card.is-dim .lp-aidr-tag { color: var(--text-muted); }
+.lp-aidr-card.is-dim h3 { color: var(--text-dim); }
+.lp-aidr-card.is-dim p { color: var(--text-muted); }
+/* "Unser Einsatz" — subtiler Verlaufsschimmer + akzentgetönter Rand */
+.lp-aidr-card.is-lit {
+    border-color: rgba(42, 157, 143, 0.5); /* --accent */
+    background:
+        radial-gradient(120% 120% at 0% 0%, rgba(42, 157, 143, 0.12) /* --accent */, transparent 60%),
+        var(--bg-card);
+    box-shadow: var(--shadow-glow);
+}
+.lp-aidr-card.is-lit .lp-aidr-tag {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.lp-aidr-tag {
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+.lp-aidr-card h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(20px, 2.6vw, 27px);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+.lp-aidr-card p {
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(14.5px, 1.5vw, 16px);
+    line-height: 1.6;
+    max-width: 42ch;
+}
+.lp-aidr-body {
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15.5px, 1.9vw, 19px);
+    line-height: 1.7;
+    max-width: 64ch;
+}
+.lp-aidr-body strong { color: var(--text); font-weight: 500; }
+
 /* ── Finale ── */
 .lp-finale {
     text-align: center;

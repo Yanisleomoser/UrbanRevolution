@@ -744,6 +744,17 @@ const I18N = (() => {
       "landing.cta_sub": "Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Mass, aus recycelter Kleidung.",
       "landing.tap_hint": "Tipp ins Bild — die Fäden formen dein nächstes Stück.",
       "landing.orb_aria": "UR Create starten — öffnet das Studio",
+
+      // ── KI, richtig eingesetzt (Landing-Beat #4) ──
+      "aidr.label": "KI, richtig eingesetzt",
+      "aidr.h2_html": "Die meiste KI soll dich <em>mehr kaufen</em> lassen. Unsere soll <em>weniger verschwenden</em>.",
+      "aidr.dim_tag": "Das Übliche",
+      "aidr.dim_h": "Vorhersagen, anstossen, wiederholen",
+      "aidr.dim_p": "Empfehlungssysteme, die dich schneller zum nächsten Kauf bringen. KI auf die Nachfrage gerichtet — sie erzeugt neue Bedürfnisse.",
+      "aidr.lit_tag": "Unser Einsatz",
+      "aidr.lit_h": "Sehen, trennen, zurückgewinnen",
+      "aidr.lit_p": "KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.",
+      "aidr.body_html": "Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: ein System, das weggeworfene Textilien <strong>sieht, trennt und sortiert</strong> — und dein Stück <strong>autonom fertigt</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI sortiert den Stoff und baut das Stück.</strong>",
     },
 
     en: {
@@ -1469,6 +1480,17 @@ const I18N = (() => {
       "landing.cta_sub": "Describe your idea — UR Create turns it into your piece. Made to measure, from recycled clothing.",
       "landing.tap_hint": "Tap anywhere — the threads weave your next piece.",
       "landing.orb_aria": "Start UR Create — opens the studio",
+
+      // ── AI, done right (landing beat #4) ──
+      "aidr.label": "AI, done right",
+      "aidr.h2_html": "Most AI is built to <em>sell you more</em>. Ours is built to <em>waste less</em>.",
+      "aidr.dim_tag": "The usual",
+      "aidr.dim_h": "Predict, push, repeat",
+      "aidr.dim_p": "Recommendation engines tuned to make you buy the next thing, faster. AI aimed at demand — manufacturing new wants.",
+      "aidr.lit_tag": "Our use",
+      "aidr.lit_h": "See, separate, reclaim",
+      "aidr.lit_p": "AI aimed at the discard pile: untangling what was thrown away so it can live again.",
+      "aidr.body_html": "The hard problem in circular fashion was never the sewing — it's untangling what's thrown away. Mixed fibres, fastenings, dyes; a pile no human line can sort at scale. That's exactly where we point AI: a system that <strong>sees, separates and sorts</strong> discarded textile — and <strong>autonomously makes</strong> your piece. That is the correct use of this technology: solving a human-made problem, not inventing a new reason to consume. <strong>The design stays yours. You set the style — AI sorts the fabric and builds the piece.</strong>",
     },
   };
 
