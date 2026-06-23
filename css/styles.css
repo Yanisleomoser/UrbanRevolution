@@ -2699,7 +2699,7 @@ html[lang="en"] [data-l="de"] { display: none; }
 
 /* ============================================================
    WOW LAYER — Visual upgrades stacked on top of the base system
-   Goal: high-fashion digital atelier feel (Off-White / Acne / SSENSE)
+   Goal: high-fashion digital studio feel (Off-White / Acne / SSENSE)
    ============================================================ */
 
 /* ---------- Film grain — adds tactile, analog feel to the dark canvas ---------- */
@@ -5892,7 +5892,7 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
     .community-sphere .section-header h2 { margin-bottom: 0; }
 }
 
-/* Make-real (eingeklappter Atelier-Pfad) */
+/* Make-real (eingeklappter Fertigungs-Pfad) */
 .make-real[hidden] { display: none; }
 
 /* Sticky-CTA (mobil, immer erreichbar) */

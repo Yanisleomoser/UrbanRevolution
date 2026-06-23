@@ -1,6 +1,6 @@
 /**
  * Urban Revolution — Production Export
- * Erstellt produktionsfertige Vorlagen für Schneider und Fertigung.
+ * Erstellt produktionsfertige Vorlagen für die autonome Fertigung.
  */
 
 const Export = (() => {

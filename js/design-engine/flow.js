@@ -520,7 +520,7 @@ const DesignFlow = (() => {
         // order/render is truly to-measure (the fit/silhouette already rides in
         // the prompt via toSentence). Read-only snapshot. Measurements stay local
         // and are NOT sent to external APIs (design generation / VTO / preview) —
-        // they only ever appear in the exported spec sheet built for the tailor.
+        // they only ever appear in the exported spec sheet built for production.
         if (design && window.StateManager) {
           const m = window.StateManager.get("measurements");
           if (m) design.measurements = m;

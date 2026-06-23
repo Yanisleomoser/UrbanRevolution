@@ -92,7 +92,7 @@
   function initEasterEgg() {
     const input = document.getElementById("hero-prompt-input");
     if (!input) return;
-    const WORDS = ["revolution", "atelier", "couture", "zürich", "zurich"];
+    const WORDS = ["revolution", "autonomous", "autonom", "robots", "roboter", "recycled", "recycelt"];
     let fired = false;
     input.addEventListener("input", () => {
       if (fired) return;
