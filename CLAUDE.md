@@ -52,8 +52,11 @@ Sorgfalt erzeugt Tempo. Konkret, verbindlich:
 
 ## Was das ist
 Statische Marken-Website (HTML + Vanilla-JS-Module + CSS, KEIN Framework).
-KI-entworfene Einzelstücke nach Maß aus recycelter Kleidung — gegen Fast Fashion, für echtes Textil-Recycling.
-Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. Sprachen: DE + EN.
+Die Vision: eine vollautonome Kreislauf-Fabrik. Weggeworfene Fast-Fashion wird automatisch
+sortiert, und autonome Roboter fertigen daraus das vom Kunden auf der Website entworfene
+Einzelstück nach Maß — gegen Fast Fashion, für echtes Textil-Recycling. KI-entworfen, autonom
+gefertigt, ein Stück für einen Menschen, ohne Überproduktion.
+Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Vercel. Sprachen: DE + EN.
 
 ## Architektur (nicht umbauen)
 - Kein Build-Framework. Klassische `<script>`-Module im `window.X = …`-Muster, in index.html eingebunden. **Zwei Ausnahmen** (ES-Module, bewusst): `js/community-sphere.js` und die eigenständige Galerie-Seite `gallery/` — beide nutzen three.js (nur als ESM ausgeliefert) über die Import-Map + dynamisches `import()` (Lazy-Load). Sonst KEINE Module/Bundler einführen, ohne zu fragen.
@@ -90,11 +93,13 @@ Tagline „Made for one. Not for all." · AI · 3D · COUTURE. Deploy: Vercel. S
 
 ## Project
 
-Urban Revolution is a single-page web app — an "AI couture atelier." The
-user writes a free-text prompt describing a garment, the app turns it into
+Urban Revolution is a single-page web app for the vision of a **fully
+autonomous circular factory**: discarded fast fashion is sorted automatically,
+and autonomous robots craft each customer's design from the reclaimed materials.
+The user writes a free-text prompt describing a garment, the app turns it into
 a structured design concept, captures the user's measurements, renders a
 live 2D technical-flat preview (the data-driven Design Engine), and produces
-a printable production spec sheet for a tailor.
+a printable production spec sheet that drives the autonomous factory.
 
 The **landing experience** (`js/landing.js`, GSAP) is the front door:
 preloader logo-draw → hero with a thread-particle field → manifesto
@@ -116,7 +121,7 @@ UI copy is **bilingual German/English** (`I18N`, default `de`,
 ## Layout
 
 ```
-index.html              # The atelier app; landing + studio + sections, import map + script tags
+index.html              # The main app; landing + studio + sections, import map + script tags
 impressum.html          # German legal page (Impressum)
 datenschutz.html        # German privacy policy (DSGVO + Swiss)
 insights.html           # Design-Engine telemetry dashboard (admin, behind ?key=, noindex)

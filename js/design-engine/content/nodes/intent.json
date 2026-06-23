@@ -242,8 +242,8 @@
         {
           "id": "couture",
           "label": {
-            "de": "Weich & Couture",
-            "en": "Soft & couture"
+            "de": "Weich & Fliessend",
+            "en": "Soft & flowing"
           },
           "effects": {
             "set": {
@@ -313,8 +313,8 @@
         {
           "id": "atelier",
           "label": {
-            "de": "Atelier",
-            "en": "Atelier"
+            "de": "Studio",
+            "en": "Studio"
           },
           "image": "js/design-engine/content/img/mood/atelier.jpg",
           "effects": {

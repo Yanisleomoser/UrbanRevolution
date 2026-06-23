@@ -1,16 +1,18 @@
 # Urban Revolution
 
-**Made for one. Not for all.** — KI-Couture-Atelier für maßgeschneiderte Mode aus geretteter Faser recycelter Alttextilien.
+**Made for one. Not for all.** — vollautonome Kreislauf-Fabrik für maßgeschneiderte Mode, autonom gefertigt aus sortierter Faser recycelter Alttextilien.
 
 **Live:** [revolveurban.com](https://revolveurban.com)
 
 ---
 
-Urban Revolution ist eine Single-Page-Webapp — ein „AI Couture Atelier". Der Nutzer
+Urban Revolution ist eine Single-Page-Webapp — die Vision einer vollautonomen
+Kreislauf-Fabrik: weggeworfene Fast-Fashion wird automatisch sortiert, und autonome
+Roboter fertigen daraus das vom Kunden entworfene Stück. Der Nutzer
 beschreibt sein Wunschkleidungsstück per Text oder über eine adaptive Design-Reise; die
 KI macht daraus ein strukturiertes Designkonzept, eine live morphende 2D-Technik­zeichnung
 (Fashion-Flat) zeigt das Stück, neun Körpermaße werden erfasst, und ein produktionsfertiges
-Spec-Sheet kann an die Schneiderei gehen. Der Einstieg beginnt mit einem Manifest und einer
+Spec-Sheet steuert die autonome Fertigung. Der Einstieg beginnt mit einem Manifest und einer
 zitierten Fakten-Sektion zur Fast-Fashion-Problematik.
 
 Komplett zweisprachig (Deutsch/Englisch). Stack: reines HTML/CSS/JS ohne Bundler oder
@@ -19,7 +21,7 @@ Build-Schritt; gehostet auf Vercel, KI-Aufrufe laufen über Edge Functions in `a
 ## Features
 
 - **AI-Design-Generator** — Freie Text-Prompts werden zu strukturierten Designkonzepten
-  (Name, Beschreibung, Farbe, Material, Passform, Tags, Schneider-Notizen). Serverseitig
+  (Name, Beschreibung, Farbe, Material, Passform, Tags, Konstruktions-Notizen). Serverseitig
   über die Anthropic Claude API (`api/generate-design.js`); ohne Key greift ein lokaler,
   semantischer Offline-Fallback.
 - **Interaktive Design-Reise** — Eine adaptive, datengetriebene Fragenstrecke (This-or-That,
@@ -38,7 +40,7 @@ Build-Schritt; gehostet auf Vercel, KI-Aufrufe laufen über Edge Functions in `a
 
 ```
 /
-├── index.html              # Single-Page-Atelier (Manifest · Fakten · Design · Maße · Vorschau · Produktion · FAQ)
+├── index.html              # Single-Page-App (Manifest · Fakten · Design · Maße · Vorschau · Produktion · FAQ)
 ├── impressum.html          # Impressum · datenschutz.html (DSGVO) · insights.html
 ├── manifest.webmanifest    # PWA-Manifest · icon.svg
 ├── css/styles.css          # Komplettes Styling (Ocean-Depths-Dark-Theme, :root-Tokens)

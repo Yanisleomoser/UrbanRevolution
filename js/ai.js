@@ -198,11 +198,11 @@ const AI = (() => {
   function generateName(type) {
     const adjectives = {
       tshirt: ["Essential", "Signature", "Classic", "Urban", "Studio"],
-      hoodie: ["Atelier", "Heritage", "Urban", "Street", "Cult"],
-      shirt: ["Manhattan", "Riviera", "Atelier", "Heritage", "Sartorial"],
+      hoodie: ["Reclaim", "Heritage", "Urban", "Street", "Cult"],
+      shirt: ["Manhattan", "Riviera", "Circuit", "Heritage", "Sartorial"],
       pants: ["Modular", "Tokyo", "Heritage", "Workwear", "Studio"],
-      jacket: ["Bauhaus", "Brutalist", "Atelier", "Heritage", "Modular"],
-      dress: ["Soirée", "Atelier", "Riviera", "Modern", "Sculptural"],
+      jacket: ["Bauhaus", "Brutalist", "Foundry", "Heritage", "Modular"],
+      dress: ["Soirée", "Reclaim", "Riviera", "Modern", "Sculptural"],
     };
     const adj = adjectives[type] || adjectives.tshirt;
     const chosen = adj[Math.floor(Math.random() * adj.length)];
@@ -414,7 +414,7 @@ Antworte NUR mit JSON:
       "bio",
       "nachhaltig",
       "fairtrade",
-      "handgefertigt",
+      "recycelt",
     ];
     const lower = prompt.toLowerCase();
     keywords.forEach((kw) => {

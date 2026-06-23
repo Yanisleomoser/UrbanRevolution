@@ -1,7 +1,7 @@
 {
   "name": "urban-revolution",
   "version": "1.0.0",
-  "description": "AI Fashion Atelier - Urban Revolution",
+  "description": "Urban Revolution - autonomous circular factory for made-to-measure fashion from recycled clothing",
   "private": true,
   "scripts": {
     "dev": "npx serve .",

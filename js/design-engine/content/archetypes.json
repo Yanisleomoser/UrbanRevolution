@@ -63,7 +63,7 @@
     },
     {
       "id": "softCouture",
-      "label": { "de": "Soft Couture", "en": "Soft Couture" },
+      "label": { "de": "Weich & Fliessend", "en": "Soft & Fluid" },
       "defaults": {
         "length": "regular",
         "silhouette.fit": 0.35,
