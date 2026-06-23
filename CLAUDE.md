@@ -67,7 +67,8 @@ Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Ve
 
 ## Design-System — NUR bestehende :root-Tokens
 - Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2779A8` → Teal `#2A9D8F` → Aqua `#64D6C4` (`--gradient`, „Ocean Depths").
-- Fonts: NUR Lora (Display) + Poppins (Body). KEINE anderen Fonts (kein Inter, kein Playfair).
+- Fonts (drei Register): Fraunces (Display-Serif/Headlines, variabel mit optischer Grösse, Lora als Fallback) + Poppins (Body) + JetBrains Mono (Eyebrows/Labels/Einheiten/Marquee — die „Maschinen"-Stimme neben dem „Handwerks"-Serif). Selbst gehostet in `/assets/fonts/` (DSGVO, kein Google-CDN); neue Faces via `scripts/fetch-fonts-extra.mjs`. KEINE weiteren Fonts (kein Inter, kein Playfair).
+- Akzent-Wärme: `--accent-warm` (#E8A06A) ist der EINE warme Ton, bewusst nur im Identitäts-Beat (`#your-style`). Sonst bleibt die Palette „Ocean Depths".
 - Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum; Übergänge ≤ 250 ms; kein Layout-Sprung.
 
 ## Harte Regeln (immer)

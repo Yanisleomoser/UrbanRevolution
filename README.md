@@ -40,7 +40,8 @@ Build-Schritt; gehostet auf Vercel, KI-Aufrufe laufen über Edge Functions in `a
 - **Produktions-Spec-Sheet** — Automatisch berechnete Konfektionsgröße, Stoffmenge, Naht­-
   länge und Preisspanne (CHF). Export als JSON oder druckbares HTML.
 - **Ocean-Depths-Design-System** — Midnight-Navy mit Ozean-Blau/Teal/Aqua-Akzent, Display-
-  Serif Lora + Body-Sans Poppins; mobile-first, barrierefrei, `prefers-reduced-motion`.
+  Serif Fraunces + Body-Sans Poppins + Label-Mono JetBrains Mono (alle selbst gehostet);
+  mobile-first, barrierefrei, `prefers-reduced-motion`.
 
 ## Architektur
 

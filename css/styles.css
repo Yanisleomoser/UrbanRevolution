@@ -1,8 +1,12 @@
 :root {
-    /* Markentypografie — EIN Display-Serif (Lora) + EINE Body-Sans (Poppins).
+    /* Markentypografie — drei Register: Display-Serif (Fraunces, mit optischer
+       Grösse via font-optical-sizing:auto) für Headlines · Body-Sans (Poppins) ·
+       Mono (JetBrains Mono) für Eyebrows/Labels/Einheiten — die „Maschinen"-
+       Stimme neben dem „Handwerks"-Serif. Lora bleibt Fallback hinter Fraunces.
        Familienwechsel künftig nur hier. (Skala: --text-* bleibt.) */
-    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-display: 'Fraunces', 'Lora', Georgia, 'Times New Roman', serif;
     --font-body: 'Poppins', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
     --bg: #0a1622;
     --bg-elevated: #0f1e2e;
@@ -4675,7 +4679,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    (brand dark theme + pink→purple→cyan gradient; appended last)
    ============================================================ */
 .mono-label {
-    font-family: ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -4688,7 +4692,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .section-number.section-label,
 .howto-eyebrow.section-label,
 .manifesto-eyebrow.section-label {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     background: none !important;
     -webkit-text-fill-color: currentColor !important;
     color: var(--accent) !important;
@@ -6248,9 +6252,10 @@ html:not(.fx) .lp-loader { display: none; }
     animation: lp-marquee 30s linear infinite;
 }
 .lp-marquee-text {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: clamp(17px, 2.4vw, 24px);
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.6vw, 15px);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
     color: var(--text-muted);
     white-space: nowrap;
 }
@@ -6262,6 +6267,7 @@ html:not(.fx) .lp-loader { display: none; }
 /* ── Sektionen, Labels ── */
 .lp-block { padding: clamp(90px, 14vw, 160px) clamp(20px, 5vw, 48px); }
 .lp-label {
+    font-family: var(--font-mono);
     font-size: 11.5px;
     font-weight: 500;
     letter-spacing: var(--tracking-wider);
@@ -6441,7 +6447,7 @@ html.fx .lp-loop-step.is-active {
     background-clip: text;
     color: transparent;
 }
-.lp-stat-unit, .lp-stat-prefix { font-size: 0.55em; }
+.lp-stat-unit, .lp-stat-prefix { font-family: var(--font-mono); font-size: 0.5em; }
 .lp-stat-label {
     margin-top: 12px;
     color: var(--text-dim);
@@ -6502,6 +6508,7 @@ html.fx .lp-loop-step.is-active {
     color: transparent;
 }
 .lp-aidr-tag {
+    font-family: var(--font-mono);
     font-size: 11.5px;
     font-weight: 500;
     letter-spacing: var(--tracking-wider);

@@ -82,11 +82,14 @@
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://replicate.delivery">
 
-    <!-- Markentypografie: Lora (Display/Headlines, aufrecht + kursiv) + Poppins
-         (Body/UI), SELBST GEHOSTET (assets/fonts/, kein Google-CDN → keine
-         Besucher-IP an Google, DSGVO). font-display:swap je @font-face. Familien
-         sind in styles.css als --font-display / --font-body tokenisiert.
-         Generiert via scripts/fetch-fonts.mjs. -->
+    <!-- Markentypografie: Fraunces (Display-Serif/Headlines, aufrecht + kursiv,
+         variabel mit optischer Grösse; Lora als Fallback) + Poppins (Body/UI) +
+         JetBrains Mono (Eyebrows/Labels/Einheiten). SELBST GEHOSTET
+         (assets/fonts/, kein Google-CDN → keine Besucher-IP an Google, DSGVO).
+         font-display:swap je @font-face. Familien sind in styles.css als
+         --font-display / --font-body / --font-mono tokenisiert. Generiert via
+         scripts/fetch-fonts.mjs (Lora/Poppins) + scripts/fetch-fonts-extra.mjs
+         (Fraunces/JetBrains Mono). -->
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
