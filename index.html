@@ -7,15 +7,15 @@
     <meta name="color-scheme" content="dark">
 
     <title>Urban Revolution — Erschaffe die Zukunft der Mode</title>
-    <meta name="description" content="Erschaffe dein eigenes Kleidungsstück mit UR Create — KI-entworfen, nach deinen Massen. Eine vollautonome Fabrik sortiert weggeworfene Mode und fertigt dein Stück mit autonomen Robotern aus den recycelten Materialien. Ohne Überproduktion, ohne Abfall.">
-    <meta name="keywords" content="UR Create, KI Mode Design, Mode erschaffen, Nachhaltige Mode, Textilrecycling, autonome Fabrik, autonome Roboter, Kreislaufwirtschaft, Massgeschneidert, AI Fashion, Custom Clothing">
+    <meta name="description" content="Entwirf dein eigenes Kleidungsstück mit UR Create — dein Design, nach deinen Massen. Eine vollautonome Fabrik sortiert weggeworfene Mode und fertigt dein Stück mit autonomen Robotern aus den recycelten Materialien. Ohne Überproduktion, ohne Abfall.">
+    <meta name="keywords" content="UR Create, Mode selbst entwerfen, Custom Fashion, Mode erschaffen, Nachhaltige Mode, Textilrecycling, autonome Fabrik, autonome Roboter, Kreislaufwirtschaft, Massgeschneidert, AI Fashion, Custom Clothing">
     <meta name="author" content="Urban Revolution">
 
     <!-- Open Graph — beim Teilen auf Facebook, LinkedIn, iMessage, Slack -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Urban Revolution">
     <meta property="og:title" content="Erschaffe die Zukunft der Mode — Urban Revolution">
-    <meta property="og:description" content="Entwirf dein Stück mit UR Create — KI-entworfen, nach Mass. Eine vollautonome Fabrik fertigt es mit autonomen Robotern aus recycelter Mode. Keine Überproduktion.">
+    <meta property="og:description" content="Entwirf dein Stück mit UR Create — dein Design, nach Mass. Eine vollautonome Fabrik sortiert und fertigt es mit autonomen Robotern aus recycelter Mode. Keine Überproduktion.">
     <meta property="og:url" content="https://revolveurban.com">
     <meta property="og:locale" content="de_DE">
     <meta property="og:locale:alternate" content="en_US">
@@ -27,7 +27,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Erschaffe die Zukunft der Mode — Urban Revolution">
-    <meta name="twitter:description" content="Entwirf dein Stück mit UR Create — KI-entworfen, nach Mass, aus recycelter Kleidung. Keine Überproduktion.">
+    <meta name="twitter:description" content="Entwirf dein Stück mit UR Create — dein Design, nach Mass. Eine vollautonome Fabrik sortiert und fertigt es mit autonomen Robotern aus recycelter Mode. Keine Überproduktion.">
     <meta name="twitter:image" content="https://revolveurban.com/assets/og-image.png">
 
     <link rel="canonical" href="https://revolveurban.com/">
@@ -82,11 +82,14 @@
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://replicate.delivery">
 
-    <!-- Markentypografie: Lora (Display/Headlines, aufrecht + kursiv) + Poppins
-         (Body/UI), SELBST GEHOSTET (assets/fonts/, kein Google-CDN → keine
-         Besucher-IP an Google, DSGVO). font-display:swap je @font-face. Familien
-         sind in styles.css als --font-display / --font-body tokenisiert.
-         Generiert via scripts/fetch-fonts.mjs. -->
+    <!-- Markentypografie: Fraunces (Display-Serif/Headlines, aufrecht + kursiv,
+         variabel mit optischer Grösse; Lora als Fallback) + Poppins (Body/UI) +
+         JetBrains Mono (Eyebrows/Labels/Einheiten). SELBST GEHOSTET
+         (assets/fonts/, kein Google-CDN → keine Besucher-IP an Google, DSGVO).
+         font-display:swap je @font-face. Familien sind in styles.css als
+         --font-display / --font-body / --font-mono tokenisiert. Generiert via
+         scripts/fetch-fonts.mjs (Lora/Poppins) + scripts/fetch-fonts-extra.mjs
+         (Fraunces/JetBrains Mono). -->
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
@@ -145,7 +148,7 @@
       "logo": "https://revolveurban.com/assets/logo.png",
       "image": "https://revolveurban.com/assets/og-image.png",
       "slogan": "Made for one. Not for all.",
-      "description": "Vollautonome Kreislauf-Fabrik — KI-gestaltete, massgeschneiderte Mode, autonom gefertigt aus recycelter Mode",
+      "description": "Vollautonome Kreislauf-Fabrik — selbst gestaltete, massgeschneiderte Mode, autonom gefertigt aus recycelter Mode",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Zürich",
@@ -167,7 +170,7 @@
         "url": "https://revolveurban.com"
       },
       "areaServed": "CH",
-      "description": "KI entwirft dein Wunschkleidungsstück, eine fotorealistische Vorschau zeigt es an dir nach deinen Massen, und eine vollautonome Fabrik fertigt es mit autonomen Robotern aus recycelter Mode in unter 14 Tagen.",
+      "description": "Du entwirfst dein Wunschkleidungsstück, eine fotorealistische Vorschau zeigt es an dir nach deinen Massen, und eine vollautonome Fabrik fertigt es mit autonomen Robotern aus recycelter Mode in unter 14 Tagen.",
       "offers": {
         "@type": "Offer",
         "priceSpecification": {
@@ -222,7 +225,8 @@
 </head>
 <body>
     <a href="#main-content" class="skip-link" data-i18n="nav.skip">Zum Inhalt springen</a>
-    <div class="scroll-thread" aria-hidden="true"></div>
+    <div class="scroll-thread" aria-hidden="true"><span class="scroll-thread-fill"></span></div>
+    <div class="scroll-thread-needle" aria-hidden="true"></div>
 
     <!-- Preloader: Logo-Kreis zeichnet sich (nur mit GSAP + ohne reduced
          motion; sonst per CSS unsichtbar). Sicherheitsnetz in landing.js. -->
@@ -275,7 +279,7 @@
                 <span class="lp-hero-mask"><span class="lp-hero-line" data-i18n="landing.h1_line1">Made for one.</span></span>
                 <span class="lp-hero-mask"><span class="lp-hero-line lp-hero-line--grad" data-i18n="landing.h1_line2">Not for all.</span></span>
             </h1>
-            <p class="lp-hero-sub" data-i18n="landing.sub">KI-entworfene Einzelstücke nach Mass — aus Kleidung, die schon existiert. Keine Überproduktion. Kein Abfall. Nur deins.</p>
+            <p class="lp-hero-sub" data-i18n="landing.sub">Einzelstücke nach deinem Entwurf, nach Mass gefertigt — aus Kleidung, die schon existiert. Keine Überproduktion. Kein Abfall. Nur deins.</p>
             <div class="lp-hero-ctas">
                 <a class="lp-btn lp-btn--primary" href="#design" data-i18n="nav.enter">UR Create starten</a>
                 <a class="lp-btn lp-btn--ghost" href="#manifesto" data-i18n="landing.cta_secondary">Das Manifest</a>
@@ -300,7 +304,28 @@
     <!-- Manifest — Wort-für-Wort-Reveal beim Scrollen -->
     <section class="lp-manifesto lp-block" id="manifesto">
         <p class="lp-label" data-i18n="landing.manifesto_label">Manifest</p>
-        <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden: produzieren, tragen, wegwerfen. Wir biegen die Linie zurück zum Kreis. Jedes Stück beginnt als Kleidung, die schon gelebt hat — und wird zu etwas, das es nur einmal gibt. Entworfen von KI. Autonom gefertigt. Gemacht für dich.</p>
+        <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden: produzieren, tragen, wegwerfen. Wir biegen die Linie zurück zum Kreis. Jedes Stück beginnt als Kleidung, die schon gelebt hat — und wird zu etwas, das es nur einmal gibt. Entworfen von dir. Autonom gefertigt. Gemacht für dich.</p>
+    </section>
+
+    <!-- Die Zahlen — belegte Fast-Fashion-Fakten (Problem, bevor die Antwort kommt) -->
+    <section class="lp-stats lp-block" id="facts" data-lp-reveal>
+        <p class="lp-label" data-i18n="landing.stats_label">Die Zahlen</p>
+        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Warum es eine Revolution braucht</h2>
+        <div class="lp-stats-grid">
+            <div class="lp-stat">
+                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+            </div>
+            <div class="lp-stat">
+                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+            </div>
+            <div class="lp-stat">
+                <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+            </div>
+        </div>
+        <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
     </section>
 
     <!-- Der Kreislauf — gepinnte Kreis-Reise (4 Stationen) -->
@@ -348,8 +373,8 @@
                     </li>
                     <li class="lp-loop-step">
                         <span class="lp-loop-step-index" aria-hidden="true">03</span>
-                        <h3 class="lp-loop-step-title" data-i18n="landing.stage3_title">Neu gedacht</h3>
-                        <p class="lp-loop-step-text" data-i18n="landing.stage3_text">Du beschreibst deine Idee — die KI entwirft daraus ein Einzelstück nach deinen Massen.</p>
+                        <h3 class="lp-loop-step-title" data-i18n="landing.stage3_title">Entworfen</h3>
+                        <p class="lp-loop-step-text" data-i18n="landing.stage3_text">Du entwirfst dein Stück — dein Stil, deine Idee, nach deinen Massen.</p>
                     </li>
                     <li class="lp-loop-step">
                         <span class="lp-loop-step-index" aria-hidden="true">04</span>
@@ -361,25 +386,30 @@
         </div>
     </section>
 
-    <!-- Die Zahlen — belegte Fast-Fashion-Fakten -->
-    <section class="lp-stats lp-block" id="facts" data-lp-reveal>
-        <p class="lp-label" data-i18n="landing.stats_label">Die Zahlen</p>
-        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Warum es eine Revolution braucht</h2>
-        <div class="lp-stats-grid">
-            <div class="lp-stat">
-                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
-            </div>
-            <div class="lp-stat">
-                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
-            </div>
-            <div class="lp-stat">
-                <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
-            </div>
+    <!-- ★ KI, richtig eingesetzt — Botschaft #4 + die Mensch-vs-KI-Grenze -->
+    <section class="lp-aidr lp-block" id="ai-done-right" data-lp-reveal>
+        <p class="lp-label" data-i18n="aidr.label">KI, richtig eingesetzt</p>
+        <h2 class="lp-aidr-title" data-i18n-html="aidr.h2_html">Die meiste KI soll dich <em>mehr kaufen</em> lassen. Unsere soll <em>weniger verschwenden</em>.</h2>
+        <div class="lp-aidr-grid">
+            <article class="lp-aidr-card is-dim">
+                <p class="lp-aidr-tag" data-i18n="aidr.dim_tag">Das Übliche</p>
+                <h3 data-i18n="aidr.dim_h">Vorhersagen, anstossen, wiederholen</h3>
+                <p data-i18n="aidr.dim_p">Empfehlungssysteme, die dich schneller zum nächsten Kauf bringen. KI auf die Nachfrage gerichtet — sie erzeugt neue Bedürfnisse.</p>
+            </article>
+            <article class="lp-aidr-card is-lit">
+                <p class="lp-aidr-tag" data-i18n="aidr.lit_tag">Unser Einsatz</p>
+                <h3 data-i18n="aidr.lit_h">Sehen, trennen, zurückgewinnen</h3>
+                <p data-i18n="aidr.lit_p">KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.</p>
+            </article>
         </div>
-        <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+        <p class="lp-aidr-body" data-i18n-html="aidr.body_html">Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: ein System, das weggeworfene Textilien <strong>sieht, trennt und sortiert</strong> — und dein Stück <strong>autonom fertigt</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI sortiert den Stoff und baut das Stück.</strong></p>
+    </section>
+
+    <!-- ★ DEIN STIL — Botschaft #2, der Identitäts-Beat (der eine warme Akzent) -->
+    <section class="lp-identity lp-block" id="your-style" data-lp-reveal>
+        <p class="lp-label lp-label--warm" data-i18n="identity.label">Dein Stil</p>
+        <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">Deinen Stil gab es nie <em>von der Stange</em>.</h2>
+        <p class="lp-identity-body" data-i18n-html="identity.body_html">Eine Stange bietet dir eine Grösse. Wir bieten dir einen Anfang — eine Idee, eine Stimmung, eine Form in deinem Kopf — und fertigen das eine Stück, das deins ist. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
     </section>
 
     <!-- Finale — magnetischer Kreis-CTA, öffnet das Studio -->
@@ -942,7 +972,7 @@
                         <span class="logo-mark">UR</span>
                         <span class="logo-text">Urban Revolution</span>
                     </div>
-                    <p class="footer-tagline" data-i18n="footer.tagline">Massgeschneiderte Einzelstücke aus recycelter Mode. KI entwirft, autonome Roboter fertigen, du trägst.</p>
+                    <p class="footer-tagline" data-i18n="footer.tagline">Du entwirfst. Autonome Roboter fertigen. Du trägst.</p>
                 </div>
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_atelier" aria-label="Erschaffen">
                     <h5 data-i18n="footer.col_atelier">Erschaffen</h5>

@@ -1,8 +1,12 @@
 :root {
-    /* Markentypografie — EIN Display-Serif (Lora) + EINE Body-Sans (Poppins).
+    /* Markentypografie — drei Register: Display-Serif (Fraunces, mit optischer
+       Grösse via font-optical-sizing:auto) für Headlines · Body-Sans (Poppins) ·
+       Mono (JetBrains Mono) für Eyebrows/Labels/Einheiten — die „Maschinen"-
+       Stimme neben dem „Handwerks"-Serif. Lora bleibt Fallback hinter Fraunces.
        Familienwechsel künftig nur hier. (Skala: --text-* bleibt.) */
-    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-display: 'Fraunces', 'Lora', Georgia, 'Times New Roman', serif;
     --font-body: 'Poppins', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
     --bg: #0a1622;
     --bg-elevated: #0f1e2e;
@@ -17,6 +21,8 @@
     --accent-3: #64d6c4;
     --gradient: linear-gradient(135deg, #2779a8 0%, #2a9d8f 50%, #64d6c4 100%);
     --gradient-dim: linear-gradient(135deg, rgba(42, 157, 143, 0.15), rgba(39, 121, 168, 0.15));
+    /* Der EINE warme Akzent — bewusst sparsam, NUR im Identitäts-Beat (#your-style). */
+    --accent-warm: #E8A06A;
     --success: #10b981;
     --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.4);
     --shadow-glow: 0 0 60px rgba(42, 157, 143, 0.25);
@@ -4282,18 +4288,48 @@ main { display: block; }
    ============================================================ */
 
 /* Scroll "thread": a 2px gradient seam that sews shut as you scroll. */
+/* Naht-Faden — eine senkrechte „Stich"-Naht am Seitenrand, die sich beim
+   Scrollen zunäht (scaleY ∝ Gesamt-Scrollfortschritt). Gestrichelte Maske =
+   Stiche; ein glühender „Nadel"-Punkt sitzt an der genähten Kante. Die ganze
+   Seite verbindende Durchgangslinie — das Pendant zum sich schließenden Kreis. */
 .scroll-thread {
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-    background: linear-gradient(90deg, #2a9d8f, #2779a8, #64d6c4);
+    left: 10px;
+    width: 2px;
+    height: 100vh;
+    height: 100svh;
     z-index: 1000;
     pointer-events: none;
+    background: var(--border); /* noch nicht genähte Spur, sehr dezent */
+    -webkit-mask: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 11px);
+    mask: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 11px);
+}
+.scroll-thread-fill {
+    position: absolute;
+    inset: 0;
+    transform: scaleY(0);
+    transform-origin: 50% 0;
+    background: linear-gradient(180deg, #2a9d8f, #2779a8, #64d6c4);
     will-change: transform;
+}
+.scroll-thread-needle {
+    position: fixed;
+    top: 0;
+    left: 11px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 9px 1px rgba(100, 214, 196, 0.9) /* --accent-3 */, 0 0 4px rgba(100, 214, 196, 0.7);
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+    will-change: top;
+}
+/* Bewegung: ohne Bewegung keine Naht — Inhalt bleibt vollständig sichtbar. */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-thread, .scroll-thread-needle { display: none; }
 }
 
 /* Hero pointer aura — a soft neon spotlight that follows the cursor. Only
@@ -4643,7 +4679,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    (brand dark theme + pink→purple→cyan gradient; appended last)
    ============================================================ */
 .mono-label {
-    font-family: ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -4656,7 +4692,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .section-number.section-label,
 .howto-eyebrow.section-label,
 .manifesto-eyebrow.section-label {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     background: none !important;
     -webkit-text-fill-color: currentColor !important;
     color: var(--accent) !important;
@@ -6216,9 +6252,10 @@ html:not(.fx) .lp-loader { display: none; }
     animation: lp-marquee 30s linear infinite;
 }
 .lp-marquee-text {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: clamp(17px, 2.4vw, 24px);
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.6vw, 15px);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
     color: var(--text-muted);
     white-space: nowrap;
 }
@@ -6230,6 +6267,7 @@ html:not(.fx) .lp-loader { display: none; }
 /* ── Sektionen, Labels ── */
 .lp-block { padding: clamp(90px, 14vw, 160px) clamp(20px, 5vw, 48px); }
 .lp-label {
+    font-family: var(--font-mono);
     font-size: 11.5px;
     font-weight: 500;
     letter-spacing: var(--tracking-wider);
@@ -6409,7 +6447,7 @@ html.fx .lp-loop-step.is-active {
     background-clip: text;
     color: transparent;
 }
-.lp-stat-unit, .lp-stat-prefix { font-size: 0.55em; }
+.lp-stat-unit, .lp-stat-prefix { font-family: var(--font-mono); font-size: 0.5em; }
 .lp-stat-label {
     margin-top: 12px;
     color: var(--text-dim);
@@ -6423,6 +6461,113 @@ html.fx .lp-loop-step.is-active {
     color: var(--text-muted);
 }
 .lp-stats-sources a { color: var(--text-dim); }
+
+/* ── KI, richtig eingesetzt (AI, done right) ── */
+.lp-aidr { max-width: 1100px; margin: 0 auto; }
+.lp-aidr-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(30px, 5vw, 56px);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    max-width: 22ch;
+    margin-bottom: clamp(34px, 5vw, 60px);
+}
+.lp-aidr-title em { font-style: italic; color: var(--accent-3); }
+.lp-aidr-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 3vw, 28px);
+    margin-bottom: clamp(36px, 6vw, 64px);
+}
+@media (min-width: 760px) {
+    .lp-aidr-grid { grid-template-columns: 1fr 1fr; }
+}
+.lp-aidr-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: clamp(24px, 3.5vw, 40px);
+}
+/* "Das Übliche" — flach und zurückgenommen */
+.lp-aidr-card.is-dim { background: transparent; }
+.lp-aidr-card.is-dim .lp-aidr-tag { color: var(--text-muted); }
+.lp-aidr-card.is-dim h3 { color: var(--text-dim); }
+.lp-aidr-card.is-dim p { color: var(--text-muted); }
+/* "Unser Einsatz" — subtiler Verlaufsschimmer + akzentgetönter Rand */
+.lp-aidr-card.is-lit {
+    border-color: rgba(42, 157, 143, 0.5); /* --accent */
+    background:
+        radial-gradient(120% 120% at 0% 0%, rgba(42, 157, 143, 0.12) /* --accent */, transparent 60%),
+        var(--bg-card);
+    box-shadow: var(--shadow-glow);
+}
+.lp-aidr-card.is-lit .lp-aidr-tag {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.lp-aidr-tag {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+.lp-aidr-card h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(20px, 2.6vw, 27px);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+.lp-aidr-card p {
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(14.5px, 1.5vw, 16px);
+    line-height: 1.6;
+    max-width: 42ch;
+}
+.lp-aidr-body {
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15.5px, 1.9vw, 19px);
+    line-height: 1.7;
+    max-width: 64ch;
+}
+.lp-aidr-body strong { color: var(--text); font-weight: 500; }
+
+/* ── Dein Stil (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
+.lp-identity {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+    /* fauchter warmer Schimmer hinter dem Block — fällt zum Rand auf 0 ab */
+    background: radial-gradient(58% 52% at 50% 42%, rgba(232, 160, 106, 0.10) /* --accent-warm */, transparent 70%);
+}
+.lp-label--warm { color: var(--accent-warm); }
+.lp-identity-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(32px, 6vw, 64px);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    max-width: 16ch;
+    margin: 0 auto;
+}
+.lp-identity-title em { font-style: italic; color: var(--accent-warm); }
+.lp-identity-body {
+    margin: clamp(22px, 3.5vw, 32px) auto 0;
+    max-width: 54ch;
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15.5px, 1.9vw, 19px);
+    line-height: 1.7;
+}
+.lp-identity-body strong { color: var(--text); font-weight: 500; }
 
 /* ── Finale ── */
 .lp-finale {
