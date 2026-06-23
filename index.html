@@ -179,6 +179,46 @@
       }
     }
     </script>
+    <!-- FAQPage schema — spiegelt die sichtbare FAQ (#faq im make-real-Aufklapper),
+         Text 1:1 wie gerendert (DE, Standard-Sprache). -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Wie lange dauert die Produktion?",
+          "acceptedAnswer": { "@type": "Answer", "text": "In der Regel 7 bis 14 Werktage zwischen Bestellung und Versand. Komplexere Stücke (mehrlagige Jacken, aufwändige Stickerei) können bis zu 21 Tage benötigen — die geschätzte Lieferzeit zeigen wir dir nach der Generierung." }
+        },
+        {
+          "@type": "Question",
+          "name": "Was passiert mit meinem Foto?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Für die Masserkennung läuft alles direkt in deinem Browser über MediaPipe — das Foto verlässt nie dein Gerät und wird nicht gespeichert. Nur wenn du explizit die fotorealistische Vorschau anforderst, wird das Foto einmalig an Replicate (US-Server) gesendet und nach der Generierung sofort wieder verworfen." }
+        },
+        {
+          "@type": "Question",
+          "name": "Was kostet ein massgeschneidertes Stück?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Der Preis hängt von Stofftyp, Schnittkomplexität und gewählten Massen ab. Eine Spanne in CHF zeigen wir dir live in der Spec-Sheet-Vorschau — typisch CHF 145–220 für T-Shirts und Hemden, CHF 220–450 für Hosen und Jacken, CHF 380–680 für Mäntel und Kleider." }
+        },
+        {
+          "@type": "Question",
+          "name": "Was, wenn ich nicht gemessen wurde?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Drei Wege zu deinen Massen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder eine Grössenpresets (S/M/L/XL) als Startpunkt, die du danach anpassen kannst. Schneider erhalten alle Werte in der Produktions-Spec." }
+        },
+        {
+          "@type": "Question",
+          "name": "Wo wird gefertigt?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Aktuell arbeiten wir mit Schneider-Ateliers in der Schweiz und Norditalien zusammen — fair entlohnt, traceable Lieferketten, nachhaltige Materialien wo möglich. Für jede Bestellung sehen wir genau, wer welches Stück nach welcher Spec fertigt." }
+        },
+        {
+          "@type": "Question",
+          "name": "Kann ich gespeicherte Designs später nochmal bestellen?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Ja — alle Designs landen in deiner Bibliothek (lokal in deinem Browser), du kannst sie jederzeit wieder laden, anpassen und neu bestellen. Die fotorealistische Vorschau wird auf Wunsch automatisch ans Design angehängt." }
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
     <a href="#main-content" class="skip-link" data-i18n="nav.skip">Zum Inhalt springen</a>
@@ -753,6 +793,44 @@
                         <div class="estimate-line"><span data-i18n="est.price_label">Preisspanne:</span><span id="est-price">CHF 145 – 220</span></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6 · FAQ — letzter Teil des make-real-Aufklappers (Maße/Produktion/FAQ).
+         Antworten als <details>-Akkordeon; Texte über die faq.*-i18n-Keys. -->
+    <section id="faq" class="section faq-section">
+        <div class="container">
+            <div class="section-header" data-reveal>
+                <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.faq">[ FAQ ]</span>
+                <h2 data-i18n="faq.h2">Häufige Fragen</h2>
+                <p data-i18n="faq.intro">Alles was du wissen willst, bevor du dein erstes Stück bestellst.</p>
+            </div>
+            <div class="faq-list" data-reveal-stagger>
+                <details class="faq-item" data-reveal>
+                    <summary data-i18n="faq.q1">Wie lange dauert die Produktion?</summary>
+                    <p data-i18n="faq.a1">In der Regel 7 bis 14 Werktage zwischen Bestellung und Versand. Komplexere Stücke (mehrlagige Jacken, aufwändige Stickerei) können bis zu 21 Tage benötigen — die geschätzte Lieferzeit zeigen wir dir nach der Generierung.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary data-i18n="faq.q2">Was passiert mit meinem Foto?</summary>
+                    <p data-i18n="faq.a2">Für die Masserkennung läuft alles direkt in deinem Browser über MediaPipe — das Foto verlässt nie dein Gerät und wird nicht gespeichert. Nur wenn du explizit die fotorealistische Vorschau anforderst, wird das Foto einmalig an Replicate (US-Server) gesendet und nach der Generierung sofort wieder verworfen.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary data-i18n="faq.q3">Was kostet ein massgeschneidertes Stück?</summary>
+                    <p data-i18n="faq.a3">Der Preis hängt von Stofftyp, Schnittkomplexität und gewählten Massen ab. Eine Spanne in CHF zeigen wir dir live in der Spec-Sheet-Vorschau — typisch CHF 145–220 für T-Shirts und Hemden, CHF 220–450 für Hosen und Jacken, CHF 380–680 für Mäntel und Kleider.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary data-i18n="faq.q4">Was, wenn ich nicht gemessen wurde?</summary>
+                    <p data-i18n="faq.a4">Drei Wege zu deinen Massen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder eine Grössenpresets (S/M/L/XL) als Startpunkt, die du danach anpassen kannst. Schneider erhalten alle Werte in der Produktions-Spec.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary data-i18n="faq.q5">Wo wird gefertigt?</summary>
+                    <p data-i18n="faq.a5">Aktuell arbeiten wir mit Schneider-Ateliers in der Schweiz und Norditalien zusammen — fair entlohnt, traceable Lieferketten, nachhaltige Materialien wo möglich. Für jede Bestellung sehen wir genau, wer welches Stück nach welcher Spec fertigt.</p>
+                </details>
+                <details class="faq-item" data-reveal>
+                    <summary data-i18n="faq.q6">Kann ich gespeicherte Designs später nochmal bestellen?</summary>
+                    <p data-i18n="faq.a6">Ja — alle Designs landen in deiner Bibliothek (lokal in deinem Browser), du kannst sie jederzeit wieder laden, anpassen und neu bestellen. Die fotorealistische Vorschau wird auf Wunsch automatisch ans Design angehängt.</p>
+                </details>
             </div>
         </div>
     </section>

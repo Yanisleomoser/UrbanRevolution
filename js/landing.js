@@ -5,7 +5,7 @@
  * Preloader-Logo-Draw, Hero-Intro + Faden-Partikelfeld, Manifest-Wort-Scrub,
  * gepinnte Kreislauf-Sektion, Zahlen-Count-up, magnetischer Kreis-CTA —
  * und den STUDIO-REVEAL: das Studio (#studio) ist verborgen, bis ein CTA
- * (Anker auf #design/#measure/#production) oder ein Share-/Deep-Link es öffnet.
+ * (Anker auf #design/#measure/#production/#faq) oder ein Share-/Deep-Link es öffnet.
  *
  * Progressive Enhancement in drei Stufen:
  *   1. Ohne JS / ohne GSAP: alles sichtbar und benutzbar (reines CSS).
@@ -20,7 +20,7 @@
   // Which URL fragments open the studio: a studio anchor, or a share/deep link
   // carrying an encoded design (#dna=…). Pure + DOM-free, hoisted above any
   // window access so it can be unit-tested headless (the rest is GSAP/canvas).
-  const STUDIO_ANCHORS = ["design", "ownership", "measure", "production"];
+  const STUDIO_ANCHORS = ["design", "ownership", "measure", "production", "faq"];
   function shouldRevealForHash(hash) {
     const h = String(hash || "");
     return /[#&]dna=/.test(h) || STUDIO_ANCHORS.includes(h.replace(/^#/, ""));
