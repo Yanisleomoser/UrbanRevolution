@@ -17,6 +17,8 @@
     --accent-3: #64d6c4;
     --gradient: linear-gradient(135deg, #2779a8 0%, #2a9d8f 50%, #64d6c4 100%);
     --gradient-dim: linear-gradient(135deg, rgba(42, 157, 143, 0.15), rgba(39, 121, 168, 0.15));
+    /* Der EINE warme Akzent — bewusst sparsam, NUR im Identitäts-Beat (#your-style). */
+    --accent-warm: #E8A06A;
     --success: #10b981;
     --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.4);
     --shadow-glow: 0 0 60px rgba(42, 157, 143, 0.25);
@@ -6500,6 +6502,35 @@ html.fx .lp-loop-step.is-active {
     max-width: 64ch;
 }
 .lp-aidr-body strong { color: var(--text); font-weight: 500; }
+
+/* ── Dein Stil (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
+.lp-identity {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+    /* fauchter warmer Schimmer hinter dem Block — fällt zum Rand auf 0 ab */
+    background: radial-gradient(58% 52% at 50% 42%, rgba(232, 160, 106, 0.10) /* --accent-warm */, transparent 70%);
+}
+.lp-label--warm { color: var(--accent-warm); }
+.lp-identity-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(32px, 6vw, 64px);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    max-width: 16ch;
+    margin: 0 auto;
+}
+.lp-identity-title em { font-style: italic; color: var(--accent-warm); }
+.lp-identity-body {
+    margin: clamp(22px, 3.5vw, 32px) auto 0;
+    max-width: 54ch;
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15.5px, 1.9vw, 19px);
+    line-height: 1.7;
+}
+.lp-identity-body strong { color: var(--text); font-weight: 500; }
 
 /* ── Finale ── */
 .lp-finale {

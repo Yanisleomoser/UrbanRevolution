@@ -755,6 +755,11 @@ const I18N = (() => {
       "aidr.lit_h": "Sehen, trennen, zurückgewinnen",
       "aidr.lit_p": "KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.",
       "aidr.body_html": "Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: ein System, das weggeworfene Textilien <strong>sieht, trennt und sortiert</strong> — und dein Stück <strong>autonom fertigt</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI sortiert den Stoff und baut das Stück.</strong>",
+
+      // ── Dein Stil (Landing-Beat #2 — Identität) ──
+      "identity.label": "Dein Stil",
+      "identity.h2_html": "Deinen Stil gab es nie <em>von der Stange</em>.",
+      "identity.body_html": "Eine Stange bietet dir eine Grösse. Wir bieten dir einen Anfang — eine Idee, eine Stimmung, eine Form in deinem Kopf — und fertigen das eine Stück, das deins ist. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong>",
     },
 
     en: {
@@ -1491,6 +1496,11 @@ const I18N = (() => {
       "aidr.lit_h": "See, separate, reclaim",
       "aidr.lit_p": "AI aimed at the discard pile: untangling what was thrown away so it can live again.",
       "aidr.body_html": "The hard problem in circular fashion was never the sewing — it's untangling what's thrown away. Mixed fibres, fastenings, dyes; a pile no human line can sort at scale. That's exactly where we point AI: a system that <strong>sees, separates and sorts</strong> discarded textile — and <strong>autonomously makes</strong> your piece. That is the correct use of this technology: solving a human-made problem, not inventing a new reason to consume. <strong>The design stays yours. You set the style — AI sorts the fabric and builds the piece.</strong>",
+
+      // ── Your style (landing beat #2 — identity) ──
+      "identity.label": "Your style",
+      "identity.h2_html": "Your style was never <em>on a rack</em>.",
+      "identity.body_html": "A rack offers you a size. We offer you a starting point — an idea, a mood, a shape in your head — and make the one piece that's yours. <strong>Identity isn't chosen from options. It's made.</strong>",
     },
   };
 
