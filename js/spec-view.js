@@ -67,9 +67,7 @@ const SpecView = (() => {
     renderColor(document.getElementById("spec-color"), color);
     const printEl = document.getElementById("spec-print");
     if (printEl) {
-      const rawPrint =
-        typeof print === "string" ? print : (print == null ? "" : String(print));
-      const normalisedPrint = rawPrint.trim();
+      const normalisedPrint = typeof print === "string" ? print.trim() : "";
       printEl.textContent = normalisedPrint ? quoteText(normalisedPrint) : "—";
     }
     renderMeasures(

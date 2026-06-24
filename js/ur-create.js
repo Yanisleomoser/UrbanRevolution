@@ -60,7 +60,20 @@
       const doc = parser.parseFromString(markup, "image/svg+xml");
       const root = doc.documentElement;
       if (!root || root.tagName.toLowerCase() !== "svg") return;
-      root.querySelectorAll("script,foreignObject").forEach((el) => el.remove());
+      root.querySelectorAll("script,foreignObject,iframe,object,embed").forEach((el) => el.remove());
+      root.querySelectorAll("*").forEach((node) => {
+        Array.from(node.attributes || []).forEach((attr) => {
+          const name = String(attr.name || "").toLowerCase();
+          const value = String(attr.value || "").trim().toLowerCase();
+          if (name.startsWith("on")) {
+            node.removeAttribute(attr.name);
+            return;
+          }
+          if ((name === "href" || name === "xlink:href") && value.startsWith("javascript:")) {
+            node.removeAttribute(attr.name);
+          }
+        });
+      });
       container.appendChild(document.importNode(root, true));
     } catch (_e) {
       // ignore invalid markup and keep the stage empty
@@ -424,7 +437,12 @@
     });
     grid.querySelectorAll("[data-d]").forEach((btn) => btn.addEventListener("click", (e) => {
       e.preventDefault();
-      openInCreate(btn.getAttribute("data-d"));
+      const encoded = btn.getAttribute("data-d") || "";
+      try {
+        openInCreate(decodeURIComponent(encoded));
+      } catch (_err) {
+        openInCreate(encoded);
+      }
     }));
   }
 
