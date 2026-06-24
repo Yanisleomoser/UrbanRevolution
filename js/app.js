@@ -1190,10 +1190,12 @@
       .map((n) => `<li>${escapeHtml(n)}</li>`)
       .join("");
 
-    document.getElementById("est-time").textContent =
-      t("est.days", { n: specData.production.estimatedProductionDays });
-    document.getElementById("est-price").textContent =
-      `${specData.production.estimatedPriceRange.currency} ${specData.production.estimatedPriceRange.min} – ${specData.production.estimatedPriceRange.max}`;
+    // Pre-launch: no live lead time or price exists yet, so the estimate block
+    // shows an honest forward-looking placeholder instead of a concrete quote
+    // (which would read as a real offer). The computed days/range stay in the
+    // spec data for the future, but aren't presented as a deliverable here.
+    document.getElementById("est-time").textContent = t("est.future");
+    document.getElementById("est-price").textContent = t("est.price_planned");
   }
 
   function getCurrentSpecData() {
@@ -1229,20 +1231,17 @@
       Export.print();
     });
 
-    document.getElementById("send-order").addEventListener("click", async () => {
+    document.getElementById("send-order").addEventListener("click", () => {
       const spec = getCurrentSpecData();
       if (!spec) return;
-      showToast(t("toast.order_sending"), "info");
-      const result = await Export.simulateOrderSubmission(spec);
-      if (result.success) {
-        showToast(
-          t("toast.order_done", {
-            confirmation: result.confirmation,
-            date: result.estimatedDelivery,
-          }),
-          "success"
-        );
-      }
+      // Pre-launch: there is no production or checkout yet, so the honest
+      // action is to JOIN ("be first"), not to place an order. Open the
+      // existing Formspree join overlay — its CTA (#sphere-join-cta) wires the
+      // overlay at module load, independent of the lazy 3D boot. Fall back to
+      // navigating to #community if the CTA isn't in the DOM.
+      const joinCta = document.getElementById("sphere-join-cta");
+      if (joinCta) joinCta.click();
+      else location.hash = "#community";
     });
   }
 
