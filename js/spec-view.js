@@ -4,6 +4,14 @@
  */
 
 const SpecView = (() => {
+  function quoteText(text) {
+    const lang = window.I18N && typeof window.I18N.locale === "function"
+      ? String(window.I18N.locale()).toLowerCase()
+      : "de";
+    if (lang.startsWith("de")) return `„${text}“`;
+    return `“${text}”`;
+  }
+
   function clear(el) {
     while (el && el.firstChild) el.removeChild(el.firstChild);
   }
@@ -62,7 +70,7 @@ const SpecView = (() => {
       const rawPrint =
         typeof print === "string" ? print : (print == null ? "" : String(print));
       const normalisedPrint = rawPrint.trim();
-      printEl.textContent = normalisedPrint ? `„${normalisedPrint}“` : "—";
+      printEl.textContent = normalisedPrint ? quoteText(normalisedPrint) : "—";
     }
     renderMeasures(
       document.getElementById("spec-measures"),

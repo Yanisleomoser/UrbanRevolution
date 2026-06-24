@@ -51,6 +51,21 @@
     }
   }
   const decode = (s) => (window.DesignShare ? window.DesignShare.decode(s) : null);
+
+  function appendSafeSvg(container, markup) {
+    if (!container) return;
+    if (!markup || typeof markup !== "string") return;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(markup, "image/svg+xml");
+      const root = doc.documentElement;
+      if (!root || root.tagName.toLowerCase() !== "svg") return;
+      root.querySelectorAll("script,foreignObject").forEach((el) => el.remove());
+      container.appendChild(document.importNode(root, true));
+    } catch (_e) {
+      // ignore invalid markup and keep the stage empty
+    }
+  }
   // Aktuelle Journey-DNA (für Share/Publish) aus dem von flow.js gepflegten
   // localStorage-Eintrag lesen — ohne flow.js anzufassen.
   function currentDna() {
@@ -373,7 +388,7 @@
 
       const stage = document.createElement("div");
       stage.className = "gallery-tile-stage";
-      stage.innerHTML = svg;
+      appendSafeSvg(stage, svg);
 
       const nameEl = document.createElement("p");
       nameEl.className = "gallery-tile-name";

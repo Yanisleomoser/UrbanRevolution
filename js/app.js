@@ -1168,15 +1168,13 @@
       specData.specifications.fit;
     document.getElementById("spec-length").textContent =
       lengthLabel(currentLength);
-    if (window.SpecView && typeof window.SpecView.renderProductionDetails === "function") {
-      window.SpecView.renderProductionDetails({
-        color: currentColor,
-        print: currentPrint,
-        measurements,
-        constructionNotes: design.constructionNotes,
-        measureLabel,
-      });
-    }
+    window.SpecView.renderProductionDetails({
+      color: currentColor,
+      print: currentPrint,
+      measurements,
+      constructionNotes: design.constructionNotes,
+      measureLabel,
+    });
     document.getElementById("spec-size").textContent =
       specData.specifications.size;
 
