@@ -153,7 +153,30 @@ const PreviewFallback = (() => {
         );
     }
 
-    return { svg };
+    function svgNode(d) {
+        const markup = svg(d);
+        const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
+        const root = parsed.documentElement;
+        if (!root || root.localName !== "svg" || root.namespaceURI !== "http://www.w3.org/2000/svg") {
+            return null;
+        }
+
+        root.querySelectorAll("script,foreignObject").forEach((n) => n.remove());
+        root.querySelectorAll("*").forEach((el) => {
+            Array.from(el.attributes).forEach((attr) => {
+                const n = attr.name.toLowerCase();
+                const v = String(attr.value || "").trim().toLowerCase();
+                if (n.startsWith("on")) el.removeAttribute(attr.name);
+                if ((n === "href" || n === "xlink:href") && v.startsWith("javascript:")) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        return document.importNode(root, true);
+    }
+
+    return { svg, svgNode };
 })();
 if (typeof window !== "undefined") window.PreviewFallback = PreviewFallback;
 if (typeof module !== "undefined" && module.exports) module.exports = PreviewFallback;

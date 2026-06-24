@@ -1570,22 +1570,28 @@
     // client-side studio illustration instead of an error — the preview never
     // dead-ends. A retry button still lets them re-attempt the photoreal one.
     if (opts.fallback && window.PreviewFallback) {
-      const markup = window.PreviewFallback.svg({
+      const fallbackData = {
         type: S.get("currentType"),
         color: S.get("currentColor"),
         material: S.get("currentMaterial"),
         pattern: design && design.pattern,
         name: design && design.name,
-      });
+      };
 
       slot.textContent = "";
       const figure = document.createElement("figure");
       figure.className = "design-preview-figure design-preview-figure--fallback";
 
-      const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
-      const svg = parsed.documentElement;
-      if (svg && svg.localName === "svg" && svg.namespaceURI === "http://www.w3.org/2000/svg") {
-        figure.appendChild(document.importNode(svg, true));
+      if (typeof window.PreviewFallback.svgNode === "function") {
+        const svgNode = window.PreviewFallback.svgNode(fallbackData);
+        if (svgNode) figure.appendChild(svgNode);
+      } else {
+        const markup = window.PreviewFallback.svg(fallbackData);
+        const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
+        const svg = parsed.documentElement;
+        if (svg && svg.localName === "svg" && svg.namespaceURI === "http://www.w3.org/2000/svg") {
+          figure.appendChild(document.importNode(svg, true));
+        }
       }
 
       const figcaption = document.createElement("figcaption");
