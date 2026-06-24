@@ -1577,14 +1577,28 @@
         pattern: design && design.pattern,
         name: design && design.name,
       });
-      slot.innerHTML =
-        `<figure class="design-preview-figure design-preview-figure--fallback">` +
-        markup +
-        `<figcaption class="design-preview-cap">` +
-        `<span class="design-preview-badge design-preview-badge--free">${escapeHtml(t("dpreview.fallback_badge"))}</span>` +
-        `${escapeHtml(t("dpreview.fallback_caption"))}` +
-        `</figcaption></figure>` +
-        previewSlotPrompt(t("dpreview.fallback_retry"));
+
+      slot.textContent = "";
+      const figure = document.createElement("figure");
+      figure.className = "design-preview-figure design-preview-figure--fallback";
+
+      const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
+      const svg = parsed.documentElement;
+      if (svg && svg.localName === "svg" && svg.namespaceURI === "http://www.w3.org/2000/svg") {
+        figure.appendChild(document.importNode(svg, true));
+      }
+
+      const figcaption = document.createElement("figcaption");
+      figcaption.className = "design-preview-cap";
+      const badge = document.createElement("span");
+      badge.className = "design-preview-badge design-preview-badge--free";
+      badge.textContent = t("dpreview.fallback_badge");
+      figcaption.appendChild(badge);
+      figcaption.appendChild(document.createTextNode(t("dpreview.fallback_caption")));
+      figure.appendChild(figcaption);
+
+      slot.appendChild(figure);
+      slot.insertAdjacentHTML("beforeend", previewSlotPrompt(t("dpreview.fallback_retry")));
       document.getElementById("design-preview-btn")
         ?.addEventListener("click", generateDesignPreview);
       return;
