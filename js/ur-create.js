@@ -65,11 +65,27 @@
         Array.from(node.attributes || []).forEach((attr) => {
           const name = String(attr.name || "").toLowerCase();
           const value = String(attr.value || "").trim().toLowerCase();
+          const isUnsafeScheme = /^(?:javascript|vbscript|data):/.test(value);
+          const isExternalUrl = /^https?:/.test(value);
           if (name.startsWith("on")) {
             node.removeAttribute(attr.name);
             return;
           }
-          if ((name === "href" || name === "xlink:href") && value.startsWith("javascript:")) {
+          if (name === "href" || name === "xlink:href") {
+            if (isUnsafeScheme || isExternalUrl) {
+              node.removeAttribute(attr.name);
+              return;
+            }
+            if (
+              node.tagName &&
+              node.tagName.toLowerCase() === "use" &&
+              value &&
+              !value.startsWith("#")
+            ) {
+              node.removeAttribute(attr.name);
+            }
+          }
+          if ((name === "src" || name === "xlink:src") && (isUnsafeScheme || isExternalUrl)) {
             node.removeAttribute(attr.name);
           }
         });
@@ -441,6 +457,7 @@
       try {
         openInCreate(decodeURIComponent(encoded));
       } catch (_err) {
+        console.warn("[gallery] failed to decode published design DNA:", _err);
         openInCreate(encoded);
       }
     }));
