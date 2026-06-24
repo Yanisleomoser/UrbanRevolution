@@ -328,17 +328,29 @@
     const present = new Set(galleryItems.map((x) => x.category).filter(Boolean));
     const order = (window.CONFIG && window.CONFIG.GARMENT_TYPES) || [];
     const types = order.filter((k) => present.has(k));
-    if (types.length < 2) { bar.innerHTML = ""; bar.hidden = true; return; }
+    if (types.length < 2) {
+      while (bar.firstChild) bar.removeChild(bar.firstChild);
+      bar.hidden = true;
+      return;
+    }
     bar.hidden = false;
-    const chip = (key, label) =>
-      `<button type="button" class="gallery-chip${galleryFilter === key ? " is-active" : ""}" data-filter="${key}" aria-pressed="${galleryFilter === key ? "true" : "false"}">${label}</button>`;
-    bar.innerHTML = chip("all", t("gal.filter_all")) +
-      types.map((k) => chip(k, t("type." + k))).join("");
-    bar.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
-      galleryFilter = b.getAttribute("data-filter");
-      buildFilters();
-      paintGallery();
-    }));
+    while (bar.firstChild) bar.removeChild(bar.firstChild);
+    const chips = ["all", ...types];
+    chips.forEach((key) => {
+      const b = document.createElement("button");
+      const isActive = galleryFilter === key;
+      b.type = "button";
+      b.className = `gallery-chip${isActive ? " is-active" : ""}`;
+      b.dataset.filter = key;
+      b.setAttribute("aria-pressed", isActive ? "true" : "false");
+      b.textContent = key === "all" ? t("gal.filter_all") : t("type." + key);
+      b.addEventListener("click", () => {
+        galleryFilter = key;
+        buildFilters();
+        paintGallery();
+      });
+      bar.appendChild(b);
+    });
   }
 
   function paintGallery() {
@@ -348,7 +360,11 @@
       ? galleryItems
       : galleryItems.filter((x) => x.category === galleryFilter);
     if (!view.length) {
-      grid.innerHTML = `<p class="gallery-empty">${t("gal.empty")}</p>`;
+      while (grid.firstChild) grid.removeChild(grid.firstChild);
+      const empty = document.createElement("p");
+      empty.className = "gallery-empty";
+      empty.textContent = t("gal.empty");
+      grid.appendChild(empty);
       return;
     }
     grid.innerHTML = view.map(({ it, dna }, idx) => {

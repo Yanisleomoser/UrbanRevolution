@@ -4,7 +4,7 @@
  */
 
 const StateManager = (() => {
-    const state = {
+    const DEFAULT_STATE = {
         currentDesign: null,
         currentType: 'tshirt',
         currentColor: '#1a1a1a',
@@ -18,6 +18,7 @@ const StateManager = (() => {
         hairColor: '#3a2010',
         userPhoto: null
     };
+    const state = { ...DEFAULT_STATE };
 
     const listeners = new Map(); // eventType -> Set of callbacks
     const history = [];
@@ -112,26 +113,8 @@ const StateManager = (() => {
     }
 
     function reset() {
-        const keys = Object.keys(state);
-        keys.forEach(key => {
-            const defaultValue = {
-                currentType: 'tshirt',
-                currentColor: '#1a1a1a',
-                currentMaterial: 'cotton',
-                currentFit: 0.5,
-                currentLength: 'regular',
-                currentPrint: '',
-                currentDesign: null,
-                measurements: null,
-                avatar: 'male_regular',
-                skinTone: '#d8d4cf',
-                hairColor: '#3a2010',
-                userPhoto: null
-            }[key];
-            
-            if (defaultValue !== undefined) {
-                state[key] = defaultValue;
-            }
+        Object.keys(DEFAULT_STATE).forEach((key) => {
+            state[key] = DEFAULT_STATE[key];
         });
         
         emit('state:reset', {});

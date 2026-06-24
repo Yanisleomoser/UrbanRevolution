@@ -1164,31 +1164,38 @@
     document.getElementById("spec-type").textContent = typeLabel(currentType);
     document.getElementById("spec-material").textContent = typeMaterialLabel(currentMaterial);
 
-    const colorCell = document.getElementById("spec-color");
-    colorCell.innerHTML =
-      `<span style="display:inline-block;width:14px;height:14px;background:${currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${currentColor}`;
-
     document.getElementById("spec-fit").textContent =
       specData.specifications.fit;
     document.getElementById("spec-length").textContent =
       lengthLabel(currentLength);
-    document.getElementById("spec-print").textContent =
-      currentPrint ? `„${currentPrint}"` : "—";
+    if (window.SpecView && typeof window.SpecView.renderProductionDetails === "function") {
+      window.SpecView.renderProductionDetails({
+        color: currentColor,
+        print: currentPrint,
+        measurements,
+        constructionNotes: design.constructionNotes,
+        measureLabel,
+      });
+    } else {
+      const colorCell = document.getElementById("spec-color");
+      colorCell.innerHTML =
+        `<span style="display:inline-block;width:14px;height:14px;background:${currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${currentColor}`;
+      document.getElementById("spec-print").textContent =
+        currentPrint ? `„${currentPrint}“` : "—";
+      const measuresTable = document.getElementById("spec-measures");
+      measuresTable.innerHTML = Object.entries(measurements)
+        .map(
+          ([k, v]) =>
+            `<tr><td>${escapeHtml(measureLabel(k))}</td><td>${v} cm</td></tr>`
+        )
+        .join("");
+      const notesList = document.getElementById("spec-notes");
+      notesList.innerHTML = (design.constructionNotes || [])
+        .map((n) => `<li>${escapeHtml(n)}</li>`)
+        .join("");
+    }
     document.getElementById("spec-size").textContent =
       specData.specifications.size;
-
-    const measuresTable = document.getElementById("spec-measures");
-    measuresTable.innerHTML = Object.entries(measurements)
-      .map(
-        ([k, v]) =>
-          `<tr><td>${escapeHtml(measureLabel(k))}</td><td>${v} cm</td></tr>`
-      )
-      .join("");
-
-    const notesList = document.getElementById("spec-notes");
-    notesList.innerHTML = (design.constructionNotes || [])
-      .map((n) => `<li>${escapeHtml(n)}</li>`)
-      .join("");
 
     // Pre-launch: no live lead time or price exists yet, so the estimate block
     // shows an honest forward-looking placeholder instead of a concrete quote
