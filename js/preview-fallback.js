@@ -158,7 +158,18 @@ const PreviewFallback = (() => {
     }
 
     function svgNode(d) {
-        const markup = svg(d);
+        const input = d && typeof d === "object" ? d : {};
+        const safeData = {
+            type: SILHOUETTES[input.type] ? input.type : "tshirt",
+            color: /^#[0-9a-f]{6}$/i.test(input.color || "") ? input.color : "#9aa0a8",
+            material: Object.prototype.hasOwnProperty.call(SHEEN, input.material) ? input.material : "cotton",
+            pattern: input.pattern === "solid" || input.pattern === "stripe" || input.pattern === "dot" || input.pattern === "gradient"
+                ? input.pattern
+                : null,
+            name: String(input.name || "").slice(0, 120),
+        };
+
+        const markup = svg(safeData);
         const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
         const root = parsed.documentElement;
         if (!root || root.localName !== "svg" || root.namespaceURI !== "http://www.w3.org/2000/svg") {
