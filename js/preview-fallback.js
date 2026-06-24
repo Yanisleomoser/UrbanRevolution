@@ -171,7 +171,10 @@ const PreviewFallback = (() => {
                 const n = attr.name.toLowerCase();
                 const v = String(attr.value || "").trim().toLowerCase();
                 if (n.startsWith("on")) el.removeAttribute(attr.name);
-                if ((n === "href" || n === "xlink:href") && v.startsWith("javascript:")) {
+                if (
+                    (n === "href" || n === "xlink:href") &&
+                    (v.startsWith("javascript:") || v.startsWith("data:") || v.startsWith("vbscript:"))
+                ) {
                     el.removeAttribute(attr.name);
                 }
             });
