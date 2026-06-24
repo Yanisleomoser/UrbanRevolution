@@ -1582,16 +1582,20 @@
       const figure = document.createElement("figure");
       figure.className = "design-preview-figure design-preview-figure--fallback";
 
+      let hasPreviewGraphic = false;
       if (typeof window.PreviewFallback.svgNode === "function") {
         const svgNode = window.PreviewFallback.svgNode(fallbackData);
-        if (svgNode) figure.appendChild(svgNode);
-      } else {
-        const markup = window.PreviewFallback.svg(fallbackData);
-        const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
-        const svg = parsed.documentElement;
-        if (svg && svg.localName === "svg" && svg.namespaceURI === "http://www.w3.org/2000/svg") {
-          figure.appendChild(document.importNode(svg, true));
+        if (svgNode) {
+          figure.appendChild(svgNode);
+          hasPreviewGraphic = true;
         }
+      }
+      if (!hasPreviewGraphic) {
+        const noPreview = document.createElement("p");
+        noPreview.className = "design-preview-error";
+        noPreview.setAttribute("role", "status");
+        noPreview.textContent = t("dpreview.retry");
+        figure.appendChild(noPreview);
       }
 
       const figcaption = document.createElement("figcaption");
