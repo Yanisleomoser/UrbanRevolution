@@ -1561,7 +1561,18 @@ const I18N = (() => {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
     root.querySelectorAll("[data-i18n-html]").forEach((el) => {
-      el.innerHTML = t(el.getAttribute("data-i18n-html"));
+      const key = el.getAttribute("data-i18n-html");
+      const html = t(key);
+      if (
+        typeof window !== "undefined" &&
+        window.DOMPurify &&
+        typeof window.DOMPurify.sanitize === "function"
+      ) {
+        el.innerHTML = window.DOMPurify.sanitize(String(html));
+      } else {
+        // Safe fallback if sanitizer is not available.
+        el.textContent = String(html);
+      }
     });
     root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
