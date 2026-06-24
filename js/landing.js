@@ -32,8 +32,18 @@
   const hasGsap = typeof window.gsap !== "undefined" && typeof window.ScrollTrigger !== "undefined";
   const fx = hasGsap && !reduceMotion;
   if (fx) {
-    document.documentElement.classList.add("fx");
+    document.documentElement.classList.add("fx"); // already set in <head>; idempotent
     window.gsap.registerPlugin(window.ScrollTrigger);
+    // The mobile URL bar sliding in/out fires a viewport resize; by default
+    // ScrollTrigger re-measures on it and the pinned loop section visibly jumps
+    // on every toolbar toggle. --svh is already frozen against height-only
+    // resizes (see <head>), so tell ScrollTrigger to ignore them too.
+    window.ScrollTrigger.config({ ignoreMobileResize: true });
+  } else {
+    // GSAP missing or reduced motion: undo the <head>'s optimistic html.fx so
+    // the CSS-gated loader (html:not(.fx) .lp-loader { display:none }) reveals
+    // the page instead of staying covered.
+    document.documentElement.classList.remove("fx");
   }
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
