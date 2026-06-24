@@ -275,6 +275,21 @@
     }
   }
 
+  function normalizeMaterial(value) {
+    const allowed = ["cotton", "wool", "silk", "linen", "denim", "leather"];
+    return allowed.includes(value) ? value : "cotton";
+  }
+
+  function normalizeLength(value) {
+    const allowed = ["cropped", "regular", "long"];
+    return allowed.includes(value) ? value : "regular";
+  }
+
+  function normalizePattern(value) {
+    const allowed = ["solid", "stripe", "dot", "gradient"];
+    return allowed.includes(value) ? value : "solid";
+  }
+
   function initPatternSelector() {
     const select = document.getElementById("pattern-select");
     if (!select) return;
@@ -283,7 +298,7 @@
       if (!design) return;
       // Pattern lives on the design object (no dedicated state key); the spec
       // sheet and design card read it, so refresh both.
-      design.pattern = select.value;
+      design.pattern = normalizePattern(select.value);
       renderDesignResult(design);
       updateProductionPreview();
     });
@@ -293,10 +308,11 @@
     const select = document.getElementById("material-select");
     if (!select) return;
     select.addEventListener("change", () => {
-      if (!S.set("currentMaterial", select.value)) return;
+      const material = normalizeMaterial(select.value);
+      if (!S.set("currentMaterial", material)) return;
       const design = S.get("currentDesign");
       if (design) {
-        design.material = select.value;
+        design.material = material;
         updateProductionPreview();
       }
     });
@@ -320,10 +336,11 @@
     const select = document.getElementById("length-select");
     if (!select) return;
     select.addEventListener("change", () => {
-      if (!S.set("currentLength", select.value)) return;
+      const length = normalizeLength(select.value);
+      if (!S.set("currentLength", length)) return;
       const design = S.get("currentDesign");
       if (design) {
-        design.length = select.value;
+        design.length = length;
         updateProductionPreview();
       }
     });
@@ -1097,14 +1114,16 @@
     populateOwnEditorOptions();
     const oeMat = document.getElementById("oe-material");
     if (oeMat) oeMat.addEventListener("change", () => {
-      if (!S.set("currentMaterial", oeMat.value)) return;
-      const d = S.get("currentDesign"); if (d) d.material = oeMat.value;
+      const material = normalizeMaterial(oeMat.value);
+      if (!S.set("currentMaterial", material)) return;
+      const d = S.get("currentDesign"); if (d) d.material = material;
       updateProductionPreview(); resetOwnStage();
     });
     const oeLen = document.getElementById("oe-length");
     if (oeLen) oeLen.addEventListener("change", () => {
-      if (!S.set("currentLength", oeLen.value)) return;
-      const d = S.get("currentDesign"); if (d) d.length = oeLen.value;
+      const length = normalizeLength(oeLen.value);
+      if (!S.set("currentLength", length)) return;
+      const d = S.get("currentDesign"); if (d) d.length = length;
       updateProductionPreview(); resetOwnStage();
     });
     const oeFit = document.getElementById("oe-fit");

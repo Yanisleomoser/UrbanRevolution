@@ -109,15 +109,19 @@ const PreviewFallback = (() => {
         const base = /^#[0-9a-f]{6}$/i.test(d.color || "") ? d.color : "#9aa0a8";
         const path = SILHOUETTES[type];
         const detail = DETAILS[type];
-        const pattern = d.pattern && d.pattern !== "solid" ? d.pattern : null;
+        const safePattern = d.pattern === "stripe" || d.pattern === "dot" || d.pattern === "gradient"
+            ? d.pattern
+            : null;
+        const pattern = safePattern && safePattern !== "solid" ? safePattern : null;
         const light = luminance(base) > 200;
 
         const hi = mix(base, "#ffffff", 0.22);   // lit side
         const lo = mix(base, "#000000", 0.30);   // shadow side
         const edge = light ? "rgba(0,0,0,0.28)" : mix(base, "#ffffff", 0.18);
-        const sheen = SHEEN[d.material] != null ? SHEEN[d.material] : 0.16;
+        const safeMaterial = Object.prototype.hasOwnProperty.call(SHEEN, d.material) ? d.material : "cotton";
+        const sheen = SHEEN[safeMaterial] != null ? SHEEN[safeMaterial] : 0.16;
         const pat = pattern ? patternDef(`${id}p`, pattern, base) : "";
-        const isGradient = d.pattern === "gradient";
+        const isGradient = safePattern === "gradient";
 
         // Centre the 64-box silhouette in a 360×440 studio frame.
         const T = "translate(40,86) scale(4.0)";
