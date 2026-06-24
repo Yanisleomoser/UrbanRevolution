@@ -51,11 +51,50 @@
     }
   }
   const decode = (s) => (window.DesignShare ? window.DesignShare.decode(s) : null);
-  // Galerie-Items können aus dem öffentlichen Publish-Endpoint stammen → Name/
-  // Autor vor dem Einfügen als HTML escapen (defensiv gegen eingeschleustes Markup).
-  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
 
+  function appendSafeSvg(container, markup) {
+    if (!container) return;
+    if (!markup || typeof markup !== "string") return;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(markup, "image/svg+xml");
+      const root = doc.documentElement;
+      if (!root || root.tagName.toLowerCase() !== "svg") return;
+      root.querySelectorAll("script,foreignObject,iframe,object,embed").forEach((el) => el.remove());
+      root.querySelectorAll("*").forEach((node) => {
+        Array.from(node.attributes || []).forEach((attr) => {
+          const name = String(attr.name || "").toLowerCase();
+          const value = String(attr.value || "").trim().toLowerCase();
+          const isUnsafeScheme = /^(?:javascript|vbscript|data):/.test(value);
+          const isExternalUrl = /^https?:/.test(value);
+          if (name.startsWith("on")) {
+            node.removeAttribute(attr.name);
+            return;
+          }
+          if (name === "href" || name === "xlink:href") {
+            if (isUnsafeScheme || isExternalUrl) {
+              node.removeAttribute(attr.name);
+              return;
+            }
+            if (
+              node.tagName &&
+              node.tagName.toLowerCase() === "use" &&
+              value &&
+              !value.startsWith("#")
+            ) {
+              node.removeAttribute(attr.name);
+            }
+          }
+          if ((name === "src" || name === "xlink:src") && (isUnsafeScheme || isExternalUrl)) {
+            node.removeAttribute(attr.name);
+          }
+        });
+      });
+      container.appendChild(document.importNode(root, true));
+    } catch (_e) {
+      // ignore invalid markup and keep the stage empty
+    }
+  }
   // Aktuelle Journey-DNA (für Share/Publish) aus dem von flow.js gepflegten
   // localStorage-Eintrag lesen — ohne flow.js anzufassen.
   function currentDna() {
@@ -328,17 +367,29 @@
     const present = new Set(galleryItems.map((x) => x.category).filter(Boolean));
     const order = (window.CONFIG && window.CONFIG.GARMENT_TYPES) || [];
     const types = order.filter((k) => present.has(k));
-    if (types.length < 2) { bar.innerHTML = ""; bar.hidden = true; return; }
+    if (types.length < 2) {
+      while (bar.firstChild) bar.removeChild(bar.firstChild);
+      bar.hidden = true;
+      return;
+    }
     bar.hidden = false;
-    const chip = (key, label) =>
-      `<button type="button" class="gallery-chip${galleryFilter === key ? " is-active" : ""}" data-filter="${key}" aria-pressed="${galleryFilter === key ? "true" : "false"}">${label}</button>`;
-    bar.innerHTML = chip("all", t("gal.filter_all")) +
-      types.map((k) => chip(k, t("type." + k))).join("");
-    bar.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => {
-      galleryFilter = b.getAttribute("data-filter");
-      buildFilters();
-      paintGallery();
-    }));
+    while (bar.firstChild) bar.removeChild(bar.firstChild);
+    const chips = ["all", ...types];
+    chips.forEach((key) => {
+      const b = document.createElement("button");
+      const isActive = galleryFilter === key;
+      b.type = "button";
+      b.className = `gallery-chip${isActive ? " is-active" : ""}`;
+      b.dataset.filter = key;
+      b.setAttribute("aria-pressed", isActive ? "true" : "false");
+      b.textContent = key === "all" ? t("gal.filter_all") : t("type." + key);
+      b.addEventListener("click", () => {
+        galleryFilter = key;
+        buildFilters();
+        paintGallery();
+      });
+      bar.appendChild(b);
+    });
   }
 
   function paintGallery() {
@@ -347,29 +398,68 @@
     const view = galleryFilter === "all"
       ? galleryItems
       : galleryItems.filter((x) => x.category === galleryFilter);
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
     if (!view.length) {
-      grid.innerHTML = `<p class="gallery-empty">${t("gal.empty")}</p>`;
+      const empty = document.createElement("p");
+      empty.className = "gallery-empty";
+      empty.textContent = t("gal.empty");
+      grid.appendChild(empty);
       return;
     }
-    grid.innerHTML = view.map(({ it, dna }, idx) => {
+    view.forEach(({ it, dna }, idx) => {
       const svg = flatFor(dna);
-      const name = it.name ? esc(it.name) : "—";
-      const by = it.by ? esc(it.by) : t("gal.anon");
-      const safe = encodeURIComponent(it.d);
+      const name = it.name ? String(it.name) : "—";
+      const by = it.by ? String(it.by) : t("gal.anon");
+      const rawDna = String(it.d || "");
       // Erste Kachel der Ansicht wird hervorgehoben (größer, als Eyecatcher).
-      return `<article class="gallery-tile${idx === 0 ? " is-featured" : ""}">
-        <div class="gallery-tile-stage">${svg}</div>
-        <p class="gallery-tile-name">${name}</p>
-        <p class="gallery-tile-by">${by}</p>
-        <div class="gallery-tile-actions">
-          <a class="is-view" href="#design" data-d="${safe}">${t("gal.view")}</a>
-          <button type="button" class="is-remix" data-d="${safe}">${t("gal.remix")}</button>
-        </div>
-      </article>`;
-    }).join("");
+      const card = document.createElement("article");
+      card.className = `gallery-tile${idx === 0 ? " is-featured" : ""}`;
+
+      const stage = document.createElement("div");
+      stage.className = "gallery-tile-stage";
+      appendSafeSvg(stage, svg);
+
+      const nameEl = document.createElement("p");
+      nameEl.className = "gallery-tile-name";
+      nameEl.textContent = name;
+
+      const byEl = document.createElement("p");
+      byEl.className = "gallery-tile-by";
+      byEl.textContent = by;
+
+      const actions = document.createElement("div");
+      actions.className = "gallery-tile-actions";
+
+      const viewLink = document.createElement("a");
+      viewLink.className = "is-view";
+      viewLink.href = "#design";
+      viewLink.dataset.d = rawDna;
+      viewLink.textContent = t("gal.view");
+
+      const remixBtn = document.createElement("button");
+      remixBtn.type = "button";
+      remixBtn.className = "is-remix";
+      remixBtn.dataset.d = rawDna;
+      remixBtn.textContent = t("gal.remix");
+
+      actions.appendChild(viewLink);
+      actions.appendChild(remixBtn);
+
+      card.appendChild(stage);
+      card.appendChild(nameEl);
+      card.appendChild(byEl);
+      card.appendChild(actions);
+      grid.appendChild(card);
+    });
     grid.querySelectorAll("[data-d]").forEach((btn) => btn.addEventListener("click", (e) => {
       e.preventDefault();
-      openInCreate(decodeURIComponent(btn.getAttribute("data-d")));
+      const encoded = btn.getAttribute("data-d") || "";
+      try {
+        openInCreate(decodeURIComponent(encoded));
+      } catch (_err) {
+        console.warn("[gallery] failed to decode published design DNA:", _err);
+        openInCreate(encoded);
+      }
     }));
   }
 

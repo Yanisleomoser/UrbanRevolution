@@ -1,5 +1,5 @@
 # Test-Runner (Check-Name = Job-ID `validate`, bleibt stabil): npm run build
-# (No-op der statischen Site) + npm test (8 Offline-Suiten). Hieß früher
+# (No-op der statischen Site) + npm test (21 Offline-Suiten). Hieß früher
 # webpack.yml — es lief nie Webpack.
 name: Tests
 

@@ -1201,23 +1201,15 @@
       specData.specifications.fit;
     document.getElementById("spec-length").textContent =
       lengthLabel(currentLength);
-    document.getElementById("spec-print").textContent =
-      currentPrint ? `„${currentPrint}"` : "—";
+    window.SpecView.renderProductionDetails({
+      color: currentColor,
+      print: currentPrint,
+      measurements,
+      constructionNotes: design.constructionNotes,
+      measureLabel,
+    });
     document.getElementById("spec-size").textContent =
       specData.specifications.size;
-
-    const measuresTable = document.getElementById("spec-measures");
-    measuresTable.innerHTML = Object.entries(measurements)
-      .map(
-        ([k, v]) =>
-          `<tr><td>${escapeHtml(measureLabel(k))}</td><td>${v} cm</td></tr>`
-      )
-      .join("");
-
-    const notesList = document.getElementById("spec-notes");
-    notesList.innerHTML = (design.constructionNotes || [])
-      .map((n) => `<li>${escapeHtml(n)}</li>`)
-      .join("");
 
     // Pre-launch: no live lead time or price exists yet, so the estimate block
     // shows an honest forward-looking placeholder instead of a concrete quote
