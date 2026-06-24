@@ -275,19 +275,24 @@
     }
   }
 
+  // Defence-in-depth: clamp a <select> value to a known-good option, falling
+  // back to a safe default. The allow-lists are sourced from CONFIG (the single
+  // source of truth) — never hand-typed, so they can't drift from the real
+  // option keys (e.g. materials include `fleece`/`polyester`; patterns are
+  // `stripes_h`/`dots`/… not `stripe`/`dot`).
   function normalizeMaterial(value) {
-    const allowed = ["cotton", "wool", "silk", "linen", "denim", "leather"];
-    return allowed.includes(value) ? value : "cotton";
+    const materials = (window.CONFIG && window.CONFIG.MATERIALS) || {};
+    return Object.prototype.hasOwnProperty.call(materials, value) ? value : "cotton";
   }
 
   function normalizeLength(value) {
-    const allowed = ["cropped", "regular", "long"];
-    return allowed.includes(value) ? value : "regular";
+    const lengths = (window.CONFIG && window.CONFIG.LENGTHS) || ["cropped", "regular", "long"];
+    return lengths.includes(value) ? value : "regular";
   }
 
   function normalizePattern(value) {
-    const allowed = ["solid", "stripe", "dot", "gradient"];
-    return allowed.includes(value) ? value : "solid";
+    const patterns = (window.CONFIG && window.CONFIG.PATTERNS) || ["solid"];
+    return patterns.includes(value) ? value : "solid";
   }
 
   function initPatternSelector() {

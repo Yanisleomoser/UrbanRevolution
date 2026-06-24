@@ -1561,18 +1561,13 @@ const I18N = (() => {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
     root.querySelectorAll("[data-i18n-html]").forEach((el) => {
-      const key = el.getAttribute("data-i18n-html");
-      const html = t(key);
-      if (
-        typeof window !== "undefined" &&
-        window.DOMPurify &&
-        typeof window.DOMPurify.sanitize === "function"
-      ) {
-        el.innerHTML = window.DOMPurify.sanitize(String(html));
-      } else {
-        // Safe fallback if sanitizer is not available.
-        el.textContent = String(html);
-      }
+      // The value is a static, developer-authored entry from the I18N
+      // dictionary in this file (never user input), so the small amount of
+      // trusted markup it carries (<br>, <em>, <strong>, <span>, source <a>)
+      // is intentional and safe to inject. Do NOT switch this to textContent
+      // (it renders the tags as literal text) or to a sanitizer that isn't
+      // loaded — both break every rich-text string on the page.
+      el.innerHTML = t(el.getAttribute("data-i18n-html"));
     });
     root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
