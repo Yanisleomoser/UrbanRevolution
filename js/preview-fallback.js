@@ -109,15 +109,19 @@ const PreviewFallback = (() => {
         const base = /^#[0-9a-f]{6}$/i.test(d.color || "") ? d.color : "#9aa0a8";
         const path = SILHOUETTES[type];
         const detail = DETAILS[type];
-        const pattern = d.pattern && d.pattern !== "solid" ? d.pattern : null;
+        const safePattern = d.pattern === "stripe" || d.pattern === "dot" || d.pattern === "gradient"
+            ? d.pattern
+            : null;
+        const pattern = safePattern && safePattern !== "solid" ? safePattern : null;
         const light = luminance(base) > 200;
 
         const hi = mix(base, "#ffffff", 0.22);   // lit side
         const lo = mix(base, "#000000", 0.30);   // shadow side
         const edge = light ? "rgba(0,0,0,0.28)" : mix(base, "#ffffff", 0.18);
-        const sheen = SHEEN[d.material] != null ? SHEEN[d.material] : 0.16;
+        const safeMaterial = Object.prototype.hasOwnProperty.call(SHEEN, d.material) ? d.material : "cotton";
+        const sheen = SHEEN[safeMaterial] != null ? SHEEN[safeMaterial] : 0.16;
         const pat = pattern ? patternDef(`${id}p`, pattern, base) : "";
-        const isGradient = d.pattern === "gradient";
+        const isGradient = safePattern === "gradient";
 
         // Centre the 64-box silhouette in a 360×440 studio frame.
         const T = "translate(40,86) scale(4.0)";
@@ -153,7 +157,33 @@ const PreviewFallback = (() => {
         );
     }
 
-    return { svg };
+    function svgNode(d) {
+        const markup = svg(d);
+        const parsed = new DOMParser().parseFromString(markup, "image/svg+xml");
+        const root = parsed.documentElement;
+        if (!root || root.localName !== "svg" || root.namespaceURI !== "http://www.w3.org/2000/svg") {
+            return null;
+        }
+
+        root.querySelectorAll("script,foreignObject").forEach((n) => n.remove());
+        root.querySelectorAll("*").forEach((el) => {
+            Array.from(el.attributes).forEach((attr) => {
+                const n = attr.name.toLowerCase();
+                const v = String(attr.value || "").trim().toLowerCase();
+                if (n.startsWith("on")) el.removeAttribute(attr.name);
+                if (
+                    (n === "href" || n === "xlink:href") &&
+                    (v.startsWith("javascript:") || v.startsWith("data:") || v.startsWith("vbscript:"))
+                ) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+
+        return document.importNode(root, true);
+    }
+
+    return { svg, svgNode };
 })();
 if (typeof window !== "undefined") window.PreviewFallback = PreviewFallback;
 if (typeof module !== "undefined" && module.exports) module.exports = PreviewFallback;
