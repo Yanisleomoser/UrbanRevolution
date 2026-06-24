@@ -6238,32 +6238,6 @@ html:not(.fx) .lp-loader { display: none; }
     .lp-scroll-cue { display: none; }
 }
 
-/* ── Laufband ── */
-.lp-marquee {
-    overflow: hidden;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 0;
-}
-.lp-marquee-track {
-    display: flex;
-    gap: 40px;
-    width: max-content;
-    animation: lp-marquee 30s linear infinite;
-}
-.lp-marquee-text {
-    font-family: var(--font-mono);
-    font-size: clamp(12px, 1.6vw, 15px);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--text-muted);
-    white-space: nowrap;
-}
-@keyframes lp-marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(calc(-100% / 3 - 40px / 3)); }
-}
-
 /* ── Sektionen, Labels ── */
 .lp-block { padding: clamp(90px, 14vw, 160px) clamp(20px, 5vw, 48px); }
 .lp-label {
