@@ -51,11 +51,6 @@
     }
   }
   const decode = (s) => (window.DesignShare ? window.DesignShare.decode(s) : null);
-  // Galerie-Items können aus dem öffentlichen Publish-Endpoint stammen → Name/
-  // Autor vor dem Einfügen als HTML escapen (defensiv gegen eingeschleustes Markup).
-  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
-
   // Aktuelle Journey-DNA (für Share/Publish) aus dem von flow.js gepflegten
   // localStorage-Eintrag lesen — ohne flow.js anzufassen.
   function currentDna() {
@@ -359,33 +354,62 @@
     const view = galleryFilter === "all"
       ? galleryItems
       : galleryItems.filter((x) => x.category === galleryFilter);
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
     if (!view.length) {
-      while (grid.firstChild) grid.removeChild(grid.firstChild);
       const empty = document.createElement("p");
       empty.className = "gallery-empty";
       empty.textContent = t("gal.empty");
       grid.appendChild(empty);
       return;
     }
-    grid.innerHTML = view.map(({ it, dna }, idx) => {
+    view.forEach(({ it, dna }, idx) => {
       const svg = flatFor(dna);
-      const name = it.name ? esc(it.name) : "—";
-      const by = it.by ? esc(it.by) : t("gal.anon");
-      const safe = encodeURIComponent(it.d);
+      const name = it.name ? String(it.name) : "—";
+      const by = it.by ? String(it.by) : t("gal.anon");
+      const rawDna = String(it.d || "");
       // Erste Kachel der Ansicht wird hervorgehoben (größer, als Eyecatcher).
-      return `<article class="gallery-tile${idx === 0 ? " is-featured" : ""}">
-        <div class="gallery-tile-stage">${svg}</div>
-        <p class="gallery-tile-name">${name}</p>
-        <p class="gallery-tile-by">${by}</p>
-        <div class="gallery-tile-actions">
-          <a class="is-view" href="#design" data-d="${safe}">${t("gal.view")}</a>
-          <button type="button" class="is-remix" data-d="${safe}">${t("gal.remix")}</button>
-        </div>
-      </article>`;
-    }).join("");
+      const card = document.createElement("article");
+      card.className = `gallery-tile${idx === 0 ? " is-featured" : ""}`;
+
+      const stage = document.createElement("div");
+      stage.className = "gallery-tile-stage";
+      stage.innerHTML = svg;
+
+      const nameEl = document.createElement("p");
+      nameEl.className = "gallery-tile-name";
+      nameEl.textContent = name;
+
+      const byEl = document.createElement("p");
+      byEl.className = "gallery-tile-by";
+      byEl.textContent = by;
+
+      const actions = document.createElement("div");
+      actions.className = "gallery-tile-actions";
+
+      const viewLink = document.createElement("a");
+      viewLink.className = "is-view";
+      viewLink.href = "#design";
+      viewLink.dataset.d = rawDna;
+      viewLink.textContent = t("gal.view");
+
+      const remixBtn = document.createElement("button");
+      remixBtn.type = "button";
+      remixBtn.className = "is-remix";
+      remixBtn.dataset.d = rawDna;
+      remixBtn.textContent = t("gal.remix");
+
+      actions.appendChild(viewLink);
+      actions.appendChild(remixBtn);
+
+      card.appendChild(stage);
+      card.appendChild(nameEl);
+      card.appendChild(byEl);
+      card.appendChild(actions);
+      grid.appendChild(card);
+    });
     grid.querySelectorAll("[data-d]").forEach((btn) => btn.addEventListener("click", (e) => {
       e.preventDefault();
-      openInCreate(decodeURIComponent(btn.getAttribute("data-d")));
+      openInCreate(btn.getAttribute("data-d"));
     }));
   }
 

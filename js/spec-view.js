@@ -58,7 +58,12 @@ const SpecView = (() => {
   }) {
     renderColor(document.getElementById("spec-color"), color);
     const printEl = document.getElementById("spec-print");
-    if (printEl) printEl.textContent = print ? `„${print}“` : "—";
+    if (printEl) {
+      const rawPrint =
+        typeof print === "string" ? print : (print == null ? "" : String(print));
+      const normalisedPrint = rawPrint.trim();
+      printEl.textContent = normalisedPrint ? `„${normalisedPrint}“` : "—";
+    }
     renderMeasures(
       document.getElementById("spec-measures"),
       measurements,

@@ -1176,23 +1176,6 @@
         constructionNotes: design.constructionNotes,
         measureLabel,
       });
-    } else {
-      const colorCell = document.getElementById("spec-color");
-      colorCell.innerHTML =
-        `<span style="display:inline-block;width:14px;height:14px;background:${currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${currentColor}`;
-      document.getElementById("spec-print").textContent =
-        currentPrint ? `„${currentPrint}“` : "—";
-      const measuresTable = document.getElementById("spec-measures");
-      measuresTable.innerHTML = Object.entries(measurements)
-        .map(
-          ([k, v]) =>
-            `<tr><td>${escapeHtml(measureLabel(k))}</td><td>${v} cm</td></tr>`
-        )
-        .join("");
-      const notesList = document.getElementById("spec-notes");
-      notesList.innerHTML = (design.constructionNotes || [])
-        .map((n) => `<li>${escapeHtml(n)}</li>`)
-        .join("");
     }
     document.getElementById("spec-size").textContent =
       specData.specifications.size;
