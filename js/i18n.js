@@ -141,7 +141,7 @@ const I18N = (() => {
       "join.err": "Etwas ging schief. Bitte später erneut versuchen.",
 
       // ── Hero ──
-      "hero.eyebrow": "SORTIERTE FASER · KI-DESIGN · AUTONOM GEFERTIGT",
+      "hero.eyebrow": "SORTIERTE FASER · VON DIR ENTWORFEN · AUTONOM GEFERTIGT",
       "hero.title_html": 'Aus Abfall.<br>Nach deinen Massen.<br><span class="gradient-text">Autonom gefertigt.</span>',
       "hero.subtitle": "Ein Satz genügt: Du entwirfst dein Stück, und eine vollautonome Fabrik fertigt es aus sortierter, recycelter Faser weggeworfener Mode — nach deinen Massen, nur für dich.",
       "hero.cta_html": 'Jetzt designen <span aria-hidden="true">→</span>',
@@ -334,8 +334,8 @@ const I18N = (() => {
       "design.library_trigger": "Meine Designs",
       "design.garment_label": "Kleidungstyp",
       "design.generate_btn": "Design generieren",
-      "design.generate_loading": "KI generiert...",
-      "design.output_placeholder": "Dein KI-generiertes Design erscheint hier",
+      "design.generate_loading": "Dein Entwurf entsteht...",
+      "design.output_placeholder": "Dein Entwurf erscheint hier",
       "design.customize_h3": "Anpassungen",
       "design.primary_color": "Primärfarbe",
       "design.material_label": "Material",
@@ -492,9 +492,9 @@ const I18N = (() => {
 
       // ── 3D-Vorschau ──
       "preview.h2": "Fotorealistische Vorschau",
-      "preview.intro": "Sieh dein KI-Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.",
+      "preview.intro": "Sieh dein Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.",
       "preview.example_tag": "Beispiel",
-      "preview.example_label": "So sieht dein KI-Design fotorealistisch an dir aus — lade unter „Masse“ ein Ganzkörperfoto hoch.",
+      "preview.example_label": "So sieht dein Design fotorealistisch an dir aus — lade unter „Masse“ ein Ganzkörperfoto hoch.",
       "preview.model_info": "Stück-Info",
       "preview.fabric": "Stoffmenge:",
       "preview.seams": "Nähte:",
@@ -593,7 +593,7 @@ const I18N = (() => {
       "footer.meta_fine": "Pre-Launch-Vision · DSGVO-konform · Foto-Auswertung 100 % clientseitig",
 
       // ── Design-Karte (dynamisch) ──
-      "card.eyebrow": "KI-DESIGN · {id}",
+      "card.eyebrow": "DEIN ENTWURF · {id}",
       "card.fit_suffix": "Fit",
       "card.tailor_notes": "Konstruktions-Notizen ({n})",
       "card.your_wish": "Dein Wunsch",
@@ -880,7 +880,7 @@ const I18N = (() => {
       "join.err": "Something went wrong. Please try again later.",
 
       // ── Hero ──
-      "hero.eyebrow": "SORTED FIBRE · AI DESIGN · AUTONOMOUSLY MADE",
+      "hero.eyebrow": "SORTED FIBRE · YOUR DESIGN · AUTONOMOUSLY MADE",
       "hero.title_html": 'From waste.<br>To your measure.<br><span class="gradient-text">Made by robots.</span>',
       "hero.subtitle": "One sentence is enough: you design your piece, and a fully autonomous factory makes it from sorted fibre reclaimed from discarded fashion — to your measurements, for you alone.",
       "hero.cta_html": 'Start designing <span aria-hidden="true">→</span>',
@@ -1073,8 +1073,8 @@ const I18N = (() => {
       "design.library_trigger": "My designs",
       "design.garment_label": "Garment type",
       "design.generate_btn": "Generate design",
-      "design.generate_loading": "AI generating...",
-      "design.output_placeholder": "Your AI-generated design appears here",
+      "design.generate_loading": "Your design takes shape...",
+      "design.output_placeholder": "Your design appears here",
       "design.customize_h3": "Customize",
       "design.primary_color": "Primary color",
       "design.material_label": "Material",
@@ -1231,9 +1231,9 @@ const I18N = (() => {
 
       // ── Photorealistic preview ──
       "preview.h2": "Photorealistic preview",
-      "preview.intro": "See your AI design on a real photo of you — photorealistically generated, not a model approximation.",
+      "preview.intro": "See your design on a real photo of you — photorealistically generated, not a model approximation.",
       "preview.example_tag": "Example",
-      "preview.example_label": "This is how your AI design looks photorealistically on you — upload a full-body photo under “Measurements”.",
+      "preview.example_label": "This is how your design looks photorealistically on you — upload a full-body photo under “Measurements”.",
       "preview.model_info": "Garment info",
       "preview.fabric": "Fabric:",
       "preview.seams": "Seams:",
@@ -1332,7 +1332,7 @@ const I18N = (() => {
       "footer.meta_fine": "Pre-launch vision · GDPR-compliant · Photo analysis 100% client-side",
 
       // ── Design card (dynamic) ──
-      "card.eyebrow": "AI DESIGN · {id}",
+      "card.eyebrow": "YOUR DESIGN · {id}",
       "card.fit_suffix": "Fit",
       "card.tailor_notes": "Construction notes ({n})",
       "card.your_wish": "Your prompt",
