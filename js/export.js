@@ -201,28 +201,11 @@ const Export = (() => {
     window.print();
   }
 
-  function simulateOrderSubmission(_specData) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const orderId = "ORD-" + Date.now().toString(36).toUpperCase();
-        resolve({
-          success: true,
-          orderId,
-          estimatedDelivery: new Date(
-            Date.now() + 14 * 24 * 60 * 60 * 1000
-          ).toLocaleDateString(loc()),
-          confirmation: t("export.order_confirmation", { id: orderId }),
-        });
-      }, 1200);
-    });
-  }
-
   return {
     buildSpecData,
     downloadJSON,
     downloadHTML,
     print,
-    simulateOrderSubmission,
     renderPrintableHTML,
   };
 })();

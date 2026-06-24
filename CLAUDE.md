@@ -109,6 +109,12 @@ a printable production spec sheet that drives the autonomous factory.
 > shapes, or reimagines the garment. (A future AI assistant may *help the
 > user articulate their own idea*, but never authors it.)
 
+> **Stage (load-bearing):** Pre-launch vision — nothing is manufactured yet.
+> Copy may describe the future vision but must not assert current production,
+> partners, wages/traceability, prices, or delivery times as live facts, and
+> must not present a working purchase. CTAs convert to "join / be first," not
+> "buy / order," until production and checkout actually exist.
+
 The **landing experience** (`js/landing.js`, GSAP) is the front door:
 preloader logo-draw → hero with a thread-particle field → manifesto
 word-scrub → pinned circular-economy section → counted-up stats → a
