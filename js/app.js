@@ -1165,8 +1165,18 @@
     document.getElementById("spec-material").textContent = typeMaterialLabel(currentMaterial);
 
     const colorCell = document.getElementById("spec-color");
-    colorCell.innerHTML =
-      `<span style="display:inline-block;width:14px;height:14px;background:${currentColor};border:1px solid #ccc;border-radius:3px;vertical-align:middle;margin-right:6px;"></span>${currentColor}`;
+    colorCell.textContent = "";
+    const colorSwatch = document.createElement("span");
+    colorSwatch.style.display = "inline-block";
+    colorSwatch.style.width = "14px";
+    colorSwatch.style.height = "14px";
+    colorSwatch.style.backgroundColor = currentColor;
+    colorSwatch.style.border = "1px solid #ccc";
+    colorSwatch.style.borderRadius = "3px";
+    colorSwatch.style.verticalAlign = "middle";
+    colorSwatch.style.marginRight = "6px";
+    colorCell.appendChild(colorSwatch);
+    colorCell.appendChild(document.createTextNode(String(currentColor)));
 
     document.getElementById("spec-fit").textContent =
       specData.specifications.fit;
