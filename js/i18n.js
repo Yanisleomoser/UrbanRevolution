@@ -24,6 +24,9 @@ const I18N = (() => {
     de: {
       // ── <head> ──
       "head.title": "Urban Revolution — Erschaffe die Zukunft der Mode",
+      "meta.description": "Urban Revolution ist eine Vision: Du entwirfst dein Kleidungsstück, eine vollautonome Kreislauf-Fabrik soll es eines Tages aus weggeworfener Mode fertigen — nach deinen Massen, ohne Überproduktion. Sei von Anfang an dabei.",
+      "meta.og_title": "Erschaffe die Zukunft der Mode — Urban Revolution",
+      "meta.og_description": "Eine Vision für Mode ohne Überproduktion: dein Entwurf, eines Tages autonom gefertigt aus recycelter Kleidung. Werde Teil der Bewegung.",
 
       // ── Navigation ──
       "nav.skip": "Zum Inhalt springen",
@@ -42,12 +45,6 @@ const I18N = (() => {
       "nav.enter": "UR Create starten",
 
       // ── UR-Create-Direktive (Hero · UR Create · Ownership · Galerie · Problem · Alternative · Vision · Join · Final) ──
-      "hero2.eyebrow": "[ URBAN REVOLUTION ]",
-      "hero2.headline_html": "Erschaffe die <span class=\"gradient-text\">Zukunft der Mode</span>",
-      "hero2.sub": "Entwirf dein eigenes Stück mit UR Create — die Alternative zu Mode von der Stange.",
-      "hero2.cta_html": "UR Create starten <span aria-hidden=\"true\">→</span>",
-      "hero2.link_html": "Warum das wichtig ist <span aria-hidden=\"true\">↓</span>",
-      "hero2.caption": "Sieh, wie aus deinem Design dein Lieblingsstück entsteht.",
       "urcreate.label": "[ UR CREATE ]",
       "urcreate.h2": "Deine Idee kommt zuerst",
       "urcreate.intro": "Die meiste Mode beginnt in der Fabrik. Deine beginnt hier — mit einer Idee. Entwirf, entwickle weiter, bis es wirklich deins ist.",
@@ -97,31 +94,6 @@ const I18N = (() => {
       "sphere.detail_line": "Einzelstück aus recycelter Kleidung — entworfen in UR Create. Made for one. Not for all.",
       "sphere.detail_cta": "Eigene Vision erschaffen",
       "sphere.detail_join": "Oder werde Teil der Community",
-      "prob.label": "[ DAS PROBLEM ]",
-      "prob.h2": "Die Industrie produziert mehr, als die Welt braucht",
-      "prob.c1_k": "01 · Überproduktion",
-      "prob.c1_b": "Millionen Kleidungsstücke werden produziert, bevor Nachfrage existiert.",
-      "prob.c2_k": "02 · Unverkaufte Ware",
-      "prob.c2_b": "Produkte liegen in Lagern und warten auf Käufer, die nie kommen.",
-      "prob.c3_k": "03 · Wegwerf-Konsum",
-      "prob.c3_b": "Das System belohnt Menge statt Wert.",
-      "prob.c4_k": "03 · Abfall",
-      "prob.c4_b": "Berge aus Alttextilien wachsen — fast nichts davon wird je wiederverwendet.",
-      "prob.next": "Weiter",
-      "prob.show_html": "Zeig die Alternative <span aria-hidden=\"true\">→</span>",
-      "prob.intro": "Vier Tatsachen — jede mit einer Zahl, die niemand sehen will.",
-      "prob.f1_num": "92 Mio. Tonnen",
-      "prob.f1_ctx": "Kleidung landen jedes Jahr im Müll",
-      "prob.f2_num": "1 Lkw / Sekunde",
-      "prob.f2_ctx": "Textilien, verbrannt oder vergraben",
-      "prob.since": "seit du hier bist",
-      "prob.f3_num": "< 1 %",
-      "prob.f3_ctx": "der Alttextilien werden zu neuer Kleidung",
-      "prob.c5_k": "04 · Der wahre Preis",
-      "prob.c5_b": "Hinter billiger Mode steht ein Mensch — nicht nur eine Maschine.",
-      "prob.f4_num": "75 h",
-      "prob.f4_ctx": "pro Woche, oft unter Existenzlohn (Public Eye)",
-      "prob.bridge": "Das ist das System, das wir ersetzen.",
       "join.label": "[ COMMUNITY ]",
       "join.h2": "Gemeinsam wird daraus eine Bewegung",
       "join.sub": "Werde Teil der Menschen, die Mode neu denken — gestalte mit, verfolge die Reise oder bring deine Ideen ein.",
@@ -141,76 +113,12 @@ const I18N = (() => {
       "join.err": "Etwas ging schief. Bitte später erneut versuchen.",
 
       // ── Hero ──
-      "hero.eyebrow": "SORTIERTE FASER · VON DIR ENTWORFEN · AUTONOM GEFERTIGT",
-      "hero.title_html": 'Aus Abfall.<br>Nach deinen Massen.<br><span class="gradient-text">Autonom gefertigt.</span>',
-      "hero.subtitle": "Ein Satz genügt: Du entwirfst dein Stück, und eine vollautonome Fabrik fertigt es aus sortierter, recycelter Faser weggeworfener Mode — nach deinen Massen, nur für dich.",
-      "hero.cta_html": 'Jetzt designen <span aria-hidden="true">→</span>',
-      "hero.prompt_form_aria": "Kleidungsstück beschreiben und Design starten",
-      "hero.prompt_aria": "Beschreibe dein Wunschkleidungsstück",
-      "hero.prompt_placeholder_focus": "Tippe deine Idee …",
-      "hero.prompt_go_text": "Designen",
-      "hero.prompt_go_aria": "Design starten",
-      "hero.microcopy_html": 'Tippe los — oder sieh zu, wie aus Worten ein Kleidungsstück wird.',
-      "hero.vision_cta_html": 'Warum das wichtig ist <span aria-hidden="true">↓</span>',
-      "hero.examples": [
-        "ein oversized Hoodie in Sonnenuntergangsfarben",
-        "ein fliessendes Leinenkleid für laue Sommerabende",
-        "eine Cyberpunk-Jacke in Neon-Lila mit Reflektoren",
-        "ein minimalistisches schwarzes Slim-Fit T-Shirt",
-        "ein langer Mantel in Tiefsee-Blau und Petrol",
-        "ein Streetwear-Set in sattem Waldgrün",
-      ],
-      "hero.asset_alt": "Model in einem selbst entworfenen Outfit, von Neon-Lichtspuren in Pink und Cyan umspielt",
-      "hero.caption_html": "Von dir entworfen. Nach Mass. <strong>Eines Tages</strong> autonom gefertigt.",
 
       // ── Begin experience (cursor-first opening — no selling, just begin) ──
-      "begin.line": "Beschreibe das eine Stück,<br>das du wirklich willst.",
-      "begin.hint": "Eins. Für einen. Deins.",
-      "begin.scroll": "[ oder scroll, um zu verstehen ↓ ]",
 
       // ── Geführter Funnel (Hilf-mir-entscheiden) ──
-      "funnel.cta": "Weisst du noch nicht genau, was? Lass dich führen",
-      "funnel.title": "Lass dich führen",
-      "funnel.close": "Schliessen",
-      "funnel.skip": "[ Ich designe selbst → ]",
-      "funnel.q_vibe": "Wofür ist es?",
-      "funnel.q_type": "Was für ein Stück?",
-      "funnel.q_fit": "Welcher Schnitt?",
-      "funnel.q_color": "Welche Farbwelt?",
-      "funnel.vibe_everyday": "Alltag",
-      "funnel.vibe_street": "Streetwear",
-      "funnel.vibe_business": "Business",
-      "funnel.vibe_night": "Ausgehen",
-      "funnel.vibe_sport": "Sport",
-      "funnel.type_tshirt": "T-Shirt",
-      "funnel.type_hoodie": "Hoodie",
-      "funnel.type_shirt": "Hemd",
-      "funnel.type_pants": "Hose",
-      "funnel.type_jacket": "Jacke",
-      "funnel.type_dress": "Kleid",
-      "funnel.fit_slim": "Schmal",
-      "funnel.fit_regular": "Regulär",
-      "funnel.fit_oversized": "Oversized",
-      "funnel.color_black": "Schwarz",
-      "funnel.color_white": "Weiss",
-      "funnel.color_blue": "Tiefblau",
-      "funnel.color_green": "Waldgrün",
-      "funnel.color_burgundy": "Burgund",
-      "funnel.color_purple": "Violett",
 
       // ── Manifesto (compact thesis after the hero) ──
-      "manifesto.eyebrow": "[ Warum es uns gibt ]",
-      "manifesto.headline_html": "Millionen Stücke, die niemand braucht.<br>Wir fertigen <em>eines — deins</em>.",
-      "manifesto.problem": "Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder vergraben. Weniger als 1 % wird je recycelt. Die Faser ist noch gut — das System wirft sie nur weg.",
-      "manifesto.stat1_num": "92 Mio. t",
-      "manifesto.stat1_label": "Kleidung landen jährlich im Müll",
-      "manifesto.stat2_num": "bis 200 Jahre",
-      "manifesto.stat2_label": "braucht synthetische Kleidung zum Zerfallen",
-      "manifesto.stat3_num": "1 Stück",
-      "manifesto.stat3_label": "produzieren wir — für einen Menschen, ohne Überproduktion",
-      "manifesto.vision": "Urban Revolution macht aus weggeworfenen Kleidern neuen Stoff. Du entwirfst dein Stück, und eine vollautonome Fabrik sortiert die Faser weggeworfener Mode und fertigt es nach deinen neun Massen. Ein Kleidungsstück. Einmal gefertigt. Für dich — aus genau dem, was die Branche wegwirft. Kein neuer Rohstoff, keine Überproduktion, keine Deponie.",
-      "manifesto.cta_html": 'Entwirf dein Stück <span aria-hidden="true">→</span>',
-      "manifesto.link_html": 'Sieh die Fakten <span aria-hidden="true">↓</span>',
 
       // ── Section labels (Ovyon-style [ NN / Titel ] kicker) ──
       "sec.design": "[ 03 / Dein Entwurf ]",
@@ -220,27 +128,6 @@ const I18N = (() => {
       "sec.faq": "[ FAQ ]",
 
       // ── Facts block (consolidated [ 01 / Das Problem ]) ──
-      "facts.eyebrow": "[ Die Belege ]",
-      "facts.headline_html": "Die Zahlen <em>dahinter</em>.",
-      "facts.r1_k": "Jede Sekunde",
-      "facts.r1_fig": "1 Lkw",
-      "facts.r1_v": "Textilien — verbrannt oder vergraben",
-      "facts.r2_k": "Recycelt",
-      "facts.r2_fig": "< 1 %",
-      "facts.r2_v": "zurück in neue Kleidung",
-      "facts.r3_k": "Kleidung im Müll",
-      "facts.r3_fig": "92 Mio. t",
-      "facts.r3_v": "jedes Jahr, weltweit",
-      "facts.r4_k": "CO₂ der Mode",
-      "facts.r4_fig": "bis 8 %",
-      "facts.r4_v": "global — mehr als Flüge und Schifffahrt zusammen",
-      "facts.r5_k": "Der Mensch",
-      "facts.r5_fig": "75 h",
-      "facts.r5_v": "Wochen, unter Existenzlohn (Public Eye)",
-      "facts.model_k": "[ Unser Modell ]",
-      "facts.model_v": "1 Stück · nach Mass · aus Stoff aus recycelten Kleidern · 0 Überproduktion",
-      "facts.chart_cap": "[ Carbon-Intensität pro Umsatz — die Treiber ]",
-      "facts.sources_html": '[ Quellen ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
       // ── Live-Abfall-Zähler (Ticker, C+A) ──
       "ticker.unit": "kg",
@@ -251,78 +138,16 @@ const I18N = (() => {
       "ticker.source": "[ Quelle: UNEP · 92 Mio. t / Jahr ]",
 
       // ── Visual Scroll Story (6 acts) ──
-      "story.heading": "Warum wir dieses System ändern müssen",
-      "story.a0_kicker": "Akt I",
-      "story.a0_headline_html": "Eine Flasche. Achtlos weggeworfen.",
-      "story.a0_statement": "Sie überlebt deine Urenkel.",
-      "story.a1_kicker": "Akt II",
-      "story.a1_headline_html": "Dein altes Shirt verschwindet nicht.",
-      "story.a1_statement": "Es wird zu diesem Berg.",
-      "story.a2_kicker": "Akt III",
-      "story.a2_headline_html": "Es reist weiter — an Orte, die du nie siehst.",
-      "story.a2_statement": "Aber es bleibt nicht dort.",
-      "story.a3_kicker": "Akt IV",
-      "story.a3_headline_html": "Es kommt zurück. Als Staub, so fein, dass er die Haut durchdringt.",
-      "story.a3_statement": "Im Blut von 4 aus 5 Menschen. Auch in deinem.",
-      "story.a4_kicker": "Akt V",
-      "story.a4_headline_html": "Es muss nicht so enden.<br>Dieselbe Faser kann etwas anderes werden.",
-      "story.a4_statement": "Wenn Technologie nichts mehr fertigt, das niemand will.",
-      "story.a5_kicker": "Akt VI",
-      "story.a5_headline_html": "Aus sortierter Faser wird dein Stück — von dir entworfen, autonom gefertigt, nach deinen Massen.",
-      "story.a5_statement": "Für einen gemacht. Deiner.",
-      "story.cta_html": 'Mach dein erstes Stück <span aria-hidden="true">→</span>',
-      "story.skip": "Direkt zum Design",
       "flair.egg": "✦ Revolution entdeckt.",
       // Live counter (acts I–IV)
-      "story.counter_intro": "Seit du hier bist:",
-      "story.counter_garments": "Kleidungsstücke produziert",
-      "story.counter_trucks": "Lkw-Ladungen Textilien entsorgt",
 
       // ── The true cost (fast-fashion evidence band) ──
-      "cost.kicker": "Der wahre Preis",
-      "cost.headline_html": "Irgendwo zahlt jemand den Preis für „billig“.",
-      "cost.lead": "Hinter jeder 5-Franken-Bluse steht ein Mensch. Recherchen der Schweizer NGO Public Eye zeigen: In Zulieferfabriken von Shein nähen Arbeiter:innen bis zu 75 Stunden pro Woche — für Löhne unter dem Existenzminimum.",
-      "cost.s1_num": "bis 8 %",
-      "cost.s1_label": "der globalen CO₂-Emissionen stammen aus der Mode — mehr als internationale Flüge und Schifffahrt zusammen.",
-      "cost.s2_num": "1 / Sekunde",
-      "cost.s2_label": "Jede Sekunde wird ein Lastwagen voll Textilien verbrannt oder deponiert.",
-      "cost.s3_num": "unter 1 %",
-      "cost.s3_label": "der Altkleider wird zu neuer Kleidung recycelt. Der Rest wird zu Abfall.",
-      "cost.chart_cap": "Wer treibt die Krise? Carbon-Intensität pro Umsatz — die Fast-Fashion-Riesen im Vergleich.",
-      "cost.chart_note": "Relative Carbon-Intensität pro Mrd. $ Umsatz (Rangfolge, illustrativ). Quelle: Commons.",
-      "cost.close": "Das ist das System, das wir ersetzen.",
-      "cost.sources_html": 'Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a>',
 
       // ── Trust-Strip ──
-      "trust.aria": "Markenmerkmale",
-      "trust.t1_title": "Massgefertigt",
-      "trust.t1_body": "Jedes Stück nach deinen 9 Körpermassen — keine Standardgrössen, kein Kompromiss",
-      "trust.t2_title": "Vollautonome Fabrik",
-      "trust.t2_body": "Soll autonom aus recycelter Mode sortieren und fertigen — ohne Überproduktion, ohne Abfall",
-      "trust.t3_title": "KI + Automation",
-      "trust.t3_body": "Generative Designs treffen auf autonome Roboter — kein Print-on-Demand, kein Fast-Fashion",
-      "trust.t4_title": "100 % Privatsphäre",
-      "trust.t4_body": "Masserkennung clientseitig — dein Foto verlässt nie dein Gerät, ausser du klickst opt-in",
 
       // ── How it works (3-step) ──
-      "howto.eyebrow": "[ 02 / Das Modell ]",
-      "howto.heading": "Vom Wunsch zum Einzelstück — in drei Schritten.",
-      "howto.s1_title": "Finde heraus, was du suchst",
-      "howto.s1_body": "Klick dich durch ein paar Fragen — Stimmung, Form, Stoff. Aus deinen Entscheidungen wächst live ein konkretes Stück. Lieber direkt? Beschreib es in einem Satz.",
-      "howto.s2_title": "Deine Masse, dein Schnitt",
-      "howto.s2_body": "Neun Körpermasse — per Foto geschätzt oder manuell. Keine Standardgrösse, kein Kompromiss: gefertigt für genau einen Körper, deinen.",
-      "howto.s3_title": "Autonom gefertigt",
-      "howto.s3_body": "Eine vollautonome Fabrik soll recycelte Alttextilien sortieren und dein Stück daraus autonom fertigen — auf Bestellung, ohne Lager und ohne Überproduktion.",
-      "howto.ai_note": "<strong>Und die KI?</strong> Sie steht nicht im Rampenlicht — sie arbeitet im Hintergrund: übersetzt deine Entscheidungen in einen präzisen, produzierbaren Schnitt und denkt bei Passform und Material mit. KI als Werkzeug, das ein echtes Problem löst — Grössen, die niemandem passen, und Berge, die niemand braucht — nicht als Selbstzweck.",
-      "howto.p1": "Aus sortierter Faser",
-      "howto.p2": "Massanfertigung",
-      "howto.p3": "Null Überproduktion",
 
       // ── Workflow ──
-      "workflow.s1_html": "<span>1</span> Design",
-      "workflow.s2_html": "<span>2</span> Masse",
-      "workflow.s3_html": "<span>3</span> Vorschau",
-      "workflow.s4_html": "<span>4</span> Produktion",
 
       // ── Design-Sektion ──
       "design.h2": "Triff ein paar Entscheidungen",
@@ -739,7 +564,7 @@ const I18N = (() => {
       "landing.stat3_label": "der globalen CO₂-Emissionen entfallen auf die Modeindustrie",
       "landing.stats_src_html": "Quellen: <a href=\"https://www.ellenmacarthurfoundation.org/a-new-textiles-economy\" target=\"_blank\" rel=\"noopener\">Ellen MacArthur Foundation</a> · <a href=\"https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion\" target=\"_blank\" rel=\"noopener\">UNEP</a>",
       "landing.cta_title_html": "Trag etwas, das es <em>nur einmal</em> gibt.",
-      "landing.cta_sub": "Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Mass, aus recycelter Kleidung.",
+      "landing.cta_sub": "Beschreibe deine Idee — du gestaltest dein Stück, wir fertigen es. Nach Mass, aus recycelter Kleidung.",
       "landing.tap_hint": "Tipp ins Bild — die Fäden formen dein nächstes Stück.",
       "landing.orb_aria": "UR Create starten — öffnet das Studio",
 
@@ -763,6 +588,9 @@ const I18N = (() => {
     en: {
       // ── <head> ──
       "head.title": "Urban Revolution — Create the future of fashion",
+      "meta.description": "Urban Revolution is a vision: you design your garment, and a fully autonomous circular factory will one day make it from discarded fashion — to your measurements, without overproduction. Be part of it from the start.",
+      "meta.og_title": "Create the future of fashion — Urban Revolution",
+      "meta.og_description": "A vision for fashion without overproduction: your design, one day made autonomously from recycled clothing. Become part of the movement.",
 
       // ── Navigation ──
       "nav.skip": "Skip to content",
@@ -781,12 +609,6 @@ const I18N = (() => {
       "nav.enter": "Enter UR Create",
 
       // ── UR Create directive (Hero · UR Create · Ownership · Gallery · Problem · Alternative · Vision · Join · Final) ──
-      "hero2.eyebrow": "[ URBAN REVOLUTION ]",
-      "hero2.headline_html": "Create the <span class=\"gradient-text\">future of fashion</span>",
-      "hero2.sub": "Explore unique fashion concepts through UR Create — and discover a new alternative to mass-produced fashion.",
-      "hero2.cta_html": "Enter UR Create <span aria-hidden=\"true\">→</span>",
-      "hero2.link_html": "Discover why it matters <span aria-hidden=\"true\">↓</span>",
-      "hero2.caption": "See how your design becomes your favourite piece.",
       "urcreate.label": "[ UR CREATE ]",
       "urcreate.h2": "Your imagination comes first",
       "urcreate.intro": "Most fashion starts with production. What happens when it starts with people? Create, evolve, make it yours.",
@@ -836,31 +658,6 @@ const I18N = (() => {
       "sphere.detail_line": "A one-of-one from reclaimed cloth — designed in UR Create. Made for one. Not for all.",
       "sphere.detail_cta": "Create your own vision",
       "sphere.detail_join": "Or join the community",
-      "prob.label": "[ THE PROBLEM ]",
-      "prob.h2": "The industry creates more than the world needs",
-      "prob.c1_k": "01 · Overproduction",
-      "prob.c1_b": "Millions of garments are produced before demand exists.",
-      "prob.c2_k": "02 · Unsold inventory",
-      "prob.c2_b": "Products sit in warehouses waiting for buyers who never come.",
-      "prob.c3_k": "03 · Disposable consumption",
-      "prob.c3_b": "The system rewards volume over value.",
-      "prob.c4_k": "03 · Waste",
-      "prob.c4_b": "Mountains of discarded textiles grow — almost none of it is ever reused.",
-      "prob.next": "Next",
-      "prob.show_html": "Show the alternative <span aria-hidden=\"true\">→</span>",
-      "prob.intro": "Four facts — each with a number no one wants to see.",
-      "prob.f1_num": "92M tonnes",
-      "prob.f1_ctx": "of clothing are trashed every year",
-      "prob.f2_num": "1 truck / second",
-      "prob.f2_ctx": "of textiles, burned or buried",
-      "prob.since": "since you arrived",
-      "prob.f3_num": "< 1 %",
-      "prob.f3_ctx": "of used textiles become new clothing",
-      "prob.c5_k": "04 · The true cost",
-      "prob.c5_b": "Behind cheap fashion stands a person — not just a machine.",
-      "prob.f4_num": "75 h",
-      "prob.f4_ctx": "a week, often below a living wage (Public Eye)",
-      "prob.bridge": "This is the system we replace.",
       "join.label": "[ COMMUNITY ]",
       "join.h2": "Together, this becomes a movement",
       "join.sub": "Join the people rethinking fashion — create alongside us, follow the journey, or bring your ideas.",
@@ -880,76 +677,12 @@ const I18N = (() => {
       "join.err": "Something went wrong. Please try again later.",
 
       // ── Hero ──
-      "hero.eyebrow": "SORTED FIBRE · YOUR DESIGN · AUTONOMOUSLY MADE",
-      "hero.title_html": 'From waste.<br>To your measure.<br><span class="gradient-text">Made by robots.</span>',
-      "hero.subtitle": "One sentence is enough: you design your piece, and a fully autonomous factory makes it from sorted fibre reclaimed from discarded fashion — to your measurements, for you alone.",
-      "hero.cta_html": 'Start designing <span aria-hidden="true">→</span>',
-      "hero.prompt_form_aria": "Describe a garment and start designing",
-      "hero.prompt_aria": "Describe the garment you want",
-      "hero.prompt_placeholder_focus": "Type your idea …",
-      "hero.prompt_go_text": "Design",
-      "hero.prompt_go_aria": "Start designing",
-      "hero.microcopy_html": 'Start typing — or watch words become a garment.',
-      "hero.vision_cta_html": 'Why this matters <span aria-hidden="true">↓</span>',
-      "hero.examples": [
-        "an oversized hoodie in sunset colours",
-        "a flowing linen dress for warm summer evenings",
-        "a cyberpunk jacket in neon purple with reflectors",
-        "a minimalist black slim-fit t-shirt",
-        "a long coat in deep-sea blue and petrol",
-        "a streetwear set in rich forest green",
-      ],
-      "hero.asset_alt": "Model in a self-designed outfit, wrapped in pink and cyan neon light trails",
-      "hero.caption_html": "Designed by you. Made to measure. <strong>One day</strong>, autonomously made.",
 
       // ── Begin experience (cursor-first opening — no selling, just begin) ──
-      "begin.line": "Describe the one piece<br>you actually want.",
-      "begin.hint": "One. For one. Yours.",
-      "begin.scroll": "[ or scroll to understand ↓ ]",
 
       // ── Guided funnel (help-me-decide) ──
-      "funnel.cta": "Not sure what you want yet? Let us guide you",
-      "funnel.title": "Let us guide you",
-      "funnel.close": "Close",
-      "funnel.skip": "[ I'll design myself → ]",
-      "funnel.q_vibe": "What's it for?",
-      "funnel.q_type": "What kind of piece?",
-      "funnel.q_fit": "Which fit?",
-      "funnel.q_color": "Which colour?",
-      "funnel.vibe_everyday": "Everyday",
-      "funnel.vibe_street": "Streetwear",
-      "funnel.vibe_business": "Business",
-      "funnel.vibe_night": "Going out",
-      "funnel.vibe_sport": "Sport",
-      "funnel.type_tshirt": "T-Shirt",
-      "funnel.type_hoodie": "Hoodie",
-      "funnel.type_shirt": "Shirt",
-      "funnel.type_pants": "Pants",
-      "funnel.type_jacket": "Jacket",
-      "funnel.type_dress": "Dress",
-      "funnel.fit_slim": "Slim",
-      "funnel.fit_regular": "Regular",
-      "funnel.fit_oversized": "Oversized",
-      "funnel.color_black": "Black",
-      "funnel.color_white": "White",
-      "funnel.color_blue": "Deep blue",
-      "funnel.color_green": "Forest green",
-      "funnel.color_burgundy": "Burgundy",
-      "funnel.color_purple": "Purple",
 
       // ── Manifesto (compact thesis after the hero) ──
-      "manifesto.eyebrow": "[ Why we exist ]",
-      "manifesto.headline_html": "Millions of pieces no one needs.<br>We make <em>one — yours</em>.",
-      "manifesto.problem": "Every second, a truckload of textiles is burned or buried. Less than 1% is ever recycled. The fibre is still good — the system just throws it away.",
-      "manifesto.stat1_num": "92M tonnes",
-      "manifesto.stat1_label": "of clothing wasted every year",
-      "manifesto.stat2_num": "up to 200 years",
-      "manifesto.stat2_label": "for synthetic clothing to break down",
-      "manifesto.stat3_num": "1 piece",
-      "manifesto.stat3_label": "is all we make — for one person, no overproduction",
-      "manifesto.vision": "Urban Revolution turns discarded clothes into new fabric. You design your piece, and a fully autonomous factory sorts the fibre from discarded fashion and makes it to your nine measurements. One garment, made once, for you — from exactly what the industry throws away. No virgin material, no overproduction, no landfill.",
-      "manifesto.cta_html": 'Design your piece <span aria-hidden="true">→</span>',
-      "manifesto.link_html": 'See the facts <span aria-hidden="true">↓</span>',
 
       // ── Section labels (Ovyon-style [ NN / Title ] kicker) ──
       "sec.design": "[ 03 / Your Design ]",
@@ -959,27 +692,6 @@ const I18N = (() => {
       "sec.faq": "[ FAQ ]",
 
       // ── Facts block (consolidated [ 01 / The Problem ]) ──
-      "facts.eyebrow": "[ The evidence ]",
-      "facts.headline_html": "The numbers <em>behind it</em>.",
-      "facts.r1_k": "Every second",
-      "facts.r1_fig": "1 truck",
-      "facts.r1_v": "of textiles — burned or buried",
-      "facts.r2_k": "Recycled",
-      "facts.r2_fig": "< 1 %",
-      "facts.r2_v": "back into new clothing",
-      "facts.r3_k": "Clothing trashed",
-      "facts.r3_fig": "92 M t",
-      "facts.r3_v": "every year, worldwide",
-      "facts.r4_k": "Fashion's CO₂",
-      "facts.r4_fig": "up to 8 %",
-      "facts.r4_v": "globally — more than flights and shipping",
-      "facts.r5_k": "The human cost",
-      "facts.r5_fig": "75 h",
-      "facts.r5_v": "weeks, below a living wage (Public Eye)",
-      "facts.model_k": "[ Our model ]",
-      "facts.model_v": "1 piece · made to measure · from fabric made of old clothes · 0 overproduction",
-      "facts.chart_cap": "[ Carbon intensity per revenue — the drivers ]",
-      "facts.sources_html": '[ Sources ] <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a> · Commons',
 
       // ── Live waste counter (ticker, C+A) ──
       "ticker.unit": "kg",
@@ -990,78 +702,16 @@ const I18N = (() => {
       "ticker.source": "[ Source: UNEP · 92 M t / year ]",
 
       // ── Visual Scroll Story (6 acts) ──
-      "story.heading": "Why this system has to change",
-      "story.a0_kicker": "Act I",
-      "story.a0_headline_html": "One bottle. Carelessly thrown away.",
-      "story.a0_statement": "It outlives your great-grandchildren.",
-      "story.a1_kicker": "Act II",
-      "story.a1_headline_html": "Your old shirt doesn't disappear.",
-      "story.a1_statement": "It becomes this mountain.",
-      "story.a2_kicker": "Act III",
-      "story.a2_headline_html": "It travels on — to places you'll never see.",
-      "story.a2_statement": "But it doesn't stay there.",
-      "story.a3_kicker": "Act IV",
-      "story.a3_headline_html": "It comes back. As dust fine enough to cross the skin.",
-      "story.a3_statement": "In the blood of 4 in 5 people. In yours, too.",
-      "story.a4_kicker": "Act V",
-      "story.a4_headline_html": "It doesn't have to end this way.<br>The same fibre can become something else.",
-      "story.a4_statement": "When technology makes nothing no one wants.",
-      "story.a5_kicker": "Act VI",
-      "story.a5_headline_html": "Sorted fibre becomes your piece — designed by you, autonomously made, to your measurements.",
-      "story.a5_statement": "Made for one. Yours.",
-      "story.cta_html": 'Make your first piece <span aria-hidden="true">→</span>',
-      "story.skip": "Skip to design",
       "flair.egg": "✦ Revolution unlocked.",
       // Live counter (acts I–IV)
-      "story.counter_intro": "Since you arrived:",
-      "story.counter_garments": "garments produced",
-      "story.counter_trucks": "truckloads of textiles dumped",
 
       // ── The true cost (fast-fashion evidence band) ──
-      "cost.kicker": "The true cost",
-      "cost.headline_html": "Somewhere, someone pays the price for “cheap.”",
-      "cost.lead": "Behind every five-franc blouse is a person. Investigations by the Swiss NGO Public Eye found workers in Shein’s supplier factories sewing up to 75 hours a week — for wages below a living wage.",
-      "cost.s1_num": "up to 8%",
-      "cost.s1_label": "of global CO₂ emissions come from fashion — more than international flights and shipping combined.",
-      "cost.s2_num": "1 / second",
-      "cost.s2_label": "Every second, a truckload of textiles is burned or sent to landfill.",
-      "cost.s3_num": "under 1%",
-      "cost.s3_label": "of used clothing is recycled into new clothing. The rest becomes waste.",
-      "cost.chart_cap": "Who drives the crisis? Carbon intensity per revenue — the fast-fashion giants compared.",
-      "cost.chart_note": "Relative carbon intensity per $bn revenue (ranking, illustrative). Source: Commons.",
-      "cost.close": "This is the system we replace.",
-      "cost.sources_html": 'Sources: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/environmental-costs-fast-fashion" target="_blank" rel="noopener">UNEP</a> · <a href="https://www.publiceye.ch/en" target="_blank" rel="noopener">Public Eye</a>',
 
       // ── Trust strip ──
-      "trust.aria": "Brand highlights",
-      "trust.t1_title": "Made to measure",
-      "trust.t1_body": "Every piece built to your 9 body measurements — no standard sizes, no compromise",
-      "trust.t2_title": "Fully autonomous factory",
-      "trust.t2_body": "Designed to sort and make autonomously from recycled fashion — no overproduction, no waste",
-      "trust.t3_title": "AI + automation",
-      "trust.t3_body": "Generative designs meet autonomous robots — no print-on-demand, no fast fashion",
-      "trust.t4_title": "100% privacy",
-      "trust.t4_body": "Measurement detection runs client-side — your photo never leaves your device unless you opt in",
 
       // ── How it works (3-step) ──
-      "howto.eyebrow": "[ 02 / The Model ]",
-      "howto.heading": "From your idea to a one-of-one — in three steps.",
-      "howto.s1_title": "Find out what you're looking for",
-      "howto.s1_body": "Click through a few questions — mood, shape, fabric. Your choices grow into a real piece, live. Prefer it direct? Describe it in one sentence.",
-      "howto.s2_title": "Your measurements, your cut",
-      "howto.s2_body": "Nine body measurements — estimated from a photo or entered by hand. No standard size, no compromise: cut for exactly one body, yours.",
-      "howto.s3_title": "Autonomously made",
-      "howto.s3_body": "A fully autonomous factory is designed to sort recycled textiles and autonomously make your piece from them — on demand, no warehouse, no overproduction.",
-      "howto.ai_note": "<strong>And the AI?</strong> It's not the star — it works in the background: turning your choices into a precise, producible cut and thinking along on fit and fabric. AI as a tool that solves a real problem — sizes that fit no one, and mountains nobody needs — not as an end in itself.",
-      "howto.p1": "From sorted fibre",
-      "howto.p2": "Made to measure",
-      "howto.p3": "Zero overproduction",
 
       // ── Workflow ──
-      "workflow.s1_html": "<span>1</span> Design",
-      "workflow.s2_html": "<span>2</span> Measurements",
-      "workflow.s3_html": "<span>3</span> Preview",
-      "workflow.s4_html": "<span>4</span> Production",
 
       // ── Design section ──
       "design.h2": "Make a few choices",
@@ -1478,7 +1128,7 @@ const I18N = (() => {
       "landing.stat3_label": "of global CO₂ emissions come from the fashion industry",
       "landing.stats_src_html": "Sources: <a href=\"https://www.ellenmacarthurfoundation.org/a-new-textiles-economy\" target=\"_blank\" rel=\"noopener\">Ellen MacArthur Foundation</a> · <a href=\"https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion\" target=\"_blank\" rel=\"noopener\">UNEP</a>",
       "landing.cta_title_html": "Wear something that exists <em>only once</em>.",
-      "landing.cta_sub": "Describe your idea — UR Create turns it into your piece. Made to measure, from recycled clothing.",
+      "landing.cta_sub": "Describe your idea — you design your piece, we make it. Made to measure, from recycled clothing.",
       "landing.tap_hint": "Tap anywhere — the threads weave your next piece.",
       "landing.orb_aria": "Start UR Create — opens the studio",
 
@@ -1582,6 +1232,28 @@ const I18N = (() => {
     });
     document.documentElement.setAttribute("lang", current);
     document.title = t("head.title");
+    // Keep the search/social meta in sync with the active language, so a crawler
+    // or share-scrape of the toggled (EN) state gets a right-language snippet and
+    // share card instead of the German default. (Full per-language indexability
+    // still needs distinct URLs; this fixes the toggled-state metadata.)
+    setMetaKey('meta[name="description"]', "meta.description");
+    setMetaKey('meta[property="og:title"]', "meta.og_title");
+    setMetaKey('meta[name="twitter:title"]', "meta.og_title");
+    setMetaKey('meta[property="og:description"]', "meta.og_description");
+    setMetaKey('meta[name="twitter:description"]', "meta.og_description");
+    setMeta('meta[property="og:locale"]', current === "en" ? "en_US" : "de_DE");
+  }
+
+  // Set a <head> meta tag's content if the tag exists. setMetaKey resolves an
+  // i18n key first and skips writing when the key is missing (t() echoes the key
+  // back when absent — don't write that literal string into the markup).
+  function setMeta(selector, value) {
+    const el = document.head && document.head.querySelector(selector);
+    if (el && value) el.setAttribute("content", value);
+  }
+  function setMetaKey(selector, key) {
+    const value = t(key);
+    if (value !== key) setMeta(selector, value);
   }
 
   function setLang(lang) {
