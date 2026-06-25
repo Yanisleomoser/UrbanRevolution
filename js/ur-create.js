@@ -497,14 +497,31 @@
     const form = $("#join-form");
     if (!form) return;
     const status = $("#join-status");
+    const emailEl = $("#join-email");
+    const consentEl = $("#join-consent");
     const setStatus = (key) => { if (status) status.textContent = t(key); };
+    // A11y: tie the inline error to the field that failed so a screen reader,
+    // on re-focusing it, hears that it's invalid (the live #join-status carries
+    // the human message). Cleared on every fresh submit and on success.
+    const markInvalid = (el) => {
+      if (!el) return;
+      el.setAttribute("aria-invalid", "true");
+      el.setAttribute("aria-describedby", "join-status");
+      el.focus();
+    };
+    const clearInvalid = () => {
+      [emailEl, consentEl].forEach((el) => {
+        if (el) { el.removeAttribute("aria-invalid"); el.removeAttribute("aria-describedby"); }
+      });
+    };
     const submitBtn = $("button[type=submit]", form);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = ($("#join-email") && $("#join-email").value || "").trim();
-      const consent = $("#join-consent") && $("#join-consent").checked;
-      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setStatus("join.err_email"); return; }
-      if (!consent) { setStatus("join.err_consent"); return; }
+      clearInvalid();
+      const email = (emailEl && emailEl.value || "").trim();
+      const consent = consentEl && consentEl.checked;
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setStatus("join.err_email"); markInvalid(emailEl); return; }
+      if (!consent) { setStatus("join.err_consent"); markInvalid(consentEl); return; }
       if (!formspreeReady()) {
         console.warn(
           "[join] Formspree-Endpoint nicht gesetzt — FORMSPREE_ENDPOINT in js/ur-create.js eintragen.",
@@ -529,6 +546,7 @@
         if (res.ok) {
           setStatus("join.ok");
           form.reset();
+          clearInvalid();
         } else {
           setStatus("join.err");
         }

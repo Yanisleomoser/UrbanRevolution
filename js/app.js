@@ -26,8 +26,14 @@
 
   function showToast(message, type = "info") {
     const toast = document.getElementById("toast");
+    if (!toast) return; // toast lives in the studio; may be absent pre-reveal
     toast.textContent = message;
     toast.className = `toast show ${type}`;
+    // Errors are announced assertively so a screen reader doesn't miss feedback
+    // that fires mid-utterance; info/success stay polite.
+    const isError = type === "error";
+    toast.setAttribute("role", isError ? "alert" : "status");
+    toast.setAttribute("aria-live", isError ? "assertive" : "polite");
     setTimeout(() => toast.classList.remove("show"), 3500);
   }
 

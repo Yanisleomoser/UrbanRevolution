@@ -203,6 +203,9 @@ const DesignFlow = (() => {
     // True only on the Phase-F refine screen → the preview crossfades from the
     // morphing flat to the recoloured hero photo (realism layer, brief §1).
     let atRefine = false;
+    // A11y: focus moves to each new question heading as the journey advances —
+    // but not on the very first mount (the user just arrived; avoid a jump).
+    let firstQuestionShown = false;
     const T = (event, props) => { if (window.DesignTelemetry) window.DesignTelemetry.track(event, props); };
 
     hostEl.classList.add("de-stage");
@@ -363,6 +366,18 @@ const DesignFlow = (() => {
       if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
       renderer(body, node, ctx);
       refreshChrome();
+      // A11y: each render replaces the question DOM, so the control the user just
+      // activated is gone and focus falls to <body> — leaving keyboard/SR users
+      // with no announcement of the new question and a blind re-Tab from the top.
+      // Move focus to the new question heading (focusable via tabindex=-1), which
+      // both announces it and makes the next Tab land logically. Skip the first
+      // mount so arriving at the studio doesn't yank the viewport.
+      const q = body.querySelector(".de-question");
+      if (q) {
+        q.setAttribute("tabindex", "-1");
+        if (firstQuestionShown) q.focus();
+        else firstQuestionShown = true;
+      }
     }
 
     function renderNext() {

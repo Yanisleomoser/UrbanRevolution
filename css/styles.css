@@ -21,6 +21,10 @@
     --accent-3: #64d6c4;
     --gradient: linear-gradient(135deg, #2779a8 0%, #2a9d8f 50%, #64d6c4 100%);
     --gradient-dim: linear-gradient(135deg, rgba(42, 157, 143, 0.15), rgba(39, 121, 168, 0.15));
+    /* CTA fill: the teal→aqua slice of Ocean Depths (drops the dark blue stop)
+       so DARK navy label text clears WCAG AA (4.76–10.4:1) across the whole
+       button — white text failed on the bright end (down to 1.76:1). */
+    --gradient-cta: linear-gradient(135deg, #2a9d8f 0%, #64d6c4 100%);
     /* Der EINE warme Akzent — bewusst sparsam, NUR im Identitäts-Beat (#your-style). */
     --accent-warm: #E8A06A;
     --success: #10b981;
@@ -414,8 +418,8 @@ html.is-touch .navbar {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    background: var(--gradient);
-    color: white;
+    background: var(--gradient-cta);
+    color: var(--bg);
     text-decoration: none;
     padding: var(--space-5) var(--space-8);
     border-radius: 100px;
@@ -793,11 +797,10 @@ input[aria-invalid="true"] {
 
 .primary-btn {
     width: 100%;
-    background: var(--gradient);
+    background: var(--gradient-cta);
     border: none;
-    color: white;
-    /* Keeps the label legible where the gradient runs to light cyan. */
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    color: var(--bg);
+    text-shadow: none;
     padding: var(--space-5);
     border-radius: var(--radius);
     font-weight: 600;
@@ -1246,9 +1249,9 @@ input[aria-invalid="true"] {
 }
 
 .upload-btn {
-    background: var(--gradient);
+    background: var(--gradient-cta);
     border: none;
-    color: white;
+    color: var(--bg);
     padding: 12px 18px;
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -1928,7 +1931,8 @@ input[aria-invalid="true"] {
 }
 
 .export-btn.primary {
-    background: var(--gradient);
+    background: var(--gradient-cta);
+    color: var(--bg);
     border-color: transparent;
     font-weight: 600;
     box-shadow: 0 4px 16px rgba(42, 157, 143, 0.25);
@@ -1995,7 +1999,7 @@ input[aria-invalid="true"] {
     text-wrap: pretty;
 }
 
-.footer-col h5 {
+.footer-col h2 {
     font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: var(--tracking-wider);
@@ -2469,8 +2473,8 @@ html[lang="en"] [data-l="de"] { display: none; }
 .vto-btn {
     width: 100%;
     padding: 18px 24px;
-    background: var(--gradient);
-    color: white;
+    background: var(--gradient-cta);
+    color: var(--bg);
     border: none;
     border-radius: var(--radius);
     font-size: 1rem;
@@ -2674,8 +2678,8 @@ html[lang="en"] [data-l="de"] { display: none; }
 }
 
 .vto-download-btn {
-    background: var(--gradient);
-    color: white;
+    background: var(--gradient-cta);
+    color: var(--bg);
     border: none;
     border-radius: var(--radius);
     padding: 12px 28px;
@@ -3564,8 +3568,8 @@ main { display: block; }
     gap: var(--space-3);
     padding: var(--space-4) var(--space-8);
     border-radius: 100px;
-    background: var(--gradient);
-    color: #fff;
+    background: var(--gradient-cta);
+    color: var(--bg);
     font-weight: 600;
     font-size: var(--text-base);
     text-decoration: none;
@@ -6121,7 +6125,7 @@ html:not(.fx) .lp-loader { display: none; }
     transition: transform 0.25s var(--ease-out), box-shadow 0.25s, border-color 0.25s;
 }
 .lp-btn--primary {
-    background: var(--gradient);
+    background: var(--gradient-cta);
     color: #06121d;
     font-weight: 600;
 }
