@@ -1555,37 +1555,18 @@ const I18N = (() => {
     return t("pattern." + key);
   }
 
-  // Render a TRUSTED i18n HTML constant into `el`. Values come only from the
-  // developer-authored dictionary above (never user input), but rather than
-  // assign innerHTML — which a static analyser flags as a DOM-text→HTML sink —
-  // we parse the string into an inert document, strip anything executable
-  // (script/style/handlers/unsafe URLs) as defence-in-depth, then move the
-  // remaining trusted nodes in. Same safe pattern as ur-create's appendSafeSvg.
-  // Preserves the inline markup the copy relies on (<br>, <em>, <strong>,
-  // <span>, source <a>) without the literal-tag breakage textContent caused.
-  function renderTrustedHtml(el, html) {
-    const parsed = new DOMParser().parseFromString(String(html == null ? "" : html), "text/html");
-    parsed.querySelectorAll("script,style,iframe,object,embed,link,meta,base").forEach((n) => n.remove());
-    parsed.body.querySelectorAll("*").forEach((node) => {
-      Array.from(node.attributes).forEach((attr) => {
-        const name = attr.name.toLowerCase();
-        const value = String(attr.value || "").trim();
-        if (name.startsWith("on")) node.removeAttribute(attr.name);
-        else if ((name === "href" || name === "src" || name === "xlink:href") &&
-          /^\s*(?:javascript|vbscript|data):/i.test(value)) node.removeAttribute(attr.name);
-      });
-    });
-    el.textContent = "";
-    while (parsed.body.firstChild) el.appendChild(parsed.body.firstChild);
-  }
-
   // Translate every element carrying an i18n attribute within `root`.
   function apply(root = document) {
     root.querySelectorAll("[data-i18n]").forEach((el) => {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
     root.querySelectorAll("[data-i18n-html]").forEach((el) => {
-      renderTrustedHtml(el, t(el.getAttribute("data-i18n-html")));
+      // The value is a static, developer-authored entry from the I18N dictionary
+      // in this file (never user input), so the trusted inline markup it carries
+      // (<br>, <em>, <strong>, <span>, source <a>) is intentional and safe to
+      // inject. Do NOT switch this to textContent (renders tags as literal text)
+      // or to a sanitizer that isn't loaded — both break every rich-text string.
+      el.innerHTML = t(el.getAttribute("data-i18n-html"));
     });
     root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
