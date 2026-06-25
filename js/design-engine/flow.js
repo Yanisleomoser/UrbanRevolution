@@ -138,7 +138,7 @@ const DesignFlow = (() => {
       set("pattern.scale", 0.25 + r3 * 0.6);
     }
     if (idx === 3 && r2 > 0.5) {
-      const L = ["cropped", "regular", "long"]; const cur = L.indexOf(g("length"));
+      const L = ["cropped", "regular", "long"]; const cur = Math.max(0, L.indexOf(g("length")));
       set("length", L[(cur + 1 + Math.floor(r3 * 2)) % 3]);
     }
     return d;

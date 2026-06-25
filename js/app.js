@@ -1400,7 +1400,6 @@
           // shouldn't punish the user's quota.
           showVtoResult(body.imageUrl);
           incrementVtoCount();
-          updateVtoButtonState();
         } else {
           setVtoError(t("vto.error_unexpected"));
         }
@@ -1408,6 +1407,10 @@
         // Photoreal try-on (Replicate). No photo / prompt sent to Sentry.
         if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "vto" } });
         setVtoError(t("vto.error_network", { msg: err.message }));
+      } finally {
+        // Always refresh the button/hint state — previously only the success
+        // branch did, so an error or pending result left it out of sync.
+        updateVtoButtonState();
       }
     });
 

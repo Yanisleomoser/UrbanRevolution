@@ -78,6 +78,10 @@ export default async function handler(request) {
     try {
         createResponse = await fetch(MODEL_ENDPOINT, {
             method: "POST",
+            // Bound the call so a slow/black-holed upstream can't hang the
+            // (billed) function; the catch maps it to a neutral error. 25 s
+            // leaves margin over the Prefer: wait=20 below.
+            signal: AbortSignal.timeout(25000),
             headers: {
                 Authorization: `Bearer ${apiKey}`,
                 "Content-Type": "application/json",

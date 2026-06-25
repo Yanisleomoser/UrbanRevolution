@@ -99,6 +99,10 @@ export default async function handler(request) {
     try {
         response = await fetch(API_ENDPOINT, {
             method: "POST",
+            // Bound the upstream call so a slow/black-holed Anthropic endpoint
+            // can't hang the function; the catch maps it to a neutral error and
+            // the client falls back to its local generator.
+            signal: AbortSignal.timeout(20000),
             headers: {
                 "Content-Type": "application/json",
                 "x-api-key": apiKey,
