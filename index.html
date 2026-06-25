@@ -73,6 +73,20 @@
         } catch (e) { /* no-op — CSS falls back to svh/vh */ }
       })();
     </script>
+    <!-- Cover the page with the preloader from the very first paint (no hero
+         flash). The loader is CSS-gated on html.fx; without setting it here it
+         was added only after the GSAP CDN + landing.js loaded, so the hero
+         painted first and the loader then covered it and replayed the reveal.
+         We set it optimistically when motion is allowed; landing.js removes it
+         again if GSAP fails to load, so the loader can never get stuck. -->
+    <script>
+      (function () {
+        try {
+          var mq = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+          if (!mq || !mq.matches) document.documentElement.classList.add("fx");
+        } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
+      })();
+    </script>
     <link rel="stylesheet" href="css/styles.css?v=20260612-weavetap">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->

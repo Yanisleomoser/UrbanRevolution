@@ -109,10 +109,12 @@ const PreviewFallback = (() => {
         const base = /^#[0-9a-f]{6}$/i.test(d.color || "") ? d.color : "#9aa0a8";
         const path = SILHOUETTES[type];
         const detail = DETAILS[type];
-        const safePattern = d.pattern === "stripe" || d.pattern === "dot" || d.pattern === "gradient"
-            ? d.pattern
-            : null;
-        const pattern = safePattern && safePattern !== "solid" ? safePattern : null;
+        // Any non-solid pattern key is passed straight to patternDef(), whose
+        // switch only ever emits known-safe markup and returns "" for anything
+        // it doesn't recognise — so no allow-list is needed here, and inventing
+        // one (e.g. only "stripe"/"dot") just drops the real keys
+        // (stripes_h/dots/plaid/…) and renders every garment flat.
+        const pattern = d.pattern && d.pattern !== "solid" ? d.pattern : null;
         const light = luminance(base) > 200;
 
         const hi = mix(base, "#ffffff", 0.22);   // lit side
@@ -121,7 +123,7 @@ const PreviewFallback = (() => {
         const safeMaterial = Object.prototype.hasOwnProperty.call(SHEEN, d.material) ? d.material : "cotton";
         const sheen = SHEEN[safeMaterial] != null ? SHEEN[safeMaterial] : 0.16;
         const pat = pattern ? patternDef(`${id}p`, pattern, base) : "";
-        const isGradient = safePattern === "gradient";
+        const isGradient = d.pattern === "gradient";
 
         // Centre the 64-box silhouette in a 360×440 studio frame.
         const T = "translate(40,86) scale(4.0)";
@@ -163,9 +165,9 @@ const PreviewFallback = (() => {
             type: SILHOUETTES[input.type] ? input.type : "tshirt",
             color: /^#[0-9a-f]{6}$/i.test(input.color || "") ? input.color : "#9aa0a8",
             material: Object.prototype.hasOwnProperty.call(SHEEN, input.material) ? input.material : "cotton",
-            pattern: input.pattern === "solid" || input.pattern === "stripe" || input.pattern === "dot" || input.pattern === "gradient"
-                ? input.pattern
-                : null,
+            // Pass any pattern string through — svg()/patternDef() only ever
+            // emit known-safe markup for it (real keys: stripes_h, dots, plaid…).
+            pattern: typeof input.pattern === "string" ? input.pattern : null,
             name: String(input.name || "").slice(0, 120),
         };
 
