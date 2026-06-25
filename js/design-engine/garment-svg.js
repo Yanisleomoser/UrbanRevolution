@@ -38,6 +38,15 @@ const GarmentSVG = (() => {
   const R = (x) => r(CX + x);
   const Y = (y) => r(y);
 
+  // Colour values come from the DesignDNA — which on a shared #dna= link is
+  // attacker-controlled and JSON-parsed without validation — and are
+  // interpolated UNESCAPED into the SVG markup string below. Clamp every colour
+  // to a strict hex literal so a value like `#000"><img onerror=…>` can't break
+  // out of an attribute and inject markup (XSS). Non-hex → neutral fallback.
+  const HEX_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+  const safeHex = (v, fallback) =>
+    (typeof v === "string" && HEX_RE.test(v.trim())) ? v.trim() : fallback;
+
   // Per-category construction constants (brief §4). sleeveLen is the limb's own
   // length so cropped bodies keep full sleeves; hem maps the length attribute.
   const CFG = {
@@ -72,7 +81,11 @@ const GarmentSVG = (() => {
   // calm↔bold drives how present it is). No colour yet → tone from the
   // archetype. A sheen overlay (material × finish) gives the fabric a feel.
   function fillSpec(id, p) {
-    const stops = Array.isArray(p.stops) && p.stops.length ? p.stops : null;
+    // Hard-clamp each stop to a safe hex literal (see safeHex above): stops are
+    // written unescaped into the SVG, and a shared DNA can carry hostile values.
+    const tint = ARCH_TINT[p.archetype] || "#8b8f96";
+    const stops = Array.isArray(p.stops) && p.stops.length
+      ? p.stops.map((s) => safeHex(s, tint)) : null;
     const energy = clamp(num(p.energy, 0.5), 0, 1);
     const finish = clamp(num(p.finish, 0.5), 0, 1);
     const sheen = clamp((MATERIAL_SHEEN[p.material] != null ? MATERIAL_SHEEN[p.material] : 0.2) + finish * 0.4, 0.04, 0.95);

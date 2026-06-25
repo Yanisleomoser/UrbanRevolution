@@ -61,10 +61,11 @@ export default async function handler(request) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-        return jsonError(500,
-            "ANTHROPIC_API_KEY not configured on the server. " +
-            "Set it in Vercel → Project Settings → Environment Variables.",
-        );
+        // Log the setup hint server-side only; never leak config state to the
+        // browser (same neutral-error pattern as try-on.js / preview-design.js).
+        // The client falls back to its local keyword generator on any non-OK.
+        console.error("[generate-design] ANTHROPIC_API_KEY not configured — set it in Vercel → Project Settings → Environment Variables.");
+        return jsonError(503, "Design service unavailable", "service_unavailable");
     }
 
     let payload;
@@ -110,34 +111,44 @@ export default async function handler(request) {
             }),
         });
     } catch (err) {
-        return jsonError(502, `Anthropic request failed: ${err.message}`);
+        console.error(`[generate-design] Anthropic request failed: ${err.message}`);
+        return jsonError(502, "Upstream request failed", "service_unavailable");
     }
 
     if (!response.ok) {
         const text = await response.text().catch(() => "");
-        return jsonError(502,
-            `Anthropic API ${response.status}: ${text.slice(0, 400)}`,
-        );
+        return upstreamError("generate-design", response.status, text.slice(0, 400));
     }
 
     let data;
     try {
         data = await response.json();
     } catch {
-        return jsonError(502, "Anthropic returned non-JSON response");
+        console.error("[generate-design] Anthropic returned non-JSON response");
+        return jsonError(502, "Generation failed", "service_unavailable");
     }
 
     const text = data?.content?.[0]?.text || "";
     const design = extractDesign(text);
     if (!design) {
-        return jsonError(502, "Anthropic returned no parseable design JSON");
+        console.error("[generate-design] no parseable design JSON in model reply");
+        return jsonError(502, "Generation failed", "failed");
     }
 
     return Response.json(design);
 }
 
-function jsonError(status, message) {
-    return Response.json({ error: message }, { status });
+// Classify an upstream Anthropic failure into a SAFE, coded client error. The
+// real status/body (which can include billing/credit/account state) is logged
+// server-side only — the browser never sees it. Mirrors api/try-on.js.
+function upstreamError(tag, status, detail) {
+    console.error(`[${tag}] Anthropic ${status}: ${detail}`);
+    if (status === 429) return jsonError(503, "Rate limited", "rate_limited");
+    return jsonError(503, "Design service unavailable", "service_unavailable");
+}
+
+function jsonError(status, message, code) {
+    return Response.json(code ? { error: message, code } : { error: message }, { status });
 }
 
 // Exported for unit tests (test/api-validation-test.mjs). Not used by the edge

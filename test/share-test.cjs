@@ -67,6 +67,27 @@ console.log("\n— decode fails closed (returns null, never throws) —");
   }
 }
 
+console.log("\n— decode sanitises hostile colour stops (XSS hardening) —");
+{
+  // A well-formed share link can still carry hostile VALUES. Colour stops are
+  // written unescaped into the SVG (garment-svg.js), so decode() must strip any
+  // stop that isn't a strict hex literal — while leaving legitimate hex intact.
+  const evil = {
+    archetypeWeights: { minimal: 1 },
+    color: { scheme: "duo-gradient", stops: ['#000"/></linearGradient></defs></svg><img src=x onerror=alert(1)>', "#64d6c4"] },
+  };
+  const back = DesignShare.decode(DesignShare.encode(evil));
+  assert(back !== null, "decode of a well-formed-but-hostile payload still returns the design");
+  assert(Array.isArray(back.color.stops), "color.stops remains an array");
+  assert(back.color.stops.every((s) => /^#[0-9a-fA-F]{3,8}$/.test(s)), "every surviving stop is a strict hex literal");
+  assert(!back.color.stops.some((s) => s.includes("<")), "no markup-bearing stop survives decode");
+  assert(back.color.stops.includes("#64d6c4"), "the legitimate hex stop is preserved");
+
+  // Legitimate designs with valid hex stops must roundtrip untouched.
+  const good = { color: { scheme: "duo-gradient", stops: ["#2a9d8f", "#64d6c4"] }, fit: 0.4 };
+  assert(deepEqual(DesignShare.decode(DesignShare.encode(good)), good), "valid hex stops roundtrip unchanged");
+}
+
 console.log("\n— buildUrl + read roundtrip through a real hash string —");
 {
   const dna = { category: "dress", fit: 0.6, tags: ["flowy"] };
