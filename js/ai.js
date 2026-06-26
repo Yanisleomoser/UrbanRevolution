@@ -115,7 +115,7 @@ const AI = (() => {
     gestreift: "stripes_h",
     streifen: "stripes_h",
     striped: "stripes_h",
-    längssteifen: "stripes_v",
+    längsstreifen: "stripes_v",
     laengsstreifen: "stripes_v",
     vertical: "stripes_v",
     gepunktet: "dots",
@@ -174,24 +174,22 @@ const AI = (() => {
   }
 
   function detectSecondaryColor(prompt, primaryColor) {
-    const phrases = [
-      /mit\s+(\w+en)\s+(streifen|akzenten|stickerei|details|kontrast)/i,
-      /(\w+)\s+(streifen|akzent|kontrast)/i,
-      /und\s+(\w+)/i,
-    ];
-    for (const re of phrases) {
-      const match = prompt.match(re);
-      if (match) {
-        for (const word of match.slice(1)) {
-          const norm = word.toLowerCase().replace(/(en|er|es|e)$/, "");
-          for (const [key, val] of Object.entries(COLOR_DICT)) {
-            if (norm.includes(key) || key.includes(norm)) {
-              if (val !== primaryColor) return val;
-            }
-          }
-        }
+    // Find the contrast/accent colour for a 2-colour pattern: the longest
+    // colour word in the prompt whose colour differs from the primary. Uses the
+    // same substring match as extractFromPrompt (umlaut-safe — `\w` excludes
+    // ä/ö/ü, which the old regex approach mistokenised, turning "grünen
+    // akzenten" into a brown secondary). Longest-match avoids a short alias
+    // shadowing a longer one; the length guard never matches a 1-char fragment.
+    const lower = prompt.toLowerCase();
+    let best = null;
+    let bestLen = 0;
+    for (const [key, val] of Object.entries(COLOR_DICT)) {
+      if (val !== primaryColor && key.length > bestLen && lower.includes(key)) {
+        best = val;
+        bestLen = key.length;
       }
     }
+    if (best) return best;
     return primaryColor === "#ffffff" ? "#1a1a1a" : "#ffffff";
   }
 

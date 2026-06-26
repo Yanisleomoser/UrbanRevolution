@@ -98,14 +98,26 @@
   // Aktuelle Journey-DNA (für Share/Publish) aus dem von flow.js gepflegten
   // localStorage-Eintrag lesen — ohne flow.js anzufassen.
   function currentDna() {
+    // Primary source: the journey blob flow.js keeps during the journey.
     try {
       const raw = localStorage.getItem("urev_journey_v1");
-      if (!raw) return null;
-      const o = JSON.parse(raw);
-      return o && o.dna && o.dna.archetypeWeights ? o.dna : null;
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (o && o.dna && o.dna.archetypeWeights) return o.dna;
+      }
     } catch (_e) {
-      return null;
+      /* fall through to the design snapshot */
     }
+    // Fallback: handoff() clears that blob the instant it reveals this panel, so
+    // read the DNA flow.js stamps onto the finished design (Share/Publish live in
+    // the just-revealed Ownership-Moment, where the blob is already gone).
+    try {
+      const d = window.StateManager && window.StateManager.get("currentDesign");
+      if (d && d.dna && d.dna.archetypeWeights) return d.dna;
+    } catch (_e) {
+      /* ignore */
+    }
+    return null;
   }
 
   let curated = null;

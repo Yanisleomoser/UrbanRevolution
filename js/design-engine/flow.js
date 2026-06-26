@@ -540,6 +540,12 @@ const DesignFlow = (() => {
           const m = window.StateManager.get("measurements");
           if (m) design.measurements = m;
         }
+        // Stamp the journey DNA onto the finished design so Share/Publish in the
+        // Ownership-Moment still work. clearSaved() below wipes the journey blob
+        // the instant S() reveals that panel, and currentDesign isn't persisted
+        // across reloads, so the in-memory design is the surviving DNA source for
+        // this hand-off flow (ur-create's currentDna() reads it as a fallback).
+        if (design) design.dna = dna;
         if (window.StateManager) S("currentDesign", design);
         clearSaved();
         generated = true;

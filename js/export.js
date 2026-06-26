@@ -11,6 +11,12 @@ const Export = (() => {
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
     );
   const loc = () => (window.I18N ? window.I18N.locale() : "de-DE");
+  // Guard against a missing/garbage timestamp (legacy or hand-edited entries):
+  // `new Date(bad).toLocaleDateString()` renders the literal "Invalid Date".
+  const fmtDate = (v) => {
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? "" : d.toLocaleDateString(loc());
+  };
   const matLabel = (key) => (window.I18N ? window.I18N.material(key) : key);
   const typeLabel = (key) => (window.I18N ? window.I18N.typeLabel(key) : key);
   const mLabel = (key) =>
@@ -109,7 +115,7 @@ const Export = (() => {
       .filter(([k]) => k !== "unit")
       .map(
         ([k, v]) =>
-          `<tr><td>${mLabel(k)}</td><td>${v} cm</td></tr>`
+          `<tr><td>${esc(mLabel(k))}</td><td>${esc(String(v))} cm</td></tr>`
       )
       .join("");
 
@@ -153,7 +159,7 @@ const Export = (() => {
         </div>
         <div class="id">
             ${esc(spec.metadata.designId)}<br>
-            ${new Date(spec.metadata.generatedAt).toLocaleDateString(loc())}
+            ${fmtDate(spec.metadata.generatedAt)}
         </div>
     </div>
 
@@ -167,13 +173,13 @@ const Export = (() => {
 
     <h2>${t("spec.specs_h4")}</h2>
     <table>
-        <tr><td>${t("spec.type")}</td><td>${typeLabel(spec.specifications.garmentType)}</td></tr>
-        <tr><td>${t("spec.material")}</td><td>${matLabel(spec.specifications.material)}</td></tr>
+        <tr><td>${t("spec.type")}</td><td>${esc(typeLabel(spec.specifications.garmentType))}</td></tr>
+        <tr><td>${t("spec.material")}</td><td>${esc(matLabel(spec.specifications.material))}</td></tr>
         <tr><td>${t("spec.color")}</td><td><span class="color-chip" style="background:${esc(spec.specifications.color)}"></span>${esc(spec.specifications.color)}</td></tr>
-        <tr><td>${t("spec.fit")}</td><td>${spec.specifications.fit}</td></tr>
+        <tr><td>${t("spec.fit")}</td><td>${esc(spec.specifications.fit)}</td></tr>
         <tr><td>${t("spec.length")}</td><td>${esc(spec.specifications.length)}</td></tr>
         <tr><td>${t("spec.print")}</td><td>${spec.specifications.print ? `&bdquo;${esc(spec.specifications.print)}&ldquo;` : "—"}</td></tr>
-        <tr><td>${t("spec.size")}</td><td>${spec.specifications.size}</td></tr>
+        <tr><td>${t("spec.size")}</td><td>${esc(String(spec.specifications.size))}</td></tr>
     </table>
 
     <h2>${t("export.body_measures")}</h2>
@@ -181,8 +187,8 @@ const Export = (() => {
 
     <h2>${t("export.production_data")}</h2>
     <table>
-        <tr><td>${t("export.est_fabric")}</td><td>${spec.production.estimatedFabric}</td></tr>
-        <tr><td>${t("export.est_seams")}</td><td>${spec.production.estimatedSeamLength}</td></tr>
+        <tr><td>${t("export.est_fabric")}</td><td>${esc(spec.production.estimatedFabric)}</td></tr>
+        <tr><td>${t("export.est_seams")}</td><td>${esc(spec.production.estimatedSeamLength)}</td></tr>
         <tr><td>${t("export.duration")}</td><td>${t("est.days", { n: spec.production.estimatedProductionDays })}</td></tr>
         <tr><td>${t("export.price_range")}</td><td>${spec.production.estimatedPriceRange.currency} ${spec.production.estimatedPriceRange.min} – ${spec.production.estimatedPriceRange.max}</td></tr>
     </table>

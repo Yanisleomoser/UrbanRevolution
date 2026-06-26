@@ -335,5 +335,16 @@ const revFull = GS.build("hoodie", { reveal: 1, stops: ["#2a9d8f"], pattern: "st
 assert(revSketch !== revFull, "reveal stages the materialisation (sketch → dressed)");
 assert(GS.build("hoodie", {}).includes('pathLength="1"'), "flat paths are draw-animatable (weave-in)");
 
+// ─── topArchetype ignores non-finite weights (corrupt/crafted #dna=) ──────────
+console.log("\n— topArchetype skips null/NaN/Infinity weights —");
+// `null > -Infinity` is true, so a null/NaN weight (e.g. from JSON.stringify of
+// Infinity, or a crafted share link) must NOT win over a real weight.
+assert(DNA.topArchetype({ archetypeWeights: { quietMinimal: 3, techAvant: null } }) === "quietMinimal",
+  "a null weight does not beat a real positive weight");
+assert(DNA.topArchetype({ archetypeWeights: { quietMinimal: -5, techAvant: null } }) === "quietMinimal",
+  "a real negative weight beats a null weight (null no longer wins)");
+assert(DNA.topArchetype({ archetypeWeights: { a: 1, b: 2 } }) === "b", "highest finite weight still wins");
+assert(DNA.topArchetype({ archetypeWeights: {} }) === null, "empty weights → null");
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

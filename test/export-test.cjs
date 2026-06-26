@@ -59,6 +59,41 @@ assert(html.includes("&lt;b&gt;prompt&lt;/b&gt;"), "originalPrompt is HTML-escap
 assert(!html.includes("<script>tag</script>"), "raw tag markup is NOT present");
 assert(html.includes("&lt;i&gt;note&lt;/i&gt;"), "construction note is HTML-escaped");
 
+// Regression: the label-resolved + computed fields also reach the downloaded
+// HTML and were NOT escaped before — material/garmentType resolve through an
+// I18N label lookup that echoes an unknown key verbatim ("material.<key>"), so
+// an unvalidated AI `material` was a stored-XSS sink. The measurement key, fit,
+// size and the production estimates bypassed esc() too. All must be escaped.
+console.log("\n— renderPrintableHTML escapes label/computed sinks (XSS) —");
+const sinkSpec = {
+  metadata: { designId: "UR-TEST-3", generatedAt: "2026-01-01T00:00:00.000Z", version: "1.0.0" },
+  design: { name: "n", description: "d", originalPrompt: "p", tags: [] },
+  specifications: {
+    garmentType: "<svg/onload=alert(1)>", color: "#1a1a1a",
+    material: "<img src=x onerror=alert(2)>", fit: "Regular",
+    length: "Regulär", print: "", size: "<b>M</b>",
+  },
+  measurements: { "<i>chest</i>": 96, height: 175, unit: "cm" },
+  production: {
+    estimatedFabric: "<u>2</u> m²", estimatedSeamLength: "352 cm",
+    constructionNotes: [], estimatedProductionDays: 14,
+    estimatedPriceRange: { min: 145, max: 220, currency: "CHF" },
+  },
+};
+const sinkHtml = Export.renderPrintableHTML(sinkSpec);
+assert(!sinkHtml.includes("<img src=x onerror"), "raw <img> in material label sink is NOT present");
+assert(!sinkHtml.includes("<svg/onload"), "raw <svg> in garmentType label sink is NOT present");
+assert(!sinkHtml.includes("<i>chest</i>"), "raw markup in measurement key is NOT present");
+assert(!sinkHtml.includes("<b>M</b>"), "raw markup in size is NOT present");
+assert(!sinkHtml.includes("<u>2</u>"), "raw markup in production estimate is NOT present");
+
+// Regression: a missing/garbage generatedAt must not render the literal
+// "Invalid Date" into the production document.
+const badDate = Export.renderPrintableHTML({
+  ...sinkSpec, metadata: { ...sinkSpec.metadata, generatedAt: "not-a-date" },
+});
+assert(!badDate.includes("Invalid Date"), "garbage generatedAt does not render literal 'Invalid Date'");
+
 console.log("\n— buildSpecData length-factor fabric math —");
 const design = {
   designId: "UR-TEST-2", generatedAt: "2026-01-01T00:00:00.000Z",

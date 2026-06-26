@@ -89,7 +89,10 @@ const DesignDNA = (() => {
     let best = null;
     let bestW = -Infinity;
     for (const [id, w] of Object.entries(dna.archetypeWeights || {})) {
-      if (w > bestW) { bestW = w; best = id; }
+      // Skip non-finite weights (null/NaN/Infinity from a corrupt or crafted
+      // #dna= link): `null > -Infinity` is true, so a null weight would
+      // otherwise win over real negative weights and pick the wrong archetype.
+      if (Number.isFinite(w) && w > bestW) { bestW = w; best = id; }
     }
     return best;
   }

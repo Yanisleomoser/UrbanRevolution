@@ -91,6 +91,23 @@ const ID = /^UR-[0-9A-Z]+-[0-9A-Z]{6}$/;
   try { await AI.generateDesign(null); } catch { threw = true; }
   assert(threw, "null prompt throws");
 
+  // secondaryColor (the 2-colour pattern contrast). Regression: the old
+  // \w-based detector mis-tokenised umlaut colour words (\w excludes ä/ö/ü) and
+  // could empty-match, so "grünen akzenten" produced a brown secondary and a
+  // trailing "und es" produced an arbitrary palette colour.
+  console.log("\n— generateDesign secondaryColor (umlaut-safe contrast) —");
+  const BROWN = CONFIG.COLORS.brown;
+  const sGreen = await AI.generateDesign("hemd mit grünen akzenten, gestreift", "shirt");
+  assert(sGreen.secondaryColor !== BROWN, "green accents do NOT yield a brown secondary");
+  assert(HEX.test(sGreen.secondaryColor), "secondary is a valid hex");
+  const sBlackWhite = await AI.generateDesign("schwarzes hemd mit weißen streifen", "shirt");
+  assert(sBlackWhite.secondaryColor === CONFIG.COLORS.white, "black shirt + weiße streifen → white secondary");
+  const sBlueRed = await AI.generateDesign("blaues shirt mit roten punkten", "shirt");
+  assert(sBlueRed.secondaryColor === CONFIG.COLORS.red, "blue shirt + rote punkte → red secondary");
+  const sJunk = await AI.generateDesign("rotes kariertes hemd und es", "shirt");
+  assert(HEX.test(sJunk.secondaryColor) && sJunk.secondaryColor !== BROWN,
+    "no real 2nd colour → a stable default contrast, not garbage");
+
   console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
   process.exit(failures ? 1 : 0);
 })();

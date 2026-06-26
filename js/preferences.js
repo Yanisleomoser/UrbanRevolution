@@ -33,10 +33,14 @@ const Preferences = (() => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return emptyPrefs();
       const parsed = JSON.parse(raw);
+      // Guard the count maps as real objects: a valid-JSON-but-wrong-type blob
+      // (e.g. {"type":"corrupt"}) would otherwise slip through `|| {}` (only
+      // falsy is caught) and make topValues()/totalDesigns() return garbage.
+      const obj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
       return {
-        type: parsed.type || {},
-        color: parsed.color || {},
-        material: parsed.material || {},
+        type: obj(parsed.type),
+        color: obj(parsed.color),
+        material: obj(parsed.material),
         prompts: Array.isArray(parsed.prompts) ? parsed.prompts : [],
       };
     } catch {
@@ -79,7 +83,9 @@ const Preferences = (() => {
 
   function totalDesigns() {
     const types = load().type || {};
-    return Object.values(types).reduce((sum, n) => sum + n, 0);
+    // Coerce defensively: a corrupt map with string counts would otherwise
+    // string-concatenate ("0" + "3" + "2") instead of summing.
+    return Object.values(types).reduce((sum, n) => sum + (Number(n) || 0), 0);
   }
 
   function getAll() {
