@@ -13,6 +13,24 @@
 const DesignShare = (() => {
   const PARAM = "dna";
 
+  // The #dna= fragment is attacker-reachable and JSON-parsed without schema
+  // validation. Colour stops are the one decoded field that downstream code
+  // (garment-svg.js) writes UNESCAPED into SVG markup, so neutralise them here
+  // at the trust boundary: drop any value that isn't a strict hex literal.
+  // Everything else in the DNA is numeric/enum, only ever used as a number or
+  // an object-lookup key — never interpolated into markup.
+  const HEX_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+  function sanitize(dna) {
+    if (!dna || typeof dna !== "object") return dna;
+    const stops = dna.color && dna.color.stops;
+    if (Array.isArray(stops)) {
+      dna.color.stops = stops
+        .filter((s) => typeof s === "string" && HEX_RE.test(s.trim()))
+        .map((s) => s.trim());
+    }
+    return dna;
+  }
+
   function encode(dna) {
     const json = JSON.stringify(dna);
     const b64 = btoa(unescape(encodeURIComponent(json)));
@@ -23,7 +41,7 @@ const DesignShare = (() => {
     try {
       let b64 = String(str).replace(/-/g, "+").replace(/_/g, "/");
       while (b64.length % 4) b64 += "=";
-      return JSON.parse(decodeURIComponent(escape(atob(b64))));
+      return sanitize(JSON.parse(decodeURIComponent(escape(atob(b64)))));
     } catch (_e) {
       return null;
     }

@@ -49,6 +49,12 @@ export default async function handler(request) {
     if (typeof userPhoto !== "string" || !userPhoto.startsWith("data:image/")) {
         return jsonError(400, "userPhoto must be a data:image/... URL");
     }
+    // Cap the forwarded image (~4 MB of base64) so a hostile client can't push a
+    // multi-MB data URL straight to the billed upstream — every other field is
+    // bounded too. Stays under Vercel's 4.5 MB edge body limit.
+    if (userPhoto.length > 4_000_000) {
+        return jsonError(413, "userPhoto too large");
+    }
     if (typeof designPrompt !== "string" || designPrompt.length > 1000) {
         return jsonError(400, "designPrompt must be a string under 1000 chars");
     }
@@ -65,6 +71,10 @@ export default async function handler(request) {
     try {
         createResponse = await fetch(MODEL_ENDPOINT, {
             method: "POST",
+            // Bound the call so a slow/black-holed upstream can't hang the
+            // (billed) function past the wait window; the catch maps it to a
+            // neutral error. 25 s leaves margin over the Prefer: wait=20 below.
+            signal: AbortSignal.timeout(25000),
             headers: {
                 Authorization: `Bearer ${apiKey}`,
                 "Content-Type": "application/json",

@@ -26,8 +26,14 @@
 
   function showToast(message, type = "info") {
     const toast = document.getElementById("toast");
+    if (!toast) return; // toast lives in the studio; may be absent pre-reveal
     toast.textContent = message;
     toast.className = `toast show ${type}`;
+    // Errors are announced assertively so a screen reader doesn't miss feedback
+    // that fires mid-utterance; info/success stay polite.
+    const isError = type === "error";
+    toast.setAttribute("role", isError ? "alert" : "status");
+    toast.setAttribute("aria-live", isError ? "assertive" : "polite");
     setTimeout(() => toast.classList.remove("show"), 3500);
   }
 
@@ -1394,7 +1400,6 @@
           // shouldn't punish the user's quota.
           showVtoResult(body.imageUrl);
           incrementVtoCount();
-          updateVtoButtonState();
         } else {
           setVtoError(t("vto.error_unexpected"));
         }
@@ -1402,6 +1407,10 @@
         // Photoreal try-on (Replicate). No photo / prompt sent to Sentry.
         if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "vto" } });
         setVtoError(t("vto.error_network", { msg: err.message }));
+      } finally {
+        // Always refresh the button/hint state — previously only the success
+        // branch did, so an error or pending result left it out of sync.
+        updateVtoButtonState();
       }
     });
 

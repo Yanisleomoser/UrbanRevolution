@@ -107,5 +107,34 @@ assert(neb0 === neb0b, "nebula is deterministic for identical input");
 assert(neb8.length > neb0.length, "more seed (more answers) → more woven threads");
 assert(!/NaN|undefined/.test(GarmentSVG.nebula({})), "nebula with empty params → no NaN/undefined");
 
+console.log("\n— colour stops: duo-gradient renders a gradient fill —");
+const duo = GarmentSVG.build("tshirt", { fit: 0.5, scheme: "duo-gradient", stops: ["#2a9d8f", "#64d6c4"], material: "silk", finish: 0.8, energy: 0.7 });
+assert(duo.includes("linearGradient") && duo.includes("#2a9d8f") && duo.includes("#64d6c4"),
+  "duo-gradient + two hex stops → a <linearGradient> carrying both stop colours");
+assert(GarmentSVG.build("tshirt", { fit: 0.5, scheme: "mono", stops: ["#831843"] }).includes("#831843"),
+  "single stop → the chosen colour fills the flat");
+
+console.log("\n— security: hostile colour stops are sanitised, never injected (XSS) —");
+// A shared #dna= link is attacker-controlled; stops are written into the SVG.
+const EVIL = '#000"/></linearGradient></defs></svg><img src=x onerror=alert(1)>';
+const hostile = GarmentSVG.build("tshirt", { fit: 0.5, scheme: "duo-gradient", stops: [EVIL, "#64d6c4"] });
+assert(!hostile.includes("<img") && !hostile.toLowerCase().includes("onerror"),
+  "a non-hex stop carrying markup never reaches the SVG output");
+assert(hostile.includes("#64d6c4"), "the legitimate hex stop in the same array survives");
+assert(GarmentSVG.build("tshirt", { scheme: "duo-gradient", stops: ["javascript:alert(1)", "rgb(0,0,0)"] }).startsWith("<svg"),
+  "non-hex stops (url:/rgb()) fall back cleanly to a neutral tone, no throw");
+
+console.log("\n— rich Phase-E params exercise the detail layers cleanly —");
+["jacket", "hoodie", "shirt", "dress", "pants"].forEach((cat) => {
+  const rich = GarmentSVG.build(cat, {
+    fit: 0.6, length: "long", material: "denim", finish: 0.7,
+    scheme: "duo-gradient", stops: ["#1e3a8a", "#64d6c4"],
+    pattern: "stripe", patternScale: 0.5, subArchetype: "puffer",
+    hardware: "gold", signature: "contrast-stitch", energy: 0.9, archetype: "utility",
+  });
+  assert(rich.startsWith("<svg") && rich.includes("</svg>") && !/NaN|undefined/.test(rich),
+    `${cat}: rich Phase-E params → clean, closed SVG (no NaN/undefined)`);
+});
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

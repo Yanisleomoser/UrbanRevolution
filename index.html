@@ -16,7 +16,7 @@
     <meta property="og:site_name" content="Urban Revolution">
     <meta property="og:title" content="Erschaffe die Zukunft der Mode — Urban Revolution">
     <meta property="og:description" content="Eine Vision für Mode ohne Überproduktion: dein Entwurf, eines Tages autonom gefertigt aus recycelter Kleidung. Werde Teil der Bewegung.">
-    <meta property="og:url" content="https://revolveurban.com">
+    <meta property="og:url" content="https://revolveurban.com/">
     <meta property="og:locale" content="de_DE">
     <meta property="og:locale:alternate" content="en_US">
     <meta property="og:image" content="https://revolveurban.com/assets/og-image.png">
@@ -104,6 +104,14 @@
          --font-display / --font-body / --font-mono tokenisiert. Generiert via
          scripts/fetch-fonts.mjs (Lora/Poppins) + scripts/fetch-fonts-extra.mjs
          (Fraunces/JetBrains Mono). -->
+    <!-- Preload the LCP typography (hero "Made for one." = Fraunces normal +
+         italic, latin) + the body face (Poppins 400, latin) so they're fetched
+         at high priority before fonts.css is parsed — cuts the font-swap reflow
+         on the largest element. crossorigin is required to match the (anonymous-
+         CORS) font request even though the files are same-origin. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/fraunces-400-700-normal-latin.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/fraunces-400-700-italic-latin.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/poppins-400-normal-latin.woff2">
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
@@ -128,14 +136,17 @@
           // Datenschutz: Session Replay aus, keine personenbezogenen Daten.
           replaysSessionSampleRate: 0,
           replaysOnErrorSampleRate: 0,
-          // Performance-Tracing an: 100 % der Transaktionen (Seitenladezeiten,
-          // Web Vitals, Navigation). Für Low-Traffic ok; bei viel Traffic 0.1–0.2.
-          tracesSampleRate: 1.0,
+          // Performance-Tracing an, aber gesampelt: 20 % der Transaktionen
+          // (Seitenladezeiten, Web Vitals, Navigation) reichen für ein
+          // repräsentatives Bild und senken den Client-Overhead pro Session.
+          tracesSampleRate: 0.2,
           sendDefaultPii: false,
         });
       };
     </script>
-    <script src="https://js-de.sentry-cdn.com/1eba00decb258179c8e3a62757290ef1.min.js" crossorigin="anonymous"></script>
+    <!-- async: der schlanke Loader blockiert den Seitenaufbau nicht mehr; er
+         puffert Fehler selbst, sobald er läuft, und lädt das volle SDK lazy. -->
+    <script async src="https://js-de.sentry-cdn.com/1eba00decb258179c8e3a62757290ef1.min.js" crossorigin="anonymous"></script>
 
     <!-- Vercel Speed Insights -->
     <script>
@@ -590,12 +601,12 @@
                         <h3 class="own-side-title" data-i18n="own.see_title">Sieh es an dir.</h3>
                         <p class="own-choose-lead" data-i18n="own.see_sub">Wähle eine der Vorschau-Personen — oder lade dein eigenes Ganzkörperfoto hoch.</p>
                         <div class="own-presets" id="own-presets" role="radiogroup" data-i18n-aria-label="own.presets_label" aria-label="Vorschau-Personen">
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-1"><img src="assets/presets/f-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-2"><img src="assets/presets/f-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-3"><img src="assets/presets/f-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-1"><img src="assets/presets/m-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-2"><img src="assets/presets/m-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-3"><img src="assets/presets/m-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-1" aria-label="Person 1"><img src="assets/presets/f-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-2" aria-label="Person 2"><img src="assets/presets/f-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="f-3" aria-label="Person 3"><img src="assets/presets/f-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-1" aria-label="Person 4"><img src="assets/presets/m-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-2" aria-label="Person 5"><img src="assets/presets/m-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" role="radio" aria-checked="false" data-preset="m-3" aria-label="Person 6"><img src="assets/presets/m-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
                         </div>
                         <p class="own-or" data-i18n="own.or_pick">oder</p>
                         <button type="button" id="own-upload-btn" class="own-upload-btn" data-i18n="own.upload_own">Eigenes Foto hochladen</button>
@@ -973,7 +984,7 @@
                     <p class="footer-tagline" data-i18n="footer.tagline">Du entwirfst. Autonome Roboter fertigen. Du trägst.</p>
                 </div>
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_atelier" aria-label="Erschaffen">
-                    <h5 data-i18n="footer.col_atelier">Erschaffen</h5>
+                    <h2 data-i18n="footer.col_atelier">Erschaffen</h2>
                     <ul>
                         <li><a href="#design" data-i18n="footer.design_start">Design starten</a></li>
                         <li><a href="#measure" data-i18n="footer.measure">Körpermasse</a></li>
@@ -981,7 +992,7 @@
                     </ul>
                 </nav>
                 <nav class="footer-col" data-i18n-aria-label="footer.aria_more" aria-label="Mehr">
-                    <h5 data-i18n="footer.col_more">Mehr</h5>
+                    <h2 data-i18n="footer.col_more">Mehr</h2>
                     <ul>
                         <li><a href="https://github.com/Yanisleomoser/UrbanRevolution" target="_blank" rel="noopener" data-i18n="footer.code">Code (Open Source)</a></li>
                         <li><a href="mailto:hello@revolveurban.com" data-i18n="footer.contact">Kontakt</a></li>
@@ -1001,50 +1012,47 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Vercel Web Analytics -->
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
-
-    <script src="js/config.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/state-manager.js"></script>
-    <script src="js/ai.js"></script>
-    <script src="js/measurements.js"></script>
-    <script src="js/pose.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/preferences.js"></script>
-    <script src="js/library.js"></script>
-    <script src="js/preview-fallback.js"></script>
-    <script src="js/focus-trap.js"></script>
-    <script src="js/animations.js"></script>
+    <script defer src="js/config.js"></script>
+    <script defer src="js/i18n.js"></script>
+    <script defer src="js/state-manager.js"></script>
+    <script defer src="js/ai.js"></script>
+    <script defer src="js/measurements.js"></script>
+    <script defer src="js/pose.js"></script>
+    <script defer src="js/export.js"></script>
+    <script defer src="js/preferences.js"></script>
+    <script defer src="js/library.js"></script>
+    <script defer src="js/preview-fallback.js"></script>
+    <script defer src="js/focus-trap.js"></script>
+    <script defer src="js/animations.js"></script>
     <!-- Design Engine (adaptive Reise) — datengetrieben, klassische Skripte -->
-    <script src="js/design-engine/dna.js"></script>
-    <script src="js/design-engine/condition.js"></script>
-    <script src="js/design-engine/engine.js"></script>
-    <script src="js/design-engine/inference.js"></script>
-    <script src="js/design-engine/garment-svg.js"></script>
-    <script src="js/design-engine/render-preview.js"></script>
-    <script src="js/design-engine/summary.js"></script>
-    <script src="js/design-engine/share.js"></script>
-    <script src="js/design-engine/telemetry.js"></script>
-    <script src="js/design-engine/modalities/visuals.js"></script>
-    <script src="js/design-engine/modalities/cards.js"></script>
-    <script src="js/design-engine/modalities/thisOrThat.js"></script>
-    <script src="js/design-engine/modalities/slider.js"></script>
-    <script src="js/design-engine/modalities/colorGradient.js"></script>
-    <script src="js/design-engine/modalities/ranking.js"></script>
-    <script src="js/design-engine/modalities/hotspot.js"></script>
-    <script src="js/design-engine/flow.js"></script>
-    <script src="js/spec-view.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/flair.js"></script>
-    <script src="js/ur-create.js?v=20260611-weave"></script>
-    <script src="js/ambient-ticker.js"></script>
+    <script defer src="js/design-engine/dna.js"></script>
+    <script defer src="js/design-engine/condition.js"></script>
+    <script defer src="js/design-engine/engine.js"></script>
+    <script defer src="js/design-engine/inference.js"></script>
+    <script defer src="js/design-engine/garment-svg.js"></script>
+    <script defer src="js/design-engine/render-preview.js"></script>
+    <script defer src="js/design-engine/summary.js"></script>
+    <script defer src="js/design-engine/share.js"></script>
+    <script defer src="js/design-engine/telemetry.js"></script>
+    <script defer src="js/design-engine/modalities/visuals.js"></script>
+    <script defer src="js/design-engine/modalities/cards.js"></script>
+    <script defer src="js/design-engine/modalities/thisOrThat.js"></script>
+    <script defer src="js/design-engine/modalities/slider.js"></script>
+    <script defer src="js/design-engine/modalities/colorGradient.js"></script>
+    <script defer src="js/design-engine/modalities/ranking.js"></script>
+    <script defer src="js/design-engine/modalities/hotspot.js"></script>
+    <script defer src="js/design-engine/flow.js"></script>
+    <script defer src="js/spec-view.js"></script>
+    <script defer src="js/app.js"></script>
+    <script defer src="js/flair.js"></script>
+    <script defer src="js/ur-create.js?v=20260611-weave"></script>
+    <script defer src="js/ambient-ticker.js"></script>
     <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
          dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
          Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
-    <script src="js/landing.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+    <script defer src="js/landing.js"></script>
 
     <!-- Community-Sphäre: three/gsap werden erst per dynamic import geladen,
          wenn die Sektion in Sichtweite scrollt (js/community-sphere.js). -->
