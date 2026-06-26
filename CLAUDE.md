@@ -115,6 +115,15 @@ a printable production spec sheet that drives the autonomous factory.
 > must not present a working purchase. CTAs convert to "join / be first," not
 > "buy / order," until production and checkout actually exist.
 
+> **No fabricated proof (pre-launch — load-bearing):** Never add testimonials,
+> customer quotes, finished-garment or before/after photos, delivery countries,
+> returns/alteration processes, or firm price/lead-time claims — no production,
+> commerce, or accounts exist yet. Trust is built only from real assets: the
+> live studio, the cited fast-fashion evidence (`#facts`), the client-side
+> privacy guarantee, and the forward-looking vision. Frame what *will be*, never
+> what *is*. (This is why `export.js` emits planned strings, not concrete
+> CHF/lead-time numbers, and why `CONFIG.PRODUCTION_ESTIMATES` stays internal.)
+
 The **landing experience** (`js/landing.js`, GSAP) is the front door:
 preloader logo-draw → hero with a thread-particle field → manifesto
 word-scrub → pinned circular-economy section → counted-up stats → a

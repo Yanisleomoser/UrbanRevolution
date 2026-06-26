@@ -77,8 +77,12 @@ const Export = (() => {
         estimatedFabric: `${fabric} m²`,
         estimatedSeamLength: `${seams} cm`,
         constructionNotes: design.constructionNotes,
-        estimatedProductionDays: 14,
-        estimatedPriceRange: { min: 145, max: 220, currency: "CHF" },
+        // Pre-launch honesty: the exported spec must say exactly what the page
+        // says — no firm price or lead time. The concrete planning numbers
+        // (CONFIG.PRODUCTION_ESTIMATES) stay internal and never reach this
+        // artifact. Mirrors app.js (est-time / est-price) word-for-word.
+        productionTimeline: t("est.future"),
+        priceEstimate: t("est.price_planned"),
       },
     };
   }
@@ -191,8 +195,8 @@ const Export = (() => {
     <table>
         <tr><td>${t("export.est_fabric")}</td><td>${esc(spec.production.estimatedFabric)}</td></tr>
         <tr><td>${t("export.est_seams")}</td><td>${esc(spec.production.estimatedSeamLength)}</td></tr>
-        <tr><td>${t("export.duration")}</td><td>${t("est.days", { n: spec.production.estimatedProductionDays })}</td></tr>
-        <tr><td>${t("export.price_range")}</td><td>${spec.production.estimatedPriceRange.currency} ${spec.production.estimatedPriceRange.min} – ${spec.production.estimatedPriceRange.max}</td></tr>
+        <tr><td>${t("export.duration")}</td><td>${esc(spec.production.productionTimeline)}</td></tr>
+        <tr><td>${t("export.price_range")}</td><td>${esc(spec.production.priceEstimate)}</td></tr>
     </table>
 
     <h2>${t("spec.notes_h4")}</h2>

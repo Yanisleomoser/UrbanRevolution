@@ -44,8 +44,8 @@ const spec = {
     estimatedFabric: "2.02 m²",
     estimatedSeamLength: "352 cm",
     constructionNotes: ["<i>note</i>", "plain note"],
-    estimatedProductionDays: 14,
-    estimatedPriceRange: { min: 145, max: 220, currency: "CHF" },
+    productionTimeline: "est.future",
+    priceEstimate: "est.price_planned",
   },
 };
 const html = Export.renderPrintableHTML(spec);
@@ -76,8 +76,8 @@ const sinkSpec = {
   measurements: { "<i>chest</i>": 96, height: 175, unit: "cm" },
   production: {
     estimatedFabric: "<u>2</u> m²", estimatedSeamLength: "352 cm",
-    constructionNotes: [], estimatedProductionDays: 14,
-    estimatedPriceRange: { min: 145, max: 220, currency: "CHF" },
+    constructionNotes: [], productionTimeline: "est.future",
+    priceEstimate: "est.price_planned",
   },
 };
 const sinkHtml = Export.renderPrintableHTML(sinkSpec);
@@ -110,6 +110,21 @@ assert(regular.production.estimatedFabric === "2.02 m²", "regular length → ba
 assert(long.production.estimatedFabric === "2.46 m²", "long length scales fabric up (×1.22)");
 assert(cropped.production.estimatedFabric === "1.65 m²", "cropped length scales fabric down (×0.82), rounded once from the raw area");
 assert(regular.specifications.size === "M", "size derived from chest 96 → M");
+
+// Pre-launch honesty: the exported spec (JSON + printable) must carry NO firm
+// price or lead time — only forward-looking, planned strings. The concrete
+// CONFIG.PRODUCTION_ESTIMATES figures (145–220 CHF / 14 days) stay internal.
+console.log("\n— exported spec carries NO firm price / lead time (pre-launch honesty) —");
+const planned = Export.buildSpecData({ ...design, length: "regular" }, M, "tshirt");
+assert(!("estimatedPriceRange" in planned.production), "no estimatedPriceRange field in spec data");
+assert(!("estimatedProductionDays" in planned.production), "no estimatedProductionDays field in spec data");
+assert(typeof planned.production.priceEstimate === "string", "priceEstimate is a forward-looking string");
+assert(typeof planned.production.productionTimeline === "string", "productionTimeline is a forward-looking string");
+const jsonOut = JSON.stringify(planned);
+assert(!/\bCHF\b/.test(jsonOut) && !jsonOut.includes("145"), "JSON spec has no firm CHF price");
+const plannedHtml = Export.renderPrintableHTML(planned);
+assert(!/CHF\s*145/.test(plannedHtml) && !plannedHtml.includes("145 – 220"), "printable HTML has no firm CHF price range");
+assert(!/\b14\b\s*(Tage|days)/.test(plannedHtml), "printable HTML has no firm lead-time days");
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
