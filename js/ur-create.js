@@ -272,7 +272,12 @@
       // Die fotorealistische Anprobe lebt jetzt IM Ownership-Moment (eine
       // Sektion) — sie wird mit ihm sichtbar, kein separates #preview mehr.
       const nameEl = $("#own-name");
-      if (nameEl && design && design.name) nameEl.textContent = "„" + design.name + "“";
+      if (nameEl && design && design.name) {
+        // Locale-aware quotation marks (German „…" vs English "…") — same
+        // convention as spec-view; avoids German quotes in the English UI.
+        const en = window.I18N && window.I18N.getLang && window.I18N.getLang() === "en";
+        nameEl.textContent = en ? `“${design.name}”` : `„${design.name}“`;
+      }
       if (!revealed) {
         revealed = true;
         if (window.I18N && window.I18N.apply) window.I18N.apply(sec);

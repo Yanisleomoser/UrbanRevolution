@@ -111,11 +111,13 @@ const Export = (() => {
   }
 
   function renderPrintableHTML(spec) {
+    const cc = (window.CONFIG && window.CONFIG.MEASUREMENT_CONSTRAINTS) || {};
+    const unitFor = (k) => (cc[k] && cc[k].unit) || "cm"; // weight is kg, lengths cm
     const measurementsHTML = Object.entries(spec.measurements)
       .filter(([k]) => k !== "unit")
       .map(
         ([k, v]) =>
-          `<tr><td>${esc(mLabel(k))}</td><td>${esc(String(v))} cm</td></tr>`
+          `<tr><td>${esc(mLabel(k))}</td><td>${esc(String(v))} ${unitFor(k)}</td></tr>`
       )
       .join("");
 
