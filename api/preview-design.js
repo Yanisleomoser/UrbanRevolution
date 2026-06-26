@@ -113,7 +113,16 @@ export default async function handler(request) {
         return upstreamError("preview-design", createResponse.status, text.slice(0, 400));
     }
 
-    const prediction = await createResponse.json();
+    // Guard the parse like generate-design.js does: a 2xx with a malformed /
+    // non-JSON body (edge-gateway hiccup, truncated/empty response) would
+    // otherwise reject uncaught → a bare HTML 500 instead of the coded error.
+    let prediction;
+    try {
+        prediction = await createResponse.json();
+    } catch {
+        console.error("[preview-design] Replicate returned non-JSON on a 2xx response");
+        return jsonError(502, "Generation failed", "service_unavailable");
+    }
 
     if (prediction.status === "succeeded") {
         const imageUrl = Array.isArray(prediction.output)
