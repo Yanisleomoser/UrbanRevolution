@@ -67,6 +67,17 @@ assert(size(110) === "XL", "chest 110 → XL (lower edge)");
 assert(size(117) === "XL", "chest 117 → XL");
 assert(size(118) === "XXL", "chest 118 → XXL");
 
+// Every labelled preset must map to its own confection size — clicking "S"
+// must not report "XS". (Regression: S preset chest 88 fell below the S bucket
+// floor of 90 and read back as XS.)
+for (const [name, preset] of Object.entries(CONFIG.MEASUREMENT_PRESETS)) {
+  assert(Measurements.calculateSize(preset) === name,
+    `preset ${name} (chest ${preset.chest}) maps to size ${name}`);
+}
+// Partial/empty measurements degrade to a safe default, never "XXL"/NaN.
+assert(Measurements.calculateSize({}) === "M", "empty measurements → safe default M (not XXL)");
+assert(Measurements.calculateSize(null) === "M", "null measurements → safe default M (no crash)");
+
 console.log("\n— Measurements.estimateFabric —");
 const M = CONFIG.MEASUREMENT_PRESETS.M; // chest 96, height 175
 // baseArea = 96 * 175 / 10000 = 1.68 ; tshirt factor 1.2 → 2.016 → "2.02"

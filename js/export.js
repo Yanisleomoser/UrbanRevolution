@@ -34,10 +34,10 @@ const Export = (() => {
       (window.CONFIG &&
         CONFIG.PRODUCTION_ESTIMATES.lengthFabricFactor) || {};
     const lengthFactor = lengthFactors[lengthKey] || 1;
-    const fabric = (
-      parseFloat(Measurements.estimateFabric(measurements, garmentType)) *
-      lengthFactor
-    ).toFixed(2);
+    // Pass the length factor into estimateFabric so the area is rounded once
+    // (was: round to 2dp, then multiply + round again → off by 0.01 in some
+    // length combos).
+    const fabric = Measurements.estimateFabric(measurements, garmentType, lengthFactor);
 
     const printText = design.print ? String(design.print).trim() : "";
 

@@ -73,7 +73,7 @@ const cropped = Export.buildSpecData({ ...design, length: "cropped" }, M, "tshir
 
 assert(regular.production.estimatedFabric === "2.02 m²", "regular length → base fabric estimate");
 assert(long.production.estimatedFabric === "2.46 m²", "long length scales fabric up (×1.22)");
-assert(cropped.production.estimatedFabric === "1.66 m²", "cropped length scales fabric down (×0.82)");
+assert(cropped.production.estimatedFabric === "1.65 m²", "cropped length scales fabric down (×0.82), rounded once from the raw area");
 assert(regular.specifications.size === "M", "size derived from chest 96 → M");
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));

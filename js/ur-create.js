@@ -561,7 +561,10 @@
   // ── 7 · Sticky-CTA (mobil) ─────────────────────────────────────────────────
   function stickyCta() {
     const cta = $("#sticky-create");
-    const hero = $(".ur-hero");
+    // Anchor on the landing hero (.lp-hero). The old UR-Create hero (.ur-hero)
+    // was removed in a redesign, so this selector went null and the mobile
+    // sticky CTA never un-hid — a silently-dead conversion affordance.
+    const hero = $(".lp-hero");
     if (!cta || !hero) return;
     const onScroll = () => {
       const past = window.scrollY > hero.offsetHeight * 0.8;

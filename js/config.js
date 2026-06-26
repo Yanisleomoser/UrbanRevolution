@@ -51,7 +51,7 @@ const CONFIG = (() => {
     const PRINT_MAX_LENGTH = 24;
 
     const MEASUREMENT_PRESETS = {
-        S: { height: 168, weight: 60, chest: 88, waist: 74, hips: 90, shoulder: 41, arm: 58, inseam: 76, neck: 36 },
+        S: { height: 168, weight: 60, chest: 90, waist: 74, hips: 90, shoulder: 41, arm: 58, inseam: 76, neck: 36 },
         M: { height: 175, weight: 70, chest: 96, waist: 82, hips: 98, shoulder: 44, arm: 62, inseam: 82, neck: 38 },
         L: { height: 182, weight: 80, chest: 104, waist: 90, hips: 106, shoulder: 47, arm: 66, inseam: 86, neck: 40 },
         XL: { height: 188, weight: 90, chest: 112, waist: 98, hips: 114, shoulder: 50, arm: 70, inseam: 90, neck: 42 }
