@@ -722,11 +722,11 @@
                         <defs>
                             <clipPath id="figClip"><rect x="0" y="0" width="1152" height="1728" rx="40"/></clipPath>
                         </defs>
-                        <!-- href deferred to data-href: this SVG <image> ignores loading="lazy"
+                        <!-- href intentionally omitted: this SVG <image> ignores loading="lazy"
                              and would download 245 KB on first paint even though it lives in the
-                             hidden studio. revealStudio() hydrates it on studio reveal — off the
+                             hidden studio. revealStudio() sets the href on studio reveal — off the
                              landing's critical path, but ready well before the measurement step. -->
-                        <image data-href="assets/measure-figure.jpg" x="0" y="0" width="1152" height="1728" clip-path="url(#figClip)"/>
+                        <image id="measure-figure-img" x="0" y="0" width="1152" height="1728" clip-path="url(#figClip)"/>
                         <g class="measure-annotations" font-family="'Poppins', system-ui, sans-serif" font-size="31" font-weight="700" letter-spacing="0.5" style="paint-order:stroke" stroke="#08080a" stroke-width="7" stroke-linejoin="round">
                             <g class="annotation" data-measure="shoulder">
                                 <line x1="330" y1="408" x2="846" y2="408" stroke="#2a9d8f" stroke-width="3" stroke-dasharray="10,8" opacity="0.95"/>

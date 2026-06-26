@@ -57,15 +57,15 @@
     const studio = document.getElementById("studio");
     if (!studio || !studio.hidden) return;
     studio.hidden = false;
-    // Hydrate deferred studio images (e.g. the 245 KB measurement figure): they
-    // live in the hidden studio but an SVG <image>/<img> still downloads eagerly
-    // on first paint. Carrying the src on data-href keeps them off the landing's
-    // critical path; load them now that the studio is open — well ahead of the
-    // step that shows them.
-    studio.querySelectorAll("[data-href]").forEach((el) => {
-      el.setAttribute("href", el.getAttribute("data-href"));
-      el.removeAttribute("data-href");
-    });
+    // Hydrate the deferred measurement figure: this SVG <image> ignores
+    // loading="lazy" and would download 245 KB on first paint though it lives in
+    // the hidden studio. Load it now (studio open) — off the landing critical
+    // path, ready before the measurement step. The src is a hardcoded literal
+    // (not read from the DOM) so there is no text-to-href flow.
+    const figure = document.getElementById("measure-figure-img");
+    if (figure && !figure.getAttribute("href")) {
+      figure.setAttribute("href", "assets/measure-figure.jpg");
+    }
     // Engine & Co. haben im display:none-Zustand mit 0-Maßen initialisiert —
     // einmal nachmessen lassen, dann die Scroll-Trigger neu rechnen.
     window.dispatchEvent(new Event("resize"));
