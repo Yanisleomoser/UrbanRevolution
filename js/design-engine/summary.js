@@ -23,6 +23,10 @@ const DesignSummary = (() => {
       pullover: { de: "Pullover-", en: "pullover " }, zip: { de: "Zip-", en: "zip " },
       oversized: { de: "Oversized-", en: "oversized " },
       classic: { de: "", en: "" }, boxy: { de: "Boxy-", en: "boxy " }, fitted: { de: "tailliertes ", en: "fitted " },
+      // Intentionally empty: the "cropped" sub-archetype also sets length=cropped,
+      // so the length word already says "cropped" — a word here would duplicate it.
+      // Explicit entry (not an undefined→"" fallback) so it can't be "fixed" into a dupe.
+      cropped: { de: "", en: "" },
       overshirt: { de: "Overshirt-", en: "overshirt " }, camp: { de: "Resort-", en: "camp " }, popover: { de: "Popover-", en: "popover " },
       tailored: { de: "Tailored-", en: "tailored " }, slim: { de: "Slim-", en: "slim " },
       wide: { de: "weite ", en: "wide-leg " }, cargo: { de: "Cargo-", en: "cargo " },

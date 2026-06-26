@@ -59,7 +59,11 @@ const Measurements = (() => {
    * Berechnet die Konfektionsgröße aus den gemessenen Daten
    */
   function calculateSize(measurements) {
-    const c = measurements.chest;
+    const c = measurements && Number(measurements.chest);
+    // Guard partial/empty data: without this, a missing chest fell through every
+    // bucket (undefined < n is false) and returned "XXL" — a wrong size. Default
+    // to "M" (the same fallback Measurements.read() uses for missing inputs).
+    if (!Number.isFinite(c)) return "M";
     if (c < 90) return "XS";
     if (c < 96) return "S";
     if (c < 102) return "M";
@@ -71,7 +75,7 @@ const Measurements = (() => {
   /**
    * Schätzt benötigte Stoffmenge in m² basierend auf Maßen und Kleidungstyp
    */
-  function estimateFabric(measurements, garmentType) {
+  function estimateFabric(measurements, garmentType, lengthFactor = 1) {
     try {
       CONFIG.validateGarmentType(garmentType);
     } catch (err) {
@@ -79,11 +83,18 @@ const Measurements = (() => {
       garmentType = "tshirt";
     }
 
-    const m = measurements;
+    const m = measurements || {};
+    const chest = Number(m.chest);
+    const height = Number(m.height);
     const factors = CONFIG.PRODUCTION_ESTIMATES.fabric;
-    const baseArea = (m.chest * m.height) / 10000;
+    const baseArea = (Number.isFinite(chest) && Number.isFinite(height))
+      ? (chest * height) / 10000 : 0;
     const factor = factors[garmentType] || 1.5;
-    return (baseArea * factor).toFixed(2);
+    // Accept the length factor here and round ONCE — callers previously rounded
+    // estimateFabric to 2dp and then multiplied + rounded again (off by 0.01 in
+    // some length combos). Single-round from the raw area is correct.
+    const lf = Number.isFinite(lengthFactor) ? lengthFactor : 1;
+    return (baseArea * factor * lf).toFixed(2);
   }
 
   /**

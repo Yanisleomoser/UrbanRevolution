@@ -24,5 +24,8 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Check image-weight budget
+      - name: Check image-weight budget (assets)
         run: node scripts/check-asset-budget.mjs assets
+
+      - name: Check image-weight budget (design-engine studio library)
+        run: node scripts/check-asset-budget.mjs js/design-engine/content/img

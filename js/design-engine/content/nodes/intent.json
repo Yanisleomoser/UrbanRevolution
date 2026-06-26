@@ -428,7 +428,7 @@
         "de": "Wie förmlich?",
         "en": "How formal?"
       },
-      "bind": "silhouette.structure",
+      "bind": "intent.formality",
       "axis": {
         "de": [
           "Alltag",

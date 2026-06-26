@@ -89,10 +89,15 @@ const DesignEngine = (() => {
     );
   }
 
-  // A phase-A node that resolves no concrete attribute (pure archetype-weight
-  // mood signal). Once the style is decided, these are retracted.
+  // A phase-A "mood signal": either it resolves no concrete attribute (pure
+  // archetype-weight pair) OR it's an abstract mood_/inspo_ this-or-that. The id
+  // check is load-bearing: some mood pairs (e.g. mood_clean_expressive) ALSO set
+  // a concrete attr on one branch (pattern.type:"none"), so targetPaths() is
+  // non-empty and they'd otherwise escape retraction and resurface between
+  // concrete detail questions — the exact defect this guard exists to prevent.
   function isPureSoftMood(node) {
-    return node.phase === "A" && targetPaths(node).length === 0;
+    return node.phase === "A" &&
+      (targetPaths(node).length === 0 || /^(mood_|inspo_)/.test(node.id));
   }
 
   function nextNode(nodes, dna, answered, minGain) {
