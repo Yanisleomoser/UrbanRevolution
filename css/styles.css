@@ -5650,7 +5650,7 @@ footer.footer {
     border-color: var(--accent-3, #64d6c4);
     box-shadow: 0 0 0 2px rgba(100, 214, 196, 0.35);
 }
-.own-preset.is-loading { opacity: 0.6; cursor: progress; }
+.own-preset.is-loading, .own-upload-btn.is-loading { opacity: 0.6; cursor: progress; }
 .own-preset:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: 2px; }
 
 .own-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; margin: 0; }
