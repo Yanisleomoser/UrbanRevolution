@@ -57,10 +57,34 @@
     const studio = document.getElementById("studio");
     if (!studio || !studio.hidden) return;
     studio.hidden = false;
+    // Hydrate deferred studio images (e.g. the 245 KB measurement figure): they
+    // live in the hidden studio but an SVG <image>/<img> still downloads eagerly
+    // on first paint. Carrying the src on data-href keeps them off the landing's
+    // critical path; load them now that the studio is open — well ahead of the
+    // step that shows them.
+    studio.querySelectorAll("[data-href]").forEach((el) => {
+      el.setAttribute("href", el.getAttribute("data-href"));
+      el.removeAttribute("data-href");
+    });
     // Engine & Co. haben im display:none-Zustand mit 0-Maßen initialisiert —
     // einmal nachmessen lassen, dann die Scroll-Trigger neu rechnen.
     window.dispatchEvent(new Event("resize"));
     if (fx) ScrollTrigger.refresh();
+    // A11y (WCAG 2.4.3): a keyboard user activating a studio CTA (an
+    // <a href="#design"> etc.) triggers native fragment-focus while #studio is
+    // still display:none, so focus falls to <body>. Move focus into the section
+    // the user asked for, now that it's visible, so Tab continues logically and
+    // SR users hear the revealed region. Pick the requested anchor when it's the
+    // visible one; otherwise fall back to the studio's first section (#design).
+    // Guard the selector: the hash may be empty or a share link (#dna=…), which
+    // are not valid id selectors.
+    const h = location.hash;
+    let target = /^#[\w-]+$/.test(h) ? document.getElementById(h.slice(1)) : null;
+    if (!target || target.offsetParent === null) target = document.getElementById("design");
+    if (target) {
+      target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: false });
+    }
   }
 
   function initStudioReveal() {

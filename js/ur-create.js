@@ -342,7 +342,7 @@
     });
 
     const makeReal = $("#own-makereal");
-    if (makeReal) makeReal.addEventListener("click", () => { openMakeReal(); location.hash = "#measure"; });
+    if (makeReal) makeReal.addEventListener("click", () => { openMakeReal("#measure"); location.hash = "#measure"; });
   }
 
   // ── 3 · Community-Galerie (mit Typ-Filter) ─────────────────────────────────
@@ -594,16 +594,22 @@
   }
 
   // ── 8 · make-real aufklappen (Maße/Vorschau/Produktion/FAQ) ────────────────
-  function openMakeReal() {
+  function openMakeReal(focusSel) {
     const mr = $("#make-real");
-    if (mr && mr.hidden) mr.hidden = false;
+    if (!mr || !mr.hidden) return; // already open → native anchor focus works
+    mr.hidden = false;
+    // A11y (WCAG 2.4.3): the panel was display:none when the anchor fired, so
+    // native fragment-focus fell to <body>. Move focus into the section the
+    // user asked for (defaults to the measurement step), now that it's visible.
+    const target = (focusSel && $(focusSel)) || $("#measure");
+    if (target) { target.setAttribute("tabindex", "-1"); target.focus({ preventScroll: false }); }
   }
   function makeRealLinks() {
     const ids = ["#measure", "#production", "#faq"];
-    const check = () => { if (ids.includes(location.hash)) openMakeReal(); };
+    const check = () => { if (ids.includes(location.hash)) openMakeReal(location.hash); };
     document.addEventListener("click", (e) => {
       const a = e.target.closest && e.target.closest('a[href^="#"]');
-      if (a && ids.includes(a.getAttribute("href"))) openMakeReal();
+      if (a && ids.includes(a.getAttribute("href"))) openMakeReal(a.getAttribute("href"));
     });
     window.addEventListener("hashchange", check);
     check();

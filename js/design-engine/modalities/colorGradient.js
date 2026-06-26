@@ -73,7 +73,11 @@
     const grid = V.el("div", { class: "de-palette" });
     const swatches = [];
     palette.forEach((hex) => {
-      const sw = V.el("button", { type: "button", class: "de-palette-swatch", "aria-label": hex, "aria-pressed": "false" });
+      // A11y: name the swatch by its human colour name (bilingual), not the raw
+      // hex — a screen reader otherwise announces "number sign one a one a…".
+      // Mirrors the Ownership palette (app.js colorAdjective → I18N.colorName).
+      const swLabel = (window.I18N && window.I18N.colorName) ? window.I18N.colorName(hex) : hex;
+      const sw = V.el("button", { type: "button", class: "de-palette-swatch", "aria-label": swLabel, "aria-pressed": "false" });
       sw.style.background = hex;
       sw.dataset.hex = hex;
       const badge = V.el("span", { class: "de-palette-order", "aria-hidden": "true" });
