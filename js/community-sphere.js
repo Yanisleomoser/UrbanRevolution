@@ -338,6 +338,15 @@ async function boot() {
 
     canvas.addEventListener("keydown", (e) => {
         if (state.open) return;
+        // Enter/Space opens the creation centred in the view — the keyboard
+        // equivalent of tapping a card (WCAG 2.1.1). Arrow keys rotate a card
+        // to the centre, Enter opens it.
+        if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+            e.preventDefault();
+            const mesh = centeredCard();
+            if (mesh) openDetail(mesh);
+            return;
+        }
         const step = {
             ArrowLeft: [0.22, 0], ArrowRight: [-0.22, 0],
             ArrowUp: [0, 0.15], ArrowDown: [0, -0.15],
@@ -369,6 +378,22 @@ async function boot() {
         return hits.length ? hits[0].object : null;
     }
 
+    // The creation nearest the centre of the view — what a keyboard user opens
+    // with Enter. A raycast straight through the centre needs a near-exact hit,
+    // which cards floating on the sphere wall rarely land on; instead project
+    // each card to screen space and take the closest one in front of the camera
+    // (within the central area), so Enter always has a sensible target.
+    function centeredCard() {
+        let best = null, bestD = Infinity;
+        for (const m of cards) {
+            const v = m.position.clone().project(camera);
+            if (v.z > 1) continue; // behind the camera
+            const d = Math.hypot(v.x, v.y);
+            if (d < bestD) { bestD = d; best = m; }
+        }
+        return best && bestD < 0.55 ? best : null;
+    }
+
     function metaLine(item) {
         const parts = [];
         if (item.by) parts.push(`${t("sphere.by")} ${item.by}`);
@@ -385,7 +410,7 @@ async function boot() {
         }
         hovered = mesh;
         section.classList.toggle("has-hover", Boolean(mesh));
-        if (mesh && FINE_POINTER && labelEl) {
+        if (mesh && (FINE_POINTER || document.activeElement === canvas) && labelEl) {
             const u = mesh.userData;
             gsap.to(mesh.scale, { x: u.w * 1.06, y: u.h * 1.06, duration: 0.45, ease: "power3.out", overwrite: "auto" });
             labelName.textContent = u.item.name;
@@ -466,6 +491,10 @@ async function boot() {
 
         if (!state.open && !state.dragging && pointer.inside && FINE_POINTER) {
             setHovered(pick(pointer.x, pointer.y));
+        } else if (!state.open && !state.dragging && document.activeElement === canvas) {
+            // Keyboard focus: surface the centred card (name + scale-up) so the
+            // user knows what Enter will open as they arrow the globe around.
+            setHovered(centeredCard());
         } else if ((state.dragging || state.open) && hovered) {
             setHovered(null);
         }
@@ -476,10 +505,20 @@ async function boot() {
             if (Math.abs(o - dim) > 0.002) m.material.opacity = o + (dim - o) * Math.min(1, dt * 7);
         }
 
-        if (FINE_POINTER && labelEl && hovered) {
+        if (labelEl && hovered) {
             const r = section.getBoundingClientRect();
-            labelPos.x += (pointer.x - r.left + 20 - labelPos.x) * 0.25;
-            labelPos.y += (pointer.y - r.top + 22 - labelPos.y) * 0.25;
+            let lx, ly;
+            if (FINE_POINTER && pointer.inside) {
+                lx = pointer.x - r.left + 20;
+                ly = pointer.y - r.top + 22;
+            } else {
+                // keyboard focus: anchor the label near the centre of the globe
+                const cr = canvas.getBoundingClientRect();
+                lx = cr.left - r.left + cr.width / 2 + 20;
+                ly = cr.top - r.top + cr.height / 2 + 22;
+            }
+            labelPos.x += (lx - labelPos.x) * 0.25;
+            labelPos.y += (ly - labelPos.y) * 0.25;
             labelEl.style.transform = `translate3d(${labelPos.x}px, ${labelPos.y}px, 0)`;
         }
 

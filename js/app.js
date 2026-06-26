@@ -776,6 +776,11 @@
     if (el) el.textContent = Measurements.calculateSize(measurements);
   }
 
+  // Which surface triggered the shared #pose-photo upload, so processPhotoFile
+  // routes its progress somewhere that surface can actually see — the Ownership
+  // chooser's feedback otherwise lands in the still-hidden #make-real panel.
+  let photoFrom = "measure";
+
   function initPoseUpload() {
     const fileInput = document.getElementById("pose-photo");
     const uploadBtn = document.getElementById("pose-upload-btn");
@@ -785,7 +790,7 @@
 
     if (!fileInput || !uploadBtn || !canvas) return;
 
-    uploadBtn.addEventListener("click", () => fileInput.click());
+    uploadBtn.addEventListener("click", () => { photoFrom = "measure"; fileInput.click(); });
 
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -828,14 +833,24 @@
           showToast(t("toast.no_person"), "error");
           return;
         }
+        photoFrom = "measure";
         processPhotoFile(file);
       });
     }
 
     async function processPhotoFile(file) {
-      uploadBtn.disabled = true;
-      uploadBtn.textContent = t("measure.photo_btn_loading");
-      statusEl.textContent = "";
+      // Route progress to whichever surface launched the upload (measure section
+      // vs the Ownership chooser) so neither looks frozen during MediaPipe analysis.
+      const fromOwn = photoFrom === "own";
+      const ownBtn = fromOwn ? document.getElementById("own-upload-btn") : null;
+      const status = fromOwn ? document.getElementById("vto-status") : statusEl;
+      const setStatus = (txt) => { if (status) status.textContent = txt; };
+      const setBusy = (busy) => {
+        if (ownBtn) { ownBtn.classList.toggle("is-loading", busy); ownBtn.disabled = busy; }
+        else { uploadBtn.disabled = busy; uploadBtn.textContent = t(busy ? "measure.photo_btn_loading" : "measure.photo_btn_another"); }
+      };
+      setBusy(true);
+      setStatus("");
 
       // Hold the photo as a data-URL in memory so the VTO feature can
       // forward it to Replicate later. Lives in StateManager so the
@@ -850,14 +865,14 @@
 
       try {
         await window.Pose.init();
-        uploadBtn.textContent = t("measure.photo_btn_analyzing");
-        statusEl.textContent = t("measure.status_detecting");
+        if (!fromOwn) uploadBtn.textContent = t("measure.photo_btn_analyzing");
+        setStatus(t("measure.status_detecting"));
 
         const { result, img } = await window.Pose.detect(file);
 
         if (!result.landmarks || !result.landmarks[0]) {
           showToast(t("toast.no_person"), "error");
-          statusEl.textContent = t("measure.status_no_pose");
+          setStatus(t("measure.status_no_pose"));
           return;
         }
 
@@ -877,7 +892,7 @@
         };
         if (!ankleUsable(landmarks[27]) && !ankleUsable(landmarks[28])) {
           showToast(t("toast.no_feet"), "error");
-          statusEl.textContent = t("measure.status_no_feet");
+          setStatus(t("measure.status_no_feet"));
           return;
         }
         const heightInput = document.getElementById("height");
@@ -901,11 +916,11 @@
 
         previewWrap.hidden = false;
         window.Pose.drawPoseOverlay(canvas, img, landmarks);
-        statusEl.textContent = t("measure.status_result", {
+        setStatus(t("measure.status_result", {
           chest: measurements.chest,
           waist: measurements.waist,
           hips: measurements.hips,
-        });
+        }));
         showToast(
           personalized ? t("toast.photo_skin") : t("toast.photo_only"),
           "success"
@@ -916,10 +931,10 @@
         // photo never leaves the device; only the error reaches Sentry — no PII.
         if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "measure" } });
         showToast(t("toast.photo_failed", { msg: err.message || err }), "error");
-        statusEl.textContent = t("measure.status_error");
+        setStatus(t("measure.status_error"));
       } finally {
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = t("measure.photo_btn_another");
+        setBusy(false);
+        photoFrom = "measure";
       }
     }
   }
@@ -995,6 +1010,7 @@
     if (uploadBtn && poseInput) {
       uploadBtn.addEventListener("click", () => {
         clearPresetSelection();
+        photoFrom = "own"; // route the analysis feedback to the Ownership chooser
         // Programmatic click opens the file dialog even though the input lives
         // in the (still-collapsed) make-real path — visibility is irrelevant.
         poseInput.click();

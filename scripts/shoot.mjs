@@ -11,6 +11,7 @@
  */
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
+import { routeCdnThroughNode } from "./cdn-route.mjs";
 
 const url = process.argv[2] || "http://localhost:8080/";
 const prefix = process.argv[3] || "shot";
@@ -29,6 +30,8 @@ try {
       viewport: { width: vp.width, height: vp.height },
       deviceScaleFactor: 2,
     });
+    // Make GSAP/three.js/MediaPipe load headless behind the agent proxy.
+    await routeCdnThroughNode(page);
     // domcontentloaded (not networkidle): the live site keeps analytics /
     // speed-insights sockets open, so "networkidle" never settles and the
     // shot times out. We just need the DOM + a beat for the hero animation.
