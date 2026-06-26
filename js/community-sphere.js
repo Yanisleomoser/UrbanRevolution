@@ -378,11 +378,20 @@ async function boot() {
         return hits.length ? hits[0].object : null;
     }
 
-    // The card currently in the centre of the view — what a keyboard user opens
-    // with Enter. Reuses the raycaster straight through the canvas centre.
+    // The creation nearest the centre of the view — what a keyboard user opens
+    // with Enter. A raycast straight through the centre needs a near-exact hit,
+    // which cards floating on the sphere wall rarely land on; instead project
+    // each card to screen space and take the closest one in front of the camera
+    // (within the central area), so Enter always has a sensible target.
     function centeredCard() {
-        const r = canvas.getBoundingClientRect();
-        return pick(r.left + r.width / 2, r.top + r.height / 2);
+        let best = null, bestD = Infinity;
+        for (const m of cards) {
+            const v = m.position.clone().project(camera);
+            if (v.z > 1) continue; // behind the camera
+            const d = Math.hypot(v.x, v.y);
+            if (d < bestD) { bestD = d; best = m; }
+        }
+        return best && bestD < 0.55 ? best : null;
     }
 
     function metaLine(item) {
