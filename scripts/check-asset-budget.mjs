@@ -22,6 +22,10 @@ import path from "node:path";
 // root the script is invoked with (e.g. "assets" in CI, or an absolute path).
 const BUDGETS_KB = [
   { test: (p) => /(^|\/)presets\//.test(p), max: 40, label: "preset thumbnail" },
+  // Design-engine studio image library (tiles/cards/pickers). Right-sized to a
+  // 720px long edge at mozjpeg q74-80 (~9-112 KB today); the 150 KB cap catches
+  // a regression back to the old 832×1216 / ~260-700 KB originals.
+  { test: (p) => /(^|\/)content\/img\//.test(p), max: 150, label: "studio image" },
   { test: () => true, max: 350, label: "image" },
 ];
 
