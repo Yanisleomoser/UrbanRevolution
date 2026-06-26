@@ -988,7 +988,7 @@
     const clearPresetSelection = () => {
       document.querySelectorAll(".own-preset").forEach((b) => {
         b.classList.remove("is-selected");
-        b.setAttribute("aria-checked", "false");
+        b.setAttribute("aria-pressed", "false");
       });
     };
 
@@ -1014,7 +1014,7 @@
     buttons.forEach((b) => {
       const on = b === btn;
       b.classList.toggle("is-selected", on);
-      b.setAttribute("aria-checked", on ? "true" : "false");
+      b.setAttribute("aria-pressed", on ? "true" : "false");
     });
     const id = btn.dataset.preset;
     btn.classList.add("is-loading");
@@ -1032,7 +1032,7 @@
       S.set("userPhoto", dataUrl);
     } catch (_err) {
       btn.classList.remove("is-selected");
-      btn.setAttribute("aria-checked", "false");
+      btn.setAttribute("aria-pressed", "false");
       showToast(t("vto.error_unexpected"), "error");
     } finally {
       btn.classList.remove("is-loading");
