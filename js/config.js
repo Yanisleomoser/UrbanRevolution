@@ -69,6 +69,11 @@ const CONFIG = (() => {
         neck: { min: 28, max: 55, label: 'Halsumfang' }
     };
 
+    // INTERNAL planning constants only. Pre-launch honesty rule: `days` and
+    // `priceRange` (CHF) MUST NOT reach exported spec data or any user-facing
+    // surface — no firm price/lead time until production + checkout exist.
+    // export.js emits forward-looking strings instead. Seam/fabric math is fine
+    // to expose; the money/time figures are not.
     const PRODUCTION_ESTIMATES = {
         fabric: {
             tshirt: 1.2,
