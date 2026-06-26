@@ -49,6 +49,20 @@ console.log("\n— roundtrip: decode(encode(dna)) deep-equals the original —")
   }
 }
 
+console.log("\n— decode tolerates pre-existing '=' padding —");
+{
+  // The gallery DNA_RE permits '=' in a stored DNA, so a non-stripping client
+  // can persist a standard-padded fragment. decode() must strip before
+  // re-padding (it used to over-pad and return null).
+  const dna = { type: "jacket", color: "#64D6C4", fit: 0.7, archetypeWeights: { quietMinimal: 3 } };
+  const stripped = DesignShare.encode(dna);            // url-safe, no padding
+  const padded = stripped + "==";                       // hand-added over-padding
+  assert(deepEqual(DesignShare.decode(padded), dna), "decode ignores extra '=' padding");
+  // Standard base64 (with real padding + '+'/'/') must also decode.
+  const std = Buffer.from(JSON.stringify(dna), "utf8").toString("base64");
+  assert(deepEqual(DesignShare.decode(std), dna), "decode accepts standard padded base64");
+}
+
 console.log("\n— decode fails closed (returns null, never throws) —");
 {
   const bad = [

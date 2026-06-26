@@ -76,15 +76,13 @@ const Library = (() => {
     };
 
     const existingIdx = state.designs.findIndex((d) => d.id === entry.id);
-    if (existingIdx >= 0) {
-      // Update in place but bring to top
-      state.designs.splice(existingIdx, 1);
-      state.designs.unshift(entry);
-    } else {
-      state.designs.unshift(entry);
-      if (state.designs.length > MAX_ENTRIES) {
-        state.designs = state.designs.slice(0, MAX_ENTRIES);
-      }
+    // Drop any prior copy, then bring the entry to the top and re-assert the
+    // FIFO cap unconditionally — pre-bloated storage (or a future lower MAX)
+    // must shrink on an update-in-place too, not only on a brand-new add.
+    if (existingIdx >= 0) state.designs.splice(existingIdx, 1);
+    state.designs.unshift(entry);
+    if (state.designs.length > MAX_ENTRIES) {
+      state.designs = state.designs.slice(0, MAX_ENTRIES);
     }
 
     saveState(state);

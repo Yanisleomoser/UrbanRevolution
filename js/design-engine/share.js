@@ -39,7 +39,10 @@ const DesignShare = (() => {
 
   function decode(str) {
     try {
-      let b64 = String(str).replace(/-/g, "+").replace(/_/g, "/");
+      // Strip any pre-existing padding before re-padding: a stored DNA may
+      // carry standard "=" padding (the gallery DNA_RE permits it), and
+      // re-padding without stripping over-pads and fails the decode.
+      let b64 = String(str).replace(/-/g, "+").replace(/_/g, "/").replace(/=+$/, "");
       while (b64.length % 4) b64 += "=";
       return sanitize(JSON.parse(decodeURIComponent(escape(atob(b64)))));
     } catch (_e) {

@@ -47,6 +47,10 @@ console.log("\n— AI.detectPattern —");
 assert(AI.detectPattern("gestreiftes Shirt") === "stripes_h", "'gestreift' → stripes_h");
 assert(AI.detectPattern("mit Karo") === "plaid", "'karo' → plaid");
 assert(AI.detectPattern("schlicht und einfarbig") === "solid", "no pattern word → solid");
+// Regression: the vertical-stripes key was misspelled "längssteifen", so the
+// correctly-spelled "längsstreifen" fell through to "streifen" → horizontal.
+assert(AI.detectPattern("hemd mit längsstreifen") === "stripes_v", "'längsstreifen' → stripes_v (vertical, not horizontal)");
+assert(AI.detectPattern("hemd mit laengsstreifen") === "stripes_v", "ASCII 'laengsstreifen' → stripes_v");
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

@@ -44,6 +44,18 @@ assert(Library.count() === Library.MAX_ENTRIES, `capped at ${Library.MAX_ENTRIES
 assert(Library.get("D0") === null, "the oldest entry (D0) was dropped");
 assert(Library.get("D20") !== null, "the newest entry (D20) is kept");
 
+console.log("\n— Library: cap re-asserted on update-in-place (not only new adds) —");
+Library.clear();
+// Seed a pre-bloated store (corruption, or a future lower MAX): over the cap.
+const bloated = [];
+for (let i = 0; i < Library.MAX_ENTRIES + 5; i++) bloated.push({ id: "P" + i, name: "p" + i });
+store.set("urev_library_v1", JSON.stringify({ designs: bloated }));
+// Updating an EXISTING id must shrink to the cap too — the trim used to live
+// only in the new-entry branch, so an update-only session stayed bloated.
+Library.add({ designId: "P0", name: "P0 updated" });
+assert(Library.count() === Library.MAX_ENTRIES, `update-in-place re-asserts the ${Library.MAX_ENTRIES} cap`);
+assert(Library.get("P0").name === "P0 updated", "the updated entry survives and is brought to the top");
+
 console.log("\n— Library: image setters + remove —");
 Library.clear();
 Library.add({ designId: "C", name: "Gamma" });
@@ -86,6 +98,15 @@ assert(Preferences.getAll().prompts[0].length === 200, "long prompts are truncat
 console.log("\n— Preferences: corrupt storage degrades to empty —");
 store.set("urev_prefs_v1", "}{ broken");
 assert(Preferences.topValues("type").length === 0 && Preferences.totalDesigns() === 0, "corrupt JSON → empty prefs (no throw)");
+
+// Valid JSON but wrong-typed count maps (a string / array where an object is
+// expected) used to slip through `|| {}` and yield garbage (totalDesigns
+// string-concatenating, topValues over string indices).
+store.set("urev_prefs_v1", JSON.stringify({ type: "corrupt", color: ["x"], material: { wool: "3" }, prompts: [] }));
+assert(Preferences.topValues("type").length === 0, "string-typed map → no top values (degraded to empty)");
+assert(Preferences.topValues("color").length === 0, "array-typed map → no top values");
+assert(Preferences.totalDesigns() === 0, "wrong-typed type map → totalDesigns 0, not string-concatenated");
+assert(Preferences.topValues("material")[0] === "wool", "string count values still rank (coerced numerically)");
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
