@@ -722,7 +722,11 @@
                         <defs>
                             <clipPath id="figClip"><rect x="0" y="0" width="1152" height="1728" rx="40"/></clipPath>
                         </defs>
-                        <image href="assets/measure-figure.jpg" x="0" y="0" width="1152" height="1728" clip-path="url(#figClip)"/>
+                        <!-- href intentionally omitted: this SVG <image> ignores loading="lazy"
+                             and would download 245 KB on first paint even though it lives in the
+                             hidden studio. revealStudio() sets the href on studio reveal — off the
+                             landing's critical path, but ready well before the measurement step. -->
+                        <image id="measure-figure-img" x="0" y="0" width="1152" height="1728" clip-path="url(#figClip)"/>
                         <g class="measure-annotations" font-family="'Poppins', system-ui, sans-serif" font-size="31" font-weight="700" letter-spacing="0.5" style="paint-order:stroke" stroke="#08080a" stroke-width="7" stroke-linejoin="round">
                             <g class="annotation" data-measure="shoulder">
                                 <line x1="330" y1="408" x2="846" y2="408" stroke="#2a9d8f" stroke-width="3" stroke-dasharray="10,8" opacity="0.95"/>
@@ -903,6 +907,10 @@
             <span class="sphere-label-name" id="sphere-label-name"></span>
             <span class="sphere-label-meta" id="sphere-label-meta"></span>
         </div>
+        <!-- A11y: the visual label above is aria-hidden, so screen-reader users
+             arrowing the globe (keyboard focus) get no read-out of which creation
+             is centred — i.e. what Enter will open. Announce it politely here. -->
+        <p id="sphere-focus-live" class="visually-hidden" aria-live="polite"></p>
 
         <!-- Detail-Overlay: eine angetippte Community-Kreation. -->
         <div class="sphere-detail" id="sphere-detail" role="dialog" aria-modal="true" aria-labelledby="sphere-detail-name" hidden>

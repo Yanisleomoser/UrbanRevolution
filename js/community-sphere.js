@@ -367,6 +367,9 @@ async function boot() {
     const labelEl = document.getElementById("sphere-label");
     const labelName = document.getElementById("sphere-label-name");
     const labelMeta = document.getElementById("sphere-label-meta");
+    // Polite live region: the visual label is aria-hidden, so this is the only
+    // read-out a keyboard/SR user gets of the centred creation (what Enter opens).
+    const liveEl = document.getElementById("sphere-focus-live");
     const labelPos = { x: 0, y: 0 };
 
     function pick(cx, cy) {
@@ -416,8 +419,15 @@ async function boot() {
             labelName.textContent = u.item.name;
             labelMeta.textContent = metaLine(u.item);
             labelEl.classList.add("is-on");
+            // Announce only when keyboard focus drives the centring — pointer
+            // hover doesn't need it and would be noisy for AT users.
+            if (liveEl && document.activeElement === canvas) {
+                const m = metaLine(u.item);
+                liveEl.textContent = u.item.name + (m ? ", " + m : "");
+            }
         } else if (labelEl) {
             labelEl.classList.remove("is-on");
+            if (liveEl) liveEl.textContent = "";
         }
     }
 

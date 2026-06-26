@@ -96,6 +96,16 @@
     border-radius: var(--radius-sm);
 }
 
+/* Programmatic focus route-targets: when a keyboard user opens the studio /
+   make-real panel we move focus INTO the revealed section (tabindex=-1) so Tab
+   continues there and SR users hear the region. These are NOT Tab stops, so a
+   container-sized ring around a viewport-tall section is inappropriate — the
+   scroll + heading announcement is the cue. Real controls keep their ring. */
+#design:focus-visible, #ownership:focus-visible, #measure:focus-visible,
+#production:focus-visible, #faq:focus-visible,
+#design:focus, #ownership:focus, #measure:focus,
+#production:focus, #faq:focus { outline: none; }
+
 /* Sharper text rendering across the app */
 html {
     -webkit-font-smoothing: antialiased;
