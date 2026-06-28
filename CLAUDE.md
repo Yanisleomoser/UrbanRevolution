@@ -704,9 +704,22 @@ Instead, **categorise via a naming prefix** on the normal per-task branch so
 
 Pick the **dominant** intent when a change spans areas (most do) — one prefix,
 not a stack. Keep a short kebab-case slug after it (`visual/hero-reframe`,
-`copy/manifesto-headline`, `fix/scroll-jump`). **Delete the branch once its PR
-is merged** so the remote list stays the live set of open work, not history
-(history already lives in `main` via the squash-merges).
+`copy/manifesto-headline`, `fix/scroll-jump`).
+
+**Branch cleanup is automatic — do not try to delete branches from a session.**
+Merged branches are removed server-side by GitHub's repo setting *Settings →
+General → Pull Requests → "Automatically delete head branches"* (enabled for
+this repo). Keep that toggle on; it's what stops the remote list from filling
+with dead branches, and it works on merge with no push involved. Claude Code
+**web/agent sessions cannot delete remote branches** — the git relay returns
+`403` on delete-pushes (`git push --delete` / `:refs/heads/…`), the raw
+`GITHUB_TOKEN` isn't enabled for repo ops, and the GitHub MCP has no
+delete-branch tool. So never promise to delete a branch from a session; rely on
+the auto-delete setting. A one-off backlog (branches merged before the toggle
+was on) must be pruned from a local clone with push rights:
+`git push origin --delete <branch> …` (verify each branch's PR was *merged*
+first — squash-merge means git's own `--merged` check is unreliable, and a
+reused branch name may carry later unmerged commits).
 
 ### Auto-merge policy (standing instruction from the user)
 
