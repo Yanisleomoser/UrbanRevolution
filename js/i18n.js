@@ -272,6 +272,7 @@ const I18N = (() => {
       // ── Masse-Sektion ──
       "measure.h2": "Deine Körpermasse",
       "measure.intro": "Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Masse.",
+      "meas.note": "Foto-Auswertung läuft komplett in deinem Browser — das Foto verlässt nie dein Gerät. Die Masse sind eine Schätzung und bleiben jederzeit anpassbar.",
       "measure.photo_h4": "Masse aus Foto",
       "measure.photo_body": "Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Masse automatisch.",
       "measure.photo_privacy": "100% clientseitig — dein Bild verlässt nie dein Gerät.",
@@ -594,6 +595,7 @@ const I18N = (() => {
       "how.s3_line": "Foto (100 % im Browser), manuell oder Preset. Eine Schätzung, jederzeit anpassbar.",
       "how.s4_label": "Deine Vorlage",
       "how.s4_line": "Ein dokumentiertes Einzelstück — bereit für den Tag, an dem die autonome Fabrik fertigt.",
+      "how.anchor": "So funktioniert's",
     },
 
     en: {
@@ -847,6 +849,7 @@ const I18N = (() => {
       // ── Measurements section ──
       "measure.h2": "Your body measurements",
       "measure.intro": "So your garment fits perfectly, we need your exact measurements.",
+      "meas.note": "Photo analysis runs entirely in your browser — the photo never leaves your device. Measurements are an estimate and stay adjustable anytime.",
       "measure.photo_h4": "Measurements from photo",
       "measure.photo_body": "Upload a full-body photo (standing straight, T-pose or arms slightly to the side). MediaPipe analyzes the pose and estimates your measurements automatically.",
       "measure.photo_privacy": "100% client-side — your image never leaves your device.",
@@ -1169,6 +1172,7 @@ const I18N = (() => {
       "how.s3_line": "Photo (100% in-browser), manual, or preset. An estimate, adjustable anytime.",
       "how.s4_label": "Your blueprint",
       "how.s4_line": "A documented one-off — ready for the day the autonomous factory builds it.",
+      "how.anchor": "How it works",
     },
   };
 
