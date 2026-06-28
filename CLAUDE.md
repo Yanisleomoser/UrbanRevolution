@@ -680,6 +680,34 @@ device**, which headless Chromium cannot reproduce.
 Default branch is `main`; don't push directly. Development happens on
 feature branches. Don't open PRs unless explicitly asked.
 
+### Branch naming (standing instruction from the user)
+
+Keep the **one-task → one-branch → one-PR → squash-to-main** flow — each PR
+gets its own Vercel preview, so work goes to `main` directly per task. Do **not**
+create long-lived "integration" branches (e.g. a `visuals/` branch that collects
+several PRs before main): that breaks per-PR previews, bundles unrelated changes
+into one squash, and adds needless merge overhead on a continuously-deployed
+static site.
+
+Instead, **categorise via a naming prefix** on the normal per-task branch so
+`git branch | sort` clusters by intent for free. Use this small fixed set:
+
+| Prefix    | For                                                            |
+| --------- | -------------------------------------------------------------- |
+| `visual/` | look & feel: colours, spacing, imagery, animation             |
+| `layout/` | structure/responsive: sections, grids, mobile/`svh`, overflow |
+| `copy/`   | user-facing text & i18n (DE/EN), legal copy                   |
+| `engine/` | design-engine logic, DNA, flats, journey/flow                 |
+| `api/`    | edge functions (`api/*`), proxies, storage                    |
+| `fix/`    | bug fixes (any area)                                           |
+| `chore/`  | CI, docs, deps, tooling, refactors                            |
+
+Pick the **dominant** intent when a change spans areas (most do) — one prefix,
+not a stack. Keep a short kebab-case slug after it (`visual/hero-reframe`,
+`copy/manifesto-headline`, `fix/scroll-jump`). **Delete the branch once its PR
+is merged** so the remote list stays the live set of open work, not history
+(history already lives in `main` via the squash-merges).
+
 ### Auto-merge policy (standing instruction from the user)
 
 > **Aktualisiert (risikobasiertes Gate, siehe Projekt-Regeln · Workflow oben):**
