@@ -6557,6 +6557,157 @@ html.fx .lp-loop-step.is-active {
 }
 .lp-identity-body strong { color: var(--text); font-weight: 500; }
 
+/* ── So funktioniert's — User-Journey-Naht ─────────────────────────────────
+   Vier Stationen, von EINER geraden glühenden Naht verbunden (Anfang→Ende) —
+   bewusst linear, als Gegenstück zum geschlossenen Kreis von #loop. Naht zeichnet
+   sich beim Scroll-in (clip-path-Wipe, verzerrungsfrei), Nadel wandert mit der
+   Spitze, Stationen leuchten gestaffelt — alles über das bestehende
+   [data-reveal]-System (animations.js), keine neue JS. */
+.lp-how { max-width: 1180px; margin: 0 auto; scroll-margin-top: 84px; }
+.lp-how-head { max-width: 760px; margin: 0 auto clamp(40px, 6vw, 64px); text-align: center; }
+.lp-how-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(30px, 5vw, 52px);
+    letter-spacing: -0.02em;
+    line-height: 1.16;
+    margin: 0 auto;
+    max-width: 18ch;
+}
+.lp-how-sub {
+    margin: var(--space-4) auto 0;
+    max-width: 52ch;
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15px, 1.8vw, 18px);
+    line-height: 1.6;
+}
+
+.lp-how-track { position: relative; }
+
+/* Die Naht — gerade Linie durch die Icon-Mitten, glüht in --accent-3. */
+.lp-how-seam {
+    position: absolute;
+    left: 0; right: 0;
+    top: 41px;
+    height: 2px;
+    z-index: 0;            /* hinter den Karten-Inhalten; Karten sind transparent */
+    pointer-events: none;
+}
+/* Die Naht selbst nicht mit-faden/-translaten — sie wird gezeichnet. */
+.lp-how-seam[data-reveal] { opacity: 1; transform: none; transition: none; }
+.lp-how-seam-bar {
+    position: absolute;
+    left: 1%; right: 5%; top: 0; height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    box-shadow: 0 0 12px 1px rgba(100, 214, 196, 0.45); /* --accent-3, gleiche Glow-Sprache wie .ur-hero-weave */
+    clip-path: inset(0 100% 0 0);  /* von links aufgedeckt */
+    transition: clip-path 1.1s var(--ease-out);
+}
+.lp-how-seam.is-revealed .lp-how-seam-bar { clip-path: inset(0 0 0 0); }
+.lp-how-needle {
+    position: absolute;
+    left: 1%; top: -2.5px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 8px 1px rgba(100, 214, 196, 0.9);
+    transition: left 1.1s var(--ease-out), top 1.1s var(--ease-out),
+                opacity var(--duration-base) var(--ease-out);
+}
+.lp-how-seam.is-revealed .lp-how-needle { left: 95%; }
+
+.lp-how-grid {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-5);
+    position: relative;
+}
+.lp-how-station {
+    background: transparent;   /* Naht glüht durch — Stationen sitzen AUF dem Faden */
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-6) var(--space-6) var(--space-7);
+    position: relative;
+    z-index: 1;
+    text-align: left;
+    /* Reveal (opacity/transform inkl. Stagger-Delay) aus [data-reveal] beibehalten,
+       Hover-Lift ergänzen. */
+    transition:
+        opacity var(--duration-slow) var(--ease-out) var(--reveal-delay, 0ms),
+        transform var(--duration-slow) var(--ease-out) var(--reveal-delay, 0ms),
+        border-color var(--duration-base) var(--ease-out),
+        box-shadow var(--duration-base) var(--ease-out);
+}
+.lp-how-station:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+}
+.lp-how-ico {
+    width: 36px; height: 36px;
+    display: block;
+    margin-bottom: var(--space-5);
+    color: var(--accent-3);
+    filter: drop-shadow(0 0 6px rgba(100, 214, 196, 0.35)); /* --accent-3 chromatischer Saum */
+}
+.lp-how-ico svg {
+    width: 100%; height: 100%;
+    stroke: currentColor; stroke-width: 1.4; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+.lp-how-num {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: var(--space-2);
+}
+.lp-how-label {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 400;
+    color: var(--text);
+    margin: 0 0 var(--space-2);
+    line-height: 1.15;
+}
+.lp-how-line {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    line-height: var(--leading-normal);
+    margin: 0;
+}
+
+/* Mobil (<860px): Stationen stapeln; Naht läuft vertikal in der linken Gosse,
+   Karten eingerückt, damit sie sie freihalten. */
+@media (max-width: 860px) {
+    .lp-how-grid { grid-template-columns: 1fr; gap: var(--space-4); padding-left: var(--space-8); }
+    .lp-how-seam { top: 0; bottom: 0; left: 14px; right: auto; width: 2px; height: auto; }
+    .lp-how-seam-bar {
+        left: 0; right: auto; top: 2%; bottom: 6%; width: 2px; height: auto;
+        background: linear-gradient(180deg, var(--accent), var(--accent-2), var(--accent-3));
+        clip-path: inset(0 0 100% 0);  /* von oben aufgedeckt */
+    }
+    .lp-how-seam.is-revealed .lp-how-seam-bar { clip-path: inset(0 0 0 0); }
+    .lp-how-needle { left: -2.5px; right: auto; top: 2%; }
+    .lp-how-seam.is-revealed .lp-how-needle { top: 94%; left: -2.5px; }
+    .lp-how-station { padding: var(--space-5) var(--space-5) var(--space-6); }
+    .lp-how-ico { width: 30px; height: 30px; margin-bottom: var(--space-4); }
+}
+
+/* Reduced-motion: Naht vollständig gezeichnet, keine Bewegung, Nadel verborgen.
+   (Das globale [data-reveal]-Reset deckt die Karten ab; die Naht-Kinder brauchen
+   ihren eigenen Guard, da sie kein [data-reveal] tragen.) */
+@media (prefers-reduced-motion: reduce) {
+    .lp-how-seam-bar { transition: none; clip-path: inset(0 0 0 0) !important; }
+    .lp-how-needle { display: none; }
+}
+
 /* ── Finale ── */
 .lp-finale {
     text-align: center;
