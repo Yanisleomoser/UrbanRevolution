@@ -68,9 +68,31 @@ const GarmentSVG = (() => {
     return cfg.sleeveLen;
   }
 
-  // Material → baseline sheen (silk glossy, denim/wool matte). finish (matt↔
-  // glänzend) scales on top. Makes the "Stoff" + "Matt/Glänzend" choices visible.
-  const MATERIAL_SHEEN = { silk: 0.85, polyester: 0.55, cotton: 0.22, denim: 0.12, wool: 0.18, fleece: 0.10, linen: 0.14 };
+  // --- Physically-based cloth-optics model (translated to flat shading) -----
+  // physicallybased.info lists no textiles, but the same micro-facet reasoning
+  // applies: a fabric's specular response is governed by (1) how MUCH light it
+  // reflects specularly (spec) and (2) how ROUGH the surface is, which spreads
+  // that reflection. On the flat we map:
+  //   • spec  → highlight INTENSITY (peak white opacity) + contrast (how dark
+  //             the shadow side gets).
+  //   • rough → highlight WIDTH: low-roughness satin → a NARROW, sharp specular
+  //             band; rough cotton → a BROAD, washed lobe with no clean peak.
+  //             It also softens the volume falloff (matte = flatter body).
+  // Fuzzy fibres (wool/fleece) are retroreflective — almost no view-dependent
+  // specular lobe → spec≈0, very broad. silk/satin: strong spec + very low
+  // roughness → bright tight band, the glossiest. This is a tiny data table
+  // feeding the existing gradient stops, NOT a real BRDF — subtlety is the bar.
+  const MATERIAL_OPTICS = {
+    silk:      { spec: 0.95, rough: 0.10 }, // satin: glossiest, narrow sharp band
+    polyester: { spec: 0.60, rough: 0.34 }, // synthetic: moderate, a touch broader/softer than silk
+    cotton:    { spec: 0.26, rough: 0.74 }, // matte microfibre: soft, broad, low-contrast
+    linen:     { spec: 0.19, rough: 0.84 }, // drier/flatter than cotton
+    denim:     { spec: 0.24, rough: 0.70 }, // matte twill: broad + dim, slight directional sheen
+    wool:      { spec: 0.10, rough: 0.92 }, // fuzz/retroreflective: almost no highlight
+    fleece:    { spec: 0.05, rough: 0.97 }, // fuzziest: essentially no highlight, softest volume
+  };
+  const DEFAULT_OPTICS = { spec: 0.30, rough: 0.62 };
+
   // Neutral-fill tone per winning archetype (used when no colour is chosen yet)
   // → mood / inspo / occasion / season shift the flat's tone because they shift
   // the archetype. Cool tech ↔ warm couture/utility ↔ playful street.
@@ -88,7 +110,16 @@ const GarmentSVG = (() => {
       ? p.stops.map((s) => safeHex(s, tint)) : null;
     const energy = clamp(num(p.energy, 0.5), 0, 1);
     const finish = clamp(num(p.finish, 0.5), 0, 1);
-    const sheen = clamp((MATERIAL_SHEEN[p.material] != null ? MATERIAL_SHEEN[p.material] : 0.2) + finish * 0.4, 0.04, 0.95);
+
+    // Resolve the cloth-optics for this material, then let the "Matt↔Glänzend"
+    // finish slider visibly scale on top: finish>0.5 pushes spec UP and
+    // roughness DOWN (glossier), finish<0.5 the reverse (more matte). finish
+    // stays the same lever the user already turns — it just now moves a
+    // physically-meaningful (spec, rough) pair instead of one opaque scalar.
+    const opt = MATERIAL_OPTICS[p.material] || DEFAULT_OPTICS;
+    const fAdj = (finish - 0.5) * 2;                              // -1..1
+    const spec = clamp(opt.spec + fAdj * 0.30, 0.02, 0.98);      // specular intensity
+    const rough = clamp(opt.rough - fAdj * 0.28, 0.04, 0.99);    // surface roughness
     let defs = "";
     let fill, opacity;
     if (stops) {
@@ -103,15 +134,41 @@ const GarmentSVG = (() => {
       fill = ARCH_TINT[p.archetype] || "#8b8f96";
       opacity = lerp(0.05, 0.17, energy); // calm wash → bolder neutral
     }
-    // Sheen overlay: bright diagonal highlight + soft shadow side.
-    defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${r(sheen * 0.5)}"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${r(sheen * 0.16)}"/></linearGradient>`;
+    // Sheen overlay — a diagonal SPECULAR BAND across the body. Its physics:
+    //   • WIDTH from roughness: a low-roughness satin reflects in a tight lobe
+    //     → a narrow bright stripe (peak ≈0.40..0.52, falls to zero fast). A
+    //     rough cotton scatters → a wide, low plateau with no clean edge. The
+    //     half-width `hw` grows from ~0.12 (silk) to ~0.42 (fleece).
+    //   • INTENSITY from spec: peak white opacity tracks spec, so silk flashes
+    //     bright and wool barely lifts.
+    //   • CONTRAST from spec: only a glossy fabric darkens its shadow side; a
+    //     matte fabric has almost no dark counter-stop (light just diffuses).
+    // The band sits at the same diagonal (x2=0.65) the flat used before, so the
+    // light direction is unchanged — only its sharpness/strength now read the
+    // fabric. peak offset 0.40 keeps it off the very edge (a real highlight
+    // doesn't hug the seam).
+    const peak = 0.40;
+    const hw = lerp(0.12, 0.42, rough);                         // band half-width
+    const o0 = r(clamp(peak - hw, 0.02, 0.98));                 // band starts (transparent)
+    const o2 = r(clamp(peak + hw, 0.02, 0.98));                 // band ends (transparent)
+    const hiOp = r(clamp(0.18 + spec * 0.58, 0.06, 0.78));      // peak highlight opacity
+    const shOp = r(clamp(spec * 0.30, 0.0, 0.30));              // shadow-side darkening (contrast)
+    defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="0.65" y2="1">` +
+      `<stop offset="0" stop-color="#fff" stop-opacity="0"/>` +
+      `<stop offset="${o0}" stop-color="#fff" stop-opacity="0"/>` +
+      `<stop offset="${peak}" stop-color="#fff" stop-opacity="${hiOp}"/>` +
+      `<stop offset="${o2}" stop-color="#fff" stop-opacity="0"/>` +
+      `<stop offset="1" stop-color="#000" stop-opacity="${shOp}"/></linearGradient>`;
     // Volume/round-body shading: a soft centre highlight falling off to shaded
     // side seams (horizontal), so the flat reads as a garment ON a body with
-    // depth instead of a paper cut-out — the main "looks real, not cheap" lift.
-    // Subtle and tied to fabric weight so matte cottons stay flat, glossy
-    // synthetics catch more light (closer to the photoreal renders).
-    const volStr = clamp(0.12 + sheen * 0.22, 0.12, 0.34);
-    defs += `<linearGradient id="${id}v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="${r(volStr)}"/><stop offset="0.22" stop-color="#000" stop-opacity="${r(volStr * 0.35)}"/><stop offset="0.5" stop-color="#fff" stop-opacity="${r(volStr * 0.7)}"/><stop offset="0.78" stop-color="#000" stop-opacity="${r(volStr * 0.35)}"/><stop offset="1" stop-color="#000" stop-opacity="${r(volStr)}"/></linearGradient>`;
+    // depth instead of a paper cut-out. Roughness flattens this: a matte cotton
+    // wraps light gently (low, even volume), a glossy/low-roughness fabric has a
+    // tighter, brighter centre lift and deeper edge shade — closer to how the
+    // photoreal renders catch light. Driven by spec (lift) + rough (softness).
+    const volStr = clamp(0.13 + spec * 0.20, 0.12, 0.34);       // edge-shade depth
+    const volHi = r(volStr * lerp(0.95, 0.45, rough));          // centre lift: matte = weaker
+    const volEdge = r(volStr * lerp(0.40, 0.30, rough));        // mid shade
+    defs += `<linearGradient id="${id}v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="${r(volStr)}"/><stop offset="0.22" stop-color="#000" stop-opacity="${volEdge}"/><stop offset="0.5" stop-color="#fff" stop-opacity="${volHi}"/><stop offset="0.78" stop-color="#000" stop-opacity="${volEdge}"/><stop offset="1" stop-color="#000" stop-opacity="${r(volStr)}"/></linearGradient>`;
     let pat = "";
     if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
     return { defs, fill, opacity, pat, sheen: `url(#${id}s)`, vol: `url(#${id}v)` };
