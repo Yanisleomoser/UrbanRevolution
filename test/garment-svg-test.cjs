@@ -146,19 +146,50 @@ console.log("\n— per-material weave grain + silk satin streak (the material cu
 });
 const silkFlat = GarmentSVG.build("tshirt", { material: "silk", pattern: "none", fit: 0.5 });
 assert(!silkFlat.includes("<pattern"), "silk: no weave grain (stays smooth)");
-assert(silkFlat.includes("<radialGradient"), "silk: emits the anisotropic satin streak");
+// The satin streak is a vertically-flattened radial (scale(1 0.26)); every
+// garment now also carries a grounded contact-shadow radial, so we match the
+// streak by its unique transform, not just any <radialGradient>.
+const STREAK = "scale(1 0.26)";
+assert(silkFlat.includes(STREAK), "silk: emits the anisotropic satin streak");
 assert(GarmentSVG.build("tshirt", { material: "denim", pattern: "none" }).includes('patternTransform="rotate(63)"'),
   "denim: weave is a diagonal twill");
 // Streak is gated to genuinely glossy cloth: matte polyester (finish .5) gets
 // no satin pool; pushing the finish slider glossy turns it satiny.
-assert(!GarmentSVG.build("tshirt", { material: "polyester", pattern: "none", finish: 0.5 }).includes("<radialGradient"),
+assert(!GarmentSVG.build("tshirt", { material: "polyester", pattern: "none", finish: 0.5 }).includes(STREAK),
   "polyester (matte finish): no satin streak");
-assert(GarmentSVG.build("tshirt", { material: "polyester", pattern: "none", finish: 1 }).includes("<radialGradient"),
+assert(GarmentSVG.build("tshirt", { material: "polyester", pattern: "none", finish: 1 }).includes(STREAK),
   "polyester (glossy finish): satin streak appears");
 // A non-whitelisted material can't inject markup via the weave switch.
 const weird = GarmentSVG.build("tshirt", { material: '"><img onerror=alert(1)>', pattern: "none" });
 assert(weird.startsWith("<svg") && !weird.includes("<pattern") && !/<img|onerror/i.test(weird),
   "unknown/hostile material → no weave, no markup injection");
+
+console.log("\n— cinematic cloth layers: key light, drape, edge AO/rim, contact shadow —");
+// Every painted garment now sits in a lit studio: a directional key-light
+// gradient (form), constant-ink drape creases + self-shadows (cloth), edge
+// ambient occlusion + rim (the turn), and a grounded contact shadow that tracks
+// the hem. All ink is constant → still XSS-safe (no DNA value reaches them).
+TYPES.forEach((cat) => {
+  const svg = GarmentSVG.build(cat, { fit: 0.55, length: "regular", material: "cotton", finish: 0.4, scheme: "solid", stops: ["#2A9D8F"] });
+  assert(svg.includes('x1="0.08"'), `${cat}: emits the directional key-light gradient`);
+  assert(svg.includes("#04090f"), `${cat}: emits the edge ambient-occlusion strokes`);
+  assert(svg.includes("#dff1f4"), `${cat}: emits the edge rim light`);
+  assert(svg.includes("#06101c"), `${cat}: emits drape crease / self-shadow ink`);
+  assert(svg.includes("<ellipse"), `${cat}: emits the grounded contact shadow`);
+});
+// Soft cloth (silk) ripples into more skirt folds than a stiff one (denim) —
+// drape is material-driven. Compare crease-ink occurrences on a dress.
+const softDress = GarmentSVG.build("dress", { fit: 0.6, length: "long", material: "silk", subArchetype: "slip" });
+const stiffDress = GarmentSVG.build("dress", { fit: 0.6, length: "long", material: "denim", structure: 0.9 });
+const creaseCount = (s) => (s.match(/#06101c/g) || []).length;
+assert(creaseCount(softDress) > creaseCount(stiffDress),
+  `soft silk drapes into more folds than stiff denim (${creaseCount(softDress)} > ${creaseCount(stiffDress)})`);
+// Contact shadow + key light must survive the garbage/hostile inputs too.
+GARBAGE.concat([{ material: '"><img onerror=x>', stops: ["#000\"><img>"] }]).forEach((bad) => {
+  const svg = GarmentSVG.build("dress", bad);
+  assert(svg.includes("<ellipse") && !/NaN|undefined/.test(svg) && !/<img|onerror/i.test(svg),
+    `dress + ${JSON.stringify(bad)} → grounded, clean, no injection`);
+});
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

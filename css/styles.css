@@ -5095,7 +5095,10 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 
 /* Vorschau dominant. Höhen in svh + JS-gepinntem --svh (wie Hero/Story), damit
    nichts springt, wenn die iOS-Adressleiste ein-/ausfährt. */
-.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(120% 90% at 50% 30%, #0f1e2e, #0a1622 75%); display: flex; align-items: center; justify-content: center; }
+/* Cinematic studio stage: a soft key light from the top, a darkened floor that
+   seats the garment's contact shadow, and a depth gradient — the flat reads as
+   a garment lit in a studio, not an icon on a panel. */
+.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(68% 48% at 50% 6%, rgba(150,205,228,0.13), rgba(150,205,228,0) 62%), radial-gradient(120% 78% at 50% 122%, rgba(2,7,12,0.62), rgba(2,7,12,0) 56%), radial-gradient(132% 104% at 50% 36%, #122638, #0a1622 70%); display: flex; align-items: center; justify-content: center; }
 .de-preview svg { width: 100%; height: 100%; object-fit: contain; }
 .de-preview.is-fade { animation: deCross .24s var(--ease-out); }
 @keyframes deCross { from { opacity: .4; } to { opacity: 1; } }
@@ -5375,7 +5378,11 @@ footer.footer {
    allein auf der Bühne. Das Hero-Foto = Realismus-Ebene DARÜBER, blendet erst
    bei Konvergenz/„Generieren" ein (nicht abgedunkelt dahinter). */
 .de-garment-wrap { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; padding: var(--space-6); transition: opacity .5s var(--ease-out); }
-.de-garment { width: 78%; height: 92%; max-width: 320px; filter: drop-shadow(0 10px 26px rgba(0,0,0,0.4)); }
+/* The garment's grounded contact shadow is drawn IN the SVG (garment-svg.js) so
+   it aligns to each piece's hem and morphs with it. Here we only add a soft
+   directional cast shadow consistent with the upper-left key light (falls down
+   + slightly right): a tight ambient plus a longer soft throw. */
+.de-garment { position: relative; z-index: 1; width: 78%; height: 92%; max-width: 320px; filter: drop-shadow(2px 5px 8px rgba(0,0,0,0.36)) drop-shadow(4px 13px 22px rgba(0,0,0,0.4)); }
 .de-preview-photo { position: absolute; inset: 0; z-index: 2; opacity: 0; transition: opacity .5s var(--ease-out); pointer-events: none; }
 .de-preview-photo.is-shown { opacity: 1; }
 .de-preview.is-realism .de-garment-wrap { opacity: 0.1; }
