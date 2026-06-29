@@ -171,7 +171,60 @@ const GarmentSVG = (() => {
     defs += `<linearGradient id="${id}v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="${r(volStr)}"/><stop offset="0.22" stop-color="#000" stop-opacity="${volEdge}"/><stop offset="0.5" stop-color="#fff" stop-opacity="${volHi}"/><stop offset="0.78" stop-color="#000" stop-opacity="${volEdge}"/><stop offset="1" stop-color="#000" stop-opacity="${r(volStr)}"/></linearGradient>`;
     let pat = "";
     if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
-    return { defs, fill, opacity, pat, sheen: `url(#${id}s)`, vol: `url(#${id}v)` };
+
+    // Per-material WEAVE grain — the perceptible material cue. The smooth
+    // sheen/volume gradients above carry no spatial frequency, so silk/wool/
+    // denim read alike (a redistributed gradient is measurable but invisible).
+    // The eye names a fabric from its weave FREQUENCY (twill diagonal, linen
+    // slub, wool nap), so a fine low-opacity <pattern> per material is what
+    // actually makes them distinguishable. Constant-ink, deterministic → XSS-
+    // safe exactly like patternDef. silk carries no weave (its cue is the
+    // anisotropic streak below).
+    let grain = "";
+    const weave = weaveDef(id + "w", p.material);
+    if (weave) { defs += weave; grain = `url(#${id}w)`; }
+
+    // Silk / satin anisotropic streak: a stretched HORIZONTAL highlight that
+    // reads as liquid satin — the glossy-end cue weave can't give. Gated high so
+    // only genuinely glossy cloth gets it (silk; or any fabric the finish slider
+    // pushes to a satin sheen) — matte/technical fabrics like polyester keep
+    // their faint even sheen, no satin pool. White-only (constant) → XSS-safe.
+    let streak = "";
+    if (spec >= 0.72) {
+      const stOp = r(clamp(0.2 + spec * 0.4, 0.2, 0.6));
+      defs += `<radialGradient id="${id}k" cx="0.5" cy="0.34" r="0.5" gradientTransform="translate(0 0.224) scale(1 0.34)">` +
+        `<stop offset="0" stop-color="#fff" stop-opacity="${stOp}"/>` +
+        `<stop offset="0.55" stop-color="#fff" stop-opacity="${r(stOp * 0.28)}"/>` +
+        `<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
+      streak = `url(#${id}k)`;
+    }
+    return { defs, fill, opacity, pat, grain, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)` };
+  }
+
+  // Per-material fabric grain tile (distinct from the decorative p.pattern).
+  // Fine, low-opacity, constant-ink (never a DNA value → XSS-safe), fully
+  // deterministic geometry. dk = shadow thread (toward the navy stage), lt =
+  // lit thread. Tile sizes are small (viewBox units) so it reads as cloth
+  // grain, not a motif. silk → "" (no weave; it gets the streak instead).
+  function weaveDef(id, material) {
+    const dk = (a) => `rgba(10,16,26,${a})`;
+    const lt = (a) => `rgba(236,236,240,${a})`;
+    switch (material) {
+      case "denim": // indigo twill — parallel diagonal ribs
+        return `<pattern id="${id}" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(63)"><line x1="0" y1="0" x2="0" y2="5" stroke="${dk(0.22)}" stroke-width="1.1"/><line x1="2.4" y1="0" x2="2.4" y2="5" stroke="${lt(0.07)}" stroke-width="0.7"/></pattern>`;
+      case "linen": // plain weave with slubs — crossed irregular hairlines
+        return `<pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse"><line x1="0" y1="1.5" x2="7" y2="1.5" stroke="${dk(0.13)}" stroke-width="0.8"/><line x1="0" y1="4.5" x2="7" y2="4.5" stroke="${dk(0.1)}" stroke-width="1.3"/><line x1="1.5" y1="0" x2="1.5" y2="7" stroke="${dk(0.1)}" stroke-width="1.1"/><line x1="4.5" y1="0" x2="4.5" y2="7" stroke="${dk(0.13)}" stroke-width="0.7"/></pattern>`;
+      case "cotton": // fine even plain weave — faint grid
+        return `<pattern id="${id}" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="0" y1="2" x2="4" y2="2" stroke="${dk(0.07)}" stroke-width="0.7"/><line x1="2" y1="0" x2="2" y2="4" stroke="${dk(0.07)}" stroke-width="0.7"/></pattern>`;
+      case "wool": // matte nap — soft stipple, no lines
+        return `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="2" r="0.85" fill="${dk(0.16)}"/><circle cx="4.3" cy="4.6" r="0.95" fill="${dk(0.14)}"/><circle cx="4" cy="1.2" r="0.6" fill="${lt(0.06)}"/><circle cx="2.2" cy="5" r="0.6" fill="${dk(0.12)}"/></pattern>`;
+      case "fleece": // brushed pile — denser, softer stipple
+        return `<pattern id="${id}" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1.2" cy="1.6" r="1" fill="${dk(0.13)}"/><circle cx="3.6" cy="3.8" r="1.15" fill="${dk(0.12)}"/><circle cx="3.8" cy="1" r="0.8" fill="${lt(0.05)}"/><circle cx="1" cy="4" r="0.8" fill="${dk(0.11)}"/></pattern>`;
+      case "polyester": // tight technical weave — very faint fine verticals
+        return `<pattern id="${id}" width="3" height="3" patternUnits="userSpaceOnUse"><line x1="1" y1="0" x2="1" y2="3" stroke="${dk(0.06)}" stroke-width="0.6"/></pattern>`;
+      default: // silk + unknown → no grain
+        return "";
+    }
   }
 
   // scale 0.12..1 → tile factor ~0.6..1.6 so "Mustergröße" visibly resizes.
@@ -539,8 +592,10 @@ const GarmentSVG = (() => {
     const body = paths.map((d) =>
       `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
       (f.vol ? `<path d="${d}" fill="${f.vol}" stroke="none" opacity="${layerOp}"/>` : "") +
+      (f.grain ? `<path d="${d}" fill="${f.grain}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
-      (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "")
+      (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "") +
+      (f.streak ? `<path d="${d}" fill="${f.streak}" stroke="none" opacity="${layerOp}"/>` : "")
     ).join("");
     const seams = seamMarkup ? `<g opacity="${seamOp}">${seamMarkup}</g>` : "";
     // pathLength=1 normalises every path so CSS can draw the flat in with one

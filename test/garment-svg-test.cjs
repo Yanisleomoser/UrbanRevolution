@@ -136,5 +136,29 @@ console.log("\n— rich Phase-E params exercise the detail layers cleanly —");
     `${cat}: rich Phase-E params → clean, closed SVG (no NaN/undefined)`);
 });
 
+console.log("\n— per-material weave grain + silk satin streak (the material cue) —");
+// Woven/napped fabrics get a fine <pattern> grain so they read as distinct
+// cloth (a smooth gradient can't); pattern:"none" so the only <pattern> is the
+// weave. silk carries no weave — its cue is the anisotropic streak instead.
+["cotton", "linen", "denim", "wool", "fleece", "polyester"].forEach((m) => {
+  const svg = GarmentSVG.build("tshirt", { material: m, pattern: "none", fit: 0.5 });
+  assert(svg.includes("<pattern"), `${m}: emits a weave grain <pattern>`);
+});
+const silkFlat = GarmentSVG.build("tshirt", { material: "silk", pattern: "none", fit: 0.5 });
+assert(!silkFlat.includes("<pattern"), "silk: no weave grain (stays smooth)");
+assert(silkFlat.includes("<radialGradient"), "silk: emits the anisotropic satin streak");
+assert(GarmentSVG.build("tshirt", { material: "denim", pattern: "none" }).includes('patternTransform="rotate(63)"'),
+  "denim: weave is a diagonal twill");
+// Streak is gated to genuinely glossy cloth: matte polyester (finish .5) gets
+// no satin pool; pushing the finish slider glossy turns it satiny.
+assert(!GarmentSVG.build("tshirt", { material: "polyester", pattern: "none", finish: 0.5 }).includes("<radialGradient"),
+  "polyester (matte finish): no satin streak");
+assert(GarmentSVG.build("tshirt", { material: "polyester", pattern: "none", finish: 1 }).includes("<radialGradient"),
+  "polyester (glossy finish): satin streak appears");
+// A non-whitelisted material can't inject markup via the weave switch.
+const weird = GarmentSVG.build("tshirt", { material: '"><img onerror=alert(1)>', pattern: "none" });
+assert(weird.startsWith("<svg") && !weird.includes("<pattern") && !/<img|onerror/i.test(weird),
+  "unknown/hostile material → no weave, no markup injection");
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
