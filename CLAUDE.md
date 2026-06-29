@@ -678,10 +678,15 @@ The tools are available — use them instead of delegating the lookup back:
   is live by matching `meta.githubCommitSha` + `state: READY`.
 - **CI / PR / review status:** the GitHub MCP tools (`pull_request_read`
   with `get_check_runs` / `get` / `get_diff`, etc.).
-- **Visual rendering:** the SessionStart hook installs headless Chromium;
-  `node scripts/shoot.mjs <url> <prefix>` writes desktop + mobile PNGs to
-  `screenshots/` (gitignored). Use it to self-check layout instead of asking
-  for a screenshot.
+- **Visual rendering:** the SessionStart hook installs headless Chromium.
+  Fastest loop — **`npm run shoot`** boots its own static server and writes
+  desktop + mobile PNGs of every key section (`hero`, `how`, `facts`, `studio`,
+  `community`) to `screenshots/` (gitignored) in one command; it reveals the
+  studio via the `#design` deep-link and CDN-routes GSAP/three.js so animations
+  and the WebGL globe actually render. Scope it with
+  `npm run shoot -- hero,studio`. For an ad-hoc single URL against a server you
+  already run, `node scripts/shoot.mjs <url> <prefix>` still works. Use these to
+  self-check layout instead of asking for a screenshot.
 
 Only ask the user for things that genuinely require their hardware or eyes —
 e.g. confirming an **iOS-Safari-specific scroll/toolbar bug on a real

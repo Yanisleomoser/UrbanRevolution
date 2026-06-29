@@ -11,6 +11,7 @@
     "validate:css": "node scripts/validate-css.mjs css/styles.css",
     "validate:html": "htmlhint index.html impressum.html datenschutz.html insights.html 404.html",
     "e2e": "node scripts/e2e.mjs",
+    "shoot": "node scripts/shoot-sections.mjs",
     "coverage": "c8 npm test"
   },
   "keywords": [
