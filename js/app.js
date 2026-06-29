@@ -767,7 +767,10 @@
       );
     });
     document.querySelectorAll(".preset-btn").forEach((btn) => {
-      btn.classList.toggle("is-active", btn.dataset.preset === match);
+      const on = btn.dataset.preset === match;
+      btn.classList.toggle("is-active", on);
+      // Expose the selected preset to assistive tech, not just the visual class.
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
   }
 
@@ -1121,8 +1124,12 @@
       b.setAttribute("aria-pressed", b.dataset.color === color ? "true" : "false"));
     const measurements = S.get("measurements");
     const size = measurements ? Measurements.calculateSize(measurements) : null;
-    document.querySelectorAll("#oe-sizes .oe-size").forEach((b) =>
-      b.classList.toggle("is-active", b.dataset.size === size));
+    document.querySelectorAll("#oe-sizes .oe-size").forEach((b) => {
+      const on = b.dataset.size === size;
+      b.classList.toggle("is-active", on);
+      // Mirror the selected size to assistive tech (matches the colour swatches).
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
   }
 
   // After an edit the shown try-on render is stale → revert the stage to the

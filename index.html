@@ -632,10 +632,10 @@
                             <div class="own-edit-field">
                                 <span class="own-edit-label" data-i18n="own.info_size">Grösse</span>
                                 <div class="own-edit-sizes" id="oe-sizes" role="group" data-i18n-aria-label="own.info_size" aria-label="Grösse">
-                                    <button type="button" class="oe-size" data-size="S">S</button>
-                                    <button type="button" class="oe-size" data-size="M">M</button>
-                                    <button type="button" class="oe-size" data-size="L">L</button>
-                                    <button type="button" class="oe-size" data-size="XL">XL</button>
+                                    <button type="button" class="oe-size" aria-pressed="false" data-size="S">S</button>
+                                    <button type="button" class="oe-size" aria-pressed="false" data-size="M">M</button>
+                                    <button type="button" class="oe-size" aria-pressed="false" data-size="L">L</button>
+                                    <button type="button" class="oe-size" aria-pressed="false" data-size="XL">XL</button>
                                 </div>
                             </div>
                             <p class="own-edit-hint" data-i18n="own.edit_hint">Änderungen sind sofort übernommen — generiere die Vorschau neu, um sie an dir zu sehen.</p>
@@ -646,12 +646,16 @@
                         <h3 class="own-side-title" data-i18n="own.see_title">Sieh es an dir.</h3>
                         <p class="own-choose-lead" data-i18n="own.see_sub">Wähle eine der Vorschau-Personen — oder lade dein eigenes Ganzkörperfoto hoch.</p>
                         <div class="own-presets" id="own-presets" role="group" data-i18n-aria-label="own.presets_label" aria-label="Vorschau-Personen">
-                            <button type="button" class="own-preset" aria-pressed="false" data-preset="f-1" aria-label="Person 1"><img src="assets/presets/f-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" aria-pressed="false" data-preset="f-2" aria-label="Person 2"><img src="assets/presets/f-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" aria-pressed="false" data-preset="f-3" aria-label="Person 3"><img src="assets/presets/f-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" aria-pressed="false" data-preset="m-1" aria-label="Person 4"><img src="assets/presets/m-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" aria-pressed="false" data-preset="m-2" aria-label="Person 5"><img src="assets/presets/m-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
-                            <button type="button" class="own-preset" aria-pressed="false" data-preset="m-3" aria-label="Person 6"><img src="assets/presets/m-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <!-- Accessible names ("Vorschau-Person 1" … / "Preview person 1" …) are
+                                 set in the active language by app.js (initOwnershipChooser + on
+                                 language change), so they are not hardcoded here — a static label
+                                 would seed the a11y tree with one language regardless of locale. -->
+                            <button type="button" class="own-preset" aria-pressed="false" data-preset="f-1"><img src="assets/presets/f-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" aria-pressed="false" data-preset="f-2"><img src="assets/presets/f-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" aria-pressed="false" data-preset="f-3"><img src="assets/presets/f-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" aria-pressed="false" data-preset="m-1"><img src="assets/presets/m-1.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" aria-pressed="false" data-preset="m-2"><img src="assets/presets/m-2.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
+                            <button type="button" class="own-preset" aria-pressed="false" data-preset="m-3"><img src="assets/presets/m-3.jpg" alt="" loading="lazy" decoding="async" width="160" height="240"></button>
                         </div>
                         <p class="own-or" data-i18n="own.or_pick">oder</p>
                         <button type="button" id="own-upload-btn" class="own-upload-btn" data-i18n="own.upload_own">Eigenes Foto hochladen</button>
@@ -706,10 +710,10 @@
                     </div>
 
                     <div class="preset-buttons">
-                        <button class="preset-btn" data-preset="S" data-i18n="preset.s">Voreinstellung S</button>
-                        <button class="preset-btn" data-preset="M" data-i18n="preset.m">Voreinstellung M</button>
-                        <button class="preset-btn" data-preset="L" data-i18n="preset.l">Voreinstellung L</button>
-                        <button class="preset-btn" data-preset="XL" data-i18n="preset.xl">Voreinstellung XL</button>
+                        <button class="preset-btn" aria-pressed="false" data-preset="S" data-i18n="preset.s">Voreinstellung S</button>
+                        <button class="preset-btn" aria-pressed="false" data-preset="M" data-i18n="preset.m">Voreinstellung M</button>
+                        <button class="preset-btn" aria-pressed="false" data-preset="L" data-i18n="preset.l">Voreinstellung L</button>
+                        <button class="preset-btn" aria-pressed="false" data-preset="XL" data-i18n="preset.xl">Voreinstellung XL</button>
                     </div>
 
                     <div class="size-readout" aria-live="polite">

@@ -53,7 +53,10 @@
     let confirm = null;
     const grid = V.el("div", { class: "de-cards", role: multi ? "group" : "group" });
     (node.choices || []).forEach((choice) => {
-      const btn = V.el("button", { type: "button", class: "de-card" });
+      // Name the button explicitly so its accessible name never depends on the
+      // image loading or the visible label's DOM position (matches hotspot.js /
+      // colorGradient.js / ranking.js, which all label their tiles directly).
+      const btn = V.el("button", { type: "button", class: "de-card", "aria-label": (choice.label && choice.label[lang]) || choice.id });
       if (multi) btn.setAttribute("aria-pressed", "false");
       btn.appendChild(V.lazyImage(choice.image, (choice.label && choice.label[lang]) || "", tileFallback(node, choice, ctx)));
       const label = V.el("span", { class: "de-card-label" });
