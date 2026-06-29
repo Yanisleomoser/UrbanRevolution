@@ -127,8 +127,12 @@ a printable production spec sheet that drives the autonomous factory.
 The **landing experience** (`js/landing.js`, GSAP) is the front door:
 preloader logo-draw → hero with a thread-particle field → manifesto
 word-scrub → pinned circular-economy section → counted-up stats → a
-magnetic circle CTA. The **UR-Create studio** (`#studio`) stays `hidden`
-until a CTA/anchor or a share/deep-link reveals it. The page closes with a
+**4-step "So funktioniert's" seam** (`#how`: Du entwirfst → KI verfeinert →
+Deine Masse → Deine Vorlage — a stitched-seam visual that frames the user
+journey honestly, AI refines but never authors the design; `how.*` i18n keys,
+`[data-reveal]` entrance) → a magnetic circle CTA. The **UR-Create studio**
+(`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it.
+The page closes with a
 **community sphere** — a WebGL globe (`js/community-sphere.js`) whose inner
 wall holds floating creations.
 
@@ -171,7 +175,9 @@ js/
   preferences.js        # localStorage usage history → personalised suggestions
   library.js            # localStorage saved designs (max 20, + optional VTO url)
   preview-fallback.js   # Client-side $0 studio SVG when the paid render is down
+  focus-trap.js         # Accessible focus containment for overlays (window.FocusTrap)
   animations.js         # IntersectionObserver scroll-reveal (side effect)
+  spec-view.js          # DOM-safe spec-sheet fragment renderer (window.SpecView, no innerHTML)
   app.js                # Main controller — wires DOM events to StateManager
   flair.js              # Pointer/scroll micro-interactions + easter egg (side effect)
   landing.js            # Landing-experience controller + studio reveal (GSAP, side effect)
@@ -190,12 +196,13 @@ scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smok
                         # test), validate-css, validate-html, e2e — see Deployment
 ```
 
-Unit tests: 21 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+Unit tests: 22 offline suites in `test/` (DNA roundtrip, seam formulas, AI
 fallback + assembled-design contract, export scaling, i18n parity + t()
 interpolation, coded API-error → message, state, persistence, share-link
-encode/decode, pose math, garment-flat builder, journey-flow helpers,
-render-preview mappers, $0 preview fallback, client telemetry/DNT, waste-ticker
-math, landing studio-reveal predicate, API error mapping + input validation),
+encode/decode, pose math, garment-flat builder, DOM-safe spec-view renderer,
+journey-flow helpers, render-preview mappers, $0 preview fallback, client
+telemetry/DNT, waste-ticker math, landing studio-reveal predicate, API error
+mapping + input validation),
 run via `npm test` in CI (test.yml). No network needed. A separate `npm run e2e`
 (`e2e.yml`) drives the **real site in headless Chromium** end-to-end (see the CI
 table below). CI additionally runs
@@ -226,6 +233,7 @@ window.Foo = Foo;
 | `preview-fallback.js`| `window.PreviewFallback` | classic      |
 | `focus-trap.js`   | `window.FocusTrap`      | classic         |
 | `animations.js`   | (none — side effect)    | classic         |
+| `spec-view.js`    | `window.SpecView`       | classic         |
 | `app.js`          | (none — controller)     | classic         |
 | `flair.js`        | (none — side effect)    | classic         |
 | `landing.js`      | (none — side effect)    | classic         |
@@ -249,7 +257,7 @@ subscribe to its events). The bottom-of-body order is:
 ```
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → focus-trap → animations →
-design-engine/* (dna … flow) → app → flair → ur-create → ambient-ticker →
+design-engine/* (dna … flow) → spec-view → app → flair → ur-create → ambient-ticker →
 [importmap] → gsap + ScrollTrigger (CDN) → landing → community-sphere (module)
 ```
 
@@ -489,7 +497,11 @@ truth. Keys: `currentDesign`, `currentType`, `currentColor`,
 `S.get`/`S.set` helper (which wraps `StateManager` and swallows validation
 errors with a console warning). DOM events mutate state;
 `updateProductionPreview` is the single funnel that rebuilds the spec sheet
-from scratch on every change (no diffing). The 3D controller subscribes to
+from scratch on every change (no diffing); it renders the spec fragments via
+`window.SpecView` (`js/spec-view.js`), a **DOM-safe** renderer that builds
+nodes with `createElement`/`textContent` instead of `innerHTML` (no string
+interpolation of user/AI values → no spec-sheet XSS; locale-aware quoting).
+The 3D controller subscribes to
 specific `${key}:change` events and never reads from `app.js`.
 
 ## Centralized configuration (`config.js`)
@@ -590,7 +602,7 @@ run on Vercel (or `vercel dev`).
 
 - **Vercel** (`vercel.json`) — no build, root is output. Speed Insights +
   Web Analytics load from Vercel's `/_vercel/*` script endpoints (script tags
-  in `index.html`). The two `/api/` functions run as Edge Functions. **This is the
+  in `index.html`). The seven `/api/` functions run as Edge Functions. **This is the
   only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
   — the repo no longer has a Pages workflow.
 - **Security headers** (`vercel.json` `headers`, applied to `/(.*)`):
@@ -608,7 +620,7 @@ The functional PR checks (check name = job id):
 | PR check       | File               | Workflow name | What it runs                                        |
 | -------------- | ------------------ | ------------- | --------------------------------------------------- |
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
-| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (21 offline suites) |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (22 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404)   |
 | `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
