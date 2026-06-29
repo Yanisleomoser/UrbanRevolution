@@ -641,6 +641,7 @@
   function validateMeasurementField(input) {
     if (!window.CONFIG || input.value === "") {
       input.removeAttribute("aria-invalid");
+      clearMeasurementError(input);
       return true;
     }
     let valid = true;
@@ -650,7 +651,40 @@
       valid = false;
     }
     input.setAttribute("aria-invalid", valid ? "false" : "true");
+    if (valid) clearMeasurementError(input);
+    else setMeasurementError(input);
     return valid;
+  }
+
+  // Explain the valid range to assistive tech via aria-errormessage. Sighted
+  // users already get the red out-of-range border; screen-reader users only
+  // heard "invalid entry" with no reason. The message is generated from the
+  // CONFIG constraints + the i18n field label, so it stays data-driven and
+  // bilingual (no per-field hardcoded strings). The text node is visually
+  // hidden — an a11y affordance, not a visual change.
+  function setMeasurementError(input) {
+    const c = (window.CONFIG.MEASUREMENT_CONSTRAINTS || {})[input.id] || {};
+    const errId = `${input.id}-error`;
+    let el = document.getElementById(errId);
+    if (!el) {
+      el = document.createElement("span");
+      el.id = errId;
+      el.className = "visually-hidden";
+      (input.parentElement || input).appendChild(el);
+    }
+    el.textContent = t("measure.range_error", {
+      label: t(`ml.${input.id}`),
+      min: c.min,
+      max: c.max,
+      unit: c.unit || "cm",
+    });
+    input.setAttribute("aria-errormessage", errId);
+  }
+
+  function clearMeasurementError(input) {
+    input.removeAttribute("aria-errormessage");
+    const el = document.getElementById(`${input.id}-error`);
+    if (el) el.textContent = "";
   }
 
   // Felder, die eine passende Linie im Körperdiagramm haben
@@ -2034,6 +2068,14 @@
     // Re-localize the preset persons' accessible names.
     document.querySelectorAll("#own-presets .own-preset").forEach((b, i) =>
       b.setAttribute("aria-label", t("own.preset_alt", { n: i + 1 })));
+    // Re-localize any measurement range-error text currently shown (idempotent
+    // for valid/empty fields) so a mid-error language switch stays correct.
+    if (window.Measurements && Array.isArray(Measurements.FIELDS)) {
+      Measurements.FIELDS.forEach((f) => {
+        const input = document.getElementById(f);
+        if (input) validateMeasurementField(input);
+      });
+    }
     // Re-render the design card with the new language if one is showing.
     const design = S.get("currentDesign");
     if (design && document.querySelector(".design-card")) {
