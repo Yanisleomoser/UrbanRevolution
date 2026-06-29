@@ -288,6 +288,7 @@ const I18N = (() => {
       "measure.size_label": "Empfohlene Konfektionsgrösse",
       "measure.detail_toggle": "Masse im Detail anpassen",
       "measure.jump_aria": "{label} – zum Eingabefeld springen",
+      "measure.range_error": "{label}: muss zwischen {min} und {max} {unit} liegen",
       "measure.figure_hint": "Tippe eine Markierung, um den Wert anzupassen",
 
       // ── Voreinstellungen ──
@@ -865,6 +866,7 @@ const I18N = (() => {
       "measure.size_label": "Recommended size",
       "measure.detail_toggle": "Adjust detailed measurements",
       "measure.jump_aria": "{label} – jump to input field",
+      "measure.range_error": "{label}: must be between {min} and {max} {unit}",
       "measure.figure_hint": "Tap a marker to edit that measurement",
 
       // ── Presets ──
