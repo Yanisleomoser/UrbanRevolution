@@ -71,7 +71,7 @@ export default async function handler(request) {
         `Professional e-commerce fashion product photograph of a single garment: ${designPrompt}. ` +
         `Ghost mannequin / invisible mannequin presentation — the garment is shown three-dimensionally as if worn, ` +
         `but with no visible person, no face, no head, no hands. ` +
-        `Centered on a seamless soft neutral studio background, even softbox lighting, crisp focus on the fabric texture, weave, seams and stitching, accurate true-to-life colour. ` +
+        `Centered on a seamless soft neutral studio background, soft directional studio lighting that grazes the surface to reveal the fabric's weave, texture and sheen, crisp focus on seams and stitching, accurate true-to-life colour. ` +
         `High-end fashion catalogue look, editorial quality, ultra photorealistic. No text, no logo, no watermark, no props.`;
 
     let createResponse;

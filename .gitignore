@@ -29,3 +29,6 @@ screenshots/
 # Coverage (c8) — generated locally / in CI, never committed
 coverage/
 .nyc_output/
+
+# Transient agent worktrees (auto-created/cleaned by the agent harness)
+.claude/worktrees/
