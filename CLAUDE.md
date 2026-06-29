@@ -209,6 +209,47 @@ table below). CI additionally runs
 `deno lint` (configured via `deno.json`, with browser-incompatible rules
 excluded) plus structural HTML/CSS validators.
 
+## Section & animation map (where each surface lives + how to verify it)
+
+Page order top→bottom, with the file/function that drives each surface and the
+`npm run shoot` name that frames it (desktop + mobile). Use this to jump
+straight to the right file instead of grepping. Animation rules are global:
+`html.fx` gets the full motion, `prefers-reduced-motion` shows everything
+static, and without JS/GSAP all content is still visible (progressive
+enhancement). Verify any motion by **sampling frames over the whole duration**,
+not two stills (project rule).
+
+| Anchor / id            | What it is                                   | Driven by                                                        | Motion                                  | `shoot`     |
+| ---------------------- | -------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------- | ----------- |
+| `#loader` `.lp-loader` | Preloader logo-draw                          | `landing.js` `initLoader` (`.lp-mark-arc/-dashes/-needle`)        | GSAP stroke-draw (transient)            | —           |
+| `#top` `.lp-hero`      | Hero: thread-particle field + headline       | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`)          | GSAP intro + canvas particle weave      | `hero`      |
+| `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
+| `#facts` `.lp-stats`   | Cited fast-fashion evidence, counted up      | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` | count-up on reveal + live kg odometer   | `facts`     |
+| `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
+| `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | —           |
+| `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | —           |
+| `#how` `.lp-how`       | 4-step "So funktioniert's" seam              | `landing.js` `initReveals` (`how.*` i18n)                        | stitched-seam entrance                  | `how`       |
+| CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet                          | —           |
+| `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | journey transitions + genesis preview   | `studio`    |
+| `#ownership`           | Ownership moment (save/share/publish, VTO)   | `ur-create.js`; VTO via `api/try-on.js`                          | appears once a design exists            | —           |
+| `#measure`             | 9 body measurements + pose photo             | `measurements.js`, `pose.js` (MediaPipe, client-side)            | diagram lines per field                 | —           |
+| `#production` `.spec-sheet` | Printable production spec                | `app.js` `updateProductionPreview` → `spec-view.js`              | rebuilt on every state change           | —           |
+| `#faq`                 | FAQ accordion                                | static markup + `app.js`                                         | —                                       | —           |
+| `#community` `.community-sphere` | WebGL community globe              | `community-sphere.js` (**ES module**, three.js/GSAP, lazy)       | drag/inertia rotate, lazy on scroll-in  | `community` |
+
+The `shoot` column lists what `npm run shoot -- <name>` captures; surfaces
+marked `—` aren't dedicated shoot targets (mid-scroll/transient or only live in
+a flow) — capture them ad-hoc with `node scripts/shoot.mjs <url> <prefix>`
+against a running server, or add the section to `SECTIONS` in
+`scripts/shoot-sections.mjs`.
+
+**Two reveal systems, don't confuse them:** the landing beats use
+`[data-lp-reveal]`, swept in by `landing.js` `initReveals` (the cinematic
+landing timeline). Everything else uses the generic `[data-reveal]` /
+`[data-reveal-stagger]` IntersectionObserver in `animations.js`. Same idea,
+different attribute and owner — match the surrounding section's attribute when
+adding a revealed element.
+
 ## Module conventions
 
 Classic-script JS files use the **IIFE-with-global** pattern. Each exposes
