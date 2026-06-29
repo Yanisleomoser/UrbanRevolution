@@ -1405,10 +1405,11 @@
           return;
         }
 
-        if (body.imageUrl) {
+        if (body.imageUrl && CONFIG.isSafeImageUrl(body.imageUrl)) {
           // Only charge against the limit on a real, billable success.
           // Errors and timeouts don't cost money on Replicate and
-          // shouldn't punish the user's quota.
+          // shouldn't punish the user's quota. The URL is validated as
+          // https:// before it reaches img.src / fetch / window.open.
           showVtoResult(body.imageUrl);
           incrementVtoCount();
         } else {
@@ -1741,9 +1742,10 @@
           : { error: t("dpreview.error_pending") });
         return;
       }
-      if (body.imageUrl) {
+      if (body.imageUrl && CONFIG.isSafeImageUrl(body.imageUrl)) {
         // Cache on the live design object so re-renders are free, and persist
         // to the library if this design is saved (the tile then shows it).
+        // Validated as https:// first, so only a safe URL is ever stored/shown.
         design.previewImageUrl = body.imageUrl;
         const current = S.get("currentDesign");
         if (current && current.designId === design.designId) {

@@ -54,6 +54,21 @@ assert(CONFIG.validatePrint("  hi  ") === "hi", "trims surrounding whitespace");
 assert(CONFIG.validatePrint("a<script>b") === "ascriptb", "strips angle brackets (no markup)");
 assert(CONFIG.validatePrint("x".repeat(40)).length === CONFIG.PRINT_MAX_LENGTH, "caps at PRINT_MAX_LENGTH");
 
+console.log("\n— CONFIG.isSafeImageUrl (upstream render-URL guard) —");
+assert(CONFIG.isSafeImageUrl("https://replicate.delivery/abc/out.jpg") === true, "https Replicate CDN URL passes");
+assert(CONFIG.isSafeImageUrl("https://example.com/x.png?q=1#a") === true, "any well-formed https URL passes");
+assert(CONFIG.isSafeImageUrl("http://replicate.delivery/abc/out.jpg") === false, "plain http is rejected");
+assert(CONFIG.isSafeImageUrl("javascript:alert(1)") === false, "javascript: scheme is rejected");
+assert(CONFIG.isSafeImageUrl("data:text/html,<script>alert(1)</script>") === false, "data: URL is rejected");
+assert(CONFIG.isSafeImageUrl("blob:https://x/abc") === false, "blob: URL is rejected");
+assert(CONFIG.isSafeImageUrl("//evil.com/x.jpg") === false, "protocol-relative URL is rejected (not absolute)");
+assert(CONFIG.isSafeImageUrl("/local/path.jpg") === false, "relative path is rejected");
+assert(CONFIG.isSafeImageUrl("") === false, "empty string is rejected");
+assert(CONFIG.isSafeImageUrl(null) === false, "null is rejected");
+assert(CONFIG.isSafeImageUrl(undefined) === false, "undefined is rejected");
+assert(CONFIG.isSafeImageUrl(42) === false, "non-string is rejected");
+assert(CONFIG.isSafeImageUrl("https://") === false, "malformed https (no host) is rejected");
+
 console.log("\n— Measurements.calculateSize (chest buckets) —");
 const size = (chest) => Measurements.calculateSize({ chest });
 assert(size(89) === "XS", "chest 89 → XS");
