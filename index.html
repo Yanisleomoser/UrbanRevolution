@@ -179,7 +179,31 @@
         "addressLocality": "Zürich",
         "addressCountry": "CH"
       },
-      "areaServed": "CH"
+      "areaServed": "CH",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "hello@revolveurban.com",
+        "availableLanguage": ["de", "en"]
+      }
+    }
+    </script>
+    <!-- WebSite schema — the bilingual site itself (DE default, EN alternate);
+         publisher links back to the Organization above. Deliberately NO
+         SearchAction: there is no on-site search, so advertising a sitelinks
+         search box would be dishonest. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://revolveurban.com",
+      "name": "Urban Revolution",
+      "inLanguage": ["de", "en"],
+      "publisher": {
+        "@type": "Organization",
+        "name": "Urban Revolution",
+        "url": "https://revolveurban.com"
+      }
     }
     </script>
     <!-- Service schema: the vision (autonomous circular manufacturing of custom
