@@ -238,7 +238,8 @@
 
   function initCounters() {
     const nums = document.querySelectorAll(".lp-stat-num[data-count]");
-    if (!nums.length) return;
+    const bars = document.querySelectorAll(".lp-stat-bar");
+    if (!nums.length && !bars.length) return;
     const run = (el) => {
       const target = parseInt(el.getAttribute("data-count"), 10) || 0;
       if (reduceMotion) { el.textContent = String(target); return; }
@@ -256,11 +257,15 @@
       entries.forEach((e) => {
         if (e.isIntersecting) {
           io.unobserve(e.target);
-          run(e.target);
+          // Der <1 %-Balken füllt sich beim selben Reveal; ohne .fx ist er per
+          // CSS schon im Endzustand, das Flag schadet dort nicht.
+          if (e.target.classList.contains("lp-stat-bar")) e.target.classList.add("is-filled");
+          else run(e.target);
         }
       });
     }, { threshold: 0.6 });
     nums.forEach((el) => io.observe(el));
+    bars.forEach((el) => io.observe(el));
   }
 
   /* ── Magnetischer Kreis-CTA ──────────────────────────────── */
