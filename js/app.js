@@ -1716,13 +1716,17 @@
     if (getPreviewCount() >= PREVIEW_LIMIT) return; // belt-and-suspenders
 
     previewGenerating = true;
-    renderPreviewSlot(design, { loading: true });
-
-    // The garment description is identical to what the VTO sends — it's the
-    // garment, just without the "keep this person" instruction.
-    const designPrompt = buildVtoPrompt(design);
 
     try {
+      // Inside the try so the finally below always clears previewGenerating —
+      // if the loading render or prompt build ever throws, the flag must not
+      // stay stuck true, which would brick the preview button until reload.
+      renderPreviewSlot(design, { loading: true });
+
+      // The garment description is identical to what the VTO sends — it's the
+      // garment, just without the "keep this person" instruction.
+      const designPrompt = buildVtoPrompt(design);
+
       const res = await fetch("/api/preview-design", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
