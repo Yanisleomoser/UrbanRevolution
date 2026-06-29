@@ -94,6 +94,23 @@ const badDate = Export.renderPrintableHTML({
 });
 assert(!badDate.includes("Invalid Date"), "garbage generatedAt does not render literal 'Invalid Date'");
 
+// Regression: a design missing tags / constructionNotes (malformed AI response
+// or a legacy/hand-edited library entry) must not throw mid-export and abort
+// the download — the arrays are guarded, and the tags section keeps its
+// "custom" fallback.
+console.log("\n— renderPrintableHTML tolerates missing tags / constructionNotes —");
+for (const missing of [null, undefined]) {
+  const partial = {
+    ...sinkSpec,
+    design: { ...sinkSpec.design, tags: missing },
+    production: { ...sinkSpec.production, constructionNotes: missing },
+  };
+  let out, threw = false;
+  try { out = Export.renderPrintableHTML(partial); } catch { threw = true; }
+  assert(!threw, `renders without throwing when tags/constructionNotes are ${missing}`);
+  assert(typeof out === "string" && out.includes("custom"), `falls back to the "custom" tag when tags are ${missing}`);
+}
+
 console.log("\n— buildSpecData length-factor fabric math —");
 const design = {
   designId: "UR-TEST-2", generatedAt: "2026-01-01T00:00:00.000Z",
