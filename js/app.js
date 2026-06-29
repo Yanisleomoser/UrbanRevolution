@@ -1442,6 +1442,22 @@
     return key ? t(key) : null;
   }
 
+  // Per-material fabric optics, in plain observable terms (weave · drape ·
+  // surface · sheen) the image model can actually render. Physically grounded:
+  // silk = low roughness → sharp specular sheen + fluid drape; wool/fleece =
+  // high roughness + nap → matte, no highlight; denim = stiff twill; linen =
+  // crisp slubby weave. Describes the FABRIC the user picked — never the design
+  // (the user owns the design; see CLAUDE.md "AI's role").
+  const FABRIC_DESCRIPTORS = {
+    cotton: "matte plain-weave cotton, soft diffuse surface, easy medium drape",
+    linen: "crisp linen weave with subtle slubs, matte, structured drape, natural creasing",
+    denim: "dense indigo twill denim, stiff heavy drape, slight nap, subtle fade at seams",
+    wool: "matte napped wool, soft fuzzy surface, no sheen, heavy structured drape",
+    fleece: "dense napped fleece pile, fully matte, soft thick surface, gentle drape",
+    silk: "smooth lustrous silk, sharp specular sheen, fluid liquid drape, fine weave",
+    polyester: "tight technical weave, faint even synthetic sheen, smooth medium drape",
+  };
+
   function buildVtoPrompt(design) {
     const parts = [];
     if (design.name) parts.push(design.name);
@@ -1452,6 +1468,11 @@
     const material = S.get("currentMaterial");
     const color = S.get("currentColor");
     parts.push(`${type} in ${color} (${material})`);
+    // Fabric optics for the chosen material so the render reads as that cloth
+    // (sheen/drape/weave), not a generic surface. Appended last so the 990-char
+    // cap trims it before the user's own words if a prompt is very long.
+    const fabric = FABRIC_DESCRIPTORS[material];
+    if (fabric) parts.push(`Fabric: ${fabric}`);
     // Both /api/try-on and /api/preview-design reject a designPrompt over
     // 1000 chars (400). A detailed prompt + a verbose AI description can
     // exceed that, so cap the joined string with a small safety margin —
