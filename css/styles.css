@@ -6501,6 +6501,62 @@ html.fx .lp-loop-step.is-active {
 }
 .lp-stats-sources a { color: var(--text-dim); }
 
+/* ── #facts · <1 %-Proportionsbalken ──────────────────────────────
+   Macht die abstrakte Zahl sichtbar: der Verlauf-Splitter ist das, was
+   recycelt wird (<1 %), die Spur ist die >99 %, die verloren gehen. Default =
+   Endzustand → ohne JS und unter prefers-reduced-motion sofort gefüllt; nur
+   html.fx startet bei 0 und animiert die Breite beim Reveal (initCounters). */
+.lp-stat-bar {
+    position: relative;
+    margin-top: 16px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);                 /* die >99 %, die verloren gehen */
+    overflow: hidden;
+}
+.lp-stat-bar-fill {
+    display: block;
+    height: 100%;
+    width: max(3px, 1%);                        /* <1 % — Mindestbreite, damit der Splitter nie verschwindet */
+    border-radius: 999px;
+    background: var(--gradient);
+}
+html.fx .lp-stat-bar-fill { transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1); }
+html.fx .lp-stat-bar:not(.is-filled) .lp-stat-bar-fill { width: 0; }
+
+/* ── #facts · Live-Abfall-Anzeige ─────────────────────────────────
+   Die „1 Lkw-Ladung pro Sekunde", live. Von ambient-ticker.js getrieben
+   ([data-ticker-kg]); per html.ticker-on erst sichtbar, wenn der Ticker
+   mountet → ohne JS abwesend (Progressive Enhancement). */
+.lp-stat-live { display: none; }
+html.ticker-on .lp-stat-live {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 9px;
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+}
+.lp-stat-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    align-self: center;
+}
+html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infinite; }
+.lp-stat-live-label {
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.lp-stat-live-kg { color: var(--text); font-variant-numeric: tabular-nums; }
+.lp-stat-live-kg .tnum { font-weight: 600; }
+.lp-stat-live-cap { flex-basis: 100%; color: var(--text-muted); }
+@keyframes lp-stat-live-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
 /* ── KI, richtig eingesetzt (AI, done right) ── */
 .lp-aidr { max-width: 1100px; margin: 0 auto; }
 .lp-aidr-title {

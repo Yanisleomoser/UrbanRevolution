@@ -348,10 +348,25 @@
             <div class="lp-stat">
                 <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
                 <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                <!-- Macht die Zahl physisch: der Verlauf-Splitter ist das, was recycelt wird;
+                     die blasse Spur ist die >99 %, die verloren gehen. Default = Endzustand
+                     (no-JS / reduced-motion zeigen ihn gefüllt); html.fx animiert auf Reveal. -->
+                <div class="lp-stat-bar" role="img" data-i18n-aria-label="landing.stat1_bar_aria" aria-label="Weniger als 1 Prozent der Kleidung wird zu neuer Kleidung recycelt — über 99 Prozent geht verloren.">
+                    <span class="lp-stat-bar-fill"></span>
+                </div>
             </div>
             <div class="lp-stat">
                 <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
                 <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                <!-- Die Lkw-Ladung „jede Sekunde", live: von ambient-ticker.js getrieben
+                     ([data-ticker-kg], +2'918 kg/s). Erst sichtbar, wenn der Ticker mountet
+                     (html.ticker-on) → ohne JS abwesend. aria-hidden: Aussage steht im Label. -->
+                <p class="lp-stat-live" aria-hidden="true">
+                    <span class="lp-stat-live-dot" aria-hidden="true"></span>
+                    <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
+                    <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
+                    <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
+                </p>
             </div>
             <div class="lp-stat">
                 <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>

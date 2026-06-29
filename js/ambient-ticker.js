@@ -89,7 +89,12 @@
         document.querySelectorAll("[data-ticker-kg]").forEach((e) => { e.textContent = kg; });
     }
 
-    function start() { buildSlots(); tick(); setInterval(tick, 1000); }
+    function start() {
+        // Markiert: Ticker läuft → CSS blendet die eingebettete Live-Anzeige
+        // (.lp-stat-live) ein. Ohne JS bleibt sie verborgen (Progressive Enhancement).
+        document.documentElement.classList.add("ticker-on");
+        buildSlots(); tick(); setInterval(tick, 1000);
+    }
 
     if (document.body) start();
     else document.addEventListener("DOMContentLoaded", start);
