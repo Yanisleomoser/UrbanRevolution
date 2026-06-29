@@ -1534,6 +1534,14 @@
     if (actions) actions.hidden = true;
     if (loading) loading.hidden = false;
     if (spinner) spinner.style.display = "";
+    // Leave the error state behind on a retry: restore the loading look and the
+    // polite live region (an in-progress status, not an alert).
+    if (loading) loading.classList.remove("has-error");
+    const status = document.getElementById("vto-status");
+    if (status) {
+      status.setAttribute("role", "status");
+      status.setAttribute("aria-live", "polite");
+    }
   }
 
   function setVtoStatus(text) {
@@ -1542,10 +1550,20 @@
   }
 
   function setVtoError(text) {
+    // Make the failure read as a final state, not a stalled loader: the spinner
+    // is removed and .has-error restyles the panel (full-contrast message, no
+    // spinner gap) so sighted users don't mistake it for "still generating".
+    // Announce assertively (role=alert) so a screen reader interrupts with the
+    // error, mirroring the showToast error pattern. Set the role BEFORE the
+    // text so AT registers the live region as assertive when the text lands.
+    const loading = document.querySelector(".vto-loading");
+    const status = document.getElementById("vto-status");
+    if (loading) loading.classList.add("has-error");
+    if (status) {
+      status.setAttribute("role", "alert");
+      status.setAttribute("aria-live", "assertive");
+    }
     setVtoStatus(text);
-    // Stop the spinner so the user sees the error as a final state, not
-    // a still-loading impression. Loading container stays visible so the
-    // error text is positioned where the user already looked.
     const spinner = document.querySelector(".vto-spinner");
     if (spinner) spinner.style.display = "none";
   }

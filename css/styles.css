@@ -2601,6 +2601,23 @@ html[lang="en"] [data-l="de"] { display: none; }
     padding: 48px 24px;
 }
 
+/* Error state (set by setVtoError): the spinner is gone, so make the message
+   read as a final, legible notice — full-contrast text in a subtly bordered
+   panel — instead of a faint placeholder that looks like it is still loading.
+   Brand-safe: no red and no --accent-warm (reserved for #your-style); only
+   the existing neutral tokens. */
+.vto-loading.has-error {
+    gap: 8px;
+    padding: 28px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.025);
+}
+.vto-loading.has-error #vto-status {
+    color: var(--text);
+    font-weight: 500;
+}
+
 .vto-spinner {
     width: 56px;
     height: 56px;
