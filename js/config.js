@@ -154,6 +154,23 @@ const CONFIG = (() => {
         return str;
     }
 
+    // Guard for image URLs returned by the upstream render API (Replicate, via
+    // our /api/try-on + /api/preview-design edge proxies). That URL is the only
+    // externally-sourced value that reaches img.src / fetch() / window.open(),
+    // so if the upstream response were ever compromised, a non-HTTPS URL
+    // (javascript:, data:, blob:, http:) must never be used. Accept only a
+    // well-formed absolute https:// URL; everything else is rejected so the
+    // caller surfaces a neutral error. Boolean guard (not a thrower): a bad
+    // upstream URL is a handled runtime state, not a programming error.
+    function isSafeImageUrl(url) {
+        if (typeof url !== 'string' || url.length === 0) return false;
+        try {
+            return new URL(url).protocol === 'https:';
+        } catch (_e) {
+            return false;
+        }
+    }
+
     // Map an Edge-Function error `code` to its i18n message key, or null when
     // the code is unknown (caller then shows a generic raw-reason fallback).
     function errorMessageKey(code) {
@@ -179,6 +196,7 @@ const CONFIG = (() => {
         validateColor,
         validateLength,
         validatePrint,
+        isSafeImageUrl,
         errorMessageKey
     };
 })();
