@@ -6501,28 +6501,106 @@ html.fx .lp-loop-step.is-active {
 }
 .lp-stats-sources a { color: var(--text-dim); }
 
-/* ── #facts · <1 %-Proportionsbalken ──────────────────────────────
-   Macht die abstrakte Zahl sichtbar: der Verlauf-Splitter ist das, was
-   recycelt wird (<1 %), die Spur ist die >99 %, die verloren gehen. Default =
-   Endzustand → ohne JS und unter prefers-reduced-motion sofort gefüllt; nur
-   html.fx startet bei 0 und animiert die Breite beim Reveal (initCounters). */
-.lp-stat-bar {
+/* ── #facts · interaktive Daten-Instrumente ───────────────────────
+   Jede Zahl wird ein Instrument statt einer Tapete: 1-von-100-Matrix,
+   Live-Aufschüttung, Radial-Gauge. Gemeinsame Instrument-Höhe, damit die
+   Zahlen darunter über die Spalten fluchten. Default = Ruhezustand sichtbar
+   (no-JS / prefers-reduced-motion); nur html.fx animiert; Pointer-Spotlight
+   nur bei (pointer: fine). Instrumente sind aria-hidden — Aussage steht in
+   Zahl + Label. Treiber: js/facts-instruments.js + ambient-ticker.js. */
+.fx-matrix, .fx-acc, .fx-gauge-wrap { margin-bottom: 24px; }
+
+/* 1 · 1-von-100-Matrix — genau ein Feld leuchtet (der <1 %). */
+.fx-matrix {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    width: 148px;
+    --mx: 50%;
+    --my: 50%;
     position: relative;
-    margin-top: 16px;
-    height: 6px;
-    border-radius: 999px;
-    background: var(--border);                 /* die >99 %, die verloren gehen */
-    overflow: hidden;
 }
-.lp-stat-bar-fill {
-    display: block;
-    height: 100%;
-    width: max(3px, 1%);                        /* <1 % — Mindestbreite, damit der Splitter nie verschwindet */
-    border-radius: 999px;
+.fx-matrix:empty { display: none; }            /* ohne JS unsichtbar (Zahl+Label tragen die Aussage) */
+.fx-cell {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: #16273a;
+    border: 1px solid var(--border);
+}
+.fx-cell.is-on {
     background: var(--gradient);
+    border-color: transparent;
+    box-shadow: 0 0 10px 1px rgba(100, 214, 196, 0.5);
 }
-html.fx .lp-stat-bar-fill { transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1); }
-html.fx .lp-stat-bar:not(.is-filled) .lp-stat-bar-fill { width: 0; }
+@media (pointer: fine) {
+    .fx-matrix::after {
+        content: "";
+        position: absolute;
+        inset: -6px;
+        border-radius: 8px;
+        pointer-events: none;
+        background: radial-gradient(90px 90px at var(--mx) var(--my), rgba(100, 214, 196, 0.16), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+    .fx-matrix:hover::after { opacity: 1; }
+}
+html.fx .fx-matrix .fx-cell { opacity: 0; transform: scale(0.55); }
+html.fx .fx-matrix.is-in .fx-cell {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    transition-delay: var(--d, 0ms);
+}
+html.fx .fx-matrix.is-in .fx-cell.is-on { animation: fx-cell-pulse 2.6s ease-in-out 1.2s infinite; }
+@keyframes fx-cell-pulse {
+    0%, 100% { box-shadow: 0 0 8px 0 rgba(100, 214, 196, 0.4); }
+    50% { box-shadow: 0 0 16px 3px rgba(100, 214, 196, 0.7); }
+}
+
+/* 2 · Live-Aufschüttung — der Stapel wächst, die kg-Zahl tickt real hoch. */
+.fx-acc {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 148px;
+    width: 168px;
+}
+.fx-acc-bar {
+    flex: 1;
+    min-height: 5px;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, var(--accent-3), var(--accent-2));
+    opacity: 0.5;
+    transform-origin: bottom;
+}
+.fx-acc-bar:last-child { opacity: 1; }
+html.fx .fx-acc-bar { transform: scaleY(0); }
+html.fx .fx-acc.is-in .fx-acc-bar {
+    transform: scaleY(1);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--d, 0ms);
+}
+html.fx .fx-acc.is-in .fx-acc-bar:last-child { animation: fx-bar-pulse 1s ease-out 1.1s infinite; }
+@keyframes fx-bar-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(100, 214, 196, 0); }
+    18% { box-shadow: 0 -2px 12px rgba(100, 214, 196, 0.6); }
+}
+
+/* 3 · Radial-Gauge — 8 % des Rings = Anteil der Mode an globalem CO₂. */
+.fx-gauge-wrap { display: flex; align-items: center; height: 148px; }
+.fx-gauge { width: 132px; height: 132px; }
+.fx-gauge-track { stroke: var(--border); }
+.fx-gauge-arc {
+    stroke: url(#fxGaugeGrad);
+    stroke-dasharray: 26 327;                   /* 8 % von U = 2π·52 ≈ 327 */
+    stroke-dashoffset: 0;
+}
+html.fx .fx-gauge-arc { stroke-dashoffset: 26; }
+html.fx .fx-gauge.is-in .fx-gauge-arc {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
 
 /* ── #facts · Live-Abfall-Anzeige ─────────────────────────────────
    Die „1 Lkw-Ladung pro Sekunde", live. Von ambient-ticker.js getrieben
