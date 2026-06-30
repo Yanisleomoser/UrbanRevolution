@@ -110,9 +110,13 @@ console.log("\n— mutateDna (deterministic concept-studio variants, base untouc
 console.log("\n— phaseStepper (honest orientation: where you are, never a % gauge) —");
 {
   const L = (k) => k; // identity label so we can assert on the i18n keys
+  // Match by LITERAL string (no RegExp built from the key) so the test never
+  // depends on regex-escaping its input — correct for any key, and CodeQL-clean.
   const stateOf = (svg, key) => {
-    const m = svg.match(new RegExp('de-step is-(done|cur|todo)"><span class="de-step-dot"></span>' + key.replace(/\./g, "\\.")));
-    return m ? m[1] : null;
+    for (const st of ["done", "cur", "todo"]) {
+      if (svg.includes(`de-step is-${st}"><span class="de-step-dot"></span>${key}</span>`)) return st;
+    }
+    return null;
   };
   const BEATS = ["engine.phase_feeling", "engine.phase_form", "engine.phase_fabric", "engine.phase_color", "engine.phase_details"];
   const sA = Flow.phaseStepper("A", L), sC = Flow.phaseStepper("C", L), sF = Flow.phaseStepper("F", L);
