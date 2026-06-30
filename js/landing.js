@@ -297,34 +297,34 @@
     // ── Kleidungs-Silhouetten (64×64-Raster, wie die Typ-Icons im Studio).
     //    Tap/Klick: die Punkte fliegen auf die Kontur und verbinden sich
     //    der Reihe nach zum Stück; nach kurzem Halten lösen sie sich wieder.
-    //    Kontroll-Punkte beschreiben den Charakter (Halsausschnitt, Schulter-
-    //    neigung, Ärmel-Taper, A-Linie …); Catmull-Rom verdichtet sie zu weichen
-    //    Garment-Kurven — keine kantigen Polygone mehr.
+    //    100er-Raster (Mitte 50,50). Kontroll-Punkte mit echten Schnitt-
+    //    Proportionen (Schulterbreite, Ärmellänge/-winkel, Saum, A-Linie,
+    //    Bund/Schritt …); Catmull-Rom verdichtet sie zu einer weichen Naht.
     const GARMENTS = [
-      { key: "tshirt", chains: [{ closed: true, pts: [[26, 15], [21, 12], [8, 18], [6, 27], [20, 28], [21, 55], [43, 55], [44, 28], [58, 27], [56, 18], [43, 12], [38, 15], [32, 20]] }] },
+      { key: "tshirt", chains: [{ closed: true, pts: [[42, 24], [34, 20], [19, 26], [15, 41], [29, 39], [32, 41], [33, 78], [67, 78], [68, 41], [71, 39], [85, 41], [81, 26], [66, 20], [58, 24], [50, 29]] }] },
       {
         key: "hoodie",
         chains: [
-          { closed: true, pts: [[24, 18], [19, 13], [15, 6], [32, 4], [49, 6], [45, 13], [40, 18], [47, 17], [60, 24], [61, 35], [47, 35], [46, 57], [18, 57], [18, 35], [3, 35], [4, 24], [17, 17]] },
-          { closed: false, pts: [[24, 18], [32, 13], [40, 18]] },
+          { closed: true, pts: [[40, 26], [33, 24], [26, 12], [40, 5], [50, 4], [60, 5], [74, 12], [67, 24], [60, 26], [64, 28], [82, 34], [84, 62], [74, 62], [70, 46], [70, 82], [30, 82], [30, 46], [26, 62], [16, 62], [18, 34], [36, 28]] },
+          { closed: false, pts: [[40, 26], [50, 20], [60, 26]] },
         ],
       },
-      { key: "pants", chains: [{ closed: true, pts: [[21, 9], [43, 9], [45, 30], [44, 57], [36, 57], [32, 42], [28, 57], [20, 57], [19, 30]] }] },
+      { key: "pants", chains: [{ closed: true, pts: [[30, 14], [70, 14], [70, 22], [64, 52], [60, 86], [52, 86], [51, 54], [50, 40], [49, 54], [48, 86], [40, 86], [36, 52], [30, 22]] }] },
       {
         key: "jacket",
         chains: [
-          { closed: true, pts: [[28, 13], [22, 10], [8, 16], [6, 46], [16, 47], [19, 30], [20, 58], [32, 58], [44, 58], [45, 30], [48, 47], [58, 46], [56, 16], [42, 10], [36, 13], [32, 20]] },
-          { closed: false, pts: [[32, 20], [32, 58]] },
+          { closed: true, pts: [[43, 20], [35, 16], [20, 20], [13, 52], [23, 54], [28, 32], [30, 80], [50, 82], [70, 80], [72, 32], [77, 54], [87, 52], [80, 20], [65, 16], [57, 20], [50, 28]] },
+          { closed: false, pts: [[50, 28], [50, 81]] },
         ],
       },
-      { key: "dress", chains: [{ closed: true, pts: [[27, 13], [23, 10], [20, 15], [18, 26], [23, 33], [11, 57], [14, 59], [50, 59], [53, 57], [41, 33], [46, 26], [44, 15], [41, 10], [37, 13], [32, 18]] }] },
+      { key: "dress", chains: [{ closed: true, pts: [[43, 22], [36, 18], [31, 24], [29, 38], [34, 48], [20, 84], [24, 86], [76, 86], [80, 84], [66, 48], [71, 38], [69, 24], [64, 18], [57, 22], [50, 28]] }] },
       {
         key: "shirt",
         chains: [
-          { closed: true, pts: [[27, 15], [22, 12], [9, 18], [7, 28], [21, 28], [22, 55], [42, 55], [43, 28], [57, 28], [55, 18], [42, 12], [37, 15], [34, 14], [32, 19], [30, 14]] },
-          { closed: false, pts: [[32, 19], [32, 55]] },
+          { closed: true, pts: [[44, 22], [36, 18], [21, 24], [16, 40], [30, 38], [33, 40], [34, 80], [66, 80], [67, 40], [70, 38], [84, 40], [79, 24], [64, 18], [56, 22], [52, 18], [50, 26], [48, 18]] },
+          { closed: false, pts: [[50, 26], [50, 80]] },
         ],
-        buttons: [[32, 30], [32, 40], [32, 49]],
+        buttons: [[50, 36], [50, 48], [50, 60], [50, 72]],
       },
     ];
     let mode = "drift";          // "drift" | "form"
@@ -386,10 +386,10 @@
       return L;
     }
 
-    // Polylinie gleichmäßig in n Punkte zerlegen (arc-length, auf der Kurve).
-    function resample(pts, closed, n) {
-      const dense = densify(pts, closed);
-      const P = closed ? dense.concat([dense[0]]) : dense;
+    // Bereits-dichte (Screen-)Polylinie gleichmäßig in n Punkte zerlegen
+    // (arc-length) — für die Knoten-Ziele auf der weichen Naht.
+    function resamplePoly(poly, closed, n) {
+      const P = closed ? poly.concat([poly[0]]) : poly;
       const segs = [];
       let total = 0;
       for (let i = 0; i < P.length - 1; i++) {
@@ -472,49 +472,53 @@
       const { cx, cy, s } = placeGarment(tapX, tapY);
       formCenter = { x: cx, y: cy, s };
       formLabel = window.I18N ? window.I18N.t("type." + g.key) : g.key;
-      const map = (gx, gy) => [cx + (gx - 32) * (s / 64), cy + (gy - 32) * (s / 64)];
+      const map = (gx, gy) => [cx + (gx - 50) * (s / 100), cy + (gy - 50) * (s / 100)];
 
-      // Punkte-Budget proportional zur (skaleninvarianten) Konturlänge verteilen.
-      const budget = Math.min(particles.length - 4, 96);
+      // Stiche/Knoten proportional zur (skaleninvarianten) Konturlänge verteilen.
+      const budget = Math.min(particles.length - 4, 110);
       const lens = g.chains.map((c) => chainLength(c.pts, c.closed));
       const totalLen = lens.reduce((a, b) => a + b, 0) || 1;
 
       const free = particles.slice();
       let acc = 0;
       formChains = g.chains.map((chain, ci) => {
-        const n = Math.max(chain.closed ? 14 : 5, Math.round(budget * (lens[ci] / totalLen)));
-        const targets = resample(chain.pts, chain.closed, n).map(([gx, gy]) => map(gx, gy));
+        // Dichte, WEICHE Kontur in Screen-Koordinaten = die Naht-Bahn selbst
+        // (entkoppelt von der Partikelzahl → glatt statt polygonal).
+        const smooth = densify(chain.pts, chain.closed).map(([gx, gy]) => map(gx, gy));
+        const scum = [0];
+        for (let i = 1; i < smooth.length; i++) scum.push(scum[i - 1] + Math.hypot(smooth[i][0] - smooth[i - 1][0], smooth[i][1] - smooth[i - 1][1]));
+        let slen = scum[scum.length - 1] || 0;
+        if (chain.closed && smooth.length > 1) slen += Math.hypot(smooth[0][0] - smooth[smooth.length - 1][0], smooth[0][1] - smooth[smooth.length - 1][1]);
+        const startDist = acc;
+        acc += slen;
+
+        // Stiche: gleichmäßig auf der Naht; jeweils nächstes freies Partikel.
+        const n = Math.max(chain.closed ? 18 : 6, Math.round(budget * (lens[ci] / totalLen)));
+        const targets = resamplePoly(smooth, chain.closed, n);
+        const step = slen / Math.max(1, targets.length);
         const parts = [];
-        for (const [tx, ty] of targets) {
+        for (let k = 0; k < targets.length; k++) {
           if (!free.length) break;
-          // Greedy: nächstes freies Partikel — kurze, ruhige Flugwege.
+          const tx = targets[k][0], ty = targets[k][1];
           let best = 0, bestD = Infinity;
           for (let i = 0; i < free.length; i++) {
             const d = (free[i].x - tx) ** 2 + (free[i].y - ty) ** 2;
             if (d < bestD) { bestD = d; best = i; }
           }
           const p = free.splice(best, 1)[0];
-          p.tx = tx; p.ty = ty; p.forming = true;
+          p.tx = tx; p.ty = ty; p.forming = true; p.seamDist = startDist + k * step;
           parts.push(p);
         }
-        // Kumulative Bogenlänge entlang der Ziel-Kontur (Nadel + Knoten-Pops).
-        const cum = [0];
-        for (let i = 1; i < parts.length; i++) cum.push(cum[i - 1] + Math.hypot(parts[i].tx - parts[i - 1].tx, parts[i].ty - parts[i - 1].ty));
-        let len = cum[cum.length - 1] || 0;
-        if (chain.closed && parts.length > 1) len += Math.hypot(parts[0].tx - parts[parts.length - 1].tx, parts[0].ty - parts[parts.length - 1].ty);
-        const startDist = acc;
-        acc += len;
-        parts.forEach((p, i) => { p.seamDist = startDist + cum[i]; });
-        // Ozean-Verlauf entlang der Bounding-Box (einmal cachen, nie pro Frame).
+        // Ozean-Verlauf entlang der Konturbox (einmal cachen, nie pro Frame).
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        for (const p of parts) { minX = Math.min(minX, p.tx); maxX = Math.max(maxX, p.tx); minY = Math.min(minY, p.ty); maxY = Math.max(maxY, p.ty); }
+        for (const pt of smooth) { minX = Math.min(minX, pt[0]); maxX = Math.max(maxX, pt[0]); minY = Math.min(minY, pt[1]); maxY = Math.max(maxY, pt[1]); }
         const grad = (maxX - minX) >= (maxY - minY)
           ? ctx.createLinearGradient(minX, 0, maxX, 0)
           : ctx.createLinearGradient(0, minY, 0, maxY);
         grad.addColorStop(0, "#2779a8");
         grad.addColorStop(0.5, "#2a9d8f");
         grad.addColorStop(1, "#64d6c4");
-        return { closed: chain.closed, parts, cum, len, startDist, grad };
+        return { closed: chain.closed, smooth, scum, slen, startDist, grad, parts };
       });
       free.forEach((p) => { p.forming = false; });
       totalDist = acc || 1;
@@ -523,28 +527,31 @@
       formStart = performance.now();
     }
 
+    // Punkt auf der weichen Kontur einer Kette bei lokaler Bogenlänge.
+    function chainPtAt(chain, local) {
+      const sm = chain.smooth, sc = chain.scum;
+      const L = Math.max(0, Math.min(local, chain.slen));
+      for (let i = 1; i < sm.length; i++) {
+        if (sc[i] >= L) {
+          const t = (L - sc[i - 1]) / (sc[i] - sc[i - 1] || 1);
+          return [sm[i - 1][0] + (sm[i][0] - sm[i - 1][0]) * t, sm[i - 1][1] + (sm[i][1] - sm[i - 1][1]) * t];
+        }
+      }
+      const last = sm[sm.length - 1], base = sc[sc.length - 1];
+      const end = chain.closed ? sm[0] : last;
+      const t = clamp01((L - base) / (chain.slen - base || 1));
+      return [last[0] + (end[0] - last[0]) * t, last[1] + (end[1] - last[1]) * t];
+    }
+
     // Punkt in Screen-Koordinaten bei Bogenlänge d entlang der gesamten Naht.
     function pointAtDist(d) {
-      for (const chain of formChains) {
-        const parts = chain.parts;
-        if (!parts.length) continue;
-        if (d > chain.startDist + chain.len && chain !== formChains[formChains.length - 1]) continue;
-        const local = d - chain.startDist;
-        if (parts.length < 2) return { x: parts[0].tx, y: parts[0].ty };
-        for (let i = 1; i < parts.length; i++) {
-          if (chain.cum[i] >= local) {
-            const t = (local - chain.cum[i - 1]) / (chain.cum[i] - chain.cum[i - 1] || 1);
-            return { x: parts[i - 1].tx + (parts[i].tx - parts[i - 1].tx) * t, y: parts[i - 1].ty + (parts[i].ty - parts[i - 1].ty) * t };
-          }
-        }
-        if (chain.closed) {
-          const base = chain.cum[parts.length - 1];
-          const t = clamp01((local - base) / (chain.len - base || 1));
-          return { x: parts[parts.length - 1].tx + (parts[0].tx - parts[parts.length - 1].tx) * t, y: parts[parts.length - 1].ty + (parts[0].ty - parts[parts.length - 1].ty) * t };
-        }
-        return { x: parts[parts.length - 1].tx, y: parts[parts.length - 1].ty };
+      let chain = null;
+      for (const c of formChains) {
+        if (d <= c.startDist + c.slen || c === formChains[formChains.length - 1]) { chain = c; break; }
       }
-      return null;
+      if (!chain || chain.smooth.length < 2) return null;
+      const p = chainPtAt(chain, d - chain.startDist);
+      return { x: p[0], y: p[1] };
     }
 
     function releaseForm() {
@@ -675,27 +682,29 @@
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         for (const chain of formChains) {
-          const parts = chain.parts;
-          if (parts.length < 2) continue;
-          const localDist = Math.max(0, Math.min(needleDist - chain.startDist, chain.len));
+          const sm = chain.smooth, sc = chain.scum;
+          if (sm.length < 2) continue;
+          const localDist = Math.max(0, Math.min(needleDist - chain.startDist, chain.slen));
           if (localDist <= 0) continue;
           const path = new Path2D();
-          path.moveTo(parts[0].tx, parts[0].ty);
-          for (let i = 1; i < parts.length; i++) {
-            if (chain.cum[i] <= localDist) {
-              path.lineTo(parts[i].tx, parts[i].ty);
+          path.moveTo(sm[0][0], sm[0][1]);
+          let cut = false;
+          for (let i = 1; i < sm.length; i++) {
+            if (sc[i] <= localDist) {
+              path.lineTo(sm[i][0], sm[i][1]);
             } else {
-              const t = (localDist - chain.cum[i - 1]) / (chain.cum[i] - chain.cum[i - 1] || 1);
-              path.lineTo(parts[i - 1].tx + (parts[i].tx - parts[i - 1].tx) * t, parts[i - 1].ty + (parts[i].ty - parts[i - 1].ty) * t);
+              const t = (localDist - sc[i - 1]) / (sc[i] - sc[i - 1] || 1);
+              path.lineTo(sm[i - 1][0] + (sm[i][0] - sm[i - 1][0]) * t, sm[i - 1][1] + (sm[i][1] - sm[i - 1][1]) * t);
+              cut = true;
               break;
             }
           }
-          if (chain.closed) {
-            const base = chain.cum[parts.length - 1];
-            if (localDist >= base) {
-              const t = clamp01((localDist - base) / (chain.len - base || 1));
-              path.lineTo(parts[parts.length - 1].tx + (parts[0].tx - parts[parts.length - 1].tx) * t, parts[parts.length - 1].ty + (parts[0].ty - parts[parts.length - 1].ty) * t);
-            }
+          // geschlossene Kontur: Schluss-Segment zurück zum Start
+          if (!cut && chain.closed) {
+            const base = sc[sc.length - 1];
+            const t = clamp01((localDist - base) / (chain.slen - base || 1));
+            const last = sm[sm.length - 1];
+            path.lineTo(last[0] + (sm[0][0] - last[0]) * t, last[1] + (sm[0][1] - last[1]) * t);
           }
           ctx.strokeStyle = chain.grad;
           ctx.lineWidth = 7;
@@ -718,16 +727,18 @@
         }
       }
 
-      // 3) Partikel-Knoten — beim Nadeldurchgang kurz aufleuchten (Naht-Pop)
+      // 3) Stiche/Knoten — gleichmäßig klein auf der Naht; beim Nadeldurchgang
+      //    kurz aufleuchten (Naht-Pop). Die glatte Naht führt, die Punkte sind
+      //    nur feine Stiche darauf.
       for (const p of particles) {
-        let r = p.size;
-        let a = p.forming ? 0.95 : (mode === "form" ? 0.28 : 0.7);
+        let r = p.forming ? 1.7 : p.size;
+        let a = p.forming ? 0.9 : (mode === "form" ? 0.12 : 0.7);
         if (mode === "form" && p.forming && needleDist >= 0) {
           const age = needleDist - p.seamDist;
           if (age >= 0 && age <= POP_DIST) {
             const k = 1 - age / POP_DIST;
-            r = p.size * (1 + 1.2 * k);
-            a = 0.95;
+            r = 1.7 * (1 + 1.5 * k);
+            a = 1;
           }
         }
         ctx.globalAlpha = a;
