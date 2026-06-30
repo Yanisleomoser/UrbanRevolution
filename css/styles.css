@@ -5075,6 +5075,26 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-preview-col { position: relative; }
 .de-ask-col { display: flex; flex-direction: column; gap: var(--space-5); }
 
+/* Honest orientation stepper — named journey phases, the current one lit and
+   earlier ones marked done. NO 0–100% gauge / closing ring: the journey is
+   adaptive and always-viable, so it only shows WHERE you are; readiness lives
+   on the "Fertig" button. Mono = the "machine voice" register. */
+.de-stepper { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin: 0; }
+.de-step { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); white-space: nowrap; opacity: 0.5; transition: opacity .3s var(--ease-out), color .3s var(--ease-out); }
+.de-step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; transition: box-shadow .3s var(--ease-out); }
+.de-step.is-done { opacity: 0.85; color: var(--accent-3); }
+.de-step.is-cur { opacity: 1; color: var(--text); }
+.de-step.is-cur .de-step-dot { background: var(--accent-3); box-shadow: 0 0 0 4px rgba(100, 214, 196, 0.18); }
+.de-step.is-todo { opacity: 0.38; }
+.de-step-bar { flex: 1; min-width: 10px; max-width: 34px; height: 2px; border-radius: 2px; background: var(--border); }
+.de-step-bar.is-done { background: var(--gradient); }
+@media (prefers-reduced-motion: reduce) { .de-step, .de-step-dot { transition: none; } }
+@media (max-width: 560px) {
+    .de-stepper { gap: 4px; }
+    .de-step { font-size: 9px; gap: 4px; }
+    .de-step-bar { min-width: 6px; max-width: 16px; }
+}
+
 /* Vorschau dominant. Höhen in svh + JS-gepinntem --svh (wie Hero/Story), damit
    nichts springt, wenn die iOS-Adressleiste ein-/ausfährt. */
 /* Cinematic studio stage: a soft key light from the top, a darkened floor that
