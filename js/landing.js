@@ -287,7 +287,23 @@
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const COLORS = ["#2779a8", "#2a9d8f", "#64d6c4"];
-    const LINK_DIST = 110;
+    const TAU = Math.PI * 2;
+    const LINK_DIST = 84;
+    const LINK_DIST_SQ = LINK_DIST * LINK_DIST;
+    const NB = 5;                            // Alpha-Stufen der Web-Fäden (Distanz × Maske)
+    const BUCKET_ALPHA = [0.025, 0.045, 0.07, 0.095, 0.115];
+    const LINK_STROKE = BUCKET_ALPHA.map((a) => `rgba(100, 214, 196, ${a})`);
+    const DOT_ALPHA = 0.5;                   // Grund-Deckkraft der Web-Punkte
+    const FORM_DIM = 0.45;                   // Web tritt beim Formen zurück (nicht aus)
+    const MASK_CELL = 22, FEATHER = 84;      // Headline-Schutzmaske: Auflösung + weiche Kante
+    let mobile = false;
+    // Spatial-Hash-Gitter für O(n)-Nachbarsuche (Arrays werden wiederverwendet).
+    let gCols = 1, gRows = 1, cellHead = null, cellNext = null;
+    let buckets = null, bucketCap = 0, bucketLen = null;
+    // Headline-Maske als vorberechnetes Low-Res-Feld (O(1)-Lookup).
+    let maskGrid = null, mCols = 1, mRows = 1;
+    // FPS-Wächter — stuft die Felddichte herunter, BEVOR Frames fallen.
+    let emaDt = 16, slowFrames = 0, degradeLvl = 0, linksOn = true;
     let w = 0, h = 0, dpr = 1;
     let particles = [];
     let raf = 0;
@@ -516,18 +532,16 @@
     }
 
     function releaseForm() {
-      // Drift-Parameter aus der aktuellen Position zurückrechnen, damit die
-      // Punkte ohne Sprung weiterkreisen (Umkehrung der Ellipse in step()).
-      const cx = w / 2, cy = h / 2;
+      // Stich-Punkte kehren ins Web zurück: frische, langsame Drift + Phase,
+      // dann übernimmt der torus-Wrap nahtlos (kein Sprung).
       for (const p of particles) {
         if (!p.forming) continue;
         p.forming = false;
         p.placed = false;
         p.build = 0;
-        const ex = (p.x - cx) / 1.25, ey = (p.y - cy) / 0.85;
-        p.angle = Math.atan2(ey, ex);
-        p.baseRadius = Math.max(30, Math.hypot(ex, ey));
-        p.wobble = Math.random() * Math.PI * 2;
+        p.vx = driftVel();
+        p.vy = driftVel();
+        p.phase = Math.random() * TAU;
       }
       formChains = [];
       formButtons = [];
@@ -546,6 +560,8 @@
       formChains = [];
       formButtons = [];
       seed();
+      allocGrid();
+      computeMask();
       if (reduceMotion) {
         // Standbild: Positionen einmalig berechnen, genau einmal zeichnen.
         step(400);
@@ -553,21 +569,30 @@
       }
     }
 
+    const driftVel = () => (0.008 + Math.random() * 0.018) * (Math.random() < 0.5 ? 1 : -1);
+
     function seed() {
-      const count = Math.min(110, Math.max(40, Math.round((w * h) / 16000)));
-      particles = Array.from({ length: count }, () => {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = (0.18 + Math.random() * 0.42) * Math.min(w, h);
+      mobile = Math.min(w, h) <= 480;
+      // Tausende Punkte füllen die ganze Fläche; nach Fläche/Gerät skaliert.
+      const count = mobile
+        ? Math.min(720, Math.max(340, Math.round((w * h) / 1700)))
+        : Math.min(2000, Math.max(500, Math.round((w * h) / 1200)));
+      // Aus jittered grobem Raster säen → gleichmäßige Abdeckung ab Frame 1
+      // (kein „Einschwing"-Ring, keine leeren Ecken).
+      const aspect = Math.max(0.2, w / Math.max(1, h));
+      const cols = Math.max(1, Math.round(Math.sqrt(count * aspect)));
+      const rows = Math.max(1, Math.ceil(count / cols));
+      const cellW = w / cols, cellH = h / rows;
+      particles = Array.from({ length: count }, (_, i) => {
+        const ci = (Math.random() * COLORS.length) | 0;
         return {
-          angle,
-          radius,
-          baseRadius: radius,
-          speed: (0.0006 + Math.random() * 0.0012) * (Math.random() < 0.5 ? 1 : -1),
-          wobble: Math.random() * Math.PI * 2,
-          size: 1.6 + Math.random() * 1.8,
-          color: COLORS[(Math.random() * COLORS.length) | 0],
-          x: 0,
-          y: 0,
+          x: ((i % cols) + Math.random()) * cellW,
+          y: (((i / cols) | 0) + Math.random()) * cellH,
+          vx: driftVel(), vy: driftVel(),
+          phase: Math.random() * TAU,
+          size: (mobile ? 0.7 : 0.8) + Math.random() * (mobile ? 0.6 : 0.9),
+          colorIdx: ci,
+          color: COLORS[ci],
           tx: 0,
           ty: 0,
           forming: false,
@@ -576,6 +601,137 @@
           seamDist: 0,     // Position entlang der Naht
         };
       });
+    }
+
+    // Gitter-/Bucket-/Masken-Arrays (re)allozieren — nur wenn sie wachsen müssen.
+    function allocGrid() {
+      gCols = Math.max(1, ((w / LINK_DIST) | 0) + 1);
+      gRows = Math.max(1, ((h / LINK_DIST) | 0) + 1);
+      const nCells = gCols * gRows;
+      if (!cellHead || cellHead.length < nCells) cellHead = new Int32Array(nCells);
+      if (!cellNext || cellNext.length < particles.length) cellNext = new Int32Array(particles.length);
+      const cap = mobile ? 1600 : 2600; // max Faden-Paare je Bucket
+      if (!buckets || bucketCap < cap) {
+        buckets = Array.from({ length: NB }, () => new Float32Array(cap * 4));
+        bucketCap = cap;
+      }
+      if (!bucketLen) bucketLen = new Int32Array(NB);
+    }
+
+    // Headline-Schutzmaske: dünnt das Web rund um die SICHTBARE Schrift auf ~0
+    // (Low-Res-Feld, 0 = aus … 1 = volles Web). Lesbarkeit per Konstruktion.
+    function computeMask() {
+      const cr = canvas.getBoundingClientRect();
+      const heroEl = canvas.closest(".lp-hero");
+      const boxes = [];
+      const add = (rc, pad) => { if (rc && rc.width > 1 && rc.height > 1) boxes.push([rc.left - cr.left - pad, rc.top - cr.top - pad, rc.right - cr.left + pad, rc.bottom - cr.top + pad]); };
+      const tight = (el, pad) => { try { const rg = document.createRange(); rg.selectNodeContents(el); add(rg.getBoundingClientRect(), pad); } catch (_) { add(el.getBoundingClientRect(), pad); } };
+      const PAD = 0.5 * LINK_DIST;
+      if (heroEl) {
+        heroEl.querySelectorAll(".lp-hero-eyebrow, .lp-hero-line, .lp-hero-sub, .lp-hero-hint").forEach((el) => tight(el, PAD));
+        const cta = heroEl.querySelector(".lp-hero-ctas"); if (cta) add(cta.getBoundingClientRect(), PAD);
+        const cue = heroEl.querySelector(".lp-scroll-cue"); if (cue) add(cue.getBoundingClientRect(), PAD * 0.4);
+      }
+      const nav = document.querySelector(".lp-nav"); if (nav) add(nav.getBoundingClientRect(), 8);
+      mCols = Math.max(1, Math.ceil(w / MASK_CELL));
+      mRows = Math.max(1, Math.ceil(h / MASK_CELL));
+      if (!maskGrid || maskGrid.length < mCols * mRows) maskGrid = new Float32Array(mCols * mRows);
+      for (let gy = 0; gy < mRows; gy++) {
+        const py = gy * MASK_CELL + MASK_CELL * 0.5;
+        for (let gx = 0; gx < mCols; gx++) {
+          const px = gx * MASK_CELL + MASK_CELL * 0.5;
+          let best = 1;
+          for (let bi = 0; bi < boxes.length; bi++) {
+            const b = boxes[bi];
+            const ddx = Math.max(b[0] - px, 0, px - b[2]);
+            const ddy = Math.max(b[1] - py, 0, py - b[3]);
+            const d = Math.sqrt(ddx * ddx + ddy * ddy);
+            let m;
+            if (d <= 0) m = 0; else if (d >= FEATHER) m = 1; else { const t = d / FEATHER; m = t * t * (3 - 2 * t); }
+            if (m < best) { best = m; if (best === 0) break; }
+          }
+          maskGrid[gy * mCols + gx] = best;
+        }
+      }
+    }
+    function maskAt(x, y) {
+      let gx = (x / MASK_CELL) | 0, gy = (y / MASK_CELL) | 0;
+      if (gx < 0) gx = 0; else if (gx >= mCols) gx = mCols - 1;
+      if (gy < 0) gy = 0; else if (gy >= mRows) gy = mRows - 1;
+      return maskGrid[gy * mCols + gx];
+    }
+
+    // Einen Faden ggf. in seinen Distanz/Masken-Bucket legen (O(1)).
+    function addLink(ax, ay, b, cap4) {
+      const dx = ax - b.x, dy = ay - b.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 >= LINK_DIST_SQ) return;
+      const eff = (1 - d2 / LINK_DIST_SQ) * maskAt((ax + b.x) * 0.5, (ay + b.y) * 0.5);
+      if (eff < 0.04) return;
+      let bi = (eff * NB) | 0; if (bi >= NB) bi = NB - 1;
+      const len = bucketLen[bi];
+      if (len + 4 > cap4) return;
+      const arr = buckets[bi];
+      arr[len] = ax; arr[len + 1] = ay; arr[len + 2] = b.x; arr[len + 3] = b.y;
+      bucketLen[bi] = len + 4;
+    }
+
+    // Das Ambient-Web zeichnen: O(n)-Gitter, ≤5 gebündelte Faden-Strokes +
+    // 3 gebündelte Punkt-Fills. dimm < 1 lässt das Web beim Formen zurücktreten.
+    function drawField(dimm) {
+      const n = particles.length;
+      cellHead.fill(-1);
+      for (let i = 0; i < n; i++) {
+        const p = particles[i];
+        if (p.forming) continue; // forming-Punkte sind das Stück, nicht das Web
+        let cx = (p.x / LINK_DIST) | 0; if (cx < 0) cx = 0; else if (cx >= gCols) cx = gCols - 1;
+        let cy = (p.y / LINK_DIST) | 0; if (cy < 0) cy = 0; else if (cy >= gRows) cy = gRows - 1;
+        const c = cx + cy * gCols;
+        cellNext[i] = cellHead[c];
+        cellHead[c] = i;
+      }
+      if (linksOn) {
+        for (let b = 0; b < NB; b++) bucketLen[b] = 0;
+        const cap4 = bucketCap * 4;
+        for (let cy = 0; cy < gRows; cy++) {
+          for (let cx = 0; cx < gCols; cx++) {
+            for (let i = cellHead[cx + cy * gCols]; i !== -1; i = cellNext[i]) {
+              const a = particles[i], ax = a.x, ay = a.y;
+              for (let j = cellNext[i]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
+              // nur 4 VORWÄRTS-Nachbarn → jedes Paar genau einmal (Dedup gratis)
+              if (cx + 1 < gCols) for (let j = cellHead[(cx + 1) + cy * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
+              if (cy + 1 < gRows) {
+                if (cx > 0) for (let j = cellHead[(cx - 1) + (cy + 1) * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
+                for (let j = cellHead[cx + (cy + 1) * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
+                if (cx + 1 < gCols) for (let j = cellHead[(cx + 1) + (cy + 1) * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
+              }
+            }
+          }
+        }
+        ctx.lineWidth = mobile ? 0.6 : 0.7;
+        ctx.lineCap = "butt";
+        ctx.globalAlpha = dimm;
+        for (let b = 0; b < NB; b++) {
+          const len = bucketLen[b];
+          if (!len) continue;
+          const arr = buckets[b];
+          const path = new Path2D();
+          for (let k = 0; k < len; k += 4) { path.moveTo(arr[k], arr[k + 1]); path.lineTo(arr[k + 2], arr[k + 3]); }
+          ctx.strokeStyle = LINK_STROKE[b];
+          ctx.stroke(path);
+        }
+      }
+      // Punkte gebündelt (3 Farb-Fills), Headline-Zone ausgespart.
+      const paths = [new Path2D(), new Path2D(), new Path2D()];
+      for (let i = 0; i < n; i++) {
+        const p = particles[i];
+        if (p.forming || maskAt(p.x, p.y) < 0.5) continue;
+        const r = p.size;
+        paths[p.colorIdx].rect(p.x - r, p.y - r, r + r, r + r);
+      }
+      ctx.globalAlpha = DOT_ALPHA * dimm;
+      for (let c = 0; c < 3; c++) { ctx.fillStyle = COLORS[c]; ctx.fill(paths[c]); }
+      ctx.globalAlpha = 1;
     }
 
     // Geteilten Form-Zustand pro Frame berechnen (loop ruft das vor step/frame).
@@ -587,21 +743,23 @@
       fSeamA = fFade * (0.82 + 0.13 * fReveal);
     }
 
-    // Ein Partikel im Drift-Feld bewegen (elliptische Bahn + Pointer-Magnet).
+    // Ambient-Punkt bewegen: gleichmäßige Drift über die GANZE Fläche (kein
+    // Mittelpunkt-Orbit → keine leeren Ecken/Ring), mit weicher Geschwindigkeits-
+    // Wobble + torus-Wrap, plus Pointer-Magnet.
     function driftStep(p, dt) {
-      const cx = w / 2, cy = h / 2;
-      p.angle += p.speed * dt;
-      p.wobble += 0.0008 * dt;
-      const r = p.baseRadius + Math.sin(p.wobble) * 14;
-      p.x = cx + Math.cos(p.angle) * r * 1.25; // leicht elliptisch (Breitbild)
-      p.y = cy + Math.sin(p.angle) * r * 0.85;
+      p.phase += 0.0006 * dt;
+      p.x += p.vx * dt;
+      p.y += (p.vy + Math.sin(p.phase) * 0.006) * dt;
+      const M = LINK_DIST;
+      if (p.x < -M) p.x += w + 2 * M; else if (p.x > w + M) p.x -= w + 2 * M;
+      if (p.y < -M) p.y += h + 2 * M; else if (p.y > h + M) p.y -= h + 2 * M;
       if (pointer.active && mode === "drift") {
         const dx = pointer.x - p.x, dy = pointer.y - p.y;
         const d2 = dx * dx + dy * dy;
         const reach = 200;
         if (d2 < reach * reach) {
           const d = Math.sqrt(d2) || 1;
-          const f = (1 - d / reach) * 26;
+          const f = (1 - d / reach) * 22;
           p.x += (dx / d) * f;
           p.y += (dy / d) * f;
         }
@@ -631,27 +789,10 @@
     function frame() {
       ctx.clearRect(0, 0, w, h);
 
-      // Ambient-Gewebe NUR im Drift — beim Formen kein Konstellations-Rauschen
-      // (entkluttert + gibt Frame-Budget für Naht & Nadel frei).
-      if (mode !== "form") {
-        ctx.lineWidth = 1;
-        for (let i = 0; i < particles.length; i++) {
-          const a = particles[i];
-          for (let j = i + 1; j < particles.length; j++) {
-            const b = particles[j];
-            const dx = a.x - b.x, dy = a.y - b.y;
-            const d2 = dx * dx + dy * dy;
-            if (d2 < LINK_DIST * LINK_DIST) {
-              const alpha = (1 - Math.sqrt(d2) / LINK_DIST) * 0.16;
-              ctx.strokeStyle = `rgba(100, 214, 196, ${alpha.toFixed(3)})`;
-              ctx.beginPath();
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-          }
-        }
-      }
+      // Ambient-Web („Spinnennetz" aus tausenden Punkten) füllt die ganze Fläche.
+      // Beim Formen tritt es gedimmt zurück (statt zu verschwinden), sodass die
+      // Naht sichtbar AUS dem Web heraus entsteht.
+      drawField(mode === "form" ? FORM_DIM : 1);
 
       // Formen: eine leuchtende Nadel zieht eine Ozean-Verlaufs-Naht über die
       // Kontur — „die Fäden formen dein nächstes Stück".
@@ -711,24 +852,17 @@
         }
       }
 
-      // 3) Stiche/Knoten — gleichmäßig klein auf der Naht; beim Nadeldurchgang
-      //    kurz aufleuchten (Naht-Pop). Die glatte Naht führt, die Punkte sind
-      //    nur feine Stiche darauf.
+      // 3) Stiche/Knoten DES STÜCKS — Rohpunkt schwach → eingenäht hell; beim
+      //    Nadeldurchgang kurz aufleuchten (Naht-Pop). Beim Auflösen bleiben die
+      //    Punkte stehen, während der Faden verschwindet → „zurück zu den Punkten".
+      //    (Die Web-Punkte selbst zeichnet drawField gebündelt.)
       for (const p of particles) {
-        let r, a;
-        if (p.forming) {
-          // Rohpunkt schwach → eingenäht hell. Beim Auflösen bleiben die Punkte
-          // stehen, während der FADEN (Naht) verschwindet → „zurück zu den Punkten".
-          const b = p.placed ? 1 : p.build;
-          r = 1.7;
-          a = 0.2 + 0.7 * b;
-          if (needleDist >= 0) {
-            const age = needleDist - p.seamDist;
-            if (age >= 0 && age <= POP_DIST) { r = 1.7 * (1 + 1.6 * (1 - age / POP_DIST)); a = 0.95; }
-          }
-        } else {
-          r = p.size;
-          a = mode === "form" ? 0.12 : 0.7;
+        if (!p.forming) continue;
+        const b = p.placed ? 1 : p.build;
+        let r = 1.7, a = 0.2 + 0.7 * b;
+        if (needleDist >= 0) {
+          const age = needleDist - p.seamDist;
+          if (age >= 0 && age <= POP_DIST) { r = 1.7 * (1 + 1.6 * (1 - age / POP_DIST)); a = 0.95; }
         }
         ctx.globalAlpha = a;
         ctx.fillStyle = p.color;
@@ -783,9 +917,19 @@
       last = t;
       if (mode === "form" && t - formStart > FORM_HOLD) releaseForm();
       if (mode === "form") computeForm(); else fNeedle = -1;
+      const t0 = performance.now();
       step(dt);
       frame();
+      // FPS-Wächter: stuft die Felddichte herunter, falls Frames zu lang werden.
+      emaDt = emaDt * 0.9 + (performance.now() - t0) * 0.1;
+      if (emaDt > 15) { if (++slowFrames > 12) { degradeField(); slowFrames = 0; } }
+      else slowFrames = 0;
       raf = requestAnimationFrame(loop);
+    }
+
+    function degradeField() {
+      if (degradeLvl === 0) { particles.length = Math.max(120, Math.floor(particles.length * 0.75)); degradeLvl = 1; }
+      else if (degradeLvl === 1) { linksOn = false; degradeLvl = 2; }
     }
 
     function start() {

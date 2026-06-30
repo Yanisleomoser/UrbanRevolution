@@ -285,7 +285,6 @@ const DesignFlow = (() => {
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
       // sichtbares Feedback (Subarch/Fit/Länge/Material/Muster), nicht ins Foto.
       if (chipsEl) {
-        const l = lang();
         const g = (p) => DesignDNA.get(previewDna, p);
         const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : "");
         const chips = [];
