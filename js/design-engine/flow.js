@@ -292,12 +292,20 @@ const DesignFlow = (() => {
         if (DesignDNA.get(dna, "category")) {
           const sub = g("subArchetype"); if (sub) chips.push(cap(sub));
           const fit = g("silhouette.fit");
-          if (typeof fit === "number") chips.push(fit < 0.34 ? (l === "en" ? "Slim" : "Schmal") : fit > 0.66 ? "Oversized" : (l === "en" ? "Regular" : "Regular"));
+          if (typeof fit === "number") chips.push(window.I18N ? window.I18N.t(fit < 0.34 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.34 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular"));
           const len = g("length"); if (len) chips.push(window.I18N ? window.I18N.t("length." + len) : len);
           const mat = g("fabric.material"); if (mat) chips.push(window.I18N ? window.I18N.material(mat) : mat);
           const pat = g("pattern.type"); if (pat && pat !== "none") chips.push(window.I18N ? window.I18N.pattern(pat) : pat);
         }
-        chipsEl.innerHTML = chips.map((c) => `<span class="de-preview-chip">${c}</span>`).join("");
+        const frag = document.createDocumentFragment();
+        chips.forEach((c) => {
+          const span = document.createElement("span");
+          span.className = "de-preview-chip";
+          span.textContent = c;
+          frag.appendChild(span);
+        });
+        chipsEl.textContent = "";
+        chipsEl.appendChild(frag);
       }
       live.textContent = DesignSummary.toSentence(dna, lang());
     }

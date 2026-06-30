@@ -51,7 +51,7 @@
     host.appendChild(q);
 
     let confirm = null;
-    const grid = V.el("div", { class: "de-cards", role: multi ? "group" : "group" });
+    const grid = V.el("div", { class: "de-cards", role: "group" });
     (node.choices || []).forEach((choice) => {
       // Name the button explicitly so its accessible name never depends on the
       // image loading or the visible label's DOM position (matches

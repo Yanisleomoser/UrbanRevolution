@@ -24,6 +24,8 @@
  */
 (function () {
     if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (window.__urFactsInstruments) return;
+    window.__urFactsInstruments = true;
 
     const ON_CELL = 47; // which of 0..99 lights up — deterministic, visually central
 
@@ -69,10 +71,14 @@
 
         // Pointer spotlight on the matrix — fine pointer only, purely decorative.
         if (matrix && window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+            let cachedRect = null;
+            const invalidateRect = () => { cachedRect = null; };
+            window.addEventListener("resize", invalidateRect, { passive: true });
+            window.addEventListener("scroll", invalidateRect, { passive: true, capture: true });
             matrix.addEventListener("pointermove", (e) => {
-                const r = matrix.getBoundingClientRect();
-                matrix.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
-                matrix.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100) + "%");
+                if (!cachedRect) cachedRect = matrix.getBoundingClientRect();
+                matrix.style.setProperty("--mx", ((e.clientX - cachedRect.left) / cachedRect.width * 100) + "%");
+                matrix.style.setProperty("--my", ((e.clientY - cachedRect.top) / cachedRect.height * 100) + "%");
             });
         }
     }
