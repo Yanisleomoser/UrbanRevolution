@@ -76,10 +76,6 @@ const calm = {
   mood_calm_bold: "calm",
   mood_soft_sharp: "soft",
   mood_clean_expressive: "clean",
-  mood_vintage_future: "vintage",
-  intent_occasion: "work",
-  intent_season: "all",
-  intent_formality: 0.7,
   category_select: "jacket",
   jacket_subarch: "trench",
   jacket_fit: 0.2,
@@ -95,10 +91,6 @@ const bold = {
   mood_calm_bold: "bold",
   mood_soft_sharp: "sharp",
   mood_clean_expressive: "expressive",
-  mood_vintage_future: "future",
-  intent_occasion: "active",
-  intent_season: "cold",
-  intent_formality: 0.2,
   category_select: "jacket",
   jacket_subarch: "puffer",
   jacket_fit: 0.92,
@@ -163,16 +155,6 @@ Engine.finalize(pe, archetypes, attributes.required, attributes.confidenceThresh
 assert(DNA.get(pe, "length") !== undefined, "length filled from archetype default");
 assert(DNA.maturity(pe, attributes.required, attributes.confidenceThreshold) > 0.999, "pure express reaches 100% maturity");
 
-console.log("\n— Bug: 'How formal?' binds intent.formality, never clobbers a chosen structure —");
-const fnode = nodes.find((n) => n.id === "intent_formality");
-assert(fnode.bind === "intent.formality", "intent_formality binds the formality axis (not silhouette.structure)");
-const fd = DNA.create();
-DNA.set(fd, "silhouette.structure", 0.85, 1); // a deliberately structured blazer
-const fr = resolveEffects(fnode, 0.1);          // user drags 'How formal?' toward Everyday
-Engine.answer(fd, fnode, fr.eff, new Set(), fr.conf);
-assert(DNA.get(fd, "silhouette.structure") === 0.85, "'How formal?' leaves a deliberate silhouette.structure untouched (was stomped to 0.1)");
-assert(DNA.get(fd, "intent.formality") !== undefined, "'How formal?' records intent.formality (self-satisfies its own gate)");
-
 console.log("\n— Bug: abstract mood pairs are retracted once the category is chosen —");
 // Omit the secondary mood pairs from the persona so the engine decides when to
 // surface them; they must never appear AFTER the category (mood_clean_expressive
@@ -183,7 +165,7 @@ const moodP = run("mood-retract", {
   _default: () => "regular",
 });
 const mCat = moodP.order.indexOf("category_select");
-["mood_clean_expressive", "mood_vintage_future"].forEach((id) => {
+["mood_clean_expressive"].forEach((id) => {
   const idx = moodP.order.indexOf(id);
   assert(idx === -1 || idx < mCat, `${id} never resurfaces after the category (idx ${idx} vs cat ${mCat})`);
 });
@@ -242,7 +224,7 @@ const RENDERED_PATHS = new Set([
   "construction.collar", "construction.closure", "construction.sleeve", "construction.sleeveLength",
   "construction.pockets", "construction.cuffs", "construction.hem", "construction.waistband", "construction.waist",
 ]);
-const NON_VISUAL = new Set(["intent.season", "intent.occasion", "intent.formality", "fabric.weight"]); // soft signals → archetype weights
+const NON_VISUAL = new Set(["fabric.weight"]); // inferred, never a node-set visual path
 let uncovered = [];
 GARMENTS.forEach((g) => fileNodes[g].forEach((n) => {
   const paths = [];
@@ -273,8 +255,7 @@ function runOn(nodeList, persona) {
   return { dna, order };
 }
 const street = {
-  mood_calm_bold: "bold", mood_soft_sharp: "sharp", mood_clean_expressive: "expressive", mood_vintage_future: "future",
-  intent_occasion: "everyday", intent_season: "cold", intent_formality: 0.15,
+  mood_calm_bold: "bold", mood_soft_sharp: "sharp", mood_clean_expressive: "expressive",
   category_select: "hoodie",
   hoodie_subarch: "zip", hoodie_fit: 0.9, hoodie_length: "regular", hoodie_sleeve: "drop",
   hoodie_material: "fleece", hoodie_finish: 0.8,
@@ -299,8 +280,7 @@ assert(hSvg !== global.GarmentSVG.build("hoodie", { fit: 0.5 }), "hoodie persona
 console.log("\n— Persona: COUTURE / dress —");
 const dressNodes = [...readJSON("content/nodes/intent.json").nodes, ...fileNodes.dress];
 const couture = {
-  mood_calm_bold: "bold", mood_soft_sharp: "soft", mood_clean_expressive: "expressive", mood_vintage_future: "future",
-  intent_occasion: "event", intent_season: "warm", intent_formality: 0.9,
+  mood_calm_bold: "bold", mood_soft_sharp: "soft", mood_clean_expressive: "expressive",
   category_select: "dress",
   dress_subarch: "slip", dress_fit: 0.75, dress_length: "long", dress_neck: "vneck",
   dress_sleeve: "sleeveless", dress_waist: "fitted", dress_material: "silk", dress_finish: 0.9,

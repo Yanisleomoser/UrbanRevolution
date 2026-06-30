@@ -162,8 +162,7 @@ const DesignFlow = (() => {
       </linearGradient></defs>
       <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="4"/>
       <circle cx="32" cy="32" r="26" fill="none" stroke="url(#deRingGrad)" stroke-width="4" stroke-linecap="round"
-        stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)"/>
-      <text x="32" y="35" text-anchor="middle" class="de-ring-pct">${Math.round(m * 100)}<tspan class="de-ring-unit" dx="0.5">%</tspan></text></svg>`;
+        stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)"/></svg>`;
   }
 
   // Short human label of what a choice just changed (micro-feedback, brief §7).

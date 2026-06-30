@@ -4945,8 +4945,6 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    Stroke\" ist als zweiter, enger Aqua-drop-shadow umgesetzt (gleiche Optik, rein
    CSS). drop-shadow ist statisch → reduced-motion unkritisch. */
 .de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); filter: drop-shadow(0 0 8px rgba(42,157,143,.6)) /* --accent */ drop-shadow(0 0 2px rgba(100,214,196,.45)); /* --accent-3 chromatischer Saum */ }
-.de-ring-pct { fill: var(--text); font-size: 17px; font-weight: 700; }
-.de-ring-unit { fill: var(--text-dim); font-size: 10px; font-weight: 600; }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .de-question { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin: 0 0 var(--space-6); color: var(--text); }
 
