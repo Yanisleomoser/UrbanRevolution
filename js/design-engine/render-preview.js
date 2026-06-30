@@ -129,6 +129,13 @@ const DesignPreview = (() => {
   function renderInto(el, dna, opts) {
     if (!el) return;
     const realism = !!(opts && opts.realism);
+    // A converged design leaves .de-preview in its realism state (the dimmed
+    // flat under the crossfaded photo — .is-realism stays on the container even
+    // after innerHTML is replaced). Every NON-realism render — the live journey,
+    // a restart, a category switch — must start from the full-opacity flat, or
+    // it renders dimmed (opacity 0.1) until a hard refresh. The realism branch
+    // below re-adds .is-realism only once a curated photo actually loads.
+    if (!realism) el.classList.remove("is-realism");
     const p = params(dna);
 
     // ── Genesis stage (before the user has chosen a category) ──────────────
@@ -189,7 +196,9 @@ const DesignPreview = (() => {
     // dimmed behind it during the journey. No photo is even loaded mid-journey.
     if (!realism) return;
     const cands = heroCandidates(dna);
-    if (!cands.length) return;
+    // Realism requested but no curated photo for this design → keep the flat
+    // (clear any stale realism dim from a previous, photo-backed design).
+    if (!cands.length) { el.classList.remove("is-realism"); return; }
     const photoWrap = el.querySelector(".de-preview-photo");
     const img = el.querySelector(".de-preview-photo img");
     let i = 0;
