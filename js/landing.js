@@ -335,11 +335,17 @@
     let formLabel = "";
     let formCenter = { x: 0, y: 0, s: 0 };
     let totalDist = 1;           // Gesamtlänge der konkatenierten Naht (Nadel-Bahn)
-    const FORM_HOLD = 4200;      // ms bis zur Auflösung
-    const CONVERGE = 160;        // ms Anflug/Anticipation, bevor die Nadel startet
-    const DRAW_MS = 820;         // ms Nadel-Lauf über die gesamte Kontur
-    const FADE_MS = 350;         // ms Ausblenden am Ende
+    const CONVERGE = 110;        // ms kurzes Sammeln, bevor die Nadel zu nähen beginnt
+    const DRAW_MS = 900;         // ms Nadel-Lauf: das Stück wird Punkt für Punkt genäht
+    const HOLD_MS = 460;         // ms Halten des fertigen Stücks
+    const FADE_MS = 300;         // ms schnelles Auflösen zurück zu den Punkten
+    const FORM_HOLD = CONVERGE + DRAW_MS + HOLD_MS + FADE_MS; // ~1770 ms gesamt (vorher 4200)
     const POP_DIST = 34;         // px-Fenster, in dem ein Knoten beim Nähen aufleuchtet
+    const LEAD_FRAC = 0.22;      // Anteil der Naht, um den die „Stich-Welle" vor der Nadel einfliegt
+
+    // Geteilter Form-Zustand: einmal pro Frame in der loop berechnet, von step()
+    // (Stich-Welle) UND frame() (Naht/Nadel) gelesen.
+    let fReveal = 0, fNeedle = -1, fSeamA = 0, fFade = 0, fE = 0;
 
     const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
     const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -409,58 +415,13 @@
       return out;
     }
 
-    // Tatsächliche Text-Bounds (Headline/Sub/CTAs) im Canvas-Raum — via Range,
-    // damit nur die SICHTBARE Schrift zählt (nicht der volle Block der <h1>),
-    // sonst weicht die Silhouette auf dem Desktop unnötig aus.
-    function textRects() {
-      const hero = canvas.closest(".lp-hero");
-      if (!hero) return [];
-      const cr = canvas.getBoundingClientRect();
-      const out = [];
-      const push = (r) => { if (r && r.width > 1) out.push({ l: r.left - cr.left, t: r.top - cr.top, r: r.right - cr.left, b: r.bottom - cr.top }); };
-      hero.querySelectorAll(".lp-hero-eyebrow, .lp-hero-line, .lp-hero-sub, .lp-hero-hint").forEach((el) => {
-        try { const rg = document.createRange(); rg.selectNodeContents(el); push(rg.getBoundingClientRect()); }
-        catch (_) { push(el.getBoundingClientRect()); }
-      });
-      const cta = hero.querySelector(".lp-hero-ctas");
-      if (cta) push(cta.getBoundingClientRect());
-      const cue = hero.querySelector(".lp-scroll-cue");
-      if (cue) push(cue.getBoundingClientRect());
-      // Fixe Navbar als Hindernis, damit das Stück nicht dahinter verschwindet.
-      const nav = document.querySelector(".lp-nav");
-      if (nav) push(nav.getBoundingClientRect());
-      return out;
-    }
-
-    // Platzierung: am Tap, vollständig im Canvas. Die Silhouette (+ Label) wird
-    // in die größte freie vertikale Bahn der Tap-Spalte gelegt, die der Text
-    // frei lässt — so landet sie NIE auf der Schrift und das Label bleibt sichtbar.
+    // Platzierung: GENAU am Tap, nur an die Canvas-Ränder geklemmt. Die
+    // Silhouette darf bewusst HINTER der Schrift liegen — getippt wird überall,
+    // geformt wird genau dort, wo der Finger sitzt.
     function placeGarment(tapX, tapY) {
-      const LBL = 40, M = 14; // Label-Reserve + Rand
-      const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-      let s = Math.max(150, Math.min(0.52 * Math.min(w, h), 360));
-      let cx = clamp(tapX, s / 2 + 20, w - s / 2 - 20);
-
-      // Hindernisse in der Tap-Spalte → freie vertikale Intervalle bestimmen.
-      const obst = textRects()
-        .filter((r) => r.r > cx - s / 2 - 8 && r.l < cx + s / 2 + 8)
-        .map((r) => [Math.max(M, r.t - 10), Math.min(h - M, r.b + 10)])
-        .sort((a, b) => a[0] - b[0]);
-      const free = [];
-      let cursor = M;
-      for (const [t, b] of obst) { if (t > cursor) free.push([cursor, t]); cursor = Math.max(cursor, b); }
-      if (cursor < h - M) free.push([cursor, h - M]);
-      if (!free.length) return { cx, cy: clamp(tapY, s / 2 + M, h - M - LBL - s / 2), s };
-
-      // Bevorzugt das Intervall am Tap; sonst das größte.
-      const need = s + LBL;
-      let band = free.find((iv) => tapY >= iv[0] && tapY <= iv[1] && iv[1] - iv[0] >= Math.min(need, 150));
-      if (!band) band = free.reduce((m, iv) => (iv[1] - iv[0] > m[1] - m[0] ? iv : m), free[0]);
-      const bandH = band[1] - band[0];
-      if (need > bandH) s = Math.max(120, bandH - LBL);
-      const top = band[0] + Math.max(0, (bandH - (s + LBL)) / 2);
-      cx = clamp(tapX, s / 2 + 20, w - s / 2 - 20);
-      const cy = clamp(top + s / 2, s / 2 + M, h - M - LBL - s / 2);
+      const s = Math.max(180, Math.min(0.5 * Math.min(w, h), 420));
+      const cx = Math.min(Math.max(tapX, s / 2 + 16), w - s / 2 - 16);
+      const cy = Math.min(Math.max(tapY, s / 2 + 16), h - s / 2 - 16);
       return { cx, cy, s };
     }
 
@@ -506,7 +467,7 @@
             if (d < bestD) { bestD = d; best = i; }
           }
           const p = free.splice(best, 1)[0];
-          p.tx = tx; p.ty = ty; p.forming = true; p.seamDist = startDist + k * step;
+          p.tx = tx; p.ty = ty; p.forming = true; p.placed = false; p.build = 0; p.seamDist = startDist + k * step;
           parts.push(p);
         }
         // Ozean-Verlauf entlang der Konturbox (einmal cachen, nie pro Frame).
@@ -520,7 +481,7 @@
         grad.addColorStop(1, "#64d6c4");
         return { closed: chain.closed, smooth, scum, slen, startDist, grad, parts };
       });
-      free.forEach((p) => { p.forming = false; });
+      free.forEach((p) => { p.forming = false; p.placed = false; p.build = 0; });
       totalDist = acc || 1;
       formButtons = (g.buttons || []).map(([gx, gy]) => { const [x, y] = map(gx, gy); return { x, y }; });
       mode = "form";
@@ -561,6 +522,8 @@
       for (const p of particles) {
         if (!p.forming) continue;
         p.forming = false;
+        p.placed = false;
+        p.build = 0;
         const ex = (p.x - cx) / 1.25, ey = (p.y - cy) / 0.85;
         p.angle = Math.atan2(ey, ex);
         p.baseRadius = Math.max(30, Math.hypot(ex, ey));
@@ -608,35 +571,60 @@
           tx: 0,
           ty: 0,
           forming: false,
+          placed: false,   // schon eingenäht?
+          build: 0,        // 0→1 Einflug-Fortschritt der Stich-Welle
+          seamDist: 0,     // Position entlang der Naht
         };
       });
     }
 
-    function step(dt) {
+    // Geteilten Form-Zustand pro Frame berechnen (loop ruft das vor step/frame).
+    function computeForm() {
+      fE = performance.now() - formStart;
+      fReveal = easeInOut(clamp01((fE - CONVERGE) / DRAW_MS));
+      fFade = clamp01((FORM_HOLD - fE) / FADE_MS);
+      fNeedle = fReveal * totalDist;
+      fSeamA = fFade * (0.82 + 0.13 * fReveal);
+    }
+
+    // Ein Partikel im Drift-Feld bewegen (elliptische Bahn + Pointer-Magnet).
+    function driftStep(p, dt) {
       const cx = w / 2, cy = h / 2;
-      const pull = 1 - Math.exp(-dt / 150); // sanfter Zuflug zur Kontur
+      p.angle += p.speed * dt;
+      p.wobble += 0.0008 * dt;
+      const r = p.baseRadius + Math.sin(p.wobble) * 14;
+      p.x = cx + Math.cos(p.angle) * r * 1.25; // leicht elliptisch (Breitbild)
+      p.y = cy + Math.sin(p.angle) * r * 0.85;
+      if (pointer.active && mode === "drift") {
+        const dx = pointer.x - p.x, dy = pointer.y - p.y;
+        const d2 = dx * dx + dy * dy;
+        const reach = 200;
+        if (d2 < reach * reach) {
+          const d = Math.sqrt(d2) || 1;
+          const f = (1 - d / reach) * 26;
+          p.x += (dx / d) * f;
+          p.y += (dy / d) * f;
+        }
+      }
+    }
+
+    function step(dt) {
+      const lead = totalDist * LEAD_FRAC;
       for (const p of particles) {
         if (p.forming) {
-          p.x += (p.tx - p.x) * pull;
-          p.y += (p.ty - p.y) * pull;
+          if (p.placed) { p.x = p.tx; p.y = p.ty; p.build = 1; continue; }
+          // Stich-Welle: das Partikel fliegt erst ein, wenn die Nadel naht —
+          // so wird das Stück sichtbar Punkt für Punkt zusammengenäht.
+          const pp = lead > 0 ? clamp01((fNeedle - (p.seamDist - lead)) / lead) : 1;
+          p.build = pp;
+          if (pp <= 0) continue; // ruht als „Rohpunkt", bis die Welle es erfasst
+          const f = Math.min(1, (1 - Math.exp(-dt / 80)) + 0.5 * pp * pp);
+          p.x += (p.tx - p.x) * f;
+          p.y += (p.ty - p.y) * f;
+          if (pp >= 1) { p.x = p.tx; p.y = p.ty; p.placed = true; }
           continue;
         }
-        p.angle += p.speed * dt;
-        p.wobble += 0.0008 * dt;
-        const r = p.baseRadius + Math.sin(p.wobble) * 14;
-        p.x = cx + Math.cos(p.angle) * r * 1.25; // leicht elliptisch (Breitbild)
-        p.y = cy + Math.sin(p.angle) * r * 0.85;
-        if (pointer.active && mode === "drift") {
-          const dx = pointer.x - p.x, dy = pointer.y - p.y;
-          const d2 = dx * dx + dy * dy;
-          const reach = 200;
-          if (d2 < reach * reach) {
-            const d = Math.sqrt(d2) || 1;
-            const f = (1 - d / reach) * 26;
-            p.x += (dx / d) * f;
-            p.y += (dy / d) * f;
-          }
-        }
+        driftStep(p, dt);
       }
     }
 
@@ -669,12 +657,8 @@
       // Kontur — „die Fäden formen dein nächstes Stück".
       let needleDist = -1, needleActive = false, seamA = 0, reveal = 0, fade = 0;
       if (mode === "form" && formChains.length) {
-        const e = performance.now() - formStart;
-        reveal = easeInOut(clamp01((e - CONVERGE) / DRAW_MS));
-        fade = clamp01((FORM_HOLD - e) / FADE_MS);
-        seamA = fade * (0.82 + 0.13 * reveal);
-        needleDist = reveal * totalDist;
-        needleActive = e > CONVERGE - 30 && reveal < 1 && fade > 0.5;
+        reveal = fReveal; fade = fFade; seamA = fSeamA; needleDist = fNeedle;
+        needleActive = fE > CONVERGE - 30 && reveal < 1 && fade > 0.5;
 
         // 1) Naht je Kette bis zur Nadel zeichnen (Ziel-Kontur = saubere Kurve).
         //    Pro Kette zweimal stroken: weicher Glow + scharfer Faden — wirkt wie
@@ -731,15 +715,20 @@
       //    kurz aufleuchten (Naht-Pop). Die glatte Naht führt, die Punkte sind
       //    nur feine Stiche darauf.
       for (const p of particles) {
-        let r = p.forming ? 1.7 : p.size;
-        let a = p.forming ? 0.9 : (mode === "form" ? 0.12 : 0.7);
-        if (mode === "form" && p.forming && needleDist >= 0) {
-          const age = needleDist - p.seamDist;
-          if (age >= 0 && age <= POP_DIST) {
-            const k = 1 - age / POP_DIST;
-            r = 1.7 * (1 + 1.5 * k);
-            a = 1;
+        let r, a;
+        if (p.forming) {
+          // Rohpunkt schwach → eingenäht hell. Beim Auflösen bleiben die Punkte
+          // stehen, während der FADEN (Naht) verschwindet → „zurück zu den Punkten".
+          const b = p.placed ? 1 : p.build;
+          r = 1.7;
+          a = 0.2 + 0.7 * b;
+          if (needleDist >= 0) {
+            const age = needleDist - p.seamDist;
+            if (age >= 0 && age <= POP_DIST) { r = 1.7 * (1 + 1.6 * (1 - age / POP_DIST)); a = 0.95; }
           }
+        } else {
+          r = p.size;
+          a = mode === "form" ? 0.12 : 0.7;
         }
         ctx.globalAlpha = a;
         ctx.fillStyle = p.color;
@@ -783,7 +772,7 @@
         ctx.font = "600 12px 'JetBrains Mono', ui-monospace, monospace";
         ctx.textAlign = "center";
         ctx.fillStyle = `rgba(232, 238, 243, ${(0.85 * seamA).toFixed(3)})`;
-        ctx.fillText(formLabel.toUpperCase(), formCenter.x, formCenter.y + formCenter.s / 2 + 30);
+        ctx.fillText(formLabel.toUpperCase(), formCenter.x, Math.min(formCenter.y + formCenter.s / 2 + 26, h - 12));
       }
     }
 
@@ -793,6 +782,7 @@
       const dt = Math.min(50, t - last || 16);
       last = t;
       if (mode === "form" && t - formStart > FORM_HOLD) releaseForm();
+      if (mode === "form") computeForm(); else fNeedle = -1;
       step(dt);
       frame();
       raf = requestAnimationFrame(loop);
