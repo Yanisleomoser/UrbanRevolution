@@ -143,6 +143,32 @@ const DesignFlow = (() => {
     return d;
   }
 
+  // Honest progress: a calm orientation stepper over the journey's named phases
+  // (A–E). NOT a 0–100% gauge — the journey is adaptive and always-viable, so a
+  // fill bar would have to invent a finish line (which is exactly what made the
+  // old maturity ring read as "already finished"). The stepper only answers
+  // "where am I"; readiness ("you can finish whenever") stays on the "Fertig"
+  // button. Phase F (refine) lights every beat as traversed. Pure + label-injected
+  // so it stays unit-testable; labels come from i18n (trusted, not user input).
+  const PHASE_ORDER = "ABCDEF";
+  const PHASE_BEATS = [
+    { p: "A", key: "engine.phase_feeling" },
+    { p: "B", key: "engine.phase_form" },
+    { p: "C", key: "engine.phase_fabric" },
+    { p: "D", key: "engine.phase_color" },
+    { p: "E", key: "engine.phase_details" },
+  ];
+  function phaseStepper(currentPhase, label) {
+    const ci = Math.max(0, PHASE_ORDER.indexOf(String(currentPhase || "A").toUpperCase()));
+    return PHASE_BEATS.map((b, i) => {
+      const oi = PHASE_ORDER.indexOf(b.p);
+      const state = oi < ci ? "done" : oi === ci ? "cur" : "todo";
+      const bar = i < PHASE_BEATS.length - 1
+        ? `<span class="de-step-bar${oi < ci ? " is-done" : ""}"></span>` : "";
+      return `<span class="de-step is-${state}"><span class="de-step-dot"></span>${label(b.key)}</span>${bar}`;
+    }).join("");
+  }
+
   function mirror(dna, attributes) {
     const map = attributes.stateMap || {};
     Object.entries(map).forEach(([dnaPath, stateKey]) => {
@@ -204,6 +230,7 @@ const DesignFlow = (() => {
           <div class="de-preview-chips" id="de-preview-chips"></div>
         </div>
         <div class="de-ask-col">
+          <div class="de-stepper" id="de-stepper" role="img"></div>
           <div class="de-body" id="de-body"></div>
           <p class="de-live" id="de-live"></p>
           <div class="de-controls">
@@ -216,6 +243,7 @@ const DesignFlow = (() => {
       </div>`;
 
     const body = hostEl.querySelector("#de-body");
+    const stepperEl = hostEl.querySelector("#de-stepper");
     const live = hostEl.querySelector("#de-live");
     const previewEl = hostEl.querySelector("#de-preview");
     const flashEl = hostEl.querySelector("#de-flash");
@@ -272,6 +300,14 @@ const DesignFlow = (() => {
         chipsEl.innerHTML = chips.map((c) => `<span class="de-preview-chip">${c}</span>`).join("");
       }
       live.textContent = DesignSummary.toSentence(dna, lang());
+    }
+    // Orientation stepper: light the current phase, mark earlier ones done.
+    // Label it for assistive tech with the current beat ("Design-Phase: Stoff").
+    function updateStepper(phase) {
+      const ci = PHASE_ORDER.indexOf(String(phase || "A").toUpperCase());
+      const beat = PHASE_BEATS[ci < 0 ? 0 : Math.min(ci, PHASE_BEATS.length - 1)];
+      stepperEl.innerHTML = phaseStepper(phase, (k) => t(k));
+      stepperEl.setAttribute("aria-label", t("engine.phase_aria") + ": " + t(beat.key));
     }
     function refreshChrome() {
       const m = maturity();
@@ -333,6 +369,7 @@ const DesignFlow = (() => {
     function renderModality(node) {
       atRefine = false; // back to the morphing flat for any question
       currentNode = node;
+      updateStepper(node.phase);
       T("node_shown", { id: node.id, phase: node.phase, modality: node.modality, lang: lang() });
       // Journey breadcrumb for Sentry: which step the user was on when an error
       // later fires (no answer values — only node id / phase / garment category).
@@ -379,6 +416,7 @@ const DesignFlow = (() => {
       persist();
       currentNode = null;
       atRefine = true; // Phase F → crossfade the flat to the realism photo
+      updateStepper("F"); // the arc is traversed; the user is refining/generating
       refreshChrome();
       finishBtn.hidden = true;
       const l = lang();
@@ -636,7 +674,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

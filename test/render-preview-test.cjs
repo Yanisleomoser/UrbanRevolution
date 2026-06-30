@@ -24,6 +24,18 @@ function assert(cond, msg) {
 }
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
+// Minimal stand-in for the .de-preview element: renderInto only needs a
+// classList + an innerHTML sink + a null-returning querySelector to run the
+// (non-realism / no-photo) paths where the realism dim is cleared.
+function fakeEl(initialClasses) {
+  const classes = new Set(initialClasses || []);
+  return {
+    innerHTML: "",
+    classList: { add: (c) => classes.add(c), remove: (c) => classes.delete(c), contains: (c) => classes.has(c) },
+    querySelector: () => null,
+  };
+}
+
 // A representative, fully-specified design.
 function jacketDna() {
   const dna = DesignDNA.create();
@@ -96,6 +108,23 @@ console.log("\n— heroCandidates lists preview-image URLs, most-specific first 
   assert(list[0].endsWith("-bomber.jpg") && list[0].includes("jacket-"), "the sub-archetype-specific image is tried first");
   assert(list[1].endsWith(".jpg") && !list[1].includes("-bomber"), "the generic category+archetype image is the fallback");
   assert(eq(DP.heroCandidates(DesignDNA.create()), []), "no category → no candidates (empty list, no throw)");
+}
+
+console.log("\n— renderInto clears a stale .is-realism so a restart never shows a dimmed flat —");
+{
+  // The realism path adds .is-realism to .de-preview at convergence (the dimmed
+  // flat under the crossfaded photo). It must be cleared on the next non-realism
+  // render, or the restarted journey paints the new flat at opacity 0.1 until a
+  // hard refresh — the reported "switch garment type → dimmed preview" bug.
+  const live = fakeEl(["is-realism"]);
+  DP.renderInto(live, jacketDna(), { realism: false });
+  assert(live.classList.contains("is-realism") === false, "non-realism (live journey) render clears a stale .is-realism");
+
+  // Realism requested but no curated photo (empty DNA → no category → no hero
+  // candidates) → keep the flat visible, clear any leftover dim.
+  const noPhoto = fakeEl(["is-realism"]);
+  DP.renderInto(noPhoto, DesignDNA.create(), { realism: true });
+  assert(noPhoto.classList.contains("is-realism") === false, "realism render with no curated photo clears the realism dim");
 }
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
