@@ -27,6 +27,8 @@
 
     const ON_CELL = 47; // which of 0..99 lights up — deterministic, visually central
 
+    const reveal = (el) => el.classList.add("is-in");
+
     function build() {
         // 1 · Matrix cells (only once; idempotent)
         const matrix = document.getElementById("fx-matrix");
@@ -45,18 +47,24 @@
         const bars = document.querySelectorAll(".fx-acc .fx-acc-bar");
         bars.forEach((bar, i) => bar.style.setProperty("--d", (i * 45) + "ms"));
 
-        // Reveal: add .is-in when each instrument scrolls into view (triggers the
-        // html.fx-gated entrance). No-IO fallback shows them immediately.
         const instruments = document.querySelectorAll(".fx-matrix, .fx-acc, .fx-gauge");
-        if ("IntersectionObserver" in window) {
-            const io = new IntersectionObserver((entries) => {
-                entries.forEach((e) => {
-                    if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
-                });
-            }, { threshold: 0.4 });
-            instruments.forEach((el) => io.observe(el));
-        } else {
-            instruments.forEach((el) => el.classList.add("is-in"));
+        const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // The entrance is opt-IN: only here do we add html.fx-go, which switches the
+        // instruments to their hidden start-state. The resting state (visible) is the
+        // CSS default, so if this script never runs — or the observer below never
+        // fires on some engine — the instruments stay VISIBLE rather than vanishing.
+        if (!reduce) {
+            document.documentElement.classList.add("fx-go");
+            if ("IntersectionObserver" in window) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((e) => { if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); } });
+                }, { rootMargin: "0px 0px -10% 0px", threshold: 0.15 });
+                instruments.forEach((el) => io.observe(el));
+            }
+            // Fail-safe: reveal regardless after a beat (covers engines where the
+            // observer doesn't fire reliably for already-visible elements).
+            window.setTimeout(() => instruments.forEach(reveal), 1600);
         }
 
         // Pointer spotlight on the matrix — fine pointer only, purely decorative.
