@@ -107,5 +107,36 @@ console.log("\n— mutateDna (deterministic concept-studio variants, base untouc
   assert(typeof fit === "number" && fit >= 0 && fit <= 1, "mutated fit stays clamped to 0..1");
 }
 
+console.log("\n— phaseStepper (honest orientation: where you are, never a % gauge) —");
+{
+  const L = (k) => k; // identity label so we can assert on the i18n keys
+  // Match by LITERAL string (no RegExp built from the key) so the test never
+  // depends on regex-escaping its input — correct for any key, and CodeQL-clean.
+  const stateOf = (svg, key) => {
+    for (const st of ["done", "cur", "todo"]) {
+      if (svg.includes(`de-step is-${st}"><span class="de-step-dot"></span>${key}</span>`)) return st;
+    }
+    return null;
+  };
+  const BEATS = ["engine.phase_feeling", "engine.phase_form", "engine.phase_fabric", "engine.phase_color", "engine.phase_details"];
+  const sA = Flow.phaseStepper("A", L), sC = Flow.phaseStepper("C", L), sF = Flow.phaseStepper("F", L);
+  BEATS.forEach((k) => assert(sC.includes(k), `stepper always lists every named beat (${k})`));
+  // The whole point: no percentage / number anywhere on it.
+  assert(!/\d/.test(sC), "stepper carries NO number (no false 'finished' cue)");
+  assert(stateOf(sA, "engine.phase_feeling") === "cur", "phase A → Gefühl is the current beat");
+  assert(stateOf(sA, "engine.phase_form") === "todo", "phase A → later beats are upcoming");
+  assert(stateOf(sC, "engine.phase_fabric") === "cur", "phase C → Stoff is current");
+  assert(stateOf(sC, "engine.phase_feeling") === "done" && stateOf(sC, "engine.phase_form") === "done", "phase C → earlier beats are done");
+  assert(stateOf(sC, "engine.phase_details") === "todo", "phase C → Details still upcoming");
+  // Phase F (refine): the arc is traversed — every beat done, none 'current'.
+  assert(!sF.includes("is-cur"), "phase F (refine) → no beat is 'current' (arc traversed)");
+  assert(BEATS.every((k) => stateOf(sF, k) === "done"), "phase F → every beat reads done");
+  // Robustness: junk / missing phase clamps to the first beat, never throws.
+  assert(stateOf(Flow.phaseStepper("zzz", L), "engine.phase_feeling") === "cur", "unknown phase clamps to the first beat");
+  assert(stateOf(Flow.phaseStepper(undefined, L), "engine.phase_feeling") === "cur", "missing phase clamps to the first beat");
+  // Lowercase phase letters are accepted (defensive).
+  assert(stateOf(Flow.phaseStepper("c", L), "engine.phase_fabric") === "cur", "phase letter is case-insensitive");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
