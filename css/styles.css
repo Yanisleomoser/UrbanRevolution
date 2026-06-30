@@ -4940,11 +4940,6 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    Ruhig, cineastisch: eine Frage groß, viel Negativraum. Nur :root-Tokens.
    ============================================================ */
 .de-stage { max-width: 1120px; margin: 0 auto; padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; gap: var(--space-7); }
-/* Modul D · Glow-Ring: weicher Teal-Glow + chromatischer Saum am Fortschritts-
-   kreis. Der Ring wird in flow.js gerendert (kein DOM-Zugriff hier) → der „zweite
-   Stroke\" ist als zweiter, enger Aqua-drop-shadow umgesetzt (gleiche Optik, rein
-   CSS). drop-shadow ist statisch → reduced-motion unkritisch. */
-.de-ring circle:last-of-type { transition: stroke-dashoffset .5s var(--ease-out); filter: drop-shadow(0 0 8px rgba(42,157,143,.6)) /* --accent */ drop-shadow(0 0 2px rgba(100,214,196,.45)); /* --accent-3 chromatischer Saum */ }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
 .de-question { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin: 0 0 var(--space-6); color: var(--text); }
 
@@ -5010,7 +5005,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
     .de-tot-panel { min-height: 180px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .de-card, .de-tot-panel, .de-confirm, .de-palette-swatch, .de-visual-img, .de-ring circle:last-of-type { transition: none !important; }
+    .de-card, .de-tot-panel, .de-confirm, .de-palette-swatch, .de-visual-img { transition: none !important; }
 }
 
 /* Design Engine integration — Reise als Hauptfokus, Prompt als optionales <details> */
@@ -5061,19 +5056,8 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-rank-btn:hover:not(:disabled) { border-color: var(--accent); }
 .de-rank-btn:disabled { opacity: 0.3; cursor: default; }
 
-.de-hotspot { position: relative; width: 240px; max-width: 70%; margin: 0 auto var(--space-4); aspect-ratio: 3 / 4; }
-.de-hotspot-proxy { position: absolute; inset: 0; }
-.de-hotspot-proxy svg { width: 100%; height: 100%; }
-.de-hotspot-dot { position: absolute; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 6px rgba(42, 157, 143,0.18); transition: transform .15s var(--ease-out), box-shadow .2s var(--ease-out); }
-.de-hotspot-dot:hover, .de-hotspot-dot.is-active { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 0 10px rgba(42, 157, 143,0.28); }
-.de-hotspot-dot.is-done { background: var(--success); box-shadow: 0 0 0 6px rgba(16,185,129,0.2); }
-.de-hotspot-tag { position: absolute; left: 50%; top: -28px; transform: translateX(-50%); white-space: nowrap; font-size: var(--text-xs); color: var(--text); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 2px var(--space-2); pointer-events: none; }
-.de-hotspot-strip { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-bottom: var(--space-2); }
-.de-hotspot-choice { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out), background .2s var(--ease-out); }
-.de-hotspot-choice:hover { border-color: var(--accent); background: var(--gradient-dim); }
-
 @media (prefers-reduced-motion: reduce) {
-    .de-rank-btn, .de-hotspot-dot, .de-hotspot-choice { transition: none !important; }
+    .de-rank-btn { transition: none !important; }
 }
 
 /* §3.2 — Fallback „nie flach": Duotone-Sheen + feines Filmkorn auf allen Tile-Platzhaltern */
@@ -5106,10 +5090,6 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    für Ring/Flash. Sonst verankern sie am Spalten-Boden — dort sitzen aber die
    Chips, die der Ring dann überlagert (Desktop wie Mobile). */
 .de-preview-stage { position: relative; }
-.de-ring-wrap { position: absolute; left: var(--space-4); bottom: var(--space-4); width: 54px; height: 54px; padding: 4px; border-radius: 50%; background: rgba(10, 22, 34,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: box-shadow .35s var(--ease-out); }
-.de-ring { width: 100%; height: 100%; }
-/* Ready: design is mature enough to finish → accent glow ties the ring to "Fertig". */
-.de-ring-wrap.is-ready { box-shadow: 0 0 0 1px var(--accent), 0 0 18px rgba(42, 157, 143, 0.45); }
 
 /* Frage groß, ruhig */
 .de-ask-col .de-question { margin-top: 0; }
@@ -5157,14 +5137,6 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
     .de-ask-col { gap: var(--space-4); }
     .de-preview-chips { margin-top: var(--space-2); }
 
-    /* 4 — iOS-Ruckeln: backdrop-filter der Overlays durch solide Fläche ersetzen */
-    .de-ring-wrap {
-        width: 48px; height: 48px;
-        left: var(--space-3); bottom: var(--space-3);
-        background: rgba(10, 22, 34,0.82);
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
     .de-preview-badge {
         background: rgba(10, 22, 34,0.82);
         backdrop-filter: none;

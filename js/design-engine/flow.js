@@ -66,7 +66,6 @@ const DesignFlow = (() => {
         "color.value": payload.value, "color.saturation": payload.saturation,
       } }, conf: 1 };
     }
-    if (node.modality === "hotspot") return { eff: payload, conf: 1 };
     if (node.modality === "ranking") {
       const decay = [1, 0.6, 0.35, 0.2, 0.1];
       const weight = {};
@@ -152,18 +151,6 @@ const DesignFlow = (() => {
     });
   }
 
-  function ring(maturity) {
-    const C = 163.36;
-    const m = Math.max(0, Math.min(1, maturity));
-    const off = C * (1 - m);
-    return `<svg class="de-ring" viewBox="0 0 64 64" aria-hidden="true">
-      <defs><linearGradient id="deRingGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#2a9d8f"/><stop offset="0.5" stop-color="#2779a8"/><stop offset="1" stop-color="#64d6c4"/>
-      </linearGradient></defs>
-      <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="4"/>
-      <circle cx="32" cy="32" r="26" fill="none" stroke="url(#deRingGrad)" stroke-width="4" stroke-linecap="round"
-        stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)"/></svg>`;
-  }
 
   // Short human label of what a choice just changed (micro-feedback, brief §7).
   function changeLabel(node, payload, l) {
@@ -171,7 +158,6 @@ const DesignFlow = (() => {
       const top = (node.options || []).find((o) => o.id === (payload || [])[0]);
       return top && top.label ? top.label[l] : "";
     }
-    if (node.modality === "hotspot") return t("engine.changed_details");
     if (node.modality === "cards" && Array.isArray(payload)) return payload.length + "×";
     if (node.modality === "cards") {
       const c = (node.choices || []).find((x) => x.id === payload);
@@ -213,7 +199,6 @@ const DesignFlow = (() => {
         <div class="de-preview-col">
           <div class="de-preview-stage">
             <div class="de-preview" id="de-preview" aria-hidden="true"></div>
-            <div class="de-ring-wrap" id="de-ring" role="img"></div>
             <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
           </div>
           <div class="de-preview-chips" id="de-preview-chips"></div>
@@ -231,7 +216,6 @@ const DesignFlow = (() => {
       </div>`;
 
     const body = hostEl.querySelector("#de-body");
-    const ringWrap = hostEl.querySelector("#de-ring");
     const live = hostEl.querySelector("#de-live");
     const previewEl = hostEl.querySelector("#de-preview");
     const flashEl = hostEl.querySelector("#de-flash");
@@ -291,13 +275,10 @@ const DesignFlow = (() => {
     }
     function refreshChrome() {
       const m = maturity();
-      ringWrap.innerHTML = ring(m);
-      // Ready state: once the design is mature enough to finish, the ring picks
-      // up an accent glow — tying the cryptic number to the "Fertig" affordance.
-      ringWrap.classList.toggle("is-ready", m >= 0.6);
-      ringWrap.setAttribute("aria-label", t("engine.maturity_aria") + ": " + Math.round(m * 100) + "%");
       updatePreview(true);
       backBtn.disabled = history.length === 0;
+      // "Fertig" appears once the required attributes are mature enough to
+      // generate — an explicit user affordance, not a "you're done" gauge.
       finishBtn.hidden = m < 0.6;
     }
     let flashTimer = null;
@@ -655,7 +636,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, ring };
+  return { mount, resolveEffects, shiftHex, mutateDna };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;
