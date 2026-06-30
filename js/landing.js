@@ -302,37 +302,99 @@
     // ── Kleidungs-Silhouetten (64×64-Raster, wie die Typ-Icons im Studio).
     //    Tap/Klick: die Punkte fliegen auf die Kontur und verbinden sich
     //    der Reihe nach zum Stück; nach kurzem Halten lösen sie sich wieder.
+    //    100er-Raster (Mitte 50,50). Kontroll-Punkte mit echten Schnitt-
+    //    Proportionen (Schulterbreite, Ärmellänge/-winkel, Saum, A-Linie,
+    //    Bund/Schritt …); Catmull-Rom verdichtet sie zu einer weichen Naht.
     const GARMENTS = [
-      { key: "tshirt", chains: [{ closed: true, pts: [[16, 16], [24, 8], [40, 8], [48, 16], [56, 22], [48, 30], [48, 56], [16, 56], [16, 30], [8, 22]] }] },
-      { key: "hoodie", chains: [{ closed: true, pts: [[20, 14], [32, 6], [44, 14], [52, 22], [58, 28], [50, 34], [50, 58], [14, 58], [14, 34], [6, 28], [12, 22]] }] },
-      { key: "pants", chains: [{ closed: true, pts: [[16, 8], [48, 8], [46, 32], [44, 58], [34, 58], [32, 34], [30, 58], [20, 58], [18, 32]] }] },
+      { key: "tshirt", chains: [{ closed: true, pts: [[42, 24], [34, 20], [19, 26], [15, 41], [29, 39], [32, 41], [33, 78], [67, 78], [68, 41], [71, 39], [85, 41], [81, 26], [66, 20], [58, 24], [50, 29]] }] },
+      {
+        key: "hoodie",
+        chains: [
+          { closed: true, pts: [[40, 26], [33, 24], [26, 12], [40, 5], [50, 4], [60, 5], [74, 12], [67, 24], [60, 26], [64, 28], [82, 34], [84, 62], [74, 62], [70, 46], [70, 82], [30, 82], [30, 46], [26, 62], [16, 62], [18, 34], [36, 28]] },
+          { closed: false, pts: [[40, 26], [50, 20], [60, 26]] },
+        ],
+      },
+      { key: "pants", chains: [{ closed: true, pts: [[30, 14], [70, 14], [70, 22], [64, 52], [60, 86], [52, 86], [51, 54], [50, 40], [49, 54], [48, 86], [40, 86], [36, 52], [30, 22]] }] },
       {
         key: "jacket",
         chains: [
-          { closed: true, pts: [[16, 14], [24, 8], [40, 8], [48, 14], [56, 22], [50, 28], [50, 58], [14, 58], [14, 28], [8, 22]] },
-          { closed: false, pts: [[32, 10], [32, 58]] },
+          { closed: true, pts: [[43, 20], [35, 16], [20, 20], [13, 52], [23, 54], [28, 32], [30, 80], [50, 82], [70, 80], [72, 32], [77, 54], [87, 52], [80, 20], [65, 16], [57, 20], [50, 28]] },
+          { closed: false, pts: [[50, 28], [50, 81]] },
         ],
       },
-      { key: "dress", chains: [{ closed: true, pts: [[22, 12], [28, 8], [36, 8], [42, 12], [40, 24], [52, 58], [12, 58], [24, 24]] }] },
+      { key: "dress", chains: [{ closed: true, pts: [[43, 22], [36, 18], [31, 24], [29, 38], [34, 48], [20, 84], [24, 86], [76, 86], [80, 84], [66, 48], [71, 38], [69, 24], [64, 18], [57, 22], [50, 28]] }] },
       {
         key: "shirt",
         chains: [
-          { closed: true, pts: [[18, 14], [28, 8], [36, 8], [46, 14], [54, 22], [48, 28], [48, 56], [16, 56], [16, 28], [10, 22]] },
-          { closed: false, pts: [[28, 8], [32, 16], [36, 8]] },
+          { closed: true, pts: [[44, 22], [36, 18], [21, 24], [16, 40], [30, 38], [33, 40], [34, 80], [66, 80], [67, 40], [70, 38], [84, 40], [79, 24], [64, 18], [56, 22], [52, 18], [50, 26], [48, 18]] },
+          { closed: false, pts: [[50, 26], [50, 80]] },
         ],
+        buttons: [[50, 36], [50, 48], [50, 60], [50, 72]],
       },
     ];
     let mode = "drift";          // "drift" | "form"
     let garmentIdx = -1;         // zykliert pro Tap durchs Sortiment
     let formStart = 0;
-    let formChains = [];         // [[Partikel, …], …] in Kontur-Reihenfolge
+    let formChains = [];         // [{ parts, cum, len, startDist, grad, closed }, …]
+    let formButtons = [];        // [{x,y}] dekorative Knöpfe (Hemd)
     let formLabel = "";
     let formCenter = { x: 0, y: 0, s: 0 };
+    let totalDist = 1;           // Gesamtlänge der konkatenierten Naht (Nadel-Bahn)
     const FORM_HOLD = 4200;      // ms bis zur Auflösung
+    const CONVERGE = 160;        // ms Anflug/Anticipation, bevor die Nadel startet
+    const DRAW_MS = 820;         // ms Nadel-Lauf über die gesamte Kontur
+    const FADE_MS = 350;         // ms Ausblenden am Ende
+    const POP_DIST = 34;         // px-Fenster, in dem ein Knoten beim Nähen aufleuchtet
 
-    // Polylinie gleichmäßig in n Punkte zerlegen (für die Punkt-Kontur).
-    function resample(pts, closed, n) {
-      const P = closed ? pts.concat([pts[0]]) : pts;
+    const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+    const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const lerp2 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+
+    // Zentripetales Catmull-Rom (α = 0.5): weiche Kurve durch p1→p2, ohne
+    // Überschwingen/Spitzen — macht aus Kontrollpunkten echte Garment-Kanten.
+    function catmull(p0, p1, p2, p3, u) {
+      const tj = (ti, a, b) => ti + Math.sqrt(Math.hypot(b[0] - a[0], b[1] - a[1]) || 1e-4);
+      const t0 = 0, t1 = tj(t0, p0, p1), t2 = tj(t1, p1, p2), t3 = tj(t2, p2, p3);
+      const t = t1 + (t2 - t1) * u;
+      const A1 = lerp2(p0, p1, (t - t0) / (t1 - t0 || 1e-4));
+      const A2 = lerp2(p1, p2, (t - t1) / (t2 - t1 || 1e-4));
+      const A3 = lerp2(p2, p3, (t - t2) / (t3 - t2 || 1e-4));
+      const B1 = lerp2(A1, A2, (t - t0) / (t2 - t0 || 1e-4));
+      const B2 = lerp2(A2, A3, (t - t1) / (t3 - t1 || 1e-4));
+      return lerp2(B1, B2, (t - t1) / (t2 - t1 || 1e-4));
+    }
+
+    // Kontrollpunkte → dichte, weiche Polylinie (für Kontur + Längenmaß).
+    function densify(pts, closed) {
+      const m = pts.length;
+      if (m < 3) return pts.slice();
+      const SUB = 16;
+      const out = [];
+      const segs = closed ? m : m - 1;
+      for (let i = 0; i < segs; i++) {
+        const p1 = pts[i % m];
+        const p2 = pts[(i + 1) % m];
+        const p0 = closed ? pts[(i - 1 + m) % m] : pts[Math.max(0, i - 1)];
+        const p3 = closed ? pts[(i + 2) % m] : pts[Math.min(m - 1, i + 2)];
+        for (let s = 0; s < SUB; s++) out.push(catmull(p0, p1, p2, p3, s / SUB));
+      }
+      if (!closed) out.push(pts[m - 1]);
+      return out;
+    }
+
+    // Konturlänge in 64er-Koordinaten (skaleninvariantes Punktebudget).
+    function chainLength(pts, closed) {
+      const poly = densify(pts, closed);
+      let L = 0;
+      for (let i = 0; i < poly.length - 1; i++) L += Math.hypot(poly[i + 1][0] - poly[i][0], poly[i + 1][1] - poly[i][1]);
+      if (closed && poly.length) L += Math.hypot(poly[0][0] - poly[poly.length - 1][0], poly[0][1] - poly[poly.length - 1][1]);
+      return L;
+    }
+
+    // Bereits-dichte (Screen-)Polylinie gleichmäßig in n Punkte zerlegen
+    // (arc-length) — für die Knoten-Ziele auf der weichen Naht.
+    function resamplePoly(poly, closed, n) {
+      const P = closed ? poly.concat([poly[0]]) : poly;
       const segs = [];
       let total = 0;
       for (let i = 0; i < P.length - 1; i++) {
@@ -352,54 +414,149 @@
       return out;
     }
 
+    // Tatsächliche Text-Bounds (Headline/Sub/CTAs) im Canvas-Raum — via Range,
+    // damit nur die SICHTBARE Schrift zählt (nicht der volle Block der <h1>),
+    // sonst weicht die Silhouette auf dem Desktop unnötig aus.
+    function textRects() {
+      const hero = canvas.closest(".lp-hero");
+      if (!hero) return [];
+      const cr = canvas.getBoundingClientRect();
+      const out = [];
+      const push = (r) => { if (r && r.width > 1) out.push({ l: r.left - cr.left, t: r.top - cr.top, r: r.right - cr.left, b: r.bottom - cr.top }); };
+      hero.querySelectorAll(".lp-hero-eyebrow, .lp-hero-line, .lp-hero-sub, .lp-hero-hint").forEach((el) => {
+        try { const rg = document.createRange(); rg.selectNodeContents(el); push(rg.getBoundingClientRect()); }
+        catch (_) { push(el.getBoundingClientRect()); }
+      });
+      const cta = hero.querySelector(".lp-hero-ctas");
+      if (cta) push(cta.getBoundingClientRect());
+      const cue = hero.querySelector(".lp-scroll-cue");
+      if (cue) push(cue.getBoundingClientRect());
+      // Fixe Navbar als Hindernis, damit das Stück nicht dahinter verschwindet.
+      const nav = document.querySelector(".lp-nav");
+      if (nav) push(nav.getBoundingClientRect());
+      return out;
+    }
+
+    // Platzierung: am Tap, vollständig im Canvas. Die Silhouette (+ Label) wird
+    // in die größte freie vertikale Bahn der Tap-Spalte gelegt, die der Text
+    // frei lässt — so landet sie NIE auf der Schrift und das Label bleibt sichtbar.
+    function placeGarment(tapX, tapY) {
+      const LBL = 40, M = 14; // Label-Reserve + Rand
+      const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+      let s = Math.max(150, Math.min(0.52 * Math.min(w, h), 360));
+      let cx = clamp(tapX, s / 2 + 20, w - s / 2 - 20);
+
+      // Hindernisse in der Tap-Spalte → freie vertikale Intervalle bestimmen.
+      const obst = textRects()
+        .filter((r) => r.r > cx - s / 2 - 8 && r.l < cx + s / 2 + 8)
+        .map((r) => [Math.max(M, r.t - 10), Math.min(h - M, r.b + 10)])
+        .sort((a, b) => a[0] - b[0]);
+      const free = [];
+      let cursor = M;
+      for (const [t, b] of obst) { if (t > cursor) free.push([cursor, t]); cursor = Math.max(cursor, b); }
+      if (cursor < h - M) free.push([cursor, h - M]);
+      if (!free.length) return { cx, cy: clamp(tapY, s / 2 + M, h - M - LBL - s / 2), s };
+
+      // Bevorzugt das Intervall am Tap; sonst das größte.
+      const need = s + LBL;
+      let band = free.find((iv) => tapY >= iv[0] && tapY <= iv[1] && iv[1] - iv[0] >= Math.min(need, 150));
+      if (!band) band = free.reduce((m, iv) => (iv[1] - iv[0] > m[1] - m[0] ? iv : m), free[0]);
+      const bandH = band[1] - band[0];
+      if (need > bandH) s = Math.max(120, bandH - LBL);
+      const top = band[0] + Math.max(0, (bandH - (s + LBL)) / 2);
+      cx = clamp(tapX, s / 2 + 20, w - s / 2 - 20);
+      const cy = clamp(top + s / 2, s / 2 + M, h - M - LBL - s / 2);
+      return { cx, cy, s };
+    }
+
     function formGarment(tapX, tapY) {
       if (reduceMotion || !particles.length) return;
       garmentIdx = (garmentIdx + 1) % GARMENTS.length;
       const g = GARMENTS[garmentIdx];
 
-      // Größe + Position: am Tap zentriert, aber vollständig im Canvas.
-      const s = Math.max(170, Math.min(0.52 * Math.min(w, h), 380));
-      const cx = Math.min(Math.max(tapX, s / 2 + 24), w - s / 2 - 24);
-      const cy = Math.min(Math.max(tapY, s / 2 + 24), h - s / 2 - 24);
+      const { cx, cy, s } = placeGarment(tapX, tapY);
       formCenter = { x: cx, y: cy, s };
       formLabel = window.I18N ? window.I18N.t("type." + g.key) : g.key;
+      const map = (gx, gy) => [cx + (gx - 50) * (s / 100), cy + (gy - 50) * (s / 100)];
 
-      // Punkte-Budget proportional zur Konturlänge auf die Ketten verteilen.
-      const budget = Math.min(particles.length - 4, 96);
-      const lens = g.chains.map((c) => {
-        const P = c.closed ? c.pts.concat([c.pts[0]]) : c.pts;
-        let L = 0;
-        for (let i = 0; i < P.length - 1; i++) L += Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]);
-        return L;
-      });
-      const totalLen = lens.reduce((a, b) => a + b, 0);
+      // Stiche/Knoten proportional zur (skaleninvarianten) Konturlänge verteilen.
+      const budget = Math.min(particles.length - 4, 110);
+      const lens = g.chains.map((c) => chainLength(c.pts, c.closed));
+      const totalLen = lens.reduce((a, b) => a + b, 0) || 1;
 
       const free = particles.slice();
+      let acc = 0;
       formChains = g.chains.map((chain, ci) => {
-        const n = Math.max(chain.closed ? 12 : 4, Math.round(budget * (lens[ci] / totalLen)));
-        const targets = resample(chain.pts, chain.closed, n);
-        const assigned = [];
-        for (const [gx, gy] of targets) {
+        // Dichte, WEICHE Kontur in Screen-Koordinaten = die Naht-Bahn selbst
+        // (entkoppelt von der Partikelzahl → glatt statt polygonal).
+        const smooth = densify(chain.pts, chain.closed).map(([gx, gy]) => map(gx, gy));
+        const scum = [0];
+        for (let i = 1; i < smooth.length; i++) scum.push(scum[i - 1] + Math.hypot(smooth[i][0] - smooth[i - 1][0], smooth[i][1] - smooth[i - 1][1]));
+        let slen = scum[scum.length - 1] || 0;
+        if (chain.closed && smooth.length > 1) slen += Math.hypot(smooth[0][0] - smooth[smooth.length - 1][0], smooth[0][1] - smooth[smooth.length - 1][1]);
+        const startDist = acc;
+        acc += slen;
+
+        // Stiche: gleichmäßig auf der Naht; jeweils nächstes freies Partikel.
+        const n = Math.max(chain.closed ? 18 : 6, Math.round(budget * (lens[ci] / totalLen)));
+        const targets = resamplePoly(smooth, chain.closed, n);
+        const step = slen / Math.max(1, targets.length);
+        const parts = [];
+        for (let k = 0; k < targets.length; k++) {
           if (!free.length) break;
-          const tx = cx + (gx - 32) * (s / 64);
-          const ty = cy + (gy - 32) * (s / 64);
-          // Greedy: nächstes freies Partikel — kurze, ruhige Flugwege.
+          const tx = targets[k][0], ty = targets[k][1];
           let best = 0, bestD = Infinity;
           for (let i = 0; i < free.length; i++) {
             const d = (free[i].x - tx) ** 2 + (free[i].y - ty) ** 2;
             if (d < bestD) { bestD = d; best = i; }
           }
           const p = free.splice(best, 1)[0];
-          p.tx = tx;
-          p.ty = ty;
-          p.forming = true;
-          assigned.push(p);
+          p.tx = tx; p.ty = ty; p.forming = true; p.seamDist = startDist + k * step;
+          parts.push(p);
         }
-        return { closed: chain.closed, parts: assigned };
+        // Ozean-Verlauf entlang der Konturbox (einmal cachen, nie pro Frame).
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const pt of smooth) { minX = Math.min(minX, pt[0]); maxX = Math.max(maxX, pt[0]); minY = Math.min(minY, pt[1]); maxY = Math.max(maxY, pt[1]); }
+        const grad = (maxX - minX) >= (maxY - minY)
+          ? ctx.createLinearGradient(minX, 0, maxX, 0)
+          : ctx.createLinearGradient(0, minY, 0, maxY);
+        grad.addColorStop(0, "#2779a8");
+        grad.addColorStop(0.5, "#2a9d8f");
+        grad.addColorStop(1, "#64d6c4");
+        return { closed: chain.closed, smooth, scum, slen, startDist, grad, parts };
       });
       free.forEach((p) => { p.forming = false; });
+      totalDist = acc || 1;
+      formButtons = (g.buttons || []).map(([gx, gy]) => { const [x, y] = map(gx, gy); return { x, y }; });
       mode = "form";
       formStart = performance.now();
+    }
+
+    // Punkt auf der weichen Kontur einer Kette bei lokaler Bogenlänge.
+    function chainPtAt(chain, local) {
+      const sm = chain.smooth, sc = chain.scum;
+      const L = Math.max(0, Math.min(local, chain.slen));
+      for (let i = 1; i < sm.length; i++) {
+        if (sc[i] >= L) {
+          const t = (L - sc[i - 1]) / (sc[i] - sc[i - 1] || 1);
+          return [sm[i - 1][0] + (sm[i][0] - sm[i - 1][0]) * t, sm[i - 1][1] + (sm[i][1] - sm[i - 1][1]) * t];
+        }
+      }
+      const last = sm[sm.length - 1], base = sc[sc.length - 1];
+      const end = chain.closed ? sm[0] : last;
+      const t = clamp01((L - base) / (chain.slen - base || 1));
+      return [last[0] + (end[0] - last[0]) * t, last[1] + (end[1] - last[1]) * t];
+    }
+
+    // Punkt in Screen-Koordinaten bei Bogenlänge d entlang der gesamten Naht.
+    function pointAtDist(d) {
+      let chain = null;
+      for (const c of formChains) {
+        if (d <= c.startDist + c.slen || c === formChains[formChains.length - 1]) { chain = c; break; }
+      }
+      if (!chain || chain.smooth.length < 2) return null;
+      const p = chainPtAt(chain, d - chain.startDist);
+      return { x: p[0], y: p[1] };
     }
 
     function releaseForm() {
@@ -415,6 +572,7 @@
         p.wobble = Math.random() * Math.PI * 2;
       }
       formChains = [];
+      formButtons = [];
       mode = "drift";
     }
 
@@ -428,6 +586,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       mode = "drift";
       formChains = [];
+      formButtons = [];
       seed();
       if (reduceMotion) {
         // Standbild: Positionen einmalig berechnen, genau einmal zeichnen.
@@ -447,7 +606,7 @@
           baseRadius: radius,
           speed: (0.0006 + Math.random() * 0.0012) * (Math.random() < 0.5 ? 1 : -1),
           wobble: Math.random() * Math.PI * 2,
-          size: 1 + Math.random() * 1.8,
+          size: 1.6 + Math.random() * 1.8,
           color: COLORS[(Math.random() * COLORS.length) | 0],
           x: 0,
           y: 0,
@@ -488,59 +647,149 @@
 
     function frame() {
       ctx.clearRect(0, 0, w, h);
-      // Verbindungslinien — das ambient „Gewebe"
-      ctx.lineWidth = 1;
-      for (let i = 0; i < particles.length; i++) {
-        const a = particles[i];
-        for (let j = i + 1; j < particles.length; j++) {
-          const b = particles[j];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < LINK_DIST * LINK_DIST) {
-            const alpha = (1 - Math.sqrt(d2) / LINK_DIST) * 0.16;
-            ctx.strokeStyle = `rgba(100, 214, 196, ${alpha.toFixed(3)})`;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
+
+      // Ambient-Gewebe NUR im Drift — beim Formen kein Konstellations-Rauschen
+      // (entkluttert + gibt Frame-Budget für Naht & Nadel frei).
+      if (mode !== "form") {
+        ctx.lineWidth = 1;
+        for (let i = 0; i < particles.length; i++) {
+          const a = particles[i];
+          for (let j = i + 1; j < particles.length; j++) {
+            const b = particles[j];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < LINK_DIST * LINK_DIST) {
+              const alpha = (1 - Math.sqrt(d2) / LINK_DIST) * 0.16;
+              ctx.strokeStyle = `rgba(100, 214, 196, ${alpha.toFixed(3)})`;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
           }
         }
       }
-      // Kontur: die Punkte der Reihe nach verbinden — „die Fäden nähen"
+
+      // Formen: eine leuchtende Nadel zieht eine Ozean-Verlaufs-Naht über die
+      // Kontur — „die Fäden formen dein nächstes Stück".
+      let needleDist = -1, needleActive = false, seamA = 0, reveal = 0, fade = 0;
       if (mode === "form" && formChains.length) {
         const e = performance.now() - formStart;
-        const reveal = Math.min(1, Math.max(0, (e - 260) / 700)); // Naht zieht sich zu
-        const fade = Math.min(1, Math.max(0, (FORM_HOLD - e) / 350));
-        const alpha = reveal * fade;
-        if (alpha > 0.01) {
-          ctx.lineWidth = 1.4;
-          ctx.strokeStyle = `rgba(100, 214, 196, ${(0.55 * alpha).toFixed(3)})`;
-          for (const chain of formChains) {
-            const pts = chain.parts;
-            const upto = Math.max(2, Math.ceil(pts.length * reveal));
-            ctx.beginPath();
-            for (let i = 0; i < upto && i < pts.length; i++) {
-              if (i === 0) ctx.moveTo(pts[0].x, pts[0].y);
-              else ctx.lineTo(pts[i].x, pts[i].y);
+        reveal = easeInOut(clamp01((e - CONVERGE) / DRAW_MS));
+        fade = clamp01((FORM_HOLD - e) / FADE_MS);
+        seamA = fade * (0.82 + 0.13 * reveal);
+        needleDist = reveal * totalDist;
+        needleActive = e > CONVERGE - 30 && reveal < 1 && fade > 0.5;
+
+        // 1) Naht je Kette bis zur Nadel zeichnen (Ziel-Kontur = saubere Kurve).
+        //    Pro Kette zweimal stroken: weicher Glow + scharfer Faden — wirkt wie
+        //    leuchtender Faden, nicht wie technische Linie.
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        for (const chain of formChains) {
+          const sm = chain.smooth, sc = chain.scum;
+          if (sm.length < 2) continue;
+          const localDist = Math.max(0, Math.min(needleDist - chain.startDist, chain.slen));
+          if (localDist <= 0) continue;
+          const path = new Path2D();
+          path.moveTo(sm[0][0], sm[0][1]);
+          let cut = false;
+          for (let i = 1; i < sm.length; i++) {
+            if (sc[i] <= localDist) {
+              path.lineTo(sm[i][0], sm[i][1]);
+            } else {
+              const t = (localDist - sc[i - 1]) / (sc[i] - sc[i - 1] || 1);
+              path.lineTo(sm[i - 1][0] + (sm[i][0] - sm[i - 1][0]) * t, sm[i - 1][1] + (sm[i][1] - sm[i - 1][1]) * t);
+              cut = true;
+              break;
             }
-            if (chain.closed && reveal >= 1) ctx.closePath();
-            ctx.stroke();
           }
-          // Name des Stücks unter der Silhouette
-          ctx.font = "500 12px Poppins, system-ui, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillStyle = `rgba(159, 182, 198, ${(0.9 * alpha).toFixed(3)})`;
-          ctx.fillText(formLabel.toUpperCase(), formCenter.x, formCenter.y + formCenter.s / 2 + 26);
+          // geschlossene Kontur: Schluss-Segment zurück zum Start
+          if (!cut && chain.closed) {
+            const base = sc[sc.length - 1];
+            const t = clamp01((localDist - base) / (chain.slen - base || 1));
+            const last = sm[sm.length - 1];
+            path.lineTo(last[0] + (sm[0][0] - last[0]) * t, last[1] + (sm[0][1] - last[1]) * t);
+          }
+          ctx.strokeStyle = chain.grad;
+          ctx.lineWidth = 7;
+          ctx.globalAlpha = seamA * 0.16;
+          ctx.stroke(path);
+          ctx.lineWidth = 2.4;
+          ctx.globalAlpha = seamA;
+          ctx.stroke(path);
+        }
+        ctx.globalAlpha = 1;
+
+        // 2) Dekorative Knöpfe (Hemd) erscheinen mit der Naht
+        if (formButtons.length && reveal > 0.6) {
+          ctx.fillStyle = `rgba(100, 214, 196, ${(0.85 * fade).toFixed(3)})`;
+          for (const b of formButtons) {
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       }
+
+      // 3) Stiche/Knoten — gleichmäßig klein auf der Naht; beim Nadeldurchgang
+      //    kurz aufleuchten (Naht-Pop). Die glatte Naht führt, die Punkte sind
+      //    nur feine Stiche darauf.
       for (const p of particles) {
-        ctx.globalAlpha = p.forming ? 0.95 : 0.7;
+        let r = p.forming ? 1.7 : p.size;
+        let a = p.forming ? 0.9 : (mode === "form" ? 0.12 : 0.7);
+        if (mode === "form" && p.forming && needleDist >= 0) {
+          const age = needleDist - p.seamDist;
+          if (age >= 0 && age <= POP_DIST) {
+            const k = 1 - age / POP_DIST;
+            r = 1.7 * (1 + 1.5 * k);
+            a = 1;
+          }
+        }
+        ctx.globalAlpha = a;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
+
+      // 4) Die Nadel — das EINE Leuchten der Szene (nur im Näh-Fenster)
+      if (needleActive) {
+        const np = pointAtDist(needleDist);
+        if (np && np.x != null) {
+          const tp = pointAtDist(Math.max(0, needleDist - 60));
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          if (tp && tp.x != null) {
+            const tg = ctx.createLinearGradient(tp.x, tp.y, np.x, np.y);
+            tg.addColorStop(0, "rgba(100, 214, 196, 0)");
+            tg.addColorStop(1, "rgba(100, 214, 196, 0.9)");
+            ctx.strokeStyle = tg;
+            ctx.lineWidth = 3;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(tp.x, tp.y);
+            ctx.lineTo(np.x, np.y);
+            ctx.stroke();
+          }
+          ctx.shadowColor = "#64d6c4";
+          ctx.shadowBlur = 16;
+          ctx.fillStyle = "#9ff0e2";
+          ctx.beginPath();
+          ctx.arc(np.x, np.y, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 5) Label — Maschinen-Stimme (JetBrains Mono), unter dem Stück
+      if (mode === "form" && seamA > 0.02 && reveal > 0.35 && formLabel) {
+        ctx.font = "600 12px 'JetBrains Mono', ui-monospace, monospace";
+        ctx.textAlign = "center";
+        ctx.fillStyle = `rgba(232, 238, 243, ${(0.85 * seamA).toFixed(3)})`;
+        ctx.fillText(formLabel.toUpperCase(), formCenter.x, formCenter.y + formCenter.s / 2 + 30);
+      }
     }
 
     let last = 0;
