@@ -83,7 +83,7 @@ const GarmentSVG = (() => {
   // roughness → bright tight band, the glossiest. This is a tiny data table
   // feeding the existing gradient stops, NOT a real BRDF — subtlety is the bar.
   const MATERIAL_OPTICS = {
-    silk:      { spec: 0.95, rough: 0.10 }, // satin: glossiest, narrow sharp band
+    silk:      { spec: 0.86, rough: 0.12 }, // satin: glossiest, narrow sharp band (kept just shy of a hot blob)
     polyester: { spec: 0.60, rough: 0.34 }, // synthetic: moderate, a touch broader/softer than silk
     cotton:    { spec: 0.26, rough: 0.74 }, // matte microfibre: soft, broad, low-contrast
     linen:     { spec: 0.19, rough: 0.84 }, // drier/flatter than cotton
@@ -151,8 +151,11 @@ const GarmentSVG = (() => {
     const hw = lerp(0.12, 0.42, rough);                         // band half-width
     const o0 = r(clamp(peak - hw, 0.02, 0.98));                 // band starts (transparent)
     const o2 = r(clamp(peak + hw, 0.02, 0.98));                 // band ends (transparent)
-    const hiOp = r(clamp(0.18 + spec * 0.58, 0.06, 0.78));      // peak highlight opacity
-    const shOp = r(clamp(spec * 0.30, 0.0, 0.30));              // shadow-side darkening (contrast)
+    // Softer than before: the directional key light below now carries most of
+    // the form, so the specular band is a finishing sheen — bright on satin,
+    // a whisper on matte — not a hard stripe that crosses a narrow garment.
+    const hiOp = r(clamp(0.11 + spec * 0.30, 0.05, 0.44));      // peak highlight opacity
+    const shOp = r(clamp(spec * 0.24, 0.0, 0.24));              // shadow-side darkening (contrast)
     defs += `<linearGradient id="${id}s" x1="0" y1="0" x2="0.65" y2="1">` +
       `<stop offset="0" stop-color="#fff" stop-opacity="0"/>` +
       `<stop offset="${o0}" stop-color="#fff" stop-opacity="0"/>` +
@@ -165,10 +168,27 @@ const GarmentSVG = (() => {
     // wraps light gently (low, even volume), a glossy/low-roughness fabric has a
     // tighter, brighter centre lift and deeper edge shade — closer to how the
     // photoreal renders catch light. Driven by spec (lift) + rough (softness).
-    const volStr = clamp(0.13 + spec * 0.20, 0.12, 0.34);       // edge-shade depth
+    const volStr = clamp(0.10 + spec * 0.15, 0.10, 0.27);       // edge-shade depth (key light adds the rest)
     const volHi = r(volStr * lerp(0.95, 0.45, rough));          // centre lift: matte = weaker
     const volEdge = r(volStr * lerp(0.40, 0.30, rough));        // mid shade
     defs += `<linearGradient id="${id}v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="${r(volStr)}"/><stop offset="0.22" stop-color="#000" stop-opacity="${volEdge}"/><stop offset="0.5" stop-color="#fff" stop-opacity="${volHi}"/><stop offset="0.78" stop-color="#000" stop-opacity="${volEdge}"/><stop offset="1" stop-color="#000" stop-opacity="${r(volStr)}"/></linearGradient>`;
+
+    // Directional STUDIO KEY LIGHT (the form cue). A single soft light from the
+    // upper-left: a white lift across the top-left shoulder/chest falling to a
+    // black shade at the lower-right hem — the same diagonal the sheen/light
+    // direction already used (x2=0.65). This is what turns a flat fill into a
+    // body with a near side and a far side; glossier cloth (high spec, low
+    // roughness) catches a brighter, tighter key, matte cloth a gentle wide one.
+    // linearGradient (NOT radial) on purpose so matte fabrics emit no
+    // radialGradient — the satin streak stays the only radial cue.
+    const keyHi = r(clamp(0.12 + spec * 0.20, 0.10, 0.34));     // upper-left lift
+    const keyLo = r(clamp(0.14 + spec * 0.16 + (1 - rough) * 0.06, 0.12, 0.34)); // lower-right shade
+    const keyMid = r(lerp(0.52, 0.40, rough));                  // glossy = highlight sits higher/tighter
+    defs += `<linearGradient id="${id}kl" x1="0.08" y1="0" x2="0.92" y2="1">` +
+      `<stop offset="0" stop-color="#fff" stop-opacity="${keyHi}"/>` +
+      `<stop offset="${keyMid}" stop-color="#fff" stop-opacity="0"/>` +
+      `<stop offset="${r(keyMid + 0.14)}" stop-color="#000" stop-opacity="0"/>` +
+      `<stop offset="1" stop-color="#000" stop-opacity="${keyLo}"/></linearGradient>`;
     let pat = "";
     if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
 
@@ -191,14 +211,17 @@ const GarmentSVG = (() => {
     // their faint even sheen, no satin pool. White-only (constant) → XSS-safe.
     let streak = "";
     if (spec >= 0.72) {
-      const stOp = r(clamp(0.2 + spec * 0.4, 0.2, 0.6));
-      defs += `<radialGradient id="${id}k" cx="0.5" cy="0.34" r="0.5" gradientTransform="translate(0 0.224) scale(1 0.34)">` +
+      // A SOFT, flat satin pool — wide and low, sitting on the upper body, not a
+      // bright hot blob. Flattened vertically (scale y 0.26) so it reads as
+      // liquid satin catching light along the cloth, never a spotlight cross.
+      const stOp = r(clamp(0.07 + spec * 0.16, 0.07, 0.24));
+      defs += `<radialGradient id="${id}k" cx="0.5" cy="0.30" r="0.66" gradientTransform="translate(0 0.222) scale(1 0.26)">` +
         `<stop offset="0" stop-color="#fff" stop-opacity="${stOp}"/>` +
-        `<stop offset="0.55" stop-color="#fff" stop-opacity="${r(stOp * 0.28)}"/>` +
+        `<stop offset="0.6" stop-color="#fff" stop-opacity="${r(stOp * 0.22)}"/>` +
         `<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
       streak = `url(#${id}k)`;
     }
-    return { defs, fill, opacity, pat, grain, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)` };
+    return { defs, fill, opacity, pat, grain, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)`, key: `url(#${id}kl)` };
   }
 
   // Per-material fabric grain tile (distinct from the decorative p.pattern).
@@ -422,8 +445,70 @@ const GarmentSVG = (() => {
     return s.join("");
   }
 
+  // ---- cloth drape (the "real fabric" cue) ---------------------------------
+  // Soft creases + self-shadows derived from the geometry and the fabric's
+  // drape. A fold is a wide DIM valley with a thin BRIGHT ridge riding the same
+  // curve, so it reads as cloth catching light in a crease — not a drawn line.
+  // Drape scales with material softness and INVERSELY with structure (a tailored
+  // piece hangs stiff with few breaks; jersey/silk ripples). All ink is
+  // constant (#06101c shadow / #fff highlight) → XSS-safe like the seams.
+  const DRAPE = { silk: 0.95, fleece: 0.82, wool: 0.70, cotton: 0.55, linen: 0.64, polyester: 0.42, denim: 0.30 };
+  function drapeFor(p) {
+    const base = DRAPE[p && p.material] != null ? DRAPE[p.material] : 0.5;
+    const structure = clamp(num(p && p.structure, 0.5), 0, 1);
+    return clamp(base * lerp(1.12, 0.62, structure), 0.16, 1);
+  }
+  // One crease: a dim valley with a finer highlight ridge along the same path.
+  function crease(d, intensity) {
+    const k = clamp(intensity, 0, 1);
+    const w = r(2.4 * k + 1.4);
+    return `<path d="${d}" fill="none" stroke="#06101c" stroke-width="${w}" stroke-opacity="${r(0.08 + 0.07 * k)}" stroke-linecap="round" stroke-linejoin="round"/>` +
+           `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="${r(0.045 + 0.06 * k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+  // A soft self-shadow: a thick, very dim, round-capped stroke (round caps make
+  // the ends fade) — no SVG filter, no extra gradient → fast + XSS-safe.
+  function shadeStroke(d, w, op) {
+    return `<path d="${d}" fill="none" stroke="#06101c" stroke-width="${r(w)}" stroke-opacity="${r(op)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+
+  // Torso/sleeve drape for tops + (reused by) dresses' bodice.
+  function topFolds(g, p) {
+    const dr = drapeFor(p);
+    const out = [];
+    const top = g.armpitY + 10, bot = g.hemY - 12;
+    if (bot > top + 18) {
+      // Vertical drape folds across the torso, swaying gently. Skip the dead
+      // centre when a placket/zip already lives there.
+      const hasCenter = !(p.closure === "zip" || p.closure === "button" || p.closure === "half");
+      const n = Math.round(lerp(2, 5, dr));
+      for (let i = 0; i < n; i++) {
+        const t = n <= 1 ? 0.5 : i / (n - 1);
+        const fx = lerp(-g.chestHalf * 0.6, g.chestHalf * 0.6, t);
+        if (hasCenter || Math.abs(fx) > g.chestHalf * 0.18) {
+          const sway = (i % 2 ? 1 : -1) * lerp(1.4, 4.6, dr);
+          const x0 = CX + fx * 0.94, x1 = CX + fx, x2 = CX + fx * 1.03;
+          const d = `M ${r(x0)} ${Y(top)} C ${r(x1 + sway)} ${Y(lerp(top, bot, 0.42))} ${r(x1 - sway)} ${Y(lerp(top, bot, 0.72))} ${r(x2)} ${Y(bot)}`;
+          out.push(crease(d, dr * (0.62 + 0.5 * (1 - Math.abs(0.5 - t) * 2))));
+        }
+      }
+    }
+    // Under-collar cast shadow hugging the neckline.
+    out.push(shadeStroke(`M ${L(g.neckHalf - 1)} ${Y(g.neckY + 5)} Q ${CX} ${Y(g.neckY + 19)} ${R(g.neckHalf - 1)} ${Y(g.neckY + 5)}`, 6.5, 0.16));
+    // Under-arm drape shadow easing from each armpit toward the waist.
+    const ub = lerp(g.armpitY, g.hemY, 0.34);
+    out.push(shadeStroke(`M ${L(g.chestHalf - 2)} ${Y(g.armpitY + 3)} Q ${L(g.chestHalf - 12)} ${Y((g.armpitY + ub) / 2)} ${L(g.waistHalf - 1)} ${Y(ub)}`, 8, 0.07 + 0.08 * dr));
+    out.push(shadeStroke(`M ${R(g.chestHalf - 2)} ${Y(g.armpitY + 3)} Q ${R(g.chestHalf - 12)} ${Y((g.armpitY + ub) / 2)} ${R(g.waistHalf - 1)} ${Y(ub)}`, 8, 0.07 + 0.08 * dr));
+    // Sleeve break folds — sleeves read as tubes of cloth, not flat planks.
+    if (!g.sleeveless && g.wristY > g.shoulderY + 30) {
+      const sMid = lerp(g.shoulderY, g.wristY, 0.5);
+      out.push(crease(`M ${L((g.ciX + g.coX) / 2)} ${Y(sMid)} q ${-4} ${r((g.wristY - sMid) * 0.42)} ${-1} ${r((g.wristY - sMid) * 0.72)}`, dr * 0.75));
+      out.push(crease(`M ${R((g.ciX + g.coX) / 2)} ${Y(sMid)} q ${4} ${r((g.wristY - sMid) * 0.42)} ${1} ${r((g.wristY - sMid) * 0.72)}`, dr * 0.75));
+    }
+    return out.join("");
+  }
+
   function paintTop(p, cfg, g) {
-    return renderFlat(p, [outline(g)], seams(g, p, cfg));
+    return renderFlat(p, [outline(g)], seams(g, p, cfg), topFolds(g, p), { y: g.hemY, half: Math.max(g.hemHalf, g.shoulderHalf * 0.66) });
   }
   function topFlat(category, p) {
     const cfg = CFG[category] || CFG.jacket;
@@ -445,6 +530,29 @@ const GarmentSVG = (() => {
     const ankleHalf = clamp(lerp(7, legTop * 0.92, fit) + Math.max(0, vol) * 4, 6, legTop);
     const crotchY = topY + 96;
     return { fit, vol, topY, hemY, hipHalf, legTop, thighHalf, ankleHalf, crotchY };
+  }
+  // Trouser drape: hip/crotch easing folds + knee break + soft front-thigh
+  // shadow. The straight fall lines already drawn in paintPants give the leg
+  // structure; these add the way cloth gathers and breaks when worn.
+  function pantsFolds(g, p) {
+    const dr = drapeFor(p);
+    const { hemY, legTop, thighHalf, ankleHalf, crotchY } = g;
+    const out = [];
+    const ix = thighHalf * 0.05;
+    const lc = -(ankleHalf + ix) / 2;        // left leg centre at the hem
+    // Crotch radiating folds — short diagonals fanning down from the seat.
+    out.push(crease(`M ${CX} ${Y(crotchY - 6)} q ${-10} ${8} ${-14} ${20}`, dr * 0.7));
+    out.push(crease(`M ${CX} ${Y(crotchY - 6)} q ${10} ${8} ${14} ${20}`, dr * 0.7));
+    // Hip-to-crotch soft shade on each side (where trousers pull across the hip).
+    out.push(shadeStroke(`M ${L(legTop - 3)} ${Y(g.topY + 22)} Q ${L(legTop * 0.4)} ${Y(crotchY - 14)} ${L(3)} ${Y(crotchY)}`, 8, 0.06 + 0.06 * dr));
+    out.push(shadeStroke(`M ${R(legTop - 3)} ${Y(g.topY + 22)} Q ${R(legTop * 0.4)} ${Y(crotchY - 14)} ${R(3)} ${Y(crotchY)}`, 8, 0.06 + 0.06 * dr));
+    // Knee break — a faint crease across each leg, deeper on soft cloth.
+    if (dr > 0.4) {
+      const ky = lerp(crotchY, hemY, 0.56);
+      out.push(crease(`M ${r(CX + lc - thighHalf * 0.5)} ${Y(ky - 3)} q ${r(thighHalf * 0.5)} ${5} ${r(thighHalf)} ${0}`, dr * 0.6));
+      out.push(crease(`M ${r(CX - lc - thighHalf * 0.5)} ${Y(ky - 3)} q ${r(thighHalf * 0.5)} ${5} ${r(thighHalf)} ${0}`, dr * 0.6));
+    }
+    return out.join("");
   }
   function paintPants(p, g) {
     const { topY, hemY, legTop, thighHalf, ankleHalf, crotchY } = g;
@@ -498,7 +606,7 @@ const GarmentSVG = (() => {
     if (sig.includes("branding-patch")) {
       seam.push(`<rect x="${R(legTop - 18)}" y="${Y(topY + 3)}" width="14" height="9" rx="1.5" fill="none" stroke="${INK}" stroke-width="1.6"/>`);
     }
-    return renderFlat(p, [path], seam.join(""));
+    return renderFlat(p, [path], seam.join(""), pantsFolds(g, p), { y: hemY, half: g.legTop * 1.02 });
   }
 
   // ---- dress (bodice → skirt) ---------------------------------------------
@@ -537,6 +645,30 @@ const GarmentSVG = (() => {
     const shoulderHalf = sleeveless ? Math.max(neckHalf + 3, w.chestHalf * 0.5) : w.shoulderHalf;
     return { neckHalf, neckY, shoulderHalf, shoulderY, coX: sleeveless ? w.chestHalf : coX, ciX: sleeveless ? w.chestHalf : ciX, wristY, chestHalf: w.chestHalf, armpitY, waistHalf, waistY, hemHalf: skirtHalf, hemY, collar, sleeveless };
   }
+  // Dress drape: the skirt is where cloth really moves — a fan of creases from
+  // the waist widening to the hem (a silk slip ripples; a structured sheath
+  // barely breaks), an under-bust shade, and a soft centre catch on slip/column.
+  function dressFolds(g, p) {
+    const dr = drapeFor(p);
+    const out = [];
+    const top = g.waistY + 4, bot = g.hemY - 8;
+    const n = Math.round(lerp(3, 6, dr));
+    for (let i = 0; i < n; i++) {
+      const t = n <= 1 ? 0.5 : i / (n - 1);
+      const wx = lerp(-g.waistHalf * 0.66, g.waistHalf * 0.66, t);   // at the waist
+      const hx = lerp(-g.hemHalf * 0.82, g.hemHalf * 0.82, t);       // fans out at the hem
+      const sway = (i % 2 ? 1 : -1) * lerp(1.2, 4, dr);
+      const d = `M ${r(CX + wx)} ${Y(top)} C ${r(CX + lerp(wx, hx, 0.4) + sway)} ${Y(lerp(top, bot, 0.45))} ${r(CX + lerp(wx, hx, 0.75) - sway)} ${Y(lerp(top, bot, 0.78))} ${r(CX + hx)} ${Y(bot)}`;
+      out.push(crease(d, dr * (0.6 + 0.5 * (1 - Math.abs(0.5 - t) * 2))));
+    }
+    // Under-bust soft shade just below the bodice seam.
+    out.push(shadeStroke(`M ${L(g.chestHalf - 4)} ${Y(g.armpitY + 4)} Q ${CX} ${Y(g.armpitY + 16)} ${R(g.chestHalf - 4)} ${Y(g.armpitY + 4)}`, 7, 0.07 + 0.06 * dr));
+    // Centre satin catch on slip/column — a faint vertical highlight ridge.
+    if (p.subArchetype === "slip" || p.subArchetype === "column") {
+      out.push(`<path d="M ${CX} ${Y(g.waistY + 6)} L ${CX} ${Y(g.hemY - 12)}" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="${r(0.03 + 0.035 * dr)}" stroke-linecap="round"/>`);
+    }
+    return out.join("");
+  }
   function paintDress(p, g) {
     // Sleeveless (slip / tank): a thin strap at the shoulder and a SCOOPED
     // (concave) armhole down to the bust — not a straight diagonal that juts
@@ -574,7 +706,7 @@ const GarmentSVG = (() => {
     if (sig.includes("contrast-stitch")) {
       seam.push(`<path d="M ${L(g.waistHalf - 2)} ${Y(g.waistY + 6)} L ${L(g.hemHalf - 8)} ${Y(g.hemY - 8)} M ${R(g.waistHalf - 2)} ${Y(g.waistY + 6)} L ${R(g.hemHalf - 8)} ${Y(g.hemY - 8)}" fill="none" stroke="${INK}" stroke-width="1.4" stroke-dasharray="2 3" opacity="0.9"/>`);
     }
-    return renderFlat(p, [d], seam.join(""));
+    return renderFlat(p, [d], seam.join(""), dressFolds(g, p), { y: g.hemY, half: g.hemHalf });
   }
 
   // ---- assemble the SVG ----------------------------------------------------
@@ -582,25 +714,69 @@ const GarmentSVG = (() => {
   // journey matures: early answers show a faint sketch (light wash, dim seams),
   // later answers develop fill, sheen, pattern and details — the garment
   // visibly "entsteht" instead of appearing finished at the first question.
-  function renderFlat(p, paths, seamMarkup) {
+  function renderFlat(p, paths, seamMarkup, foldMarkup, ground) {
     const id = "g" + (++uid);
     const f = fillSpec(id, p);
     const reveal = clamp(num(p.reveal, 1), 0, 1);
     const fillOp = r(f.opacity * lerp(0.3, 1, reveal));
     const layerOp = r(lerp(0.12, 1, reveal));
     const seamOp = r(lerp(0.4, 1, reveal));
-    const body = paths.map((d) =>
-      `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>` +
+    const clipId = id + "clip";
+    // Grounded CONTACT SHADOW — a soft pool drawn in-SVG just below the hem so
+    // it tracks the garment's real footprint and morphs with it (a fixed CSS
+    // shadow can't align to a cropped tee AND a maxi dress). Drawn first, behind
+    // everything, so the piece sits IN the scene instead of floating on it.
+    let groundDefs = "", groundShadow = "";
+    if (ground && reveal > 0.01) {
+      const gy = Y(num(ground.y, VH - 18) + 8);
+      const grx = r(clamp(num(ground.half, 60) * 1.28, 22, CX - 4));
+      const gop = r(0.4 * reveal);
+      groundDefs = `<radialGradient id="${id}gs" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#03070c" stop-opacity="${gop}"/><stop offset="0.55" stop-color="#03070c" stop-opacity="${r(gop * 0.46)}"/><stop offset="1" stop-color="#03070c" stop-opacity="0"/></radialGradient>`;
+      groundShadow = `<ellipse cx="${CX}" cy="${gy}" rx="${grx}" ry="9" fill="url(#${id}gs)"/>`;
+    }
+    // Clip every soft layer to the silhouette so shading, drape and AO never
+    // bleed past the cloth edge.
+    const clip = `<clipPath id="${clipId}">${paths.map((d) => `<path d="${d}"/>`).join("")}</clipPath>`;
+    // Interior shading stack (back→front): flat colour → body volume → the
+    // directional key light (form) → weave grain → decorative pattern → drape
+    // folds → broad sheen → satin streak.
+    const inner = paths.map((d) =>
+      `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="none"/>` +
       (f.vol ? `<path d="${d}" fill="${f.vol}" stroke="none" opacity="${layerOp}"/>` : "") +
+      (f.key ? `<path d="${d}" fill="${f.key}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.grain ? `<path d="${d}" fill="${f.grain}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.streak ? `<path d="${d}" fill="${f.streak}" stroke="none" opacity="${layerOp}"/>` : "")
     ).join("");
+    const folds = foldMarkup ? `<g opacity="${r(lerp(0.0, 1, reveal))}">${foldMarkup}</g>` : "";
+    // Edge ambient occlusion: dim strokes clipped to the interior darken every
+    // silhouette edge AND concavity (armpit notch, leg gap, neckline) — the form
+    // shadow a flat horizontal gradient can't give, the single biggest cue that
+    // the cloth turns away from us. Two widths approximate a soft falloff. Kept
+    // solid through the weave-in (inline dasharray:none) so it doesn't sweep.
+    const aoOp = r(0.16 * reveal);
+    const ao = paths.map((d) =>
+      `<path d="${d}" fill="none" stroke="#04090f" stroke-width="13" stroke-opacity="${aoOp}" stroke-linejoin="round" style="stroke-dasharray:none"/>` +
+      `<path d="${d}" fill="none" stroke="#04090f" stroke-width="5.5" stroke-opacity="${aoOp}" stroke-linejoin="round" style="stroke-dasharray:none"/>`
+    ).join("");
+    // Edge RIM light — a fine bright stroke riding just inside the silhouette,
+    // over the AO turn. It reads as cloth catching the key light along its edge,
+    // the cue that finally lifts dark fabrics (a black tee) off the flat plane.
+    const rimOp = r(0.13 * reveal);
+    const rim = paths.map((d) =>
+      `<path d="${d}" fill="none" stroke="#dff1f4" stroke-width="1.6" stroke-opacity="${rimOp}" stroke-linejoin="round" style="stroke-dasharray:none"/>`
+    ).join("");
+    const interior = `<g clip-path="url(#${clipId})">${inner}${folds}${ao}${rim}</g>`;
+    // Crisp outline on top of all shading (this is the line that "draws in" on
+    // the weave moment), then the construction seams.
+    const outlineStroke = paths.map((d) =>
+      `<path d="${d}" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`
+    ).join("");
     const seams = seamMarkup ? `<g opacity="${seamOp}">${seamMarkup}</g>` : "";
     // pathLength=1 normalises every path so CSS can draw the flat in with one
     // stroke-dasharray animation (the genesis "weave-in" moment).
-    return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}</defs>${body}${seams}</svg>`
+    return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}${clip}${groundDefs}</defs>${groundShadow}${interior}${outlineStroke}${seams}</svg>`
       .replace(/<path /g, '<path pathLength="1" ');
   }
 

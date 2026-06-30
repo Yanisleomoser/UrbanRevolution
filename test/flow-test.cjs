@@ -8,7 +8,6 @@
      resolveEffects(node, payload) — maps a modality answer → DNA effects
      shiftHex(hex, dh, dl)         — HSL hue/lightness drift for variants
      mutateDna(base, idx, version) — deterministic concept-studio mutation
-     ring(maturity)                — maturity-ring SVG (clamped 0..1)
 
    resolveEffects' cards/default branches delegate to DesignEngine.choiceEffects,
    and mutateDna drives DesignDNA — both bare globals, so we wire the real
@@ -47,13 +46,6 @@ console.log("\n— resolveEffects · colorGradient (maps the full colour payload
   assert(r.conf === 1, "colour choice is fully confident");
   assert(r.eff.set["color.scheme"] === "duo-gradient" && eq(r.eff.set["color.stops"], ["#fff", "#000"]), "scheme + stops mapped");
   assert(r.eff.set["color.value"] === 0.5 && r.eff.set["color.saturation"] === 0.7, "value + saturation mapped");
-}
-
-console.log("\n— resolveEffects · hotspot (passes the payload through verbatim) —");
-{
-  const payload = { set: { "construction.pockets": "cargo" } };
-  const r = Flow.resolveEffects({ modality: "hotspot" }, payload);
-  assert(r.eff === payload && r.conf === 1, "hotspot effect is the payload itself");
 }
 
 console.log("\n— resolveEffects · ranking (decay-weights the order, top option also renders) —");
@@ -113,17 +105,6 @@ console.log("\n— mutateDna (deterministic concept-studio variants, base untouc
 
   const fit = global.DesignDNA.get(v1a, "silhouette.fit");
   assert(typeof fit === "number" && fit >= 0 && fit <= 1, "mutated fit stays clamped to 0..1");
-}
-
-console.log("\n— ring (maturity SVG, clamped to 0..1, percent text) —");
-{
-  const r0 = Flow.ring(0), r1 = Flow.ring(1);
-  assert(r0.startsWith("<svg") && r0.includes("de-ring"), "ring returns the ring SVG");
-  assert(/>0<tspan/.test(r0), "ring(0) renders 0%");
-  assert(/>100<tspan/.test(r1), "ring(1) renders 100%");
-  assert(Flow.ring(2) === r1, "ring clamps above 1 (2 → 100%)");
-  assert(Flow.ring(-1) === r0, "ring clamps below 0 (-1 → 0%)");
-  assert(/>50<tspan/.test(Flow.ring(0.5)), "ring(0.5) renders 50%");
 }
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));

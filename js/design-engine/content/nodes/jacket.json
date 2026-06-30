@@ -99,31 +99,6 @@
       "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
-      "id": "jacket_tap",
-      "phase": "E",
-      "modality": "hotspot",
-      "when": "category == 'jacket' && (_confidence.construction.collar < 0.6 || _confidence.construction.closure < 0.6)",
-      "priority": 0.62,
-      "question": { "de": "Tippe Details am Modell an", "en": "Tap details on the model" },
-      "regions": [
-        { "id": "collar", "label": { "de": "Kragen", "en": "Collar" }, "x": 50, "y": 17, "choices": [
-          { "id": "stand", "label": { "de": "Stehkragen", "en": "Stand" }, "effects": { "set": { "construction.collar": "stand" } } },
-          { "id": "notched", "label": { "de": "Revers", "en": "Notched" }, "effects": { "set": { "construction.collar": "notched" }, "weight": { "softCouture": 0.1 } } },
-          { "id": "hood", "label": { "de": "Kapuze", "en": "Hood" }, "effects": { "set": { "construction.collar": "hood" }, "weight": { "sport": 0.1 } } }
-        ] },
-        { "id": "closure", "label": { "de": "Verschluss", "en": "Closure" }, "x": 50, "y": 50, "choices": [
-          { "id": "zip", "label": { "de": "Zip", "en": "Zip" }, "effects": { "set": { "construction.closure": "zip" } } },
-          { "id": "button", "label": { "de": "Knöpfe", "en": "Buttons" }, "effects": { "set": { "construction.closure": "button" } } },
-          { "id": "open", "label": { "de": "Offen", "en": "Open" }, "effects": { "set": { "construction.closure": "none" } } }
-        ] },
-        { "id": "hem", "label": { "de": "Saum", "en": "Hem" }, "x": 50, "y": 82, "choices": [
-          { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } },
-          { "id": "drawcord", "label": { "de": "Kordel", "en": "Drawcord" }, "effects": { "set": { "construction.hem": "drawcord" }, "weight": { "sport": 0.1 } } },
-          { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed" } } }
-        ] }
-      ]
-    },
-    {
       "id": "jacket_closure",
       "phase": "E",
       "modality": "cards",

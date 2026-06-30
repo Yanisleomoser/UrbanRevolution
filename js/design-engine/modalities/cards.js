@@ -54,7 +54,7 @@
     const grid = V.el("div", { class: "de-cards", role: multi ? "group" : "group" });
     (node.choices || []).forEach((choice) => {
       // Name the button explicitly so its accessible name never depends on the
-      // image loading or the visible label's DOM position (matches hotspot.js /
+      // image loading or the visible label's DOM position (matches
       // colorGradient.js / ranking.js, which all label their tiles directly).
       const btn = V.el("button", { type: "button", class: "de-card", "aria-label": (choice.label && choice.label[lang]) || choice.id });
       if (multi) btn.setAttribute("aria-pressed", "false");
