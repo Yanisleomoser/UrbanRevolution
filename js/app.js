@@ -989,7 +989,10 @@
     const measurements = S.get("measurements");
     if (!measurements) return;
     const type = S.get("currentType");
-    const fabric = Measurements.estimateFabric(measurements, type);
+    const lengthKey = S.get("currentLength") || "regular";
+    const lengthFactors = (window.CONFIG && CONFIG.PRODUCTION_ESTIMATES.lengthFabricFactor) || {};
+    const lengthFactor = lengthFactors[lengthKey] || 1;
+    const fabric = Measurements.estimateFabric(measurements, type, lengthFactor);
     const seams = Measurements.estimateSeams(measurements, type);
     const size = Measurements.calculateSize(measurements);
 

@@ -25,6 +25,7 @@ const Export = (() => {
       : (window.Measurements && window.Measurements.LABELS[key]) || key;
 
   function fitLabel(fit) {
+    if (fit === undefined || fit === null) return t("fit.regular");
     if (fit < 0.33) return t("fit.slim");
     if (fit > 0.66) return t("fit.oversized");
     return t("fit.regular");
