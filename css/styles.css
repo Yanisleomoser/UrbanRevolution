@@ -6677,8 +6677,7 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     gap: 8px;
     font-family: var(--font-mono);
     font-size: 11.5px;
-    color: var(--text-muted);
-    opacity: 0.75;
+    color: var(--text-dim);
     margin-bottom: clamp(22px, 3vw, 30px);
 }
 .lp-aidr-foil-ar { color: var(--text-muted); }
