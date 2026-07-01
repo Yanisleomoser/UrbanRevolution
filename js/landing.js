@@ -309,6 +309,10 @@
     let raf = 0;
     let running = false;
     const pointer = { x: -9999, y: -9999, active: false };
+    // Canvas-Rect fürs Pointer-Mapping gecacht (wie facts-instruments.js) —
+    // sonst zwingt jede Mausbewegung ein synchrones Layout-Read.
+    let canvasRect = null;
+    const invalidateCanvasRect = () => { canvasRect = null; };
 
     // ── Kleidungs-Silhouetten (64×64-Raster, wie die Typ-Icons im Studio).
     //    Tap/Klick: die Punkte fliegen auf die Kontur und verbinden sich
@@ -559,6 +563,9 @@
       mode = "drift";
       formChains = [];
       formButtons = [];
+      // Neuer Viewport, frisch gesätes Feld — dem FPS-Wächter eine neue Chance
+      // geben, statt eine frühere Degradierung für immer mitzuschleppen.
+      slowFrames = 0; degradeLvl = 0; linksOn = true;
       seed();
       allocGrid();
       computeMask();
@@ -955,9 +962,9 @@
     });
 
     hero.addEventListener("pointermove", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.x = e.clientX - rect.left;
-      pointer.y = e.clientY - rect.top;
+      if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - canvasRect.left;
+      pointer.y = e.clientY - canvasRect.top;
       pointer.active = true;
     }, { passive: true });
     hero.addEventListener("pointerleave", () => { pointer.active = false; });
@@ -966,11 +973,16 @@
     // verbinden sich zur Silhouette des nächsten Kleidungsstücks.
     hero.addEventListener("pointerdown", (e) => {
       if (e.target.closest && e.target.closest("a, button")) return;
-      const rect = canvas.getBoundingClientRect();
-      formGarment(e.clientX - rect.left, e.clientY - rect.top);
+      if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
+      formGarment(e.clientX - canvasRect.left, e.clientY - canvasRect.top);
     }, { passive: true });
 
-    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("resize", () => { invalidateCanvasRect(); resize(); }, { passive: true });
+    window.addEventListener("scroll", invalidateCanvasRect, { passive: true, capture: true });
+    // Sprachwechsel und später ladende Web-Fonts verändern die Headline-Box —
+    // die Web-Schutzmaske sonst bis zum nächsten Resize verwaist/verschoben.
+    window.addEventListener("language:change", computeMask);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(computeMask);
     resize();
   }
 
