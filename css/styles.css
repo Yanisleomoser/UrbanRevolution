@@ -6715,14 +6715,49 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
 }
 .lp-aidr-body strong { color: var(--text); font-weight: 500; }
 
-/* ── Dein Stil (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
+/* ── Dein Stil (Identitäts-Beat — der eine warme Akzent, nur hier) ──
+   Ein Rang identischer kühler Fäden hängt an einer Stange; GENAU EINER
+   (warm) schwingt aus der Uniformität aus — der einzige --accent-warm-Moment.
+   Feld ist rein dekorativ (aria-hidden), Aussage bleibt in Headline+Body.
+   Default (ohne fx-go) = fertig gezeichnet & sichtbar → no-JS behält die Kunst.
+   Treiber: js/identity-thread.js. */
 .lp-identity {
-    max-width: 820px;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    max-width: 1120px;
     margin: 0 auto;
     text-align: center;
     /* fauchter warmer Schimmer hinter dem Block — fällt zum Rand auf 0 ab */
-    background: radial-gradient(58% 52% at 50% 42%, rgba(232, 160, 106, 0.10) /* --accent-warm */, transparent 70%);
+    background: radial-gradient(58% 46% at 50% 46%, rgba(232, 160, 106, 0.09) /* --accent-warm */, transparent 72%);
 }
+.lp-identity-inner { position: relative; z-index: 2; max-width: 820px; margin: 0 auto; }
+/* Faden-Feld: full-section Backdrop; SVG wird von identity-thread.js gebaut. */
+.it-field { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none; }
+.it-field:empty { display: none; }                 /* ohne JS: kein leerer Kasten */
+.it-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(60% 52% at 50% 46%, rgba(10, 22, 34, .72), rgba(10, 22, 34, .28) 58%, transparent 82%); }
+.it-field:empty + .it-scrim { display: none; }      /* kein Scrim ohne Fäden */
+.it-rail, .it-cool { fill: none; stroke: #7f9db2; stroke-linecap: round; }
+.it-cool--tint { stroke: #2779a8; }
+.it-node { fill: #9fb6c6; }
+.it-warm { fill: none; stroke: var(--accent-warm); stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 3px rgba(232, 160, 106, .85)) drop-shadow(0 0 13px rgba(232, 160, 106, .42)); }
+.it-warm-dot { fill: var(--accent-warm);
+    filter: drop-shadow(0 0 4px rgba(232, 160, 106, .9)) drop-shadow(0 0 12px rgba(232, 160, 106, .5)); }
+/* Self-draw-Eintritt — opt-IN unter html.fx-go (setzt identity-thread.js).
+   Startzustand (verborgen) hängt NUR an .fx-go, nie an .fx allein → wenn JS/
+   Observer nie läuft, bleiben die Fäden am sichtbaren Default. */
+html.fx-go .it-warm { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
+html.fx-go .it-field.is-in .it-warm { stroke-dashoffset: 0; transition: stroke-dashoffset 1.5s cubic-bezier(.22, .61, .36, 1); }
+html.fx-go .it-field .it-rail,
+html.fx-go .it-field .it-cool,
+html.fx-go .it-field .it-node,
+html.fx-go .it-field .it-warm-dot { opacity: 0; }
+html.fx-go .it-field.is-in .it-rail,
+html.fx-go .it-field.is-in .it-cool,
+html.fx-go .it-field.is-in .it-node,
+html.fx-go .it-field.is-in .it-warm-dot { opacity: 1; transition: opacity .8s ease; transition-delay: var(--d, 0ms); }
 .lp-label--warm { color: var(--accent-warm); }
 .lp-identity-title {
     font-family: var(--font-display);

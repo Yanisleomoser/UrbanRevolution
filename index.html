@@ -467,11 +467,20 @@
         <p class="lp-aidr-body" data-i18n-html="aidr.body_html">Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: ein System, das weggeworfene Textilien <strong>sieht, trennt und sortiert</strong> — und dein Stück <strong>autonom fertigt</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI sortiert den Stoff und baut das Stück.</strong></p>
     </section>
 
-    <!-- ★ DEIN STIL — Botschaft #2, der Identitäts-Beat (der eine warme Akzent) -->
+    <!-- ★ DEIN STIL — Botschaft #2, der Identitäts-Beat (der eine warme Akzent).
+         Visual: ein Rang identischer kühler Fäden hängt an einer Stange; GENAU
+         EINER (warm, --accent-warm) schwingt aus der Uniformität aus. Rein
+         dekorativ (aria-hidden) — die Aussage bleibt in Headline + Body; der
+         Faden zeichnet sich beim Reveal selbst, ohne JS/Motion steht er fertig.
+         :empty blendet das leere SVG ohne JS aus. Treiber: js/identity-thread.js. -->
     <section class="lp-identity lp-block" id="your-style" data-lp-reveal>
-        <p class="lp-label lp-label--warm" data-i18n="identity.label">Dein Stil</p>
-        <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">Deinen Stil gab es nie <em>von der Stange</em>.</h2>
-        <p class="lp-identity-body" data-i18n-html="identity.body_html">Eine Stange bietet dir eine Grösse. Wir bieten dir einen Anfang — eine Idee, eine Stimmung, eine Form in deinem Kopf — und fertigen das eine Stück, das deins ist. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
+        <svg class="it-field" id="it-field" aria-hidden="true"></svg>
+        <div class="it-scrim" aria-hidden="true"></div>
+        <div class="lp-identity-inner">
+            <p class="lp-label lp-label--warm" data-i18n="identity.label">Dein Stil</p>
+            <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">Deinen Stil gab es nie <em>von der Stange</em>.</h2>
+            <p class="lp-identity-body" data-i18n-html="identity.body_html">Eine Stange bietet dir eine Grösse. Wir bieten dir einen Anfang — eine Idee, eine Stimmung, eine Form in deinem Kopf — und fertigen das eine Stück, das deins ist. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
+        </div>
     </section>
 
     <!-- ── So funktioniert's — der 4-Schritte-Pfad als User-Journey-Naht.
@@ -1158,6 +1167,7 @@
     <script defer src="js/ur-create.js?v=20260611-weave"></script>
     <script defer src="js/ambient-ticker.js"></script>
     <script defer src="js/facts-instruments.js?v=20260630-fxgo"></script>
+    <script defer src="js/identity-thread.js?v=20260701-identity"></script>
     <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
          dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
          Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->
