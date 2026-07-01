@@ -1255,12 +1255,32 @@ input[aria-invalid="true"] {
    foto-spezifische .photo-privacy, statt sie zu duplizieren. Kein erfundener
    Genauigkeitswert (kein „±X cm"). Selektor-Spezifität schlägt bewusst
    `.section-header p`, damit die Notiz kleiner/leiser bleibt als das Intro. */
-.measure-section .section-header .measure-note {
-    margin: var(--space-4) auto 0;
-    max-width: 54ch;
-    color: var(--text-muted);
+.measure-section .section-header .measure-badges {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+.measure-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
     font-size: var(--text-sm);
-    line-height: var(--leading-normal);
+    color: var(--text);
+}
+.measure-badge-dot {
+    flex: none;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    box-shadow: 0 0 8px var(--accent-3);
 }
 
 .photo-upload-action {
@@ -6706,14 +6726,106 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     line-height: 1.6;
     max-width: 42ch;
 }
-.lp-aidr-body {
+/* ── Verantwortungs-Band (ersetzt den langen Absatz): Du → KI ── */
+.lp-aidr-split {
+    display: flex;
+    align-items: stretch;
+    gap: clamp(12px, 2vw, 20px);
+    margin-bottom: clamp(22px, 3vw, 32px);
+}
+.lp-aidr-role {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: clamp(18px, 2.5vw, 28px);
+}
+.lp-aidr-role--you {
+    border-color: rgba(232, 160, 106, 0.4); /* --accent-warm */
+    background: radial-gradient(120% 120% at 0% 0%, rgba(232, 160, 106, 0.09), transparent 60%);
+}
+.lp-aidr-role--ai {
+    border-color: rgba(42, 157, 143, 0.5); /* --accent */
+    background: radial-gradient(120% 120% at 0% 0%, rgba(42, 157, 143, 0.1), transparent 60%), var(--bg-card);
+}
+.lp-aidr-role-ico { width: 26px; height: 26px; margin-bottom: 12px; }
+.lp-aidr-role-ico svg {
+    width: 100%; height: 100%;
+    stroke: currentColor; stroke-width: 1.4; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+.lp-aidr-role--you .lp-aidr-role-ico { color: var(--accent-warm); }
+.lp-aidr-role--ai .lp-aidr-role-ico { color: var(--accent-3); }
+.lp-aidr-role-tag {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.lp-aidr-role--you .lp-aidr-role-tag { color: var(--accent-warm); }
+.lp-aidr-role--ai .lp-aidr-role-tag { color: var(--accent-3); }
+.lp-aidr-role-val {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(18px, 2.2vw, 24px);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--text);
+}
+.lp-aidr-verbs {
+    counter-reset: v;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+.lp-aidr-verbs li {
+    counter-increment: v;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lp-aidr-verbs li::before {
+    content: counter(v, decimal-leading-zero);
+    color: var(--accent-3);
+    font-size: 10px;
+}
+.lp-aidr-split-arrow {
+    align-self: center;
+    flex: none;
+    width: 24px; height: 24px;
+    color: var(--text-muted);
+}
+.lp-aidr-split-arrow svg {
+    width: 100%; height: 100%;
+    stroke: currentColor; stroke-width: 1.4; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+@media (max-width: 620px) {
+    .lp-aidr-split { flex-direction: column; }
+    .lp-aidr-split-arrow { transform: rotate(90deg); }
+}
+.lp-aidr-kicker {
     color: var(--text-dim);
     font-weight: 300;
-    font-size: clamp(15.5px, 1.9vw, 19px);
-    line-height: 1.7;
-    max-width: 64ch;
+    font-size: clamp(15px, 1.8vw, 18px);
+    line-height: 1.6;
+    max-width: 56ch;
 }
-.lp-aidr-body strong { color: var(--text); font-weight: 500; }
+.lp-aidr-kicker strong { color: var(--text); font-weight: 500; }
 
 /* ── Dein Stil (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
 .lp-identity {

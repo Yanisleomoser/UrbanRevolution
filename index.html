@@ -464,7 +464,30 @@
                 <p data-i18n="aidr.lit_p">KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.</p>
             </article>
         </div>
-        <p class="lp-aidr-body" data-i18n-html="aidr.body_html">Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: ein System, das weggeworfene Textilien <strong>sieht, trennt und sortiert</strong> — und dein Stück <strong>autonom fertigt</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI sortiert den Stoff und baut das Stück.</strong></p>
+        <!-- Verantwortungs-Band: ersetzt den langen Fließtext-Absatz. Sagt dieselbe
+             load-bearing Kernaussage (Mensch entwirft, KI fertigt) als kompakte
+             Struktur statt Prosa. Bewusst KEIN zweites Kartenpaar, damit es den
+             Vergleich oben nicht doppelt. -->
+        <div class="lp-aidr-split" data-lp-reveal>
+            <div class="lp-aidr-role lp-aidr-role--you">
+                <span class="lp-aidr-role-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14.5 6.5l3 3"/></svg></span>
+                <span class="lp-aidr-role-tag" data-i18n="aidr.you_tag">Du</span>
+                <span class="lp-aidr-role-val" data-i18n="aidr.you_val">Design &amp; Stil</span>
+            </div>
+            <span class="lp-aidr-split-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
+            <div class="lp-aidr-role lp-aidr-role--ai">
+                <span class="lp-aidr-role-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2.4"/><path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3"/></svg></span>
+                <span class="lp-aidr-role-tag" data-i18n="aidr.ai_tag">KI</span>
+                <span class="lp-aidr-role-val" data-i18n="aidr.ai_val">Stoff &amp; Fertigung</span>
+                <ol class="lp-aidr-verbs">
+                    <li data-i18n="aidr.verb1">sehen</li>
+                    <li data-i18n="aidr.verb2">trennen</li>
+                    <li data-i18n="aidr.verb3">sortieren</li>
+                    <li data-i18n="aidr.verb4">bauen</li>
+                </ol>
+            </div>
+        </div>
+        <p class="lp-aidr-kicker" data-i18n-html="aidr.kicker_html">Ein von Menschen geschaffenes Problem lösen — kein neuer Grund zu konsumieren. <strong>Das Design bleibt deins.</strong></p>
     </section>
 
     <!-- ★ DEIN STIL — Botschaft #2, der Identitäts-Beat (der eine warme Akzent) -->
@@ -741,7 +764,11 @@
                 <span class="section-number mono-label section-label" aria-hidden="true" data-i18n="sec.measure">[ 04 / Deine Masse ]</span>
                 <h2 data-i18n="measure.h2">Deine Körpermasse</h2>
                 <p data-i18n="measure.intro">Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Masse.</p>
-                <p class="measure-note" data-i18n="meas.note">Foto-Auswertung läuft komplett in deinem Browser — das Foto verlässt nie dein Gerät. Die Masse sind eine Schätzung und bleiben jederzeit anpassbar.</p>
+                <ul class="measure-badges" aria-label="Datenschutz &amp; Hinweise">
+                    <li class="measure-badge"><span class="measure-badge-dot" aria-hidden="true"></span><span data-i18n="meas.badge_browser">100% im Browser</span></li>
+                    <li class="measure-badge"><span class="measure-badge-dot" aria-hidden="true"></span><span data-i18n="meas.badge_device">Foto bleibt auf dem Gerät</span></li>
+                    <li class="measure-badge"><span class="measure-badge-dot" aria-hidden="true"></span><span data-i18n="meas.badge_adjust">Schätzung — jederzeit anpassbar</span></li>
+                </ul>
             </div>
 
             <div class="measure-grid" data-reveal-stagger>
