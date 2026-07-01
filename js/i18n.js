@@ -47,7 +47,7 @@ const I18N = (() => {
       // ── UR-Create-Direktive (Hero · UR Create · Ownership · Galerie · Problem · Alternative · Vision · Join · Final) ──
       "urcreate.label": "[ UR CREATE ]",
       "urcreate.h2": "Deine Idee kommt zuerst",
-      "urcreate.intro": "Die meiste Mode beginnt in der Fabrik. Deine beginnt hier — mit einer Idee. Entwirf, entwickle weiter, bis es wirklich deins ist.",
+      "urcreate.intro": "Beschreibe deine Idee und entwickle sie weiter, bis das Stück wirklich deins ist — Stil, Form, Material.",
       "own.eyebrow": "[ DEIN MOMENT ]",
       "own.headline_html": "Dieses Design existiert, <em>weil du es erschaffen hast.</em>",
       "own.text": "Die meiste Mode entsteht andersherum: Millionen Kleidungsstücke werden produziert, bevor irgendjemand danach gefragt hat. Urban Revolution glaubt, dass Kreativität zuerst kommt.",
@@ -91,7 +91,7 @@ const I18N = (() => {
       "sphere.close": "Schliessen",
       "sphere.detail_kicker": "Community-Kreation",
       "sphere.by": "von",
-      "sphere.detail_line": "Einzelstück aus recycelter Kleidung — entworfen in UR Create. Made for one. Not for all.",
+      "sphere.detail_line": "Einzelstück aus recycelter Kleidung — entworfen in UR Create.",
       "sphere.detail_cta": "Eigene Vision erschaffen",
       "sphere.detail_join": "Oder werde Teil der Community",
       "join.label": "[ COMMUNITY ]",
@@ -277,7 +277,7 @@ const I18N = (() => {
       // ── Masse-Sektion ──
       "measure.h2": "Deine Körpermasse",
       "measure.intro": "Damit dein Kleidungsstück perfekt sitzt, brauchen wir deine genauen Masse.",
-      "meas.note": "Foto-Auswertung läuft komplett in deinem Browser — das Foto verlässt nie dein Gerät. Die Masse sind eine Schätzung und bleiben jederzeit anpassbar.",
+      "meas.note": "Die Masse sind eine Schätzung und bleiben jederzeit anpassbar.",
       "measure.photo_h4": "Masse aus Foto",
       "measure.photo_body": "Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Masse automatisch.",
       "measure.photo_privacy": "100% clientseitig — dein Bild verlässt nie dein Gerät.",
@@ -403,7 +403,7 @@ const I18N = (() => {
       "faq.q4": "Was, wenn ich nicht gemessen wurde?",
       "faq.a4": "Drei Wege zu deinen Massen — Foto-Auswertung (1 Klick, 100 % clientseitig), manuelle Eingabe der 9 Werte, oder ein Grössen-Preset (S/M/L/XL) als Startpunkt, das du danach anpassen kannst. Deine Masse gehören zu deinem Entwurf und sind bereit, sobald die Fertigung startet.",
       "faq.q5": "Wo wird gefertigt?",
-      "faq.a5": "Urban Revolution ist heute eine Vision, noch keine laufende Produktion. Das Ziel: eine vollautonome Kreislauf-Fabrik, die weggeworfene Textilien sortiert und daraus dein Einzelstück fertigt. Trag dich ein — du erfährst als Erstes, wann und wie es so weit ist.",
+      "faq.a5": "In der geplanten vollautonomen Kreislauf-Fabrik, die weggeworfene Textilien sortiert und daraus dein Einzelstück fertigt. Trag dich ein — du erfährst als Erstes, wann und wo es so weit ist.",
       "faq.q6": "Kann ich gespeicherte Designs später bestellen?",
       "faq.a6": "Deine Entwürfe bleiben in deiner Bibliothek (lokal im Browser) gespeichert. Bestellen kannst du sie, sobald wir live gehen — dann holst du sie einfach wieder hervor.",
 
@@ -563,7 +563,7 @@ const I18N = (() => {
       "landing.stage3_title": "Entworfen",
       "landing.stage3_text": "Du entwirfst dein Stück — dein Stil, deine Idee, nach deinen Massen.",
       "landing.stage4_title": "Wiedergeboren",
-      "landing.stage4_text": "Eine vollautonome Fabrik soll dein Stück autonom fertigen — ein Stück für einen Menschen. Made for one. Not for all.",
+      "landing.stage4_text": "Eine vollautonome Fabrik soll dein Stück autonom fertigen — ein Stück für einen Menschen.",
       "landing.stats_label": "Die Zahlen",
       "landing.stats_title": "Warum es eine Revolution braucht",
       "landing.stat1_label": "der Kleidung wird zu neuer Kleidung recycelt",
@@ -584,7 +584,7 @@ const I18N = (() => {
       "aidr.lit_tag": "Unser Einsatz",
       "aidr.lit_h": "Sehen, trennen, zurückgewinnen",
       "aidr.lit_p": "KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.",
-      "aidr.body_html": "Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: ein System, das weggeworfene Textilien <strong>sehen, trennen und sortieren</strong> soll — und dein Stück <strong>autonom fertigen</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI soll den Stoff sortieren und das Stück bauen.</strong>",
+      "aidr.body_html": "Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: sie soll <strong>Ordnung in genau diesen Berg bringen</strong> — und dein Stück <strong>autonom fertigen</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI soll den Stoff sortieren und das Stück bauen.</strong>",
 
       // ── Dein Stil (Landing-Beat #2 — Identität) ──
       "identity.label": "Dein Stil",
@@ -630,7 +630,7 @@ const I18N = (() => {
       // ── UR Create directive (Hero · UR Create · Ownership · Gallery · Problem · Alternative · Vision · Join · Final) ──
       "urcreate.label": "[ UR CREATE ]",
       "urcreate.h2": "Your imagination comes first",
-      "urcreate.intro": "Most fashion starts with production. What happens when it starts with people? Create, evolve, make it yours.",
+      "urcreate.intro": "Describe your idea and shape it until the piece is truly yours — style, shape, material.",
       "own.eyebrow": "[ YOUR MOMENT ]",
       "own.headline_html": "This design exists <em>because you created it.</em>",
       "own.text": "Most fashion is created the other way around: millions of garments are produced before anyone asks for them. Urban Revolution believes creativity should come first.",
@@ -674,7 +674,7 @@ const I18N = (() => {
       "sphere.close": "Close",
       "sphere.detail_kicker": "Community creation",
       "sphere.by": "by",
-      "sphere.detail_line": "A one-of-one from reclaimed cloth — designed in UR Create. Made for one. Not for all.",
+      "sphere.detail_line": "A one-of-one from reclaimed cloth — designed in UR Create.",
       "sphere.detail_cta": "Create your own vision",
       "sphere.detail_join": "Or join the community",
       "join.label": "[ COMMUNITY ]",
@@ -860,7 +860,7 @@ const I18N = (() => {
       // ── Measurements section ──
       "measure.h2": "Your body measurements",
       "measure.intro": "So your garment fits perfectly, we need your exact measurements.",
-      "meas.note": "Photo analysis runs entirely in your browser — the photo never leaves your device. Measurements are an estimate and stay adjustable anytime.",
+      "meas.note": "Measurements are an estimate and stay adjustable anytime.",
       "measure.photo_h4": "Measurements from photo",
       "measure.photo_body": "Upload a full-body photo (standing straight, T-pose or arms slightly to the side). MediaPipe analyzes the pose and estimates your measurements automatically.",
       "measure.photo_privacy": "100% client-side — your image never leaves your device.",
@@ -986,7 +986,7 @@ const I18N = (() => {
       "faq.q4": "What if I haven't been measured?",
       "faq.a4": "Three ways to your measurements — photo analysis (1 click, 100% client-side), manual entry of the 9 values, or a size preset (S/M/L/XL) as a starting point you can adjust afterwards. Your measurements belong to your design and are ready the moment manufacturing starts.",
       "faq.q5": "Where is it made?",
-      "faq.a5": "Urban Revolution is a vision today, not yet a running production. The goal: a fully autonomous circular factory that sorts discarded textiles and makes your one-of-a-kind piece from them. Sign up — you'll be the first to know when and how it happens.",
+      "faq.a5": "In the planned fully autonomous circular factory that sorts discarded textiles and makes your one-of-a-kind piece from them. Sign up — you'll be the first to know when and where it happens.",
       "faq.q6": "Can I order saved designs later?",
       "faq.a6": "Your designs stay saved in your library (locally in your browser). You'll be able to order them once we go live — just bring them back up again.",
 
@@ -1146,7 +1146,7 @@ const I18N = (() => {
       "landing.stage3_title": "Designed",
       "landing.stage3_text": "You design your piece — your style, your idea, to your measurements.",
       "landing.stage4_title": "Reborn",
-      "landing.stage4_text": "A fully autonomous factory will make your piece — one garment for one person. Made for one. Not for all.",
+      "landing.stage4_text": "A fully autonomous factory will make your piece — one garment for one person.",
       "landing.stats_label": "The numbers",
       "landing.stats_title": "Why it takes a revolution",
       "landing.stat1_label": "of clothing is recycled into new clothing",
@@ -1167,7 +1167,7 @@ const I18N = (() => {
       "aidr.lit_tag": "Our use",
       "aidr.lit_h": "See, separate, reclaim",
       "aidr.lit_p": "AI aimed at the discard pile: untangling what was thrown away so it can live again.",
-      "aidr.body_html": "The hard problem in circular fashion was never the sewing — it's untangling what's thrown away. Mixed fibres, fastenings, dyes; a pile no human line can sort at scale. That's exactly where we point AI: a system designed to <strong>see, separate and sort</strong> discarded textile — and <strong>autonomously make</strong> your piece. That is the correct use of this technology: solving a human-made problem, not inventing a new reason to consume. <strong>The design stays yours. You set the style — AI is there to sort the fabric and build the piece.</strong>",
+      "aidr.body_html": "The hard problem in circular fashion was never the sewing — it's untangling what's thrown away. Mixed fibres, fastenings, dyes; a pile no human line can sort at scale. That's exactly where we point AI: it should <strong>bring order to that very pile</strong> — and <strong>autonomously make</strong> your piece. That is the correct use of this technology: solving a human-made problem, not inventing a new reason to consume. <strong>The design stays yours. You set the style — AI is there to sort the fabric and build the piece.</strong>",
 
       // ── Your style (landing beat #2 — identity) ──
       "identity.label": "Your style",
