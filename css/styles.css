@@ -6669,154 +6669,109 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     margin-bottom: clamp(34px, 5vw, 60px);
 }
 .lp-aidr-title em { font-style: italic; color: var(--accent-3); }
-.lp-aidr-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(16px, 3vw, 28px);
-    margin-bottom: clamp(36px, 6vw, 64px);
-}
-@media (min-width: 760px) {
-    .lp-aidr-grid { grid-template-columns: 1fr 1fr; }
-}
-.lp-aidr-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: clamp(24px, 3.5vw, 40px);
-}
-/* "Das Übliche" — flach und zurückgenommen */
-.lp-aidr-card.is-dim { background: transparent; }
-.lp-aidr-card.is-dim .lp-aidr-tag { color: var(--text-muted); }
-.lp-aidr-card.is-dim h3 { color: var(--text-dim); }
-.lp-aidr-card.is-dim p { color: var(--text-muted); }
-/* "Unser Einsatz" — subtiler Verlaufsschimmer + akzentgetönter Rand */
-.lp-aidr-card.is-lit {
-    border-color: rgba(42, 157, 143, 0.5); /* --accent */
-    background:
-        radial-gradient(120% 120% at 0% 0%, rgba(42, 157, 143, 0.12) /* --accent */, transparent 60%),
-        var(--bg-card);
-    box-shadow: var(--shadow-glow);
-}
-.lp-aidr-card.is-lit .lp-aidr-tag {
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-.lp-aidr-tag {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    font-weight: 500;
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-}
-.lp-aidr-card h3 {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(20px, 2.6vw, 27px);
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-    margin-bottom: 12px;
-    color: var(--text);
-}
-.lp-aidr-card p {
-    color: var(--text-dim);
-    font-weight: 300;
-    font-size: clamp(14.5px, 1.5vw, 16px);
-    line-height: 1.6;
-    max-width: 42ch;
-}
-/* ── Verantwortungs-Band (ersetzt den langen Absatz): Du → KI ── */
-.lp-aidr-split {
-    display: flex;
-    align-items: stretch;
-    gap: clamp(12px, 2vw, 20px);
-    margin-bottom: clamp(22px, 3vw, 32px);
-}
-.lp-aidr-role {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: clamp(18px, 2.5vw, 28px);
-}
-.lp-aidr-role--you {
-    border-color: rgba(232, 160, 106, 0.4); /* --accent-warm */
-    background: radial-gradient(120% 120% at 0% 0%, rgba(232, 160, 106, 0.09), transparent 60%);
-}
-.lp-aidr-role--ai {
-    border-color: rgba(42, 157, 143, 0.5); /* --accent */
-    background: radial-gradient(120% 120% at 0% 0%, rgba(42, 157, 143, 0.1), transparent 60%), var(--bg-card);
-}
-.lp-aidr-role-ico { width: 26px; height: 26px; margin-bottom: 12px; }
-.lp-aidr-role-ico svg {
-    width: 100%; height: 100%;
-    stroke: currentColor; stroke-width: 1.4; fill: none;
-    stroke-linecap: round; stroke-linejoin: round;
-}
-.lp-aidr-role--you .lp-aidr-role-ico { color: var(--accent-warm); }
-.lp-aidr-role--ai .lp-aidr-role-ico { color: var(--accent-3); }
-.lp-aidr-role-tag {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    font-weight: 500;
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-}
-.lp-aidr-role--you .lp-aidr-role-tag { color: var(--accent-warm); }
-.lp-aidr-role--ai .lp-aidr-role-tag { color: var(--accent-3); }
-.lp-aidr-role-val {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(18px, 2.2vw, 24px);
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-    color: var(--text);
-}
-.lp-aidr-verbs {
-    counter-reset: v;
+/* Foil: die übliche KI als leise, zurückgenommene Zeile über dem Faden */
+.lp-aidr-foil {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin: 14px 0 0;
-    padding: 0;
-    list-style: none;
-}
-.lp-aidr-verbs li {
-    counter-increment: v;
+    align-items: center;
+    gap: 8px;
     font-family: var(--font-mono);
     font-size: 11.5px;
-    color: var(--text);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
+    color: var(--text-muted);
+    opacity: 0.75;
+    margin-bottom: clamp(22px, 3vw, 30px);
+}
+.lp-aidr-foil-ar { color: var(--text-muted); }
+.lp-aidr-foil-x {
+    color: var(--accent-warm);
+    border: 1px solid rgba(232, 160, 106, 0.4); /* --accent-warm */
     border-radius: 999px;
-    padding: 5px 11px;
+    padding: 2px 10px;
+}
+/* ── Der Faden: der Kreislauf-Ablauf als vertikale Naht (Naht-Motiv wie #how) ── */
+.lp-aidr-thread {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 34px;
+    max-width: 620px;
+}
+/* die Naht — gestrichelte Linie, die die Schritte verbindet */
+.lp-aidr-thread::before {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 12px;
+    bottom: 24px;
+    border-left: 2px dashed rgba(100, 214, 196, 0.4); /* --accent-3 */
+}
+.lp-aidr-step {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    margin-bottom: 14px;
 }
-.lp-aidr-verbs li::before {
-    content: counter(v, decimal-leading-zero);
-    color: var(--accent-3);
-    font-size: 10px;
+.lp-aidr-step:last-child { margin-bottom: 0; }
+/* Knoten auf der Naht */
+.lp-aidr-step::before {
+    content: "";
+    position: absolute;
+    left: -29px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent-3);
 }
-.lp-aidr-split-arrow {
-    align-self: center;
-    flex: none;
-    width: 24px; height: 24px;
-    color: var(--text-muted);
+.lp-aidr-step.is-you::before { border-color: var(--accent-warm); }
+.lp-aidr-step.is-ai { border-color: rgba(42, 157, 143, 0.35); /* --accent */ }
+.lp-aidr-step.is-you {
+    border-color: rgba(232, 160, 106, 0.4); /* --accent-warm */
+    background: radial-gradient(120% 120% at 0% 50%, rgba(232, 160, 106, 0.08), transparent 60%);
 }
-.lp-aidr-split-arrow svg {
+.lp-aidr-step.is-result {
+    border-color: rgba(100, 214, 196, 0.5); /* --accent-3 */
+    background: radial-gradient(120% 120% at 0% 50%, rgba(100, 214, 196, 0.08), transparent 60%);
+}
+.lp-aidr-step-ico { flex: none; width: 26px; height: 26px; }
+.lp-aidr-step-ico svg {
     width: 100%; height: 100%;
     stroke: currentColor; stroke-width: 1.4; fill: none;
     stroke-linecap: round; stroke-linejoin: round;
 }
-@media (max-width: 620px) {
-    .lp-aidr-split { flex-direction: column; }
-    .lp-aidr-split-arrow { transform: rotate(90deg); }
+.lp-aidr-step.is-ai .lp-aidr-step-ico { color: var(--accent-3); }
+.lp-aidr-step.is-you .lp-aidr-step-ico { color: var(--accent-warm); }
+.lp-aidr-step.is-result .lp-aidr-step-ico { color: var(--accent-3); }
+.lp-aidr-step-body { display: flex; flex-direction: column; min-width: 0; }
+.lp-aidr-step-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.lp-aidr-step.is-ai .lp-aidr-step-tag { color: var(--accent-3); }
+.lp-aidr-step.is-you .lp-aidr-step-tag { color: var(--accent-warm); }
+.lp-aidr-step-label {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(16px, 2vw, 19px);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--text);
+    margin-top: 2px;
+}
+.lp-aidr-step-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 3px;
 }
 .lp-aidr-kicker {
     color: var(--text-dim);
@@ -6824,6 +6779,7 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     font-size: clamp(15px, 1.8vw, 18px);
     line-height: 1.6;
     max-width: 56ch;
+    margin: clamp(24px, 3vw, 32px) 0 0;
 }
 .lp-aidr-kicker strong { color: var(--text); font-weight: 500; }
 

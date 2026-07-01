@@ -452,41 +452,49 @@
     <section class="lp-aidr lp-block" id="ai-done-right" data-lp-reveal>
         <p class="lp-label" data-i18n="aidr.label">KI, richtig eingesetzt</p>
         <h2 class="lp-aidr-title" data-i18n-html="aidr.h2_html">Die meiste KI soll dich <em>mehr kaufen</em> lassen. Unsere soll <em>weniger verschwenden</em>.</h2>
-        <div class="lp-aidr-grid">
-            <article class="lp-aidr-card is-dim">
-                <p class="lp-aidr-tag" data-i18n="aidr.dim_tag">Das Übliche</p>
-                <h3 data-i18n="aidr.dim_h">Vorhersagen, anstossen, wiederholen</h3>
-                <p data-i18n="aidr.dim_p">Empfehlungssysteme, die dich schneller zum nächsten Kauf bringen. KI auf die Nachfrage gerichtet — sie erzeugt neue Bedürfnisse.</p>
-            </article>
-            <article class="lp-aidr-card is-lit">
-                <p class="lp-aidr-tag" data-i18n="aidr.lit_tag">Unser Einsatz</p>
-                <h3 data-i18n="aidr.lit_h">Sehen, trennen, zurückgewinnen</h3>
-                <p data-i18n="aidr.lit_p">KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.</p>
-            </article>
-        </div>
-        <!-- Verantwortungs-Band: ersetzt den langen Fließtext-Absatz. Sagt dieselbe
-             load-bearing Kernaussage (Mensch entwirft, KI fertigt) als kompakte
-             Struktur statt Prosa. Bewusst KEIN zweites Kartenpaar, damit es den
-             Vergleich oben nicht doppelt. -->
-        <div class="lp-aidr-split" data-lp-reveal>
-            <div class="lp-aidr-role lp-aidr-role--you">
-                <span class="lp-aidr-role-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14.5 6.5l3 3"/></svg></span>
-                <span class="lp-aidr-role-tag" data-i18n="aidr.you_tag">Du</span>
-                <span class="lp-aidr-role-val" data-i18n="aidr.you_val">Design &amp; Stil</span>
-            </div>
-            <span class="lp-aidr-split-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span>
-            <div class="lp-aidr-role lp-aidr-role--ai">
-                <span class="lp-aidr-role-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2.4"/><path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3"/></svg></span>
-                <span class="lp-aidr-role-tag" data-i18n="aidr.ai_tag">KI</span>
-                <span class="lp-aidr-role-val" data-i18n="aidr.ai_val">Stoff &amp; Fertigung</span>
-                <ol class="lp-aidr-verbs">
-                    <li data-i18n="aidr.verb1">sehen</li>
-                    <li data-i18n="aidr.verb2">trennen</li>
-                    <li data-i18n="aidr.verb3">sortieren</li>
-                    <li data-i18n="aidr.verb4">bauen</li>
-                </ol>
-            </div>
-        </div>
+        <!-- Der Faden: der Kreislauf-Ablauf als vertikale Naht — vereint die früheren
+             vier Blöcke zu EINER Logik. Übliche KI als leiser Foil, dann die Kette
+             KI gewinnt zurück → Du entwirfst → KI baut → dein Einzelstück.
+             Mensch = Design (warm), KI = sortieren+bauen (Ocean). Naht-Motiv wie #how. -->
+        <p class="lp-aidr-foil">
+            <span data-i18n="aidr.foil_usual">Übliche KI</span>
+            <span class="lp-aidr-foil-ar" aria-hidden="true">→</span>
+            <span data-i18n="aidr.foil_aim">auf die Nachfrage</span>
+            <span class="lp-aidr-foil-x" data-i18n="aidr.foil_out">→ mehr kaufen</span>
+        </p>
+        <ol class="lp-aidr-thread" data-lp-reveal>
+            <li class="lp-aidr-step is-ai">
+                <span class="lp-aidr-step-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2.3"/><path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3"/></svg></span>
+                <span class="lp-aidr-step-body">
+                    <span class="lp-aidr-step-tag" data-i18n="aidr.ai_tag">KI</span>
+                    <span class="lp-aidr-step-label" data-i18n="aidr.step_reclaim">sehen · trennen · sortieren</span>
+                    <span class="lp-aidr-step-sub" data-i18n="aidr.step_reclaim_sub">aus weggeworfenem Textil</span>
+                </span>
+            </li>
+            <li class="lp-aidr-step is-you">
+                <span class="lp-aidr-step-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14.5 6.5l3 3"/></svg></span>
+                <span class="lp-aidr-step-body">
+                    <span class="lp-aidr-step-tag" data-i18n="aidr.you_tag">Du</span>
+                    <span class="lp-aidr-step-label" data-i18n="aidr.you_val">Design &amp; Stil</span>
+                    <span class="lp-aidr-step-sub" data-i18n="aidr.step_design_sub">die Idee kommt von dir</span>
+                </span>
+            </li>
+            <li class="lp-aidr-step is-ai">
+                <span class="lp-aidr-step-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><circle cx="12" cy="12" r="2.3"/><path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3"/></svg></span>
+                <span class="lp-aidr-step-body">
+                    <span class="lp-aidr-step-tag" data-i18n="aidr.ai_tag">KI</span>
+                    <span class="lp-aidr-step-label" data-i18n="aidr.step_build">baut dein Stück</span>
+                    <span class="lp-aidr-step-sub" data-i18n="aidr.step_build_sub">autonom gefertigt</span>
+                </span>
+            </li>
+            <li class="lp-aidr-step is-result">
+                <span class="lp-aidr-step-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4L4 7l2.2 3L8 8.8V20h8V8.8l1.8 1.2L20 7l-5-3a3 3 0 0 1-6 0z"/></svg></span>
+                <span class="lp-aidr-step-body">
+                    <span class="lp-aidr-step-tag" data-i18n="aidr.result_tag">Ergebnis</span>
+                    <span class="lp-aidr-step-label" data-i18n="aidr.result_val">dein Einzelstück</span>
+                </span>
+            </li>
+        </ol>
         <p class="lp-aidr-kicker" data-i18n-html="aidr.kicker_html">Ein von Menschen geschaffenes Problem lösen — kein neuer Grund zu konsumieren. <strong>Das Design bleibt deins.</strong></p>
     </section>
 
