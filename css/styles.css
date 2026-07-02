@@ -151,12 +151,22 @@ body {
 }
 
 /* ============ NAVBAR ============ */
+/* STICKY statt fixed — bewusst: iOS-26-Safari rendert position:fixed beim
+   Scrollen/Toolbar-Animieren versetzt (Systembug, WebKit #297779: Inspector
+   zeigt korrekt, Rendering hängt ~10–60px nach; real-iPhone-Befund hier).
+   Sticky wird vom Scroller selbst positioniert: verschiebt iOS den Viewport,
+   wandert der Header MIT dem Inhalt — Inhalt „oberhalb der Kopfzeile" kann
+   konstruktiv nicht mehr auftreten. height:0 hält die Bar layout-neutral
+   (wie fixed, alle padding-Klarhöhen der Seiten bleiben gültig); die sicht-
+   bare Leiste ist die überlaufende .nav-shell. */
 .navbar {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
+    height: 0;
+    overflow: visible;
     z-index: 100;
+}
+.nav-shell {
     background: rgba(10, 22, 34, 0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -172,21 +182,31 @@ body {
    an iPad with a trackpad/Magic Keyboard attached, which reports the PRIMARY
    pointer as fine.) Pure-mouse desktops keep the brand glass. */
 @media (any-pointer: coarse) {
-    .navbar {
+    .nav-shell {
         background: rgba(10, 22, 34, 0.94);
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }
+    /* iOS 26 rendert VIEWPORT-verankerte Layer (fixed UND sticky) beim
+       Scrollen versetzt (WebKit #297779; translateZ/sticky-Umbau änderten
+       nichts — real-iPhone-Befund dreifach). Auf Touch fährt die Kopfzeile
+       deshalb gar nicht mit: position:relative hält sie im Fluss (0 Höhe,
+       Shell überlagert wie gehabt den Hero-Anfang) und sie scrollt normal
+       weg — ein inhaltsverankerter Layer kann nicht versetzt rendern, „Text
+       oberhalb der Kopfzeile" ist konstruktiv ausgeschlossen. Die persistente
+       Aktion trägt mobil der .sticky-create-Pill; Desktop bleibt sticky. */
+    .navbar { position: relative; }
 }
 /* In-app browsers (Instagram/Facebook WKWebView) evaluate pointer media
    queries unreliably — many report no coarse pointer even on iPad — so the
    query above silently fails there. .is-touch is set from JS via
    navigator.maxTouchPoints (reliable in WKWebViews) as the load-bearing path. */
-html.is-touch .navbar {
+html.is-touch .nav-shell {
     background: rgba(10, 22, 34, 0.94);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
+html.is-touch .navbar { position: relative; }
 
 .nav-container {
     max-width: 1280px;
@@ -3385,14 +3405,14 @@ html.is-touch { scroll-behavior: auto; }
 
 /* Navbar gets a stronger background after the user has scrolled past
    the hero — JS toggles `.scrolled` on the .navbar element. */
-.navbar {
+.nav-shell {
     transition:
         background var(--duration-base) var(--ease-out),
         border-color var(--duration-base) var(--ease-out),
         backdrop-filter var(--duration-base) var(--ease-out);
 }
 
-.navbar.scrolled {
+.navbar.scrolled .nav-shell {
     background: rgba(10, 22, 34, 0.88);
     border-bottom-color: rgba(255, 255, 255, 0.06);
 }
