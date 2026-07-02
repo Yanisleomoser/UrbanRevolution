@@ -87,7 +87,7 @@ Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Ve
 - Erst kurzer Plan, dann inkrementell. Nach jeder Stufe auf Mobilbreite prüfen, keine Console-Fehler.
 - Jede Änderung über einen PR mit Vercel-Preview-Deployment; nicht direkt auf `main` pushen. Visuelle Änderungen IMMER selbst am Render prüfen (Headless Desktop + Mobil ≤ 480 px). Merge-Gate ist risikobasiert: Niedrigrisiko-Visuell → autonom mergen, sobald CI grün + Screenshots stimmen; Hochrisiko-Visuell (Animation, Scroll/Sticky/`svh`, iOS-Safari-Layout, große Redesigns) → vor dem Merge auf echtem iPhone prüfen lassen. (Details: Auto-merge policy weiter unten.)
 - Lokal: `python3 -m http.server 8080` (statisch) oder `npm run dev` (→ `npx serve .`). Die `/api/*`-Edge-Functions laufen nur via `vercel dev` / auf Vercel. Sentry (Loader im `<head>`) + Fehler-Tags (`area:ai|engine|preview|vto|measure|3d`) sind ohne lokalen Aufwand aktiv; Session-Replay bewusst aus.
-- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`, Workflow „Tests"), `validate-css`, `validate-html`, `validate-assets` (Bild-Budget) — siehe „Deployment" unten.
+- CI (Pflicht, grün vor Merge): `deno lint` (`test`), `npm run build` + `npm test` (`validate`, Workflow „Tests"), `validate-css`, `validate-html`, `validate-assets` (Bild-Budget), `e2e` (Headless-Browser-Smoke + axe-a11y) und `coverage` (c8-Floor) — siehe „Deployment" unten.
 
 ---
 
@@ -134,9 +134,11 @@ exported `pivotBendPath`, hinge sentence + mission statement) → **Act II THE
 CIRCLE** (pinned `#loop` vision with STATUS meta + Alle/KI/Du/KI station tags
 → `#ai-done-right` → `#your-style` centre beat) → a
 **4-step "So funktioniert's" arc** (`#how`: Du entwirfst → Du entscheidest →
-Deine Masse → Deine Vorlage — a desktop SVG-arc seam with staggered cards
-that frames the user journey honestly, the user decides every step, AI never
-authors the design; `how.*` i18n keys, `[data-reveal]` entrance) → the mono
+Deine Masse → Deine Vorlage — an SVG-arc seam with staggered cards, drawn via
+`stroke-dashoffset`/`pathLength=1` on scroll-in: horizontal through the icon
+row on desktop, a vertical arc bowing toward the cards in the left gutter on
+mobile. It frames the user journey honestly, the user decides every step, AI
+never authors the design; `how.*` i18n keys, `[data-reveal]` entrance) → the mono
 handoff line → a magnetic circle CTA (the page's geometric conclusion).
 The **UR-Create studio**
 (`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it.
@@ -191,17 +193,22 @@ js/
   landing.js            # Landing-experience controller + studio reveal (GSAP, side effect)
   ur-create.js          # Wires UR-Create sections (hero/ownership/community/join) to the engine
   ambient-ticker.js     # Live cited textile-waste counter (kg/sec, side effect)
+  facts-instruments.js  # #facts data-instruments: 1-in-100 matrix, pile bars, CO₂ gauge (side effect)
   community-sphere.js   # WebGL community globe (ES module — three.js + GSAP, lazy)
   design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
   og-image.png          # Social share image · logo.png · hero-*.jpg · vto-*.jpg · presets/
   story/                # Documentary photos (Acts I–IV) — see assets/story/CREDITS.md
-vercel.json             # Hosting config — no build, /api/ runs as edge functions
+vercel.json             # Hosting config — no build, /api/ edge functions, headers (security + caching)
+docs/
+  VISUAL-ROADMAP.md     # Visual-upgrade roadmap & diagnosis (handoff note, read with CLAUDE.md)
+SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·
                         # build/QA: shoot*, build-image-library, gen-presets,
                         # strip-hero-bg, audit*, verify-*, check-* (headless)
-.github/workflows/      # CI: deno(test), test.yml(validate = build-no-op + npm
-                        # test), validate-css, validate-html, e2e — see Deployment
+.github/workflows/      # CI: deno(test), test.yml(validate = build-no-op + npm test),
+                        # validate-css, validate-html, validate-assets, e2e, coverage
+                        # — see Deployment
 ```
 
 Unit tests: 22 offline suites in `test/` (DNA roundtrip, seam formulas, AI
@@ -232,12 +239,12 @@ not two stills (project rule).
 | `#loader` `.lp-loader` | Preloader logo-draw                          | `landing.js` `initLoader` (`.lp-mark-arc/-dashes/-needle`)        | GSAP stroke-draw (transient)            | —           |
 | `#top` `.lp-hero`      | Hero: thread-particle field + headline       | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`)          | GSAP intro + canvas particle weave      | `hero`      |
 | `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
-| `#facts` `.lp-stats`   | Cited fast-fashion evidence, counted up      | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` | count-up on reveal + live kg odometer   | `facts`     |
+| `#facts` `.lp-stats`   | Cited fast-fashion evidence, counted up      | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-instruments.js` | count-up + live kg odometer + instrument sweeps (`html.fx`) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
 | `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
 | `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | —           |
 | `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | —           |
-| `#how` `.lp-how`       | 4-step "So funktioniert's" seam              | `landing.js` `initReveals` (`how.*` i18n)                        | stitched-seam entrance                  | `how`       |
+| `#how` `.lp-how`       | 4-step "So funktioniert's" arc               | static markup (`how.*` i18n) + `animations.js` (`[data-reveal]`)  | SVG-arc stroke-draw on scroll-in (horiz. desktop / vert. mobile) + staggered cards | `how`       |
 | CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet                          | —           |
 | `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | journey transitions + genesis preview   | `studio`    |
 | `#ownership`           | Ownership moment (save/share/publish, VTO)   | `ur-create.js`; VTO via `api/try-on.js`                          | appears once a design exists            | —           |
@@ -289,6 +296,7 @@ window.Foo = Foo;
 | `landing.js`      | (none — side effect)    | classic         |
 | `ur-create.js`    | (none — side effect)    | classic         |
 | `ambient-ticker.js`| (none — side effect)   | classic         |
+| `facts-instruments.js`| (none — side effect) | classic        |
 | `community-sphere.js`| (none — side effect) | **ES module** (`type="module"`) |
 
 The **live garment preview** (inside the studio) is a **data-driven 2D
@@ -308,7 +316,8 @@ subscribe to its events). The bottom-of-body order is:
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → focus-trap → animations →
 design-engine/* (dna … flow) → spec-view → app → flair → ur-create → ambient-ticker →
-[importmap] → gsap + ScrollTrigger (CDN) → landing → community-sphere (module)
+facts-instruments → [importmap] → gsap + ScrollTrigger (CDN) → landing →
+community-sphere (module)
 ```
 
 Follow the IIFE-with-global pattern for new classic code; don't introduce a
@@ -350,6 +359,16 @@ odometer: textile waste at ~2'918 kg/sec (92 Mio. t/year ÷ seconds/year)
 stepping up since page load, in one dramatic counter (`.cost-ticker`) plus
 compact "Live … kg" badges beside other section numbers. Swiss thousands
 grouping (`1'234'567`), bilingual via `ticker.*` i18n keys.
+
+**`js/facts-instruments.js`** turns the three numbers into tactile
+data-instruments: a 1-in-100 cell matrix (exactly one cell glows = < 1 %
+recycled, with a fine-pointer spotlight sweep), live accumulation bars beside
+the kg odometer (`[data-ticker-kg]`), and a radial 8 %-CO₂ gauge. Classic
+IIFE side-effect module (no global), mirrors `ambient-ticker.js`. Progressive
+enhancement is load-bearing: the instruments are `aria-hidden` (the meaning
+lives in the adjacent real-text number + caption), default CSS is the final
+resting state, and all motion is gated under `html.fx` / `(pointer: fine)` —
+no-JS and reduced-motion show everything calm and complete.
 
 ## AI design generation (`ai.js` + `api/generate-design.js`)
 
@@ -664,6 +683,12 @@ run on Vercel (or `vercel dev`).
   frame previews). Deliberately **no** script/style/connect CSP: the app pulls
   GSAP/three.js/MediaPipe/Sentry/Vercel from CDNs, so a strict CSP would need a
   full allowlist — out of scope here. HSTS is already set by Vercel.
+- **Caching headers** (`vercel.json`): HTML and `/` are `no-store` — browsers
+  never serve a stale page after a deploy. CSS/JS referenced **with a `?v=`
+  query** (e.g. `ur-create.js?v=…`, `facts-instruments.js?v=…`) are
+  `immutable` for a year — **bump the `?v=` value in `index.html` whenever you
+  change such a file**, or returning visitors keep the old one. CSS/JS without
+  `?v=` are `must-revalidate` (cheap 304s).
 
 The functional PR checks (check name = job id):
 
@@ -816,7 +841,8 @@ is red and you're fixing it). Subscribing to a PR means driving it to merge,
 not narrating that you're waiting.
 
 A PR is mergeable when **all functional CI checks are green** — `test`,
-`validate`, `validate-css`, `validate-html`, `validate-assets` — and no review comment
+`validate`, `validate-css`, `validate-html`, `validate-assets`, `e2e`,
+`coverage` (all seven run on every PR) — and no review comment
 requests a change. The advisory **"Vercel Agent Review"** is non-blocking;
 address its points if valid, but it need not be green to merge. If any
 functional check is red, fix it first; never merge red CI.
