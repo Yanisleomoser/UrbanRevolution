@@ -82,6 +82,21 @@
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
 
+  // CSS scroll-behavior:smooth + Hash-Fragment + initiale ScrollTrigger-Messung
+  // vertragen sich nicht: Chrome animiert den Fragment-Sprung rund um DCL, und
+  // Trigger, die währenddessen entstehen/vermessen werden, rechnen die Sprung-
+  // Zielposition in ihre starts ein — gepinnte Sektionen wirken dann
+  // „durchgespielt", bevor man sie erreicht (deterministisch reproduzierbar
+  // unter #pivot-/#how-Deep-Links, headless UND real). Während des Ladens auf
+  // instant schalten — ein Deep-Link soll ohnehin nicht 3000 px „anreisen" —
+  // und erst wieder freigeben, wenn Sprung + Layout gesetzt sind.
+  if (fx && location.hash) {
+    document.documentElement.style.scrollBehavior = "auto";
+    window.addEventListener("load", () => {
+      setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 500);
+    }, { once: true });
+  }
+
   /* ── Studio-Reveal ───────────────────────────────────────── */
 
   // STUDIO_ANCHORS + shouldRevealForHash are declared at the top (pure, hoisted
@@ -1083,6 +1098,17 @@
     // Nach dem Font-Swap verschieben sich Layout-Höhen — Trigger neu messen.
     if (fx && document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => ScrollTrigger.refresh());
+    }
+    // Hash-Deep-Links (#pivot/#how/#dna=…): Chrome „re-snappt" auf das Fragment,
+    // sobald die Pin-Spacer MITTEN im initialen Refresh eingefügt werden (Layout-
+    // Shift oberhalb des Ziels). Trigger, die nach dem Snap gemessen werden,
+    // rechnen mit veralteter Scroll-Kompensation — ihre starts sind um scrollY
+    // verschoben (empirisch: gepinnte Sektion „fertig", bevor man sie erreicht).
+    // Ein nachgelagerter Refresh, wenn Sprung + Layout gesetzt sind, misst sauber.
+    if (fx && location.hash) {
+      const settleRefresh = () => setTimeout(() => ScrollTrigger.refresh(), 300);
+      if (document.readyState === "complete") settleRefresh();
+      else window.addEventListener("load", settleRefresh, { once: true });
     }
   }
 
