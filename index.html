@@ -334,45 +334,26 @@
         </div>
     </section>
 
-    <!-- Manifest — Wort-für-Wort-Reveal beim Scrollen -->
+    <!-- ── AKT I · DIE LINIE ─ Manifest-These (Wort-Scrub) + Verben-Band.
+         Die Maschinen-Stimme (Mono) trägt Akt I; der Kreis antwortet in #pivot. ── -->
     <section class="lp-manifesto lp-block" id="manifesto">
-        <p class="lp-label" data-i18n="landing.manifesto_label">Manifest</p>
-        <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden: produzieren, tragen, wegwerfen. Wir biegen die Linie zurück zum Kreis. Jedes Stück beginnt als Kleidung, die schon gelebt hat — und wird zu etwas, das es nur einmal gibt. Entworfen von dir. Autonom gefertigt. Gemacht für dich.</p>
+        <p class="lp-label" data-i18n="landing.manifesto_label">Akt I — Die Linie</p>
+        <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden. Produzieren, tragen, wegwerfen — eine Richtung, ein Ende. Die Linie ist schnell. Die Linie ist billig. Und die Linie fertigt für alle — nur nie für dich.</p>
+        <p class="lp-verbs" data-lp-reveal data-i18n="landing.verbs">Produzieren — Tragen — Wegwerfen</p>
     </section>
 
-    <!-- Die Zahlen — belegte Fast-Fashion-Fakten (Problem, bevor die Antwort kommt) -->
+    <!-- Protokoll der Linie — belegte Fast-Fashion-Fakten (Akt I, das Beweisband).
+         Erzähl-Reihenfolge = der Weg der Linie: Produzieren → Wegwerfen → Zurück,
+         endet auf dem <1 % (die Linie kennt kein Zurück → Coda → #pivot). -->
     <section class="lp-stats lp-block" id="facts" data-lp-reveal>
-        <p class="lp-label" data-i18n="landing.stats_label">Die Zahlen</p>
-        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Warum es eine Revolution braucht</h2>
+        <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
         <div class="lp-stats-grid">
             <!-- Jede Zahl ist ein interaktives Daten-Instrument statt Deko:
-                 1-von-100-Matrix · Live-Aufschüttung · Radial-Gauge. Instrumente
+                 Radial-Gauge · Live-Aufschüttung · 1-von-100-Matrix. Instrumente
                  sind aria-hidden (Aussage steht in Zahl + Label); Bewegung/Pointer
                  nur als Progressive Enhancement (html.fx, pointer:fine). Treiber:
                  js/facts-instruments.js + ambient-ticker.js. -->
-            <div class="lp-stat">
-                <!-- 1 von 100 Feldern leuchtet = der <1 %, der recycelt wird. JS baut
-                     die Zellen (ohne JS via :empty ausgeblendet — Zahl+Label tragen die
-                     Aussage); Pointer-Spotlight nur bei feinem Zeiger; reduced-motion = Ruhe. -->
-                <div class="fx-matrix" id="fx-matrix" aria-hidden="true"></div>
-                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
-            </div>
-            <div class="lp-stat">
-                <!-- Live-Aufschüttung: der Stapel als Silhouette, die kg-Zahl tickt real
-                     hoch (ambient-ticker, +2'918 kg/s). Balken dekorativ, Aussage im Label. -->
-                <div class="fx-acc" aria-hidden="true">
-                    <span class="fx-acc-bar" style="height:16%"></span><span class="fx-acc-bar" style="height:22%"></span><span class="fx-acc-bar" style="height:28%"></span><span class="fx-acc-bar" style="height:35%"></span><span class="fx-acc-bar" style="height:42%"></span><span class="fx-acc-bar" style="height:49%"></span><span class="fx-acc-bar" style="height:56%"></span><span class="fx-acc-bar" style="height:63%"></span><span class="fx-acc-bar" style="height:70%"></span><span class="fx-acc-bar" style="height:77%"></span><span class="fx-acc-bar" style="height:84%"></span><span class="fx-acc-bar" style="height:90%"></span><span class="fx-acc-bar" style="height:95%"></span><span class="fx-acc-bar" style="height:99%"></span>
-                </div>
-                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
-                <p class="lp-stat-live" aria-hidden="true">
-                    <span class="lp-stat-live-dot" aria-hidden="true"></span>
-                    <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
-                    <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
-                    <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
-                </p>
-            </div>
             <div class="lp-stat">
                 <!-- Radial-Gauge: 8 % des Rings = Anteil der Mode an globalem CO₂. Bogen
                      steht per CSS auf Endwert (no-JS), html.fx fährt ihn beim Reveal auf. -->
@@ -383,19 +364,81 @@
                         <defs><linearGradient id="fxGaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2779a8"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs>
                     </svg>
                 </div>
+                <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
                 <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
                 <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
             </div>
+            <div class="lp-stat">
+                <!-- Live-Aufschüttung: der Stapel als Silhouette, die kg-Zahl tickt real
+                     hoch (ambient-ticker, +2'918 kg/s). Balken dekorativ, Aussage im Label. -->
+                <div class="fx-acc" aria-hidden="true">
+                    <span class="fx-acc-bar" style="height:16%"></span><span class="fx-acc-bar" style="height:22%"></span><span class="fx-acc-bar" style="height:28%"></span><span class="fx-acc-bar" style="height:35%"></span><span class="fx-acc-bar" style="height:42%"></span><span class="fx-acc-bar" style="height:49%"></span><span class="fx-acc-bar" style="height:56%"></span><span class="fx-acc-bar" style="height:63%"></span><span class="fx-acc-bar" style="height:70%"></span><span class="fx-acc-bar" style="height:77%"></span><span class="fx-acc-bar" style="height:84%"></span><span class="fx-acc-bar" style="height:90%"></span><span class="fx-acc-bar" style="height:95%"></span><span class="fx-acc-bar" style="height:99%"></span>
+                </div>
+                <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                <p class="lp-stat-live" aria-hidden="true">
+                    <span class="lp-stat-live-dot" aria-hidden="true"></span>
+                    <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
+                    <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
+                    <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
+                </p>
+            </div>
+            <div class="lp-stat">
+                <!-- 1 von 100 Feldern leuchtet = der <1 %, der recycelt wird. JS baut
+                     die Zellen (ohne JS via :empty ausgeblendet — Zahl+Label tragen die
+                     Aussage); Pointer-Spotlight nur bei feinem Zeiger; reduced-motion = Ruhe. -->
+                <div class="fx-matrix" id="fx-matrix" aria-hidden="true"></div>
+                <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+            </div>
         </div>
+        <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
         <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
     </section>
 
-    <!-- Der Kreislauf — gepinnte Kreis-Reise (4 Stationen) -->
+    <!-- ── DIE WENDE (#pivot) — das Akt-Scharnier. Die Linie aus Akt I steht auf
+         der Bühne und wird beim Scrollen zum Kreis gebogen (gepinnter Scrub,
+         js/landing.js initPivot; Bogen-Mathe pur parametrisch, unit-getestet).
+         Statischer Default = fertige Geometrie + alle Texte sichtbar (no-JS /
+         reduced-motion); nur html.fx blendet Frage → Antwort um. ── -->
+    <section class="lp-pivot" id="pivot" aria-labelledby="pivot-title">
+        <div class="lp-pivot-pin" id="pivot-pin">
+            <svg class="lp-pivot-svg" id="pivot-svg" viewBox="0 0 420 620" aria-hidden="true">
+                <defs>
+                    <linearGradient id="pivot-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#2779a8"/>
+                        <stop offset="50%" stop-color="#2a9d8f"/>
+                        <stop offset="100%" stop-color="#64d6c4"/>
+                    </linearGradient>
+                </defs>
+                <path class="lp-pivot-line" id="pivot-line" d="M210 10 L210 610" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path class="lp-pivot-arc" id="pivot-arc" d="M210 190 A120 120 0 1 1 209.9 190" fill="none" stroke="url(#pivot-grad)" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <div class="lp-pivot-copy">
+                <div class="lp-pivot-q" id="pivot-q">
+                    <p class="lp-label" data-i18n="pivot.label">Die Wende</p>
+                    <h2 class="lp-pivot-question" id="pivot-title" data-i18n="pivot.question">Und wenn es doch ein Zurück gäbe?</h2>
+                </div>
+                <div class="lp-pivot-answer" id="pivot-answer">
+                    <p class="lp-pivot-hinge" data-i18n="pivot.hinge">Wir biegen die Linie zurück zum Kreis.</p>
+                    <p class="lp-pivot-mission" data-i18n="pivot.mission">Unsere Mission: das Ende der Geraden. Was die Linie wegwirft, soll Material werden — für das Gegenteil von Masse.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── AKT II · DER KREIS — die Vision als gepinnte Kreis-Reise (4 Stationen).
+         Der STATUS-Vermerk (Mono) macht die Vorlaunch-Ehrlichkeit zur Geste:
+         Vision, noch nicht gebaut — das hier ist der Bauplan. -->
     <section class="lp-loop" id="loop">
         <div class="lp-loop-pin" id="loop-pin">
             <div class="lp-loop-head">
-                <p class="lp-label" data-i18n="landing.loop_label">Der Kreislauf</p>
+                <p class="lp-label" data-i18n="landing.loop_label">Akt II — Der Kreis</p>
                 <h2 class="lp-loop-title" data-i18n="landing.loop_title">Vier Stationen. Ein Kreis.</h2>
+                <p class="lp-loop-status" data-i18n="landing.loop_status">Status: Vision — noch nicht gebaut</p>
+                <p class="lp-loop-sub" data-i18n="landing.loop_sub">Eine Fabrik, deren Fliessband kein Ende hat. Das hier ist ihr Bauplan.</p>
             </div>
             <div class="lp-loop-grid">
                 <div class="lp-loop-visual">
@@ -423,24 +466,30 @@
                     <p class="lp-loop-count" aria-hidden="true"><span id="loop-num">01</span><span class="lp-loop-count-total"> / 04</span></p>
                 </div>
                 <ol class="lp-loop-steps" id="loop-steps" data-i18n-aria-label="landing.loop_aria" aria-label="Die vier Stationen des Kreislaufs">
+                    <!-- Attributions-Tags [ Alle / KI / Du / KI ]: die Mensch/Maschine-
+                         Grenze steckt im Kreis-Diagramm selbst (reine CSS/i18n-Geste). -->
                     <li class="lp-loop-step is-active">
                         <span class="lp-loop-step-index" aria-hidden="true">01</span>
                         <h3 class="lp-loop-step-title" data-i18n="landing.stage1_title">Getragen</h3>
+                        <p class="lp-loop-step-tag" data-i18n="landing.stage1_tag">Alle</p>
                         <p class="lp-loop-step-text" data-i18n="landing.stage1_text">Jedes Stück beginnt als Kleidung mit Geschichte — gesammelt statt deponiert.</p>
                     </li>
                     <li class="lp-loop-step">
                         <span class="lp-loop-step-index" aria-hidden="true">02</span>
                         <h3 class="lp-loop-step-title" data-i18n="landing.stage2_title">Zurückgewonnen</h3>
+                        <p class="lp-loop-step-tag" data-i18n="landing.stage2_tag">KI</p>
                         <p class="lp-loop-step-text" data-i18n="landing.stage2_text">Stoffe, Knöpfe, Nähte: Was weggeworfen wird, soll autonom sortiert und zu Rohmaterial für Neues werden.</p>
                     </li>
                     <li class="lp-loop-step">
                         <span class="lp-loop-step-index" aria-hidden="true">03</span>
                         <h3 class="lp-loop-step-title" data-i18n="landing.stage3_title">Entworfen</h3>
+                        <p class="lp-loop-step-tag lp-loop-step-tag--you" data-i18n="landing.stage3_tag">Du</p>
                         <p class="lp-loop-step-text" data-i18n="landing.stage3_text">Du entwirfst dein Stück — dein Stil, deine Idee, nach deinen Massen.</p>
                     </li>
                     <li class="lp-loop-step">
                         <span class="lp-loop-step-index" aria-hidden="true">04</span>
                         <h3 class="lp-loop-step-title" data-i18n="landing.stage4_title">Wiedergeboren</h3>
+                        <p class="lp-loop-step-tag" data-i18n="landing.stage4_tag">KI</p>
                         <p class="lp-loop-step-text" data-i18n="landing.stage4_text">Eine vollautonome Fabrik soll dein Stück autonom fertigen — ein Stück für einen Menschen.</p>
                     </li>
                 </ol>
@@ -448,45 +497,63 @@
         </div>
     </section>
 
-    <!-- ★ KI, richtig eingesetzt — Botschaft #4 + die Mensch-vs-KI-Grenze -->
+    <!-- ★ KI, richtig eingesetzt — Botschaft #4: Linie beschleunigen vs. Kreis
+         schliessen (die Mensch-vs-KI-Grenze, jetzt in der Akt-Geometrie) -->
     <section class="lp-aidr lp-block" id="ai-done-right" data-lp-reveal>
         <p class="lp-label" data-i18n="aidr.label">KI, richtig eingesetzt</p>
-        <h2 class="lp-aidr-title" data-i18n-html="aidr.h2_html">Die meiste KI soll dich <em>mehr kaufen</em> lassen. Unsere soll <em>weniger verschwenden</em>.</h2>
+        <h2 class="lp-aidr-title" data-i18n-html="aidr.h2_html">KI kann die Linie <em>beschleunigen</em>. Oder den Kreis <em>schliessen</em>.</h2>
         <div class="lp-aidr-grid">
             <article class="lp-aidr-card is-dim">
-                <p class="lp-aidr-tag" data-i18n="aidr.dim_tag">Das Übliche</p>
+                <p class="lp-aidr-tag" data-i18n="aidr.dim_tag">Auf der Linie</p>
                 <h3 data-i18n="aidr.dim_h">Vorhersagen, anstossen, wiederholen</h3>
-                <p data-i18n="aidr.dim_p">Empfehlungssysteme, die dich schneller zum nächsten Kauf bringen. KI auf die Nachfrage gerichtet — sie erzeugt neue Bedürfnisse.</p>
+                <p data-i18n="aidr.dim_p">Empfehlungssysteme, die dich schneller zum nächsten Kauf bringen. KI, die die Linie füttert — sie erzeugt neue Bedürfnisse.</p>
             </article>
             <article class="lp-aidr-card is-lit">
-                <p class="lp-aidr-tag" data-i18n="aidr.lit_tag">Unser Einsatz</p>
+                <p class="lp-aidr-tag" data-i18n="aidr.lit_tag">Im Kreis</p>
                 <h3 data-i18n="aidr.lit_h">Sehen, trennen, zurückgewinnen</h3>
-                <p data-i18n="aidr.lit_p">KI auf den Abfallberg gerichtet: Sie entwirrt, was weggeworfen wurde, damit es neu leben kann.</p>
+                <p data-i18n="aidr.lit_p">KI auf den Abfallberg gerichtet: Sie soll entwirren, was weggeworfen wurde, damit es neu leben kann.</p>
             </article>
         </div>
-        <p class="lp-aidr-body" data-i18n-html="aidr.body_html">Das schwierige Problem im Kreislauf war nie das Nähen — es ist das Entwirren dessen, was weggeworfen wird. Mischfasern, Knöpfe, Nähte, Farben; ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau darauf richten wir die KI: sie soll <strong>Ordnung in genau diesen Berg bringen</strong> — und dein Stück <strong>autonom fertigen</strong>. Das ist der richtige Einsatz dieser Technologie: ein von Menschen geschaffenes Problem lösen, statt einen neuen Grund zum Konsumieren zu erfinden. <strong>Das Design bleibt deins. Den Stil gibst du vor — die KI soll den Stoff sortieren und das Stück bauen.</strong></p>
+        <p class="lp-aidr-body" data-i18n-html="aidr.body_html">Das schwierige Problem im Kreis war nie das Nähen — es ist das Entwirren des Weggeworfenen: Mischfasern, Knöpfe, Nähte, Farben. Ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau dort soll die Maschine arbeiten: <strong>den Stoff sortieren und das Stück bauen. Mehr nicht.</strong> Das Design bleibt deins — du gibst den Stil vor, du triffst jede Entscheidung. <strong>Die KI entwirft nie.</strong></p>
     </section>
 
-    <!-- ★ DEIN STIL — Botschaft #2, der Identitäts-Beat (der eine warme Akzent) -->
+    <!-- ★ DER MITTELPUNKT — Botschaft #2, der Identitäts-Beat (der eine warme
+         Akzent): das Zentrum des Kreises ist ein Mensch — die Auflösung der
+         Hero-Tagline (die Linie fertigt für alle, der Kreis für einen). -->
     <section class="lp-identity lp-block" id="your-style" data-lp-reveal>
-        <p class="lp-label lp-label--warm" data-i18n="identity.label">Dein Stil</p>
-        <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">Deinen Stil gab es nie <em>von der Stange</em>.</h2>
-        <p class="lp-identity-body" data-i18n-html="identity.body_html">Eine Stange bietet dir eine Grösse. Wir bieten dir einen Anfang — eine Idee, eine Stimmung, eine Form in deinem Kopf — und fertigen das eine Stück, das deins ist. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
+        <svg class="lp-identity-ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 9"/>
+            <circle class="lp-identity-ring-dot" cx="100" cy="100" r="3.5"/>
+        </svg>
+        <p class="lp-label lp-label--warm" data-i18n="identity.label">Der Mittelpunkt</p>
+        <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">In der Mitte dieses Kreises: <em>du</em>.</h2>
+        <p class="lp-identity-body" data-i18n-html="identity.body_html">Die Linie fertigte für alle — dasselbe Stück, millionenfach, in einer Grösse, die niemandem gehört. Der Kreis dreht sich anders: um dich. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
     </section>
 
-    <!-- ── So funktioniert's — der 4-Schritte-Pfad als User-Journey-Naht.
-         On-Ramp ins Studio (why → how → act): steht zwischen Identitäts-Beat
-         und Finale-Orb. Bewusst LINEAR (Anfang→Ende), im Gegensatz zum
-         geschlossenen Kreis von #loop (Material-Kreislauf). Reveal/Naht-Draw
-         über das bestehende [data-reveal]-System (animations.js), keine neue JS. ── -->
+    <!-- ── So funktioniert's — dein Bogen: der 4-Schritte-Pfad als flacher
+         Kreis-Bogen (Akt-II-Geometrie statt gerader Naht). On-Ramp ins Studio
+         (why → how → act), zwischen Identitäts-Beat und Finale-Orb.
+         Desktop: SVG-Bogen zeichnet sich per stroke-dashoffset (pathLength=1);
+         Mobil: die bewährte vertikale Naht-Leiste bleibt. Beides über das
+         bestehende [data-reveal]-System (animations.js), keine neue JS. ── -->
     <section class="lp-how lp-block" id="how" aria-labelledby="how-title">
         <header class="lp-how-head" data-reveal>
             <p class="lp-label" data-i18n="how.label">So funktioniert's</p>
-            <h2 class="lp-how-title" id="how-title" data-i18n="how.title">Von deiner Idee zum Einzelstück</h2>
-            <p class="lp-how-sub" data-i18n="how.sub">Das ist deine Seite des Kreislaufs — vier Schritte vom ersten Prompt zur dokumentierten Vorlage. Du führst, die Maschine folgt.</p>
+            <h2 class="lp-how-title" id="how-title" data-i18n="how.title">Vier Schritte auf deinem Bogen</h2>
+            <p class="lp-how-sub" data-i18n="how.sub">Das ist deine Seite des Kreises — vom ersten Satz zur dokumentierten Vorlage. Du hältst den Faden, die Maschine hält die Nadel.</p>
         </header>
         <div class="lp-how-track">
             <div class="lp-how-seam" data-reveal aria-hidden="true">
+                <svg class="lp-how-arc" viewBox="0 0 1000 64" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="how-arc-grad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0" stop-color="#2a9d8f"/>
+                            <stop offset="0.5" stop-color="#2779a8"/>
+                            <stop offset="1" stop-color="#64d6c4"/>
+                        </linearGradient>
+                    </defs>
+                    <path class="lp-how-arc-path" d="M10 8 Q 500 60 990 8" pathLength="1" fill="none" stroke="url(#how-arc-grad)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                </svg>
                 <span class="lp-how-seam-bar"></span>
                 <span class="lp-how-needle"></span>
             </div>
@@ -495,32 +562,34 @@
                     <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14.5 6.5l3 3"/></svg></span>
                     <span class="lp-how-num" aria-hidden="true">01</span>
                     <h3 class="lp-how-label" data-i18n="how.s1_label">Du entwirfst</h3>
-                    <p class="lp-how-line" data-i18n="how.s1_line">Dein Prompt, dein Stil. Die Idee kommt von dir.</p>
+                    <p class="lp-how-line" data-i18n="how.s1_line">Ein Satz genügt. Die Idee ist deine — und bleibt es.</p>
                 </li>
                 <li class="lp-how-station" data-reveal>
                     <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><path d="M12 8.5l1.4 2.1L15.5 12l-2.1 1.4L12 15.5l-1.4-2.1L8.5 12l2.1-1.4z"/></svg></span>
                     <span class="lp-how-num" aria-hidden="true">02</span>
-                    <h3 class="lp-how-label" data-i18n="how.s2_label">KI verfeinert</h3>
-                    <p class="lp-how-line" data-i18n="how.s2_line">Sie schärft deinen Entwurf — sie ersetzt ihn nie.</p>
+                    <h3 class="lp-how-label" data-i18n="how.s2_label">Du entscheidest</h3>
+                    <p class="lp-how-line" data-i18n="how.s2_line">Die Engine fragt, du wählst: Schnitt, Stoff, Farbe. Jede Antwort schärft dein Stück.</p>
                 </li>
                 <li class="lp-how-station" data-reveal>
                     <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg></span>
                     <span class="lp-how-num" aria-hidden="true">03</span>
                     <h3 class="lp-how-label" data-i18n="how.s3_label">Deine Masse</h3>
-                    <p class="lp-how-line" data-i18n="how.s3_line">Foto (100 % im Browser), manuell oder Preset. Eine Schätzung, jederzeit anpassbar.</p>
+                    <p class="lp-how-line" data-i18n="how.s3_line">Neun Körpermasse — per Foto direkt im Browser, von Hand oder als Preset. Eine Schätzung, jederzeit anpassbar.</p>
                 </li>
                 <li class="lp-how-station" data-reveal>
                     <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg></span>
                     <span class="lp-how-num" aria-hidden="true">04</span>
                     <h3 class="lp-how-label" data-i18n="how.s4_label">Deine Vorlage</h3>
-                    <p class="lp-how-line" data-i18n="how.s4_line">Ein dokumentiertes Einzelstück — bereit für den Tag, an dem die autonome Fabrik fertigt.</p>
+                    <p class="lp-how-line" data-i18n="how.s4_line">Ein dokumentiertes Einzelstück — bereit für den Tag, an dem sich der Kreis zum ersten Mal schliesst.</p>
                 </li>
             </ol>
         </div>
     </section>
 
-    <!-- Finale — magnetischer Kreis-CTA, öffnet das Studio -->
+    <!-- Finale — Übergabe-Zeile (Mono) + magnetischer Kreis-CTA, öffnet das Studio.
+         Der Orb ist die geometrische Konklusion: die Seite endet auf dem Kreis. -->
     <section class="lp-finale lp-block" data-lp-reveal>
+        <p class="lp-handoff" data-i18n="landing.handoff">Der Kreis wartet auf sein erstes Stück.</p>
         <h2 class="lp-finale-title" data-i18n-html="landing.cta_title_html">Trag etwas, das es <em>nur einmal</em> gibt.</h2>
         <p class="lp-finale-sub" data-i18n="landing.cta_sub">Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Mass, aus recycelter Kleidung.</p>
         <a class="lp-cta-orb" id="cta-orb" href="#design" data-i18n-aria-label="landing.orb_aria" aria-label="UR Create starten — öffnet das Studio">
