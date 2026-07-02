@@ -25,6 +25,13 @@ const DesignPreview = (() => {
   const lastModel = new WeakMap(); // preview el → last GarmentSVG model
   const tweenId = new WeakMap();   // preview el → running rAF id
   const wasGenesis = new WeakMap(); // preview el → last render was the nebula
+  // preview el → current render's generation. A realism render's photo probe
+  // resolves asynchronously (network image load); if renderInto is called again
+  // on the same el before it lands (e.g. the user hits "back" right after
+  // convergence), the stale probe must not re-add .is-realism / show its photo
+  // over the render that superseded it — that would reintroduce the exact
+  // "stale dimmed preview" bug the .is-realism cleanup above already fixes.
+  const renderGen = new WeakMap();
   // easeInOutCubic — accelerates out of the old shape and settles softly into
   // the new one, so the morph reads as one deliberate motion (not a linear slide).
   const easeOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -128,6 +135,8 @@ const DesignPreview = (() => {
 
   function renderInto(el, dna, opts) {
     if (!el) return;
+    const gen = (renderGen.get(el) || 0) + 1;
+    renderGen.set(el, gen);
     const realism = !!(opts && opts.realism);
     // A converged design leaves .de-preview in its realism state (the dimmed
     // flat under the crossfaded photo — .is-realism stays on the container even
@@ -207,10 +216,14 @@ const DesignPreview = (() => {
       const src = cands[i++];
       const probe = new Image();
       probe.onload = () => {
+        if (renderGen.get(el) !== gen) return; // superseded by a later render — don't resurrect the dim
         img.src = src;
         photoWrap.hidden = false;
         // next frame → transition kicks in; flat fades under the photo
-        requestAnimationFrame(() => { photoWrap.classList.add("is-shown"); el.classList.add("is-realism"); });
+        requestAnimationFrame(() => {
+          if (renderGen.get(el) !== gen) return;
+          photoWrap.classList.add("is-shown"); el.classList.add("is-realism");
+        });
       };
       probe.onerror = tryNext;
       probe.src = src;
