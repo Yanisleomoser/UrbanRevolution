@@ -187,6 +187,17 @@ html.is-touch .navbar {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
+/* iOS-Safari-Scroll-Jitter der fixen Bar: OHNE den (oben aus Perf-Gründen
+   entfernten) backdrop-blur verliert die Navbar ihre eigene Compositor-
+   Ebene — Safari setzt un-composited fixed-Elemente beim schnellen Scrollen
+   auf dem langsamen Pfad neu, die Bar hinkt sichtbar nach unten und Inhalt
+   erscheint „oberhalb der Kopfzeile" im Notch-Streifen (real-iPhone-Befund).
+   translateZ(0) erzwingt die Ebene zurück; visuell unverändert. Bewusst in
+   BEIDEN Touch-Pfaden (Media-Query + .is-touch), wie das Muster darüber. */
+@media (any-pointer: coarse) {
+    .navbar { transform: translateZ(0); }
+}
+html.is-touch .navbar { transform: translateZ(0); }
 
 .nav-container {
     max-width: 1280px;
