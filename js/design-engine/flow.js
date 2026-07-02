@@ -180,6 +180,32 @@ const DesignFlow = (() => {
     }).join("");
   }
 
+  // The preview chip shows the WORD THE USER TAPPED, not a second vocabulary:
+  // look up the current category's node choice that sets `path` to `value`
+  // ("Mini" stays "Mini", never a generic "Cropped"; "A-Linie" never a raw
+  // "Aline"). Inferred values get the same word the user WOULD have tapped.
+  // Pure (nodes + category in, word out) so the offline suite can cover it.
+  // Of all matching choices, the one setting the FEWEST paths wins: the
+  // dedicated card for a dimension sets little besides that dimension, while
+  // a side-effect setter carries its own attribute too (the dress subarch
+  // "Slip" also sets fabric.material=silk and would otherwise label the
+  // STOFF chip "Slip" instead of the material card's "Seide").
+  function choiceWord(nodes, category, lang, path, value) {
+    if (!category || value == null) return null;
+    let best = null;
+    let bestKeys = Infinity;
+    (nodes || []).forEach((n) => {
+      if (!n.id || n.id.indexOf(category + "_") !== 0 || !n.choices) return;
+      n.choices.forEach((c) => {
+        const set = c.effects && c.effects.set;
+        if (!set || set[path] !== value || !c.label) return;
+        const keys = Object.keys(set).length;
+        if (keys < bestKeys) { bestKeys = keys; best = c.label[lang] || c.label.de; }
+      });
+    });
+    return best;
+  }
+
   function mirror(dna, attributes) {
     const map = attributes.stateMap || {};
     Object.entries(map).forEach(([dnaPath, stateKey]) => {
@@ -305,13 +331,15 @@ const DesignFlow = (() => {
         // values never blur ("FIT Regular · LÄNGE Regular", not "Regular ·
         // Regular") and every chip says which decision it reflects.
         const chips = [];
-        if (DesignDNA.get(dna, "category")) {
-          const sub = g("subArchetype"); if (sub) chips.push({ dim: t("chip.style"), text: cap(sub) });
+        const cat = DesignDNA.get(dna, "category");
+        if (cat) {
+          const word = (path, value) => choiceWord(content.nodes, cat, lang(), path, value);
+          const sub = g("subArchetype"); if (sub) chips.push({ dim: t("chip.style"), text: word("subArchetype", sub) || cap(sub) });
           const fit = g("silhouette.fit");
           if (typeof fit === "number") chips.push({ dim: t("chip.fit"), text: window.I18N ? window.I18N.t(fit < 0.34 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.34 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular") });
-          const len = g("length"); if (len) chips.push({ dim: t("chip.length"), text: window.I18N ? window.I18N.t("length." + len) : len });
-          const mat = g("fabric.material"); if (mat) chips.push({ dim: t("chip.material"), text: window.I18N ? window.I18N.material(mat) : mat });
-          const pat = g("pattern.type"); if (pat && pat !== "none") chips.push({ dim: t("chip.pattern"), text: window.I18N ? window.I18N.pattern(pat) : pat });
+          const len = g("length"); if (len) chips.push({ dim: t("chip.length"), text: word("length", len) || (window.I18N ? window.I18N.t("length." + len) : len) });
+          const mat = g("fabric.material"); if (mat) chips.push({ dim: t("chip.material"), text: word("fabric.material", mat) || (window.I18N ? window.I18N.material(mat) : mat) });
+          const pat = g("pattern.type"); if (pat && pat !== "none") chips.push({ dim: t("chip.pattern"), text: word("pattern.type", pat) || (window.I18N ? window.I18N.pattern(pat) : pat) });
         }
         const frag = document.createDocumentFragment();
         chips.forEach((c) => {
@@ -711,7 +739,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;
