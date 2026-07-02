@@ -198,6 +198,13 @@ const I18N = (() => {
       "length.regular": "Regular",
       "length.long": "Lang",
 
+      // ── Vorschau-Chips: Dimensions-Mikrolabels ──
+      "chip.style": "Stil",
+      "chip.fit": "Fit",
+      "chip.length": "Länge",
+      "chip.material": "Stoff",
+      "chip.pattern": "Muster",
+
       // ── Design Engine (Reise) ──
       "engine.back": "Zurück",
       "engine.skip": "Überspringen",
@@ -800,6 +807,13 @@ const I18N = (() => {
       "length.cropped": "Cropped",
       "length.regular": "Regular",
       "length.long": "Long",
+
+      // ── Preview chips: dimension micro-labels ──
+      "chip.style": "Style",
+      "chip.fit": "Fit",
+      "chip.length": "Length",
+      "chip.material": "Fabric",
+      "chip.pattern": "Pattern",
 
       // ── Design Engine (journey) ──
       "engine.back": "Back",

@@ -28,6 +28,17 @@ const DesignFlow = (() => {
     "fabric.material", "fabric.finishWeight", "intent.energy",
   ];
 
+  // Fat-finger guard: single-select cards commit instantly on tap, so the next
+  // question renders under the user's finger — the second tap of a double-tap
+  // would land on whatever button now sits there (worst case the generate
+  // button, which shares the confirm styling). A tap that arrives within this
+  // window of a fresh render is the tail of a tap aimed at the PREVIOUS screen;
+  // ignore it. 350 ms is far below any deliberate read-and-decide, and keyboard
+  // users are unaffected (focus lands on the question heading after render).
+  const COMMIT_GUARD_MS = 350;
+  const isGuardedTap = (nowMs, renderedAtMs) => nowMs - renderedAtMs < COMMIT_GUARD_MS;
+  const nowMs = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
+
   function S(key, value) {
     if (!window.StateManager) return;
     try { window.StateManager.set(key, value); } catch (_e) { /* validation guard */ }
@@ -211,6 +222,9 @@ const DesignFlow = (() => {
     let content = null;
     let currentNode = null;
     let generated = false;
+    // Stamped on every question/refine render; commits within COMMIT_GUARD_MS
+    // of it are ignored (double-tap protection, see isGuardedTap above).
+    let lastRenderAt = 0;
     // True only on the Phase-F refine screen → the preview crossfades from the
     // morphing flat to the recoloured hero photo (realism layer, brief §1).
     let atRefine = false;
@@ -287,26 +301,36 @@ const DesignFlow = (() => {
       if (chipsEl) {
         const g = (p) => DesignDNA.get(previewDna, p);
         const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : "");
+        // Each chip carries a mono dimension micro-label so two same-worded
+        // values never blur ("FIT Regular · LÄNGE Regular", not "Regular ·
+        // Regular") and every chip says which decision it reflects.
         const chips = [];
         if (DesignDNA.get(dna, "category")) {
-          const sub = g("subArchetype"); if (sub) chips.push(cap(sub));
+          const sub = g("subArchetype"); if (sub) chips.push({ dim: t("chip.style"), text: cap(sub) });
           const fit = g("silhouette.fit");
-          if (typeof fit === "number") chips.push(window.I18N ? window.I18N.t(fit < 0.34 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.34 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular"));
-          const len = g("length"); if (len) chips.push(window.I18N ? window.I18N.t("length." + len) : len);
-          const mat = g("fabric.material"); if (mat) chips.push(window.I18N ? window.I18N.material(mat) : mat);
-          const pat = g("pattern.type"); if (pat && pat !== "none") chips.push(window.I18N ? window.I18N.pattern(pat) : pat);
+          if (typeof fit === "number") chips.push({ dim: t("chip.fit"), text: window.I18N ? window.I18N.t(fit < 0.34 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.34 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular") });
+          const len = g("length"); if (len) chips.push({ dim: t("chip.length"), text: window.I18N ? window.I18N.t("length." + len) : len });
+          const mat = g("fabric.material"); if (mat) chips.push({ dim: t("chip.material"), text: window.I18N ? window.I18N.material(mat) : mat });
+          const pat = g("pattern.type"); if (pat && pat !== "none") chips.push({ dim: t("chip.pattern"), text: window.I18N ? window.I18N.pattern(pat) : pat });
         }
         const frag = document.createDocumentFragment();
         chips.forEach((c) => {
           const span = document.createElement("span");
           span.className = "de-preview-chip";
-          span.textContent = c;
+          const dim = document.createElement("span");
+          dim.className = "de-chip-dim";
+          dim.textContent = c.dim;
+          span.appendChild(dim);
+          span.appendChild(document.createTextNode(c.text));
           frag.appendChild(span);
         });
         chipsEl.textContent = "";
         chipsEl.appendChild(frag);
       }
-      live.textContent = DesignSummary.toSentence(dna, lang());
+      // The live sentence only appears once it reads as a sentence — below
+      // half maturity it would be a bare fragment ("Stück.", "Jacke.") that
+      // looks like debris under the controls (roadmap §3.1).
+      live.textContent = maturity() >= 0.5 ? DesignSummary.toSentence(dna, lang()) : "";
     }
     // Orientation stepper: light the current phase, mark earlier ones done.
     // Label it for assistive tech with the current beat ("Design-Phase: Stoff").
@@ -362,6 +386,7 @@ const DesignFlow = (() => {
         updatePreview();
       },
       commit(payload) {
+        if (isGuardedTap(nowMs(), lastRenderAt)) return;
         const { eff, conf } = resolveEffects(currentNode, payload);
         if (currentNode) T("node_choice", { id: currentNode.id, modality: currentNode.modality });
         snapshot();
@@ -375,6 +400,7 @@ const DesignFlow = (() => {
 
     function renderModality(node) {
       atRefine = false; // back to the morphing flat for any question
+      lastRenderAt = nowMs();
       currentNode = node;
       updateStepper(node.phase);
       T("node_shown", { id: node.id, phase: node.phase, modality: node.modality, lang: lang() });
@@ -422,6 +448,7 @@ const DesignFlow = (() => {
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
+      lastRenderAt = nowMs();
       atRefine = true; // Phase F → crossfade the flat to the realism photo
       updateStepper("F"); // the arc is traversed; the user is refining/generating
       refreshChrome();
@@ -456,7 +483,7 @@ const DesignFlow = (() => {
         <div class="de-refine-actions">
           <button type="button" class="de-nav" id="de-deeper">${t("engine.deeper")}</button>
           <button type="button" class="de-nav" id="de-share">${t("engine.share")}</button>
-          <button type="button" class="de-confirm" id="de-generate">${t("engine.generate")}</button>
+          <button type="button" class="de-confirm de-generate" id="de-generate">${t("engine.generate")}</button>
         </div>`;
 
       const reSummary = () => { body.querySelector("#de-refine-summary").textContent = DesignSummary.toSentence(dna, lang()); };
@@ -539,6 +566,9 @@ const DesignFlow = (() => {
         } else { window.prompt(t("engine.share"), url); }
       });
       body.querySelector("#de-generate").addEventListener("click", (e) => {
+        // The generate button sits where a question's confirm just was — a
+        // double-tap on the last answer must never fire the AI run.
+        if (isGuardedTap(nowMs(), lastRenderAt)) return;
         const ftEl = body.querySelector("#de-freetext-input");
         const extra = ftEl && ftEl.value.trim() ? " " + ftEl.value.trim() : "";
         handoff(DesignSummary.toPrompt(dna, lang()) + extra, DesignDNA.get(dna, "category"), e.currentTarget);
@@ -681,7 +711,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

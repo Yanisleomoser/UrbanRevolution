@@ -37,7 +37,10 @@ const DesignSummary = (() => {
       cotton: { de: "Canvas-Baumwolle", en: "cotton canvas" }, linen: { de: "Leinen", en: "linen" },
       denim: { de: "Denim", en: "denim" }, wool: { de: "Wolle", en: "wool" },
       fleece: { de: "Fleece", en: "fleece" }, silk: { de: "Seide", en: "silk" },
-      polyester: { de: "recyceltem Nylon", en: "recycled nylon" },
+      // "Polyester", not "Nylon": the key IS polyester (config/spec sheet say
+      // so) — naming a different polymer here contradicted the chips and the
+      // production spec at the moment the user reads their design back.
+      polyester: { de: "recyceltem Polyester", en: "recycled polyester" },
     },
     length: {
       cropped: { de: "cropped", en: "cropped" }, regular: { de: "hüftlang", en: "hip-length" },

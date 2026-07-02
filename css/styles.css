@@ -5156,6 +5156,9 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-preview-badge { position: absolute; top: var(--space-4); left: var(--space-4); z-index: 2; font-size: var(--text-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); background: rgba(10, 22, 34,0.55); backdrop-filter: blur(8px); padding: 4px var(--space-3); border-radius: 999px; }
 .de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
 .de-preview-chip { font-size: var(--text-xs); color: var(--text-dim); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 3px var(--space-3); }
+/* Dimensions-Mikrolabel im Chip (Maschinen-Stimme): unterscheidet gleichlautende
+   Werte ("FIT Regular · LÄNGE Regular") statt zwei identischer Pillen. */
+.de-chip-dim { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; margin-right: 6px; } /* 0.8: bleibt über 4.5:1 AA-Kontrast auf --bg-elevated */
 @media (prefers-reduced-motion: reduce) { .de-preview-duo { transition: none; } }
 
 /* ============================================================

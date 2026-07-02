@@ -21,7 +21,7 @@
       "phase": "B",
       "modality": "slider",
       "when": "category == 'jacket' && _confidence.silhouette.fit < 0.7",
-      "priority": 0.85,
+      "priority": 0.72,
       "question": { "de": "Wie sitzt sie?", "en": "How does it sit?" },
       "bind": "silhouette.fit",
       "axis": { "de": ["Schmal", "Oversized"], "en": ["Slim", "Oversized"] },
@@ -48,7 +48,7 @@
       "priority": 0.75,
       "question": { "de": "Aus welchem Stoff?", "en": "What fabric?" },
       "choices": [
-        { "id": "polyester", "image": "js/design-engine/content/img/material/polyester.jpg", "label": { "de": "Recycled Nylon", "en": "Recycled Nylon" }, "effects": { "set": { "fabric.material": "polyester", "fabric.finish": "matte" }, "weight": { "techAvant": 0.2, "sport": 0.1 } } },
+        { "id": "polyester", "image": "js/design-engine/content/img/material/polyester.jpg", "label": { "de": "Recycled Tech", "en": "Recycled tech" }, "effects": { "set": { "fabric.material": "polyester", "fabric.finish": "matte" }, "weight": { "techAvant": 0.2, "sport": 0.1 } } },
         { "id": "denim", "image": "js/design-engine/content/img/material/denim.jpg", "label": { "de": "Denim", "en": "Denim" }, "effects": { "set": { "fabric.material": "denim" }, "weight": { "y2kStreet": 0.2, "utility": 0.1 } } },
         { "id": "wool", "image": "js/design-engine/content/img/material/wool.jpg", "label": { "de": "Wolle", "en": "Wool" }, "effects": { "set": { "fabric.material": "wool" }, "weight": { "quietMinimal": 0.2, "softCouture": 0.1 } } },
         { "id": "cotton", "image": "js/design-engine/content/img/material/cotton.jpg", "label": { "de": "Canvas", "en": "Canvas" }, "effects": { "set": { "fabric.material": "cotton" }, "weight": { "utility": 0.2 } } }

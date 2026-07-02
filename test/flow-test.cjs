@@ -138,5 +138,15 @@ console.log("\n— phaseStepper (honest orientation: where you are, never a % ga
   assert(stateOf(Flow.phaseStepper("c", L), "engine.phase_fabric") === "cur", "phase letter is case-insensitive");
 }
 
+console.log("\n— isGuardedTap (double-tap must not answer the NEXT question / fire generate) —");
+{
+  const G = Flow.COMMIT_GUARD_MS;
+  assert(typeof G === "number" && G > 0 && G <= 600, "guard window is a sane, sub-read-time constant");
+  assert(Flow.isGuardedTap(1000, 1000) === true, "a tap in the same instant as the render is guarded");
+  assert(Flow.isGuardedTap(1000 + G - 1, 1000) === true, "a tap just inside the window is guarded");
+  assert(Flow.isGuardedTap(1000 + G, 1000) === false, "a tap at the window edge passes (deliberate)");
+  assert(Flow.isGuardedTap(1000 + G * 4, 1000) === false, "a considered tap long after render passes");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
