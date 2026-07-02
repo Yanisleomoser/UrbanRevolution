@@ -738,7 +738,9 @@
         const cta = heroEl.querySelector(".lp-hero-ctas"); if (cta) add(cta.getBoundingClientRect(), PAD);
         const cue = heroEl.querySelector(".lp-scroll-cue"); if (cue) add(cue.getBoundingClientRect(), PAD * 0.4);
       }
-      const nav = document.querySelector(".lp-nav"); if (nav) add(nav.getBoundingClientRect(), 8);
+      // .nav-shell, nicht .lp-nav: die sticky Bar selbst ist 0px hoch (layout-
+      // neutral); die sichtbare Leiste — die die Maske freihalten muss — ist die Shell.
+      const nav = document.querySelector(".lp-nav .nav-shell"); if (nav) add(nav.getBoundingClientRect(), 8);
       mCols = Math.max(1, Math.ceil(w / MASK_CELL));
       mRows = Math.max(1, Math.ceil(h / MASK_CELL));
       if (!maskGrid || maskGrid.length < mCols * mRows) maskGrid = new Float32Array(mCols * mRows);
