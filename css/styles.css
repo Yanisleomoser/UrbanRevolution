@@ -6490,6 +6490,16 @@ html.fx .lp-loop-step.is-active {
     transform: none;
     pointer-events: auto;
 }
+/* Laptop-kurze Viewports (1366×768 & Co.): Kopf kompakt, damit Kopf + Kreis +
+   Stationstext in EINE gepinnte Viewport-Höhe passen (Vertrag im
+   .lp-loop-pin-Kommentar). Der STATUS-Vermerk trägt die Botschaft, der Sub
+   weicht — mobil (<880px) passt alles und bleibt vollständig. */
+@media (max-height: 820px) and (min-width: 880px) {
+    .lp-loop-sub { display: none; }
+    .lp-loop-status { margin-top: 8px; }
+    .lp-loop-head { margin-bottom: clamp(12px, 2vw, 28px); }
+}
+
 /* Auf sehr kurzen Viewports zählt jede Zeile: kompaktere Stationen */
 @media (max-height: 600px) {
     html.fx .lp-loop-steps { min-height: 150px; }
@@ -6884,7 +6894,11 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     opacity: 0.9;
     pointer-events: none;
 }
-html.fx .lp-identity-ring { animation: lp-orb-spin 72s linear infinite; }
+/* Drehung auf dem INNEREN Kreis, nicht dem quadratischen SVG-Host: die
+   rotierte Host-Box würde scrollWidth aufblähen (mobil > Viewport → flakiger
+   e2e-No-Overflow-Gate); die BBox eines zentrierten Kreises ist rotations-
+   invariant. transform-origin = viewBox-Zentrum (200×200). */
+html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-orb-spin 72s linear infinite; }
 .lp-label--warm { color: var(--accent-warm); }
 .lp-identity-title {
     font-family: var(--font-display);
@@ -6955,8 +6969,10 @@ html.fx .lp-identity-ring { animation: lp-orb-spin 72s linear infinite; }
 .lp-how-seam.is-revealed .lp-how-arc-path { stroke-dashoffset: 0; }
 /* Desktop: der Bogen ersetzt Leiste + Wander-Nadel (die Strich-Spitze IST die
    Nadel), und die MITTLEREN Stationen sitzen tiefer — die vier Karten REITEN
-   sichtbar auf dem Bogen, statt dass eine fast-gerade Linie sie kreuzt. */
-@media (min-width: 861px) {
+   sichtbar auf dem Bogen, statt dass eine fast-gerade Linie sie kreuzt.
+   860.02px statt 861px: schliesst das 1px-Loch zum mobilen max-width:860px-
+   Block (fraktionale Zoom-Breiten zeigten sonst BEIDE Naht-Systeme). */
+@media (min-width: 860.02px) {
     .lp-how-seam-bar, .lp-how-needle { display: none; }
     .lp-how-grid { align-items: start; }
     .lp-how-station:nth-child(2),

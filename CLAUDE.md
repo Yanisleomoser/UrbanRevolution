@@ -124,13 +124,21 @@ a printable production spec sheet that drives the autonomous factory.
 > what *is*. (This is why `export.js` emits planned strings, not concrete
 > CHF/lead-time numbers, and why `CONFIG.PRODUCTION_ESTIMATES` stays internal.)
 
-The **landing experience** (`js/landing.js`, GSAP) is the front door:
-preloader logo-draw → hero with a thread-particle field → manifesto
-word-scrub → pinned circular-economy section → counted-up stats → a
-**4-step "So funktioniert's" seam** (`#how`: Du entwirfst → KI verfeinert →
-Deine Masse → Deine Vorlage — a stitched-seam visual that frames the user
-journey honestly, AI refines but never authors the design; `how.*` i18n keys,
-`[data-reveal]` entrance) → a magnetic circle CTA. The **UR-Create studio**
+The **landing experience** (`js/landing.js`, GSAP) is the front door, told as
+a **two-act dramaturgy ("Die Linie und der Kreis")**: preloader logo-draw →
+hero with a thread-particle field → **Act I THE LINE** (manifesto word-scrub
+thesis + mono verbs band → counted-up stats as the line's protocol, kickers
+Produzieren/Wegwerfen/Zurück + coda) → the pinned **`#pivot` turn** (the one
+big question; a straight line scroll-scrubs into a circle via `initPivot` /
+exported `pivotBendPath`, hinge sentence + mission statement) → **Act II THE
+CIRCLE** (pinned `#loop` vision with STATUS meta + Alle/KI/Du/KI station tags
+→ `#ai-done-right` → `#your-style` centre beat) → a
+**4-step "So funktioniert's" arc** (`#how`: Du entwirfst → Du entscheidest →
+Deine Masse → Deine Vorlage — a desktop SVG-arc seam with staggered cards
+that frames the user journey honestly, the user decides every step, AI never
+authors the design; `how.*` i18n keys, `[data-reveal]` entrance) → the mono
+handoff line → a magnetic circle CTA (the page's geometric conclusion).
+The **UR-Create studio**
 (`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it.
 The page closes with a
 **community sphere** — a WebGL globe (`js/community-sphere.js`) whose inner
@@ -225,6 +233,7 @@ not two stills (project rule).
 | `#top` `.lp-hero`      | Hero: thread-particle field + headline       | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`)          | GSAP intro + canvas particle weave      | `hero`      |
 | `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
 | `#facts` `.lp-stats`   | Cited fast-fashion evidence, counted up      | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` | count-up on reveal + live kg odometer   | `facts`     |
+| `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
 | `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
 | `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | —           |
 | `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | —           |
