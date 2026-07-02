@@ -6589,6 +6589,9 @@ html.fx .lp-loop-step.is-active {
     height: min(78vh, 620px);
     height: min(calc(var(--svh, 1vh) * 78), 620px);
     width: auto;
+    /* Schmale Screens: Box darf schrumpfen — preserveAspectRatio (meet)
+       skaliert die Zeichnung passend, nichts clippt. */
+    max-width: 96vw;
     color: var(--text-muted);
     pointer-events: none;
 }
@@ -6881,7 +6884,6 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     opacity: 0.9;
     pointer-events: none;
 }
-.lp-identity-ring-dot { fill: var(--accent-warm); }
 html.fx .lp-identity-ring { animation: lp-orb-spin 72s linear infinite; }
 .lp-label--warm { color: var(--accent-warm); }
 .lp-identity-title {
@@ -6939,7 +6941,7 @@ html.fx .lp-identity-ring { animation: lp-orb-spin 72s linear infinite; }
     position: absolute;
     left: 0; right: 0;
     top: 16px;
-    height: 56px;
+    height: 88px;
     z-index: 0;            /* hinter den Karten-Inhalten; Karten sind transparent */
     pointer-events: none;
 }
@@ -6951,9 +6953,14 @@ html.fx .lp-identity-ring { animation: lp-orb-spin 72s linear infinite; }
     filter: drop-shadow(0 0 6px rgba(100, 214, 196, 0.4)); /* --accent-3 Glow wie die Naht */
 }
 .lp-how-seam.is-revealed .lp-how-arc-path { stroke-dashoffset: 0; }
-/* Desktop: der Bogen ersetzt Leiste + Wander-Nadel (die Strich-Spitze IST die Nadel) */
+/* Desktop: der Bogen ersetzt Leiste + Wander-Nadel (die Strich-Spitze IST die
+   Nadel), und die MITTLEREN Stationen sitzen tiefer — die vier Karten REITEN
+   sichtbar auf dem Bogen, statt dass eine fast-gerade Linie sie kreuzt. */
 @media (min-width: 861px) {
     .lp-how-seam-bar, .lp-how-needle { display: none; }
+    .lp-how-grid { align-items: start; }
+    .lp-how-station:nth-child(2),
+    .lp-how-station:nth-child(3) { margin-top: 24px; }
 }
 /* Die Naht selbst nicht mit-faden/-translaten — sie wird gezeichnet. */
 .lp-how-seam[data-reveal] { opacity: 1; transform: none; transition: none; }

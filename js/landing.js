@@ -247,9 +247,9 @@
     const answer = document.getElementById("pivot-answer");
     if (!pin || !line || !arc || !q || !answer) return;
 
-    // Endkreis r = 120 im 420×620-viewBox (Umfang 2π·120 ≈ 754) — muss zum
+    // Endkreis r = 120 im 560×620-viewBox (Umfang 2π·120 ≈ 754) — muss zum
     // statischen d-Attribut im Markup passen.
-    const L = 754, CX = 210, CY = 310;
+    const L = 754, CX = 280, CY = 310;
     const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
     const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -264,10 +264,12 @@
       }
       line.style.opacity = String(1 - bend);
       arc.style.opacity = String(bend);
-      const qOut = clamp01((p - 0.32) / 0.16);
+      // Frage raus 0.30–0.42, Antwort rein ab 0.44 — nur ein kurzer Atemzug
+      // ohne Text (~4 % des Pins), kein leeres Loch in der Mitte.
+      const qOut = clamp01((p - 0.30) / 0.12);
       q.style.opacity = String(1 - qOut);
       q.style.transform = "translateY(" + (-24 * qOut).toFixed(1) + "px)";
-      const aIn = clamp01((p - 0.52) / 0.22);
+      const aIn = clamp01((p - 0.44) / 0.20);
       answer.style.opacity = String(aIn);
       answer.style.transform = "translateY(" + (28 * (1 - aIn)).toFixed(1) + "px)";
     }
