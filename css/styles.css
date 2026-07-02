@@ -6324,6 +6324,18 @@ html:not(.fx) .lp-loader { display: none; }
     letter-spacing: -0.01em;
 }
 .lp-manifesto-text .w { display: inline-block; }
+/* Verben-Band — die Stationen der Linie (Maschinen-Stimme über der Förderband-Linie) */
+.lp-verbs {
+    margin-top: clamp(28px, 5vw, 48px);
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 1.4vw, 13px);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
 
 /* ── Der Kreislauf ── */
 .lp-loop-pin {
@@ -6343,6 +6355,25 @@ html:not(.fx) .lp-loader { display: none; }
     font-size: clamp(30px, 5vw, 56px);
     letter-spacing: -0.02em;
     line-height: 1.12;
+}
+/* STATUS-Vermerk (Mono) — Vorlaunch-Ehrlichkeit als Dokument-Metadatum */
+.lp-loop-status {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 14px;
+}
+.lp-loop-status::before { content: "[ "; }
+.lp-loop-status::after { content: " ]"; }
+.lp-loop-sub {
+    margin-top: 10px;
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(14.5px, 1.6vw, 17px);
+    max-width: 52ch;
 }
 .lp-loop-grid {
     display: grid;
@@ -6419,6 +6450,20 @@ html:not(.fx) .lp-loop-count { display: none; }
     letter-spacing: -0.02em;
     margin-bottom: 10px;
 }
+/* Attributions-Tag je Station: wer wirkt hier — [ Alle ] / [ KI ] / [ Du ].
+   Die Mensch/Maschine-Grenze als Informationsdesign im Kreis-Diagramm. */
+.lp-loop-step-tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: -2px 0 10px;
+}
+.lp-loop-step-tag::before { content: "[ "; }
+.lp-loop-step-tag::after { content: " ]"; }
+.lp-loop-step-tag--you { color: var(--accent-3); }
 .lp-loop-step-text {
     color: var(--text-dim);
     max-width: 46ch;
@@ -6452,6 +6497,10 @@ html.fx .lp-loop-step.is-active {
     .lp-loop-step-text { font-size: 13.5px; }
     .lp-loop-title { font-size: clamp(24px, 4vw, 40px); }
     .lp-loop-count { display: none; }
+    /* Kopf kompakt: der STATUS-Vermerk trägt die Botschaft, der Sub weicht */
+    .lp-loop-sub { display: none; }
+    .lp-loop-status { margin-top: 8px; }
+    .lp-loop-step-tag { margin-bottom: 6px; }
 }
 
 /* ── Die Zahlen ── */
@@ -6474,6 +6523,16 @@ html.fx .lp-loop-step.is-active {
     .lp-stats-grid { grid-template-columns: repeat(3, 1fr); }
 }
 .lp-stat { border-top: 1px solid var(--border); padding-top: 22px; }
+/* Mono-Kicker über jeder Zahl: die Station der Linie (Produzieren/Wegwerfen/Zurück) */
+.lp-stat-kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
 .lp-stat-value {
     font-family: var(--font-display);
     font-size: clamp(60px, 9vw, 104px);
@@ -6491,12 +6550,96 @@ html.fx .lp-loop-step.is-active {
     font-size: 14.5px;
     max-width: 30ch;
 }
+/* Coda — das Urteil unter dem Beweisband (Serif-Kursiv, leitet zu #pivot über) */
+.lp-stats-coda {
+    margin-top: clamp(40px, 6vw, 72px);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(19px, 2.6vw, 28px);
+    line-height: 1.4;
+    color: var(--text-dim);
+    max-width: 34ch;
+}
 .lp-stats-sources {
-    margin-top: clamp(36px, 6vw, 64px);
+    margin-top: clamp(20px, 3vw, 32px);
     font-size: 12.5px;
     color: var(--text-muted);
 }
 .lp-stats-sources a { color: var(--text-dim); }
+
+/* ── Die Wende (#pivot) — die Linie biegt sich zum Kreis ──────────────
+   Statischer Default (no-JS / ohne GSAP / reduced-motion): fertige
+   Geometrie (Kreis) und Frage + Antwort untereinander sichtbar. Nur
+   html.fx überlagert Frage/Antwort für den Scrub-Crossfade und startet
+   mit der geraden Linie; js/landing.js (initPivot) treibt den Rest. */
+.lp-pivot-pin {
+    min-height: 100vh;
+    min-height: var(--vh100);
+    display: grid;
+    place-items: center;
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 48px);
+    position: relative;
+    overflow: hidden;
+}
+.lp-pivot-svg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: min(78vh, 620px);
+    height: min(calc(var(--svh, 1vh) * 78), 620px);
+    width: auto;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+/* Default (statisch): nur der fertige Verlaufs-Kreis, ruhig hinter dem Text */
+.lp-pivot-line { opacity: 0; }
+.lp-pivot-arc { opacity: 0.55; }
+.lp-pivot-copy {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 760px;
+    display: grid;
+    gap: clamp(30px, 5vw, 48px);
+}
+.lp-pivot-question {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(30px, 5.6vw, 60px);
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin: 0 auto;
+    max-width: 16ch;
+}
+.lp-pivot-hinge {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(27px, 4.8vw, 54px);
+    letter-spacing: -0.02em;
+    line-height: 1.14;
+    margin: 0 auto;
+    max-width: 17ch;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.lp-pivot-mission {
+    margin: clamp(16px, 2.5vw, 24px) auto 0;
+    max-width: 46ch;
+    color: var(--text-dim);
+    font-weight: 300;
+    font-size: clamp(15.5px, 1.9vw, 19px);
+    line-height: 1.7;
+}
+/* fx: Frage und Antwort überlagern sich (Crossfade unter Scrub-Kontrolle);
+   Startzustand = gerade Mono-Linie, Antwort verborgen. */
+html.fx .lp-pivot-q,
+html.fx .lp-pivot-answer { grid-area: 1 / 1; align-self: center; }
+html.fx .lp-pivot-answer { opacity: 0; transform: translateY(28px); }
+html.fx .lp-pivot-line { opacity: 1; }
+html.fx .lp-pivot-arc { opacity: 0; }
 
 /* ── #facts · interaktive Daten-Instrumente ───────────────────────
    Jede Zahl wird ein Instrument statt einer Tapete: 1-von-100-Matrix,
@@ -6715,14 +6858,31 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
 }
 .lp-aidr-body strong { color: var(--text); font-weight: 500; }
 
-/* ── Dein Stil (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
+/* ── Der Mittelpunkt (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
 .lp-identity {
     max-width: 820px;
     margin: 0 auto;
     text-align: center;
+    position: relative;
+    z-index: 0; /* eigener Stacking-Context: der Ring (z -1) bleibt ÜBER dem bg */
     /* fauchter warmer Schimmer hinter dem Block — fällt zum Rand auf 0 ab */
     background: radial-gradient(58% 52% at 50% 42%, rgba(232, 160, 106, 0.10) /* --accent-warm */, transparent 70%);
 }
+/* Gestrichelter Kreis mit warmem Mittelpunkt hinter dem Text — dieselbe
+   Ring-Sprache wie der Finale-Orb; unter fx eine sehr langsame Drehung. */
+.lp-identity-ring {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    z-index: -1;
+    width: min(86vw, 480px);
+    height: min(86vw, 480px);
+    color: var(--border);
+    opacity: 0.9;
+    pointer-events: none;
+}
+.lp-identity-ring-dot { fill: var(--accent-warm); }
+html.fx .lp-identity-ring { animation: lp-orb-spin 72s linear infinite; }
 .lp-label--warm { color: var(--accent-warm); }
 .lp-identity-title {
     font-family: var(--font-display);
@@ -6772,14 +6932,28 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
 
 .lp-how-track { position: relative; }
 
-/* Die Naht — gerade Linie durch die Icon-Mitten, glüht in --accent-3. */
+/* Die Naht — auf Desktop ein flacher KREIS-BOGEN (Akt-II-Geometrie: die vier
+   Schritte sitzen auf deinem Bogen), gezeichnet per stroke-dashoffset
+   (pathLength=1). Mobil bleibt die bewährte vertikale Leiste (.lp-how-seam-bar). */
 .lp-how-seam {
     position: absolute;
     left: 0; right: 0;
-    top: 41px;
-    height: 2px;
+    top: 16px;
+    height: 56px;
     z-index: 0;            /* hinter den Karten-Inhalten; Karten sind transparent */
     pointer-events: none;
+}
+.lp-how-arc { display: block; width: 100%; height: 100%; overflow: visible; }
+.lp-how-arc-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;  /* ungezeichnet; .is-revealed zieht den Faden durch */
+    transition: stroke-dashoffset 1.4s var(--ease-out);
+    filter: drop-shadow(0 0 6px rgba(100, 214, 196, 0.4)); /* --accent-3 Glow wie die Naht */
+}
+.lp-how-seam.is-revealed .lp-how-arc-path { stroke-dashoffset: 0; }
+/* Desktop: der Bogen ersetzt Leiste + Wander-Nadel (die Strich-Spitze IST die Nadel) */
+@media (min-width: 861px) {
+    .lp-how-seam-bar, .lp-how-needle { display: none; }
 }
 /* Die Naht selbst nicht mit-faden/-translaten — sie wird gezeichnet. */
 .lp-how-seam[data-reveal] { opacity: 1; transform: none; transition: none; }
@@ -6878,6 +7052,7 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
 @media (max-width: 860px) {
     .lp-how-track { max-width: 560px; margin-inline: auto; }
     .lp-how-grid { grid-template-columns: 1fr; gap: var(--space-4); padding-left: var(--space-8); }
+    .lp-how-arc { display: none; }  /* mobil zeichnet die vertikale Leiste */
     .lp-how-seam { top: 0; bottom: 0; left: 14px; right: auto; width: 2px; height: auto; }
     .lp-how-seam-bar {
         left: 0; right: auto; top: 2%; bottom: 6%; width: 2px; height: auto;
@@ -6896,6 +7071,7 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
    ihren eigenen Guard, da sie kein [data-reveal] tragen.) */
 @media (prefers-reduced-motion: reduce) {
     .lp-how-seam-bar { transition: none; clip-path: inset(0 0 0 0) !important; }
+    .lp-how-arc-path { transition: none; stroke-dashoffset: 0 !important; }
     .lp-how-needle { display: none; }
 }
 
@@ -6905,6 +7081,27 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+/* Übergabe-Zeile — der letzte Stich: eine gestrichelte Naht führt in den Orb */
+.lp-handoff {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--accent-3);
+    margin-bottom: clamp(22px, 4vw, 36px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+.lp-handoff::before {
+    content: "";
+    width: 1px;
+    height: 40px;
+    background: repeating-linear-gradient(180deg, var(--accent-3) 0 3px, transparent 3px 9px);
+    opacity: 0.7;
 }
 .lp-finale-title {
     font-family: var(--font-display);
