@@ -25,7 +25,41 @@
     const h = String(hash || "");
     return /[#&]dna=/.test(h) || STUDIO_ANCHORS.includes(h.replace(/^#/, ""));
   }
-  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS };
+
+  // Pure Bogen-Mathematik für #pivot („Die Wende"): eine Gerade der Länge L
+  // rollt sich zum Kreis auf. Bei Fortschritt p ∈ [0,1] wird sie zum Kreis-
+  // bogen mit Öffnungswinkel θ = 2π·p und Radius L/θ — die Bogenlänge bleibt
+  // konstant (die Linie wird gebogen, nicht skaliert). Die Figur wird auf
+  // (cx, cy) zentriert. p ≤ EPS ⇒ Gerade (Radius → ∞ wird geklemmt, nie NaN).
+  // DOM-frei + oberhalb des window-Guards → headless unit-testbar.
+  function pivotBendPath(p, L, cx, cy, samples) {
+    const n = Math.max(8, Math.floor(samples) || 64);
+    const num = Number(p);
+    const prog = num > 1 ? 1 : num > 0 ? num : 0; // NaN/negativ → 0
+    const pts = [];
+    if (prog < 0.004) {
+      for (let i = 0; i <= n; i++) pts.push([0, -L / 2 + (i / n) * L]);
+    } else {
+      const theta = 2 * Math.PI * prog;
+      const R = L / theta;
+      for (let i = 0; i <= n; i++) {
+        const t = (i / n) * theta;
+        pts.push([R * (1 - Math.cos(t)), -R * Math.sin(t)]);
+      }
+    }
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const pt of pts) {
+      if (pt[0] < minX) minX = pt[0];
+      if (pt[0] > maxX) maxX = pt[0];
+      if (pt[1] < minY) minY = pt[1];
+      if (pt[1] > maxY) maxY = pt[1];
+    }
+    const ox = cx - (minX + maxX) / 2;
+    const oy = cy - (minY + maxY) / 2;
+    return "M" + pts.map((pt) => (pt[0] + ox).toFixed(2) + " " + (pt[1] + oy).toFixed(2)).join(" L");
+  }
+
+  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS, pivotBendPath };
   if (typeof window === "undefined") return; // non-DOM (tests/SSR): nothing to mount
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -178,6 +212,61 @@
         },
       },
     );
+  }
+
+  /* ── Die Wende (#pivot): die Linie biegt sich zum Kreis ──── */
+
+  // Gepinnter Scrub (gleiches Muster wie initLoop): pro Frame wird EIN
+  // <path d> neu gerechnet (pivotBendPath, reine viewBox-Koordinaten —
+  // resize-immun) und auf beide Pfade geschrieben: die Mono-Linie blendet
+  // aus, der Ozean-Verlauf ein — die Linie WIRD der Kreis. Text-Choreo:
+  // die grosse Frage weicht dem Scharniersatz + Mission.
+  // Ohne fx bleibt der statische Default aus dem Markup (fertiger Kreis,
+  // Frage + Antwort untereinander) unangetastet.
+  function initPivot() {
+    if (!fx) return;
+    const pin = document.getElementById("pivot-pin");
+    const line = document.getElementById("pivot-line");
+    const arc = document.getElementById("pivot-arc");
+    const q = document.getElementById("pivot-q");
+    const answer = document.getElementById("pivot-answer");
+    if (!pin || !line || !arc || !q || !answer) return;
+
+    // Endkreis r = 120 im 420×620-viewBox (Umfang 2π·120 ≈ 754) — muss zum
+    // statischen d-Attribut im Markup passen.
+    const L = 754, CX = 210, CY = 310;
+    const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+    const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+    let lastD = "";
+    function setPivot(p) {
+      const bend = easeInOut(p);
+      const d = pivotBendPath(bend, L, CX, CY, 72);
+      if (d !== lastD) {
+        line.setAttribute("d", d);
+        arc.setAttribute("d", d);
+        lastD = d;
+      }
+      line.style.opacity = String(1 - bend);
+      arc.style.opacity = String(bend);
+      const qOut = clamp01((p - 0.32) / 0.16);
+      q.style.opacity = String(1 - qOut);
+      q.style.transform = "translateY(" + (-24 * qOut).toFixed(1) + "px)";
+      const aIn = clamp01((p - 0.52) / 0.22);
+      answer.style.opacity = String(aIn);
+      answer.style.transform = "translateY(" + (28 * (1 - aIn)).toFixed(1) + "px)";
+    }
+    setPivot(0);
+
+    ScrollTrigger.create({
+      trigger: pin,
+      start: "top top",
+      // kurz und entschieden — kein zweiter Marathon-Pin vor #loop
+      end: () => (window.matchMedia("(max-width: 700px)").matches ? "+=110%" : "+=130%"),
+      pin: true,
+      scrub: true,
+      onUpdate: (self) => setPivot(self.progress),
+    });
   }
 
   /* ── Der Kreislauf: gepinnte Kreis-Reise ─────────────────── */
@@ -980,6 +1069,7 @@
     initStudioReveal();
     initLoader();
     buildManifesto();
+    initPivot();
     initLoop();
     initReveals();
     initCounters();

@@ -29,6 +29,7 @@ const SECTIONS = [
   { name: "hero", hash: "", target: null },
   { name: "how", hash: "#how", target: "how" },
   { name: "facts", hash: "#facts", target: "facts" },
+  { name: "pivot", hash: "#pivot", target: "pivot" },
   { name: "studio", hash: "#design", target: "design", reveal: true },
   { name: "community", hash: "#community", target: "community" },
 ];
