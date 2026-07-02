@@ -187,6 +187,15 @@ body {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }
+    /* iOS 26 rendert VIEWPORT-verankerte Layer (fixed UND sticky) beim
+       Scrollen versetzt (WebKit #297779; translateZ/sticky-Umbau änderten
+       nichts — real-iPhone-Befund dreifach). Auf Touch fährt die Kopfzeile
+       deshalb gar nicht mit: position:relative hält sie im Fluss (0 Höhe,
+       Shell überlagert wie gehabt den Hero-Anfang) und sie scrollt normal
+       weg — ein inhaltsverankerter Layer kann nicht versetzt rendern, „Text
+       oberhalb der Kopfzeile" ist konstruktiv ausgeschlossen. Die persistente
+       Aktion trägt mobil der .sticky-create-Pill; Desktop bleibt sticky. */
+    .navbar { position: relative; }
 }
 /* In-app browsers (Instagram/Facebook WKWebView) evaluate pointer media
    queries unreliably — many report no coarse pointer even on iPad — so the
@@ -197,6 +206,7 @@ html.is-touch .nav-shell {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
+html.is-touch .navbar { position: relative; }
 
 .nav-container {
     max-width: 1280px;
