@@ -138,5 +138,66 @@ console.log("\n— phaseStepper (honest orientation: where you are, never a % ga
   assert(stateOf(Flow.phaseStepper("c", L), "engine.phase_fabric") === "cur", "phase letter is case-insensitive");
 }
 
+console.log("\n— isGuardedTap (double-tap must not answer the NEXT question / fire generate) —");
+{
+  const G = Flow.COMMIT_GUARD_MS;
+  assert(typeof G === "number" && G > 0 && G <= 600, "guard window is a sane, sub-read-time constant");
+  assert(Flow.isGuardedTap(1000, 1000) === true, "a tap in the same instant as the render is guarded");
+  assert(Flow.isGuardedTap(1000 + G - 1, 1000) === true, "a tap just inside the window is guarded");
+  assert(Flow.isGuardedTap(1000 + G, 1000) === false, "a tap at the window edge passes (deliberate)");
+  assert(Flow.isGuardedTap(1000 + G * 4, 1000) === false, "a considered tap long after render passes");
+}
+
+console.log("\n— choiceWord (chips echo the tapped card label, across every category) —");
+{
+  const nodes = [
+    { id: "dress_subarch", choices: [
+      { id: "aline", label: { de: "A-Linie", en: "A-line" }, effects: { set: { subArchetype: "aline" } } },
+      { id: "wrap", label: { de: "Wickel", en: "Wrap" }, effects: { set: { subArchetype: "wrap" } } },
+    ] },
+    { id: "dress_length", choices: [
+      { id: "mini", label: { de: "Mini", en: "Mini" }, effects: { set: { length: "cropped" } } },
+    ] },
+    { id: "jacket_subarch", choices: [
+      { id: "work", label: { de: "Workwear", en: "Work" }, effects: { set: { subArchetype: "work" } } },
+    ] },
+    { id: "dress_mood", pair: [{ id: "x" }] }, // no choices → skipped, no throw
+    // Side-effect trap: the subarch card "Slip" ALSO sets the material —
+    // the dedicated material card's word must win for the STOFF chip.
+    { id: "dress_subarch2", choices: [
+      { id: "slip", label: { de: "Slip", en: "Slip" }, effects: { set: { subArchetype: "slip", "fabric.material": "silk" } } },
+    ] },
+    { id: "dress_material", choices: [
+      { id: "silk", label: { de: "Seide", en: "Silk" }, effects: { set: { "fabric.material": "silk" } } },
+      { id: "cotton", label: { de: "Baumwolle", en: "Cotton" }, effects: { set: { "fabric.material": "cotton" } } },
+    ] },
+  ];
+  assert(Flow.choiceWord(nodes, "dress", "de", "subArchetype", "aline") === "A-Linie", "raw id 'aline' resolves to the tapped word 'A-Linie'");
+  assert(Flow.choiceWord(nodes, "dress", "en", "subArchetype", "aline") === "A-line", "…and to the EN label under lang 'en'");
+  assert(Flow.choiceWord(nodes, "dress", "de", "length", "cropped") === "Mini", "generic 'cropped' shows as the tapped 'Mini' for a dress");
+  assert(Flow.choiceWord(nodes, "jacket", "de", "subArchetype", "work") === "Workwear", "lookup is scoped to the CURRENT category's nodes");
+  assert(Flow.choiceWord(nodes, "dress", "de", "subArchetype", "work") === null, "a value from another category's cards → null (fallback path)");
+  assert(Flow.choiceWord(nodes, null, "de", "subArchetype", "aline") === null, "no category yet → null, never a throw");
+  assert(Flow.choiceWord(nodes, "dress", "de", "pattern.type", "graphic") === null, "unknown value → null (i18n fallback takes over)");
+  assert(Flow.choiceWord(nodes, "dress", "de", "fabric.material", "silk") === "Seide", "dedicated material card ('Seide') beats the side-effect subarch card ('Slip')");
+  assert(Flow.choiceWord(nodes, "dress", "de", "subArchetype", "slip") === "Slip", "…while the subarch chip still gets the subarch word");
+}
+
+console.log("\n— toSentence German adjective agreement (feminine materials) —");
+{
+  const Summary = require(path.join(ROOT, "summary.js"));
+  const mk = (mat) => {
+    const d = global.DesignDNA.create();
+    global.DesignDNA.set(d, "category", "jacket", 1);
+    global.DesignDNA.set(d, "fabric.material", mat, 1);
+    return d;
+  };
+  assert(Summary.toSentence(mk("wool"), "de").includes("aus matter Wolle"), "feminine: 'aus matter Wolle' (not 'mattem Wolle')");
+  assert(Summary.toSentence(mk("silk"), "de").includes("aus matter Seide"), "feminine: 'aus matter Seide'");
+  assert(Summary.toSentence(mk("denim"), "de").includes("aus mattem Denim"), "masculine/neuter keeps 'aus mattem Denim'");
+  assert(Summary.toSentence(mk("cotton"), "de").includes("aus matter Baumwolle"), "cotton reads as plain 'Baumwolle' (true for every cotton card)");
+  assert(Summary.toSentence(mk("wool"), "en").includes("in matte wool"), "EN unaffected by German gender handling");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

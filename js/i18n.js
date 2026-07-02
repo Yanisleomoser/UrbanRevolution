@@ -198,6 +198,13 @@ const I18N = (() => {
       "length.regular": "Regular",
       "length.long": "Lang",
 
+      // ── Vorschau-Chips: Dimensions-Mikrolabels ──
+      "chip.style": "Stil",
+      "chip.fit": "Fit",
+      "chip.length": "Länge",
+      "chip.material": "Stoff",
+      "chip.pattern": "Muster",
+
       // ── Design Engine (Reise) ──
       "engine.back": "Zurück",
       "engine.skip": "Überspringen",
@@ -445,6 +452,11 @@ const I18N = (() => {
       "color.#f59e0b": "Sonnengelb",
       "color.#dc2626": "Rot",
       "color.custom": "Custom",
+      // Engine-Muster (Design-Reise) — Chip-Fallback, wenn kein Karten-Label greift
+      "pattern.stripe": "Streifen",
+      "pattern.check": "Karo",
+      "pattern.graphic": "Grafik",
+      "pattern.abstract": "Abstrakt",
       "pattern.solid": "Uni",
       "pattern.stripes_h": "Querstreifen",
       "pattern.stripes_v": "Längsstreifen",
@@ -801,6 +813,13 @@ const I18N = (() => {
       "length.regular": "Regular",
       "length.long": "Long",
 
+      // ── Preview chips: dimension micro-labels ──
+      "chip.style": "Style",
+      "chip.fit": "Fit",
+      "chip.length": "Length",
+      "chip.material": "Fabric",
+      "chip.pattern": "Pattern",
+
       // ── Design Engine (journey) ──
       "engine.back": "Back",
       "engine.skip": "Skip",
@@ -1048,6 +1067,11 @@ const I18N = (() => {
       "color.#f59e0b": "Sun yellow",
       "color.#dc2626": "Red",
       "color.custom": "Custom",
+      // Engine patterns (design journey) — chip fallback when no card label matches
+      "pattern.stripe": "Stripes",
+      "pattern.check": "Check",
+      "pattern.graphic": "Graphic",
+      "pattern.abstract": "Abstract",
       "pattern.solid": "Solid",
       "pattern.stripes_h": "Horizontal stripes",
       "pattern.stripes_v": "Vertical stripes",

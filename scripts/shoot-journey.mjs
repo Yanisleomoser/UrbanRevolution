@@ -4,8 +4,9 @@
  * to shoot-sections.mjs. Use it to verify any change to the design-engine
  * journey at the real render (project rule: never judge a flow from code).
  *
- *   node scripts/shoot-journey.mjs             # both viewports → screenshots/journey/
- *   node scripts/shoot-journey.mjs desktop     # one viewport
+ *   node scripts/shoot-journey.mjs                    # both viewports → screenshots/journey/
+ *   node scripts/shoot-journey.mjs desktop            # one viewport
+ *   node scripts/shoot-journey.mjs desktop dress      # walk a specific category branch
  *
  * Answers deterministically (always the first option, slider at 0.78,
  * duo-gradient with two swatches), so runs are comparable across sessions.
@@ -27,6 +28,10 @@ const VIEWPORTS = [
 ];
 const only = (process.argv[2] || "").trim();
 const viewports = only ? VIEWPORTS.filter((v) => v.name === only) : VIEWPORTS;
+// Which garment branch to walk (default: first card = jacket). The category
+// card's accessible name is its localised label, so click by aria-label.
+const CATEGORY = (process.argv[3] || "jacket").trim();
+const CAT_LABEL = { jacket: "Jacke", hoodie: "Hoodie", tshirt: "T-Shirt", shirt: "Hemd", pants: "Hose", dress: "Kleid" };
 
 const server = await startServer();
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -49,7 +54,7 @@ async function walk(vp) {
     const el = await page.$("#engine-host");
     if (el) await el.scrollIntoViewIfNeeded();
     await page.waitForTimeout(450);
-    const f = `${OUT}/${vp.name}-${String(step).padStart(2, "0")}-${label}.png`;
+    const f = `${OUT}/${vp.name}-${CATEGORY}-${String(step).padStart(2, "0")}-${label}.png`;
     if (el) await el.screenshot({ path: f }); else await page.screenshot({ path: f });
     console.log("wrote", f);
   };
@@ -65,13 +70,14 @@ async function walk(vp) {
       await page.click(".de-tot .de-tot-panel:first-child");
     } else if (await page.$(".de-cards")) {
       const isCategory = (q || "").includes("entsteht") || /making/i.test(q || "");
-      await page.click(".de-cards .de-card");
+      if (isCategory && CAT_LABEL[CATEGORY]) await page.click(`.de-cards .de-card[aria-label="${CAT_LABEL[CATEGORY]}"]`);
+      else await page.click(".de-cards .de-card");
       if (isCategory) {
         // sample the weave-in over ~600 ms — the beat must be judged as motion
         for (let f = 0; f < 5; f++) {
           await page.waitForTimeout(120);
           const el = await page.$("#de-preview");
-          if (el) await el.screenshot({ path: `${OUT}/${vp.name}-weave-${f}.png` });
+          if (el) await el.screenshot({ path: `${OUT}/${vp.name}-${CATEGORY}-weave-${f}.png` });
         }
       }
       // single-select commits on click; only confirm if the SAME question is

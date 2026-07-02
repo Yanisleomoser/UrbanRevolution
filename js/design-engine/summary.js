@@ -34,10 +34,18 @@ const DesignSummary = (() => {
       wrap: { de: "Wickel-", en: "wrap " }, slip: { de: "Slip-", en: "slip " },
     },
     material: {
-      cotton: { de: "Canvas-Baumwolle", en: "cotton canvas" }, linen: { de: "Leinen", en: "linen" },
-      denim: { de: "Denim", en: "denim" }, wool: { de: "Wolle", en: "wool" },
-      fleece: { de: "Fleece", en: "fleece" }, silk: { de: "Seide", en: "silk" },
-      polyester: { de: "recyceltem Nylon", en: "recycled nylon" },
+      // `f: true` = grammatically feminine in German — the finish adjective
+      // must agree ("aus matter Wolle", never "aus mattem Wolle").
+      // cotton is plain "Baumwolle": the per-category cards phrase it as
+      // Popeline/Twill/Canvas/Bio-Baumwolle, so any more specific word here
+      // would contradict most of them (a poplin shirt is not canvas).
+      cotton: { de: "Baumwolle", en: "cotton", f: true }, linen: { de: "Leinen", en: "linen" },
+      denim: { de: "Denim", en: "denim" }, wool: { de: "Wolle", en: "wool", f: true },
+      fleece: { de: "Fleece", en: "fleece" }, silk: { de: "Seide", en: "silk", f: true },
+      // "Polyester", not "Nylon": the key IS polyester (config/spec sheet say
+      // so) — naming a different polymer here contradicted the chips and the
+      // production spec at the moment the user reads their design back.
+      polyester: { de: "recyceltem Polyester", en: "recycled polyester" },
     },
     length: {
       cropped: { de: "cropped", en: "cropped" }, regular: { de: "hüftlang", en: "hip-length" },
@@ -115,9 +123,14 @@ const DesignSummary = (() => {
     const len = pick(lang, W.length[g("length")], g("length"));
     const sub = pick(lang, W.subArchetype[g("subArchetype")], "");
     const cat = pick(lang, W.category[g("category")], g("category") || (lang === "en" ? "piece" : "Stück"));
-    const mat = pick(lang, W.material[g("material") || g("fabric.material")], g("fabric.material"));
-    const finish = (g("fabric.finish") === "sheen") ? (lang === "en" ? "sheen" : "glänzendem")
-                 : (lang === "en" ? "matte" : "mattem");
+    const matEntry = W.material[g("material") || g("fabric.material")];
+    const mat = pick(lang, matEntry, g("fabric.material"));
+    // German adjective agrees with the material's gender (dative): feminine
+    // "aus matter Wolle", masculine/neuter "aus mattem Denim/Leinen".
+    const fem = !!(matEntry && matEntry.f);
+    const finish = (g("fabric.finish") === "sheen")
+      ? (lang === "en" ? "sheen" : fem ? "glänzender" : "glänzendem")
+      : (lang === "en" ? "matte" : fem ? "matter" : "mattem");
 
     // Head noun: "oversized hip-length puffer jacket"
     const head = [fit, len, sub + cat].filter(Boolean).join(" ");
