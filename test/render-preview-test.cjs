@@ -127,5 +127,44 @@ console.log("\n— renderInto clears a stale .is-realism so a restart never show
   assert(noPhoto.classList.contains("is-realism") === false, "realism render with no curated photo clears the realism dim");
 }
 
+console.log("\n— renderInto ignores a stale realism photo-probe superseded by a later render —");
+{
+  // The realism branch loads the hero photo asynchronously (new Image() +
+  // onload). If the user backs out to a question (renderInto called again,
+  // realism: false) before that probe resolves, the late onload must NOT
+  // resurrect .is-realism / show its photo over the render that superseded
+  // it — that would reintroduce the exact "stale dimmed preview" bug fixed
+  // above, just via the async path instead of a leftover DOM class.
+  const instances = [];
+  class FakeImage { constructor() { instances.push(this); } }
+  const realImage = global.Image;
+  global.Image = FakeImage;
+  let rafQueue = [];
+  const realRaf = global.requestAnimationFrame;
+  global.requestAnimationFrame = (cb) => { rafQueue.push(cb); return rafQueue.length; };
+
+  const photoWrap = { hidden: true, classList: { add: () => {}, remove: () => {}, contains: () => false } };
+  const img = { src: "" };
+  const classes = new Set();
+  const el = {
+    innerHTML: "",
+    classList: { add: (c) => classes.add(c), remove: (c) => classes.delete(c), contains: (c) => classes.has(c) },
+    querySelector: (sel) => (sel === ".de-preview-photo" ? photoWrap : sel === ".de-preview-photo img" ? img : null),
+  };
+
+  DP.renderInto(el, jacketDna(), { realism: true }); // kicks off the (never-resolved) probe
+  assert(instances.length === 1, "realism render with a curated photo starts one probe");
+  DP.renderInto(el, jacketDna(), { realism: false }); // user backs out before it resolves
+
+  instances[0].onload(); // the superseded probe finally resolves
+  assert(img.src === "", "a superseded probe never applies its image");
+  assert(photoWrap.hidden === true, "a superseded probe never reveals the photo wrap");
+  assert(rafQueue.length === 0, "a superseded probe never schedules the crossfade");
+  assert(classes.has("is-realism") === false, "a superseded probe never re-adds .is-realism");
+
+  global.Image = realImage;
+  global.requestAnimationFrame = realRaf;
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
