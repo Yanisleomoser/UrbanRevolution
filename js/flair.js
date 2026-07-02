@@ -3,7 +3,6 @@
  *
  * Side-effect module (no global export), in the spirit of animations.js.
  * Everything here is pure progressive enhancement and degrades cleanly:
- *   - The scroll "thread" runs everywhere (a passive progress line).
  *   - Hero pointer tilt + aura run ONLY on a fine pointer (desktop), never on
  *     touch and never when prefers-reduced-motion is set.
  *   - The easter egg never animates under reduced motion.
@@ -16,33 +15,9 @@
   const finePointer = mq("(hover: hover) and (pointer: fine)");
   const isTouch = document.documentElement.classList.contains("is-touch");
 
-  // ── 1. Scroll "thread" — a vertical gradient seam down the page edge that
-  //    sews itself shut as you scroll (scaleY ∝ total scroll progress), with a
-  //    glowing "needle" dot riding the sewn edge. transform:scaleY is
-  //    compositor-cheap; the needle's top is the one layout-light write.
-  //    Hidden under reduced motion (CSS) — we also skip the work here. ──
-  function initScrollThread() {
-    if (reduced) return;
-    const fill = document.querySelector(".scroll-thread-fill");
-    const needle = document.querySelector(".scroll-thread-needle");
-    if (!fill) return;
-    let ticking = false;
-    function update() {
-      const el = document.documentElement;
-      const max = el.scrollHeight - el.clientHeight;
-      const p = max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
-      fill.style.transform = "scaleY(" + p.toFixed(4) + ")";
-      if (needle) needle.style.top = (p * 100).toFixed(3) + "%";
-      ticking = false;
-    }
-    window.addEventListener("scroll", () => {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    }, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
-    update();
-  }
-
-  // ── 2 + 3. Hero pointer aura + holographic tilt of the photo card ──
+  // ── 1 + 2. Hero pointer aura + holographic tilt of the photo card ──
+  // (Der frühere Seitenrand-Scroll-Faden wurde entfernt: seit der Zwei-Akt-
+  // Geometrie [Linie→Kreis, Naht-Bogen in #how] war er eine Linie zu viel.)
   function initHeroPointer() {
     if (reduced || isTouch || !finePointer) return;
     const hero = document.querySelector(".hero");
@@ -137,7 +112,6 @@
   }
 
   function init() {
-    initScrollThread();
     initHeroPointer();
     initCardSpotlight();
     initEasterEgg();

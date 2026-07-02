@@ -4331,50 +4331,8 @@ main { display: block; }
    (wired in js/flair.js; pure progressive enhancement)
    ============================================================ */
 
-/* Scroll "thread": a 2px gradient seam that sews shut as you scroll. */
-/* Naht-Faden — eine senkrechte „Stich"-Naht am Seitenrand, die sich beim
-   Scrollen zunäht (scaleY ∝ Gesamt-Scrollfortschritt). Gestrichelte Maske =
-   Stiche; ein glühender „Nadel"-Punkt sitzt an der genähten Kante. Die ganze
-   Seite verbindende Durchgangslinie — das Pendant zum sich schließenden Kreis. */
-.scroll-thread {
-    position: fixed;
-    top: 0;
-    left: 10px;
-    width: 2px;
-    height: 100vh;
-    height: 100svh;
-    z-index: 1000;
-    pointer-events: none;
-    background: var(--border); /* noch nicht genähte Spur, sehr dezent */
-    -webkit-mask: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 11px);
-    mask: repeating-linear-gradient(180deg, #000 0 5px, transparent 5px 11px);
-}
-.scroll-thread-fill {
-    position: absolute;
-    inset: 0;
-    transform: scaleY(0);
-    transform-origin: 50% 0;
-    background: linear-gradient(180deg, var(--accent), var(--accent-2), var(--accent-3));
-    will-change: transform;
-}
-.scroll-thread-needle {
-    position: fixed;
-    top: 0;
-    left: 11px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent-3);
-    box-shadow: 0 0 9px 1px rgba(100, 214, 196, 0.9) /* --accent-3 */, 0 0 4px rgba(100, 214, 196, 0.7);
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    pointer-events: none;
-    will-change: top;
-}
-/* Bewegung: ohne Bewegung keine Naht — Inhalt bleibt vollständig sichtbar. */
-@media (prefers-reduced-motion: reduce) {
-    .scroll-thread, .scroll-thread-needle { display: none; }
-}
+/* (Der Seitenrand-Scroll-Faden wurde entfernt — seit der Zwei-Akt-Geometrie
+   war die fixe Randlinie eine Linie zu viel; js/flair.js §1 entsprechend.) */
 
 /* Hero pointer aura — a soft neon spotlight that follows the cursor. Only
    active once js/flair.js adds .has-pointer-flair (fine pointer, motion ok). */
@@ -6948,9 +6906,10 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
 
 .lp-how-track { position: relative; }
 
-/* Die Naht — auf Desktop ein flacher KREIS-BOGEN (Akt-II-Geometrie: die vier
-   Schritte sitzen auf deinem Bogen), gezeichnet per stroke-dashoffset
-   (pathLength=1). Mobil bleibt die bewährte vertikale Leiste (.lp-how-seam-bar). */
+/* Die Naht — der BOGEN, auf beiden Breakpoints mit demselben Mechanismus
+   gezeichnet (stroke-dashoffset, pathLength=1): Desktop horizontal durch die
+   Icon-Reihe, Mobil vertikal in der linken Gosse (leichte Wölbung zu den
+   Karten). Die frühere mobile clip-path-Leiste + Wander-Nadel sind entfernt. */
 .lp-how-seam {
     position: absolute;
     left: 0; right: 0;
@@ -6959,7 +6918,8 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     z-index: 0;            /* hinter den Karten-Inhalten; Karten sind transparent */
     pointer-events: none;
 }
-.lp-how-arc { display: block; width: 100%; height: 100%; overflow: visible; }
+.lp-how-arc, .lp-how-arc-v { display: block; width: 100%; height: 100%; overflow: visible; }
+.lp-how-arc-v { display: none; }  /* nur mobil (max-width: 860px) */
 .lp-how-arc-path {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;  /* ungezeichnet; .is-revealed zieht den Faden durch */
@@ -6967,40 +6927,17 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     filter: drop-shadow(0 0 6px rgba(100, 214, 196, 0.4)); /* --accent-3 Glow wie die Naht */
 }
 .lp-how-seam.is-revealed .lp-how-arc-path { stroke-dashoffset: 0; }
-/* Desktop: der Bogen ersetzt Leiste + Wander-Nadel (die Strich-Spitze IST die
-   Nadel), und die MITTLEREN Stationen sitzen tiefer — die vier Karten REITEN
+/* Desktop: die MITTLEREN Stationen sitzen tiefer — die vier Karten REITEN
    sichtbar auf dem Bogen, statt dass eine fast-gerade Linie sie kreuzt.
    860.02px statt 861px: schliesst das 1px-Loch zum mobilen max-width:860px-
    Block (fraktionale Zoom-Breiten zeigten sonst BEIDE Naht-Systeme). */
 @media (min-width: 860.02px) {
-    .lp-how-seam-bar, .lp-how-needle { display: none; }
     .lp-how-grid { align-items: start; }
     .lp-how-station:nth-child(2),
     .lp-how-station:nth-child(3) { margin-top: 24px; }
 }
 /* Die Naht selbst nicht mit-faden/-translaten — sie wird gezeichnet. */
 .lp-how-seam[data-reveal] { opacity: 1; transform: none; transition: none; }
-.lp-how-seam-bar {
-    position: absolute;
-    left: 1%; right: 5%; top: 0; height: 2px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
-    box-shadow: 0 0 12px 1px rgba(100, 214, 196, 0.45); /* --accent-3, gleiche Glow-Sprache wie .ur-hero-weave */
-    clip-path: inset(0 100% 0 0);  /* von links aufgedeckt */
-    transition: clip-path 1.1s var(--ease-out);
-}
-.lp-how-seam.is-revealed .lp-how-seam-bar { clip-path: inset(0 0 0 0); }
-.lp-how-needle {
-    position: absolute;
-    left: 1%; top: -2.5px;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--accent-3);
-    box-shadow: 0 0 8px 1px rgba(100, 214, 196, 0.9);
-    transition: left 1.1s var(--ease-out), top 1.1s var(--ease-out),
-                opacity var(--duration-base) var(--ease-out);
-}
-.lp-how-seam.is-revealed .lp-how-needle { left: 95%; }
 
 .lp-how-grid {
     list-style: none;
@@ -7075,27 +7012,18 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
 @media (max-width: 860px) {
     .lp-how-track { max-width: 560px; margin-inline: auto; }
     .lp-how-grid { grid-template-columns: 1fr; gap: var(--space-4); padding-left: var(--space-8); }
-    .lp-how-arc { display: none; }  /* mobil zeichnet die vertikale Leiste */
-    .lp-how-seam { top: 0; bottom: 0; left: 14px; right: auto; width: 2px; height: auto; }
-    .lp-how-seam-bar {
-        left: 0; right: auto; top: 2%; bottom: 6%; width: 2px; height: auto;
-        background: linear-gradient(180deg, var(--accent), var(--accent-2), var(--accent-3));
-        clip-path: inset(0 0 100% 0);  /* von oben aufgedeckt */
-    }
-    .lp-how-seam.is-revealed .lp-how-seam-bar { clip-path: inset(0 0 0 0); }
-    .lp-how-needle { left: -2.5px; right: auto; top: 2%; }
-    .lp-how-seam.is-revealed .lp-how-needle { top: 94%; left: -2.5px; }
+    .lp-how-arc { display: none; }
+    .lp-how-arc-v { display: block; }  /* der Bogen läuft vertikal in der Gosse */
+    .lp-how-seam { top: 0; bottom: 0; left: 2px; right: auto; width: 40px; height: auto; }
     .lp-how-station { padding: var(--space-5) var(--space-5) var(--space-6); }
     .lp-how-ico { width: 30px; height: 30px; margin-bottom: var(--space-4); }
 }
 
-/* Reduced-motion: Naht vollständig gezeichnet, keine Bewegung, Nadel verborgen.
-   (Das globale [data-reveal]-Reset deckt die Karten ab; die Naht-Kinder brauchen
-   ihren eigenen Guard, da sie kein [data-reveal] tragen.) */
+/* Reduced-motion: Bogen vollständig gezeichnet, keine Bewegung.
+   (Das globale [data-reveal]-Reset deckt die Karten ab; der Naht-Pfad braucht
+   seinen eigenen Guard, da er kein [data-reveal] trägt.) */
 @media (prefers-reduced-motion: reduce) {
-    .lp-how-seam-bar { transition: none; clip-path: inset(0 0 0 0) !important; }
     .lp-how-arc-path { transition: none; stroke-dashoffset: 0 !important; }
-    .lp-how-needle { display: none; }
 }
 
 /* ── Finale ── */

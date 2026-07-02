@@ -267,8 +267,6 @@
 </head>
 <body>
     <a href="#main-content" class="skip-link" data-i18n="nav.skip">Zum Inhalt springen</a>
-    <div class="scroll-thread" aria-hidden="true"><span class="scroll-thread-fill"></span></div>
-    <div class="scroll-thread-needle" aria-hidden="true"></div>
 
     <!-- Preloader: Logo-Kreis zeichnet sich (nur mit GSAP + ohne reduced
          motion; sonst per CSS unsichtbar). Sicherheitsnetz in landing.js. -->
@@ -544,6 +542,11 @@
             <p class="lp-how-sub" data-i18n="how.sub">Das ist deine Seite des Kreises — vom ersten Satz zur dokumentierten Vorlage. Du hältst den Faden, die Maschine hält die Nadel.</p>
         </header>
         <div class="lp-how-track">
+            <!-- EIN Zeichen-Mechanismus für beide Breakpoints (stroke-dashoffset,
+                 pathLength=1): Desktop = horizontaler Bogen durch die Icon-Reihe,
+                 Mobil = vertikaler Bogen in der linken Gosse. Die frühere mobile
+                 clip-path-Leiste + Wander-Nadel sind ersetzt (iOS-Zicken, und die
+                 Sektion verspricht einen BOGEN — auch auf dem iPhone). -->
             <div class="lp-how-seam" data-reveal aria-hidden="true">
                 <svg class="lp-how-arc" viewBox="0 0 1000 88" preserveAspectRatio="none" aria-hidden="true">
                     <defs>
@@ -555,8 +558,16 @@
                     </defs>
                     <path class="lp-how-arc-path" d="M10 25 Q 500 73 990 25" pathLength="1" fill="none" stroke="url(#how-arc-grad)" stroke-width="2" vector-effect="non-scaling-stroke"/>
                 </svg>
-                <span class="lp-how-seam-bar"></span>
-                <span class="lp-how-needle"></span>
+                <svg class="lp-how-arc-v" viewBox="0 0 88 1000" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="how-arc-grad-v" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="#2a9d8f"/>
+                            <stop offset="0.5" stop-color="#2779a8"/>
+                            <stop offset="1" stop-color="#64d6c4"/>
+                        </linearGradient>
+                    </defs>
+                    <path class="lp-how-arc-path" d="M25 8 Q 84 500 25 992" pathLength="1" fill="none" stroke="url(#how-arc-grad-v)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                </svg>
             </div>
             <ol class="lp-how-grid" data-reveal-stagger>
                 <li class="lp-how-station" data-reveal>
