@@ -310,6 +310,7 @@ holds.
 | 3 | `layout/mobile-docked-preview` | #330 | 76 px dock, thumb corner, ≤480 px + preview <30 % visible + journey on screen (`dockShouldShow`); mirrors **every** render/morph frame (`opts.mirror` in renderInto/morph); tap = rAF scroll-tween back to the stage; hoisted to `<body>` (see pitfalls); iPhone-verified by the user |
 | 4 | `visual/question-choreography` | #332 | Two-phase question swap (`deStepOut` 150 ms → `deStepIn` 240 ms staggered, `html.fx` only); preview morph starts WITH the entrance (see pitfalls); commits blocked mid-swap, pending paint replaced on double navigation; phase interstitial on a permanently reserved mono line + stepper-dot pulse (no interstitial on the crossing into refine); "Fertig" as gradient pill. Verified across all six categories: every swap choreographed, interstitials only on real chapter crossings, 0 page errors |
 | 5 | `visual/weave-hero-beat` | #334 | §5.3: gs-layer classes (`gs-outline/int/seams/ground`) in `renderFlat` + staged CSS: genesis-ghost converges (600 ms) → outline draws (1.1 s) → seams stitch → panels fill LAST (~1.6 s total); `.is-weave` removed 2.4 s post-beat (gen-guarded — else `stroke-dasharray:1` renders zip/stitch dashes solid). §5.2: `nebulaModel/nebulaPaint/lerpNebulaModel` — hash anchors are param-independent, so mood answers re-tension threads via 620 ms rAF tween (`.is-retension` blocks draw-in restarts, `.is-tweening` pauses breath/pulse during per-frame repaints); idle tempo follows energy (`--neb-breath/--neb-pulse`). `archTint()` hardens prototype-key archetypes from shared DNA. New permanent `scripts/verify-weave.mjs` (motion curves, fails on vacuous runs) |
+| 6 | `visual/studio-threshold` | #TBD | §5.1: `portalReveal` in `landing.js` — the clicked CTA's circle (orb = portal: start exactly on its ring) grows via transform over the viewport — a PURE disc (midnight surface + ocean ring, deliberately empty: any embedded graphic magnifies into a blown-up image while scaling; the real payoff is the studio's own crisp genesis stage the circle opens onto); reveal + fragment jump run INSTANT under the cover (**transitionend-synced** — a wall-clock timer revealed at scale 0.72 on slow devices; fallback snaps the disc to full cover first; double-rAF start — Safari coalesces append+restyle in one frame into a jump WITHOUT transition (frozen cover till the fallback = 'it doesn't work')), then the disc dissolves onto the studio surface. `portalGeometry`/`shouldPortal` pure + tested (farthest-corner radius + 6 %, 24 px seed clamp, truth table incl. LIVE reduced-motion re-check — the load-time `fx` snapshot goes stale when the OS toggles mid-session and the CSS belt would eat the click). Guards from the review pass: mid-portal re-activations swallowed (keyboard Enter bypasses the overlay's hit-testing), `.is-out { pointer-events: none }` releases input at reveal, layout-viewport dims vs iOS pinch-zoom, SR `role=status` announcement ("Studio öffnet …", `landing.portal_opening` DE/EN). Deep-links/no-fx unchanged instant. New permanent `scripts/verify-threshold.mjs` |
 
 Also permanent: `scripts/shoot-journey.mjs [viewport] [category]` — deterministic
 walkthrough of any branch, every question screen + weave frames to
@@ -317,7 +318,9 @@ walkthrough of any branch, every question screen + weave frames to
 
 ### Next up
 
-Slice 6 `visual/studio-threshold` (§5.1, **iPhone-gated**), then 7–10 per §10.
+Slices 7–10 per §10: `visual/colour-atelier` + `visual/modality-polish` (§6),
+then `engine/regions-hotspot-board` (§7), `visual/refine-crescendo` (§8),
+`engine/sewing-handoff` + `visual/ownership-seam` (§5.4/§9).
 
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 

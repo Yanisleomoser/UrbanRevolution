@@ -59,7 +59,37 @@
     return "M" + pts.map((pt) => (pt[0] + ox).toFixed(2) + " " + (pt[1] + oy).toFixed(2)).join(" L");
   }
 
-  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS, pivotBendPath };
+  // §5.1 Threshold-Portal — pure Geometrie: der Kreis, der vom angeklickten
+  // CTA in den Viewport wächst. Die Scheibe muss den GANZEN Viewport von einem
+  // beliebigen Ursprung aus decken, also ist ihr Radius die Distanz zur
+  // fernsten Viewport-Ecke (+6 % Luft für iOS-Toolbar-Shifts); sie startet
+  // exakt auf dem Kreis des Ursprungs-Elements — der Orb IST das Portal.
+  // DOM-frei → headless unit-testbar.
+  function portalGeometry(rect, vw, vh) {
+    const r = rect || {};
+    const w = Number(r.width) || 0, h = Number(r.height) || 0;
+    const cx = (Number(r.left) || 0) + w / 2;
+    const cy = (Number(r.top) || 0) + h / 2;
+    const W = Math.max(1, Number(vw) || 1), H = Math.max(1, Number(vh) || 1);
+    const fx2 = Math.max(cx, W - cx), fy2 = Math.max(cy, H - cy);
+    const D = Math.ceil(Math.sqrt(fx2 * fx2 + fy2 * fy2) * 2 * 1.06);
+    const d0 = Math.max(24, Math.min(w, h)); // Text-Links bekommen einen kleinen, aber sichtbaren Start-Kreis
+    return { cx, cy, D, scale0: Math.min(1, d0 / D) };
+  }
+
+  // Wann wird ein Studio-Anker-Klick zum Portal? Nur mit voller Bewegung
+  // (html.fx UND live erlaubter Motion — reduced-motion kann sich NACH dem
+  // Laden ändern, während das fx-Snapshot stehen bleibt; der CSS-Belt würde
+  // das Portal dann unsichtbar machen und der Klick wäre tot), noch
+  // verborgenem Studio, keinem laufenden Portal und einem einfachen
+  // Haupttasten-Klick (Modifier-Klicks behalten die native Anker-Semantik).
+  // Pure Truth-Table → unit-testbar.
+  function shouldPortal(o) {
+    const s = o || {};
+    return !!s.fx && !s.reduce && !!s.hidden && !s.active && !s.modified;
+  }
+
+  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS, pivotBendPath, portalGeometry, shouldPortal };
   if (typeof window === "undefined") return; // non-DOM (tests/SSR): nothing to mount
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -136,11 +166,117 @@
     }
   }
 
+  // §5.1 — die Schwelle: der Kreis, mit dem die Landing endet, öffnet sich
+  // wörtlich ins Studio. Eine REINE Scheibe (Midnight-Fläche + Ocean-Ring,
+  // bewusst ohne Inhalt: jede eingebettete Grafik würde beim Skalieren zum
+  // aufgeblasenen Bild) wächst lesbar vom angeklickten CTA über den Viewport;
+  // darunter passieren Reveal + Fragment-Sprung INSTANT, dann öffnet sich die
+  // Scheibe auf die Studio-Oberfläche — deren echte, feine Genesis-Fäden sind
+  // der Payoff. Nur transform/opacity (Compositor, iOS-tauglich).
+  // Reduced-Motion, fehlendes GSAP und Deep-Links behalten den Instant-Reveal
+  // — das Portal läuft dann nie. Gibt true zurück, wenn es den Klick übernahm.
+  let portalActive = false;
+  function portalReveal(origin, href, modified) {
+    const studio = document.getElementById("studio");
+    const reduceNow = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!shouldPortal({ fx, reduce: reduceNow, hidden: !!(studio && studio.hidden), active: portalActive, modified })) return false;
+    if (!origin || !origin.getBoundingClientRect) return false;
+    portalActive = true;
+    // Layout-Viewport-Maße (nicht nur innerWidth/-Height): iOS-Safari meldet
+    // unter Pinch-Zoom die VISUELLEN Maße, während getBoundingClientRect in
+    // Layout-Koordinaten liefert — die Scheibe würde einen gezoomten, weit
+    // gepannten Ausschnitt sonst nicht sicher decken.
+    const vw = Math.max(window.innerWidth, (document.documentElement && document.documentElement.clientWidth) || 0);
+    const vh = Math.max(window.innerHeight, (document.documentElement && document.documentElement.clientHeight) || 0);
+    const g = portalGeometry(origin.getBoundingClientRect(), vw, vh);
+    const portal = document.createElement("div");
+    portal.className = "lp-portal";
+    portal.setAttribute("aria-hidden", "true");
+    const disc = document.createElement("div");
+    disc.className = "lp-portal-disc";
+    disc.style.width = g.D + "px";
+    disc.style.height = g.D + "px";
+    disc.style.left = (g.cx - g.D / 2) + "px";
+    disc.style.top = (g.cy - g.D / 2) + "px";
+    disc.style.transform = "scale(" + g.scale0 + ")";
+    portal.appendChild(disc);
+    document.body.appendChild(portal);
+    // A11y: das Portal selbst ist aria-hidden — Screenreader hörten während
+    // der ~0,8 s Abdeckung sonst NICHTS auf ihre Aktivierung (liest sich wie
+    // ein toter Button). Eine höfliche Status-Region sagt an, was passiert;
+    // der Fokus zieht wie bisher in revealStudio() ins Studio.
+    const srStatus = document.createElement("span");
+    srStatus.className = "visually-hidden";
+    srStatus.setAttribute("role", "status");
+    document.body.appendChild(srStatus);
+    setTimeout(() => {
+      srStatus.textContent = window.I18N ? window.I18N.t("landing.portal_opening") : "Studio öffnet …";
+    }, 0);
+    const cleanup = () => { portal.remove(); srStatus.remove(); portalActive = false; };
+    // Phase 2 synchronisiert auf das ECHTE Transition-Ende (transitionend),
+    // nicht auf eine Wanduhr-Schätzung: auf langsamen Geräten startet die
+    // Transition verspätet (erste Rasterisierung der großen Scheibe), und ein
+    // fixer Timer würde das Studio enthüllen, bevor die Scheibe deckt. Der
+    // Timeout-Fallback (~3× Nominaldauer) fängt verschluckte Events ab.
+    let covered = false;
+    const phase2 = () => {
+      if (covered || !portal.isConnected) return;
+      covered = true;
+      // Kommt phase2 über den Fallback-Timer (Transition auf einem sehr
+      // langsamen Gerät noch mitten im Wachsen), erst die Scheibe in EINEM
+      // Frame auf volle Deckung schnappen — ein Sprung der Abdeckung ist
+      // unauffällig, der Studio-Umbau in offener Sicht nicht.
+      disc.style.transition = "none";
+      disc.style.transform = "scale(1)";
+      void disc.offsetWidth;
+      disc.style.transition = "";
+      // Unter der Abdeckung: Fragment setzen (History-Eintrag wie beim
+      // nativen Klick), Reveal + Fokus — alles mit Instant-Scroll.
+      const html = document.documentElement;
+      const prevSB = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto";
+      try {
+        if (href && location.hash !== href) location.hash = href;
+        revealStudio();
+      } finally {
+        html.style.scrollBehavior = prevSB;
+      }
+      portal.classList.add("is-out");
+      disc.style.opacity = "0";
+      disc.style.transform = "scale(1.05)";
+      setTimeout(cleanup, 340);
+    };
+    disc.addEventListener("transitionend", (e) => { if (e.propertyName === "transform") phase2(); }, { once: true });
+    setTimeout(phase2, 1300);
+    // Den Start-Frame GARANTIERT malen lassen (Doppel-rAF): Safari koalesziert
+    // Append + Umstylen im selben Frame sonst gern zu einem Sprung OHNE
+    // Transition — statt Wachstum stünde ein eingefrorenes Vollbild, bis der
+    // Fallback-Timer greift. Ein reiner Reflow (offsetWidth) reicht dort nicht.
+    void disc.offsetWidth;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { disc.style.transform = "scale(1)"; });
+    });
+    // Sicherheitsnetz: die Seite bleibt NIE hinter einem Overlay gefangen.
+    setTimeout(() => { if (portal.isConnected) cleanup(); }, 2600);
+    return true;
+  }
+
   function initStudioReveal() {
     document.addEventListener("click", (e) => {
       const a = e.target.closest && e.target.closest('a[href^="#"]');
       if (!a) return;
-      if (STUDIO_ANCHORS.includes((a.getAttribute("href") || "").slice(1))) revealStudio();
+      const href = a.getAttribute("href") || "";
+      if (!STUDIO_ANCHORS.includes(href.slice(1))) return;
+      const modified = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
+      // Läuft das Portal bereits (Doppelklick auf den Orb), gehört ihm die
+      // Transition: den zweiten Klick schlucken statt instant zu enthüllen
+      // und einen nativen Smooth-Scroll gegen die wachsende Scheibe rennen
+      // zu lassen. Modifier-Klicks bleiben unangetastet (neuer Tab etc.).
+      if (portalActive && !modified) { e.preventDefault(); return; }
+      // §5.1: mit erlaubter Bewegung und noch geschlossenem Studio wird der
+      // Klick zur Schwelle — der Kreis wächst aus dem berührten Element.
+      if (portalReveal(a, href, modified)) { e.preventDefault(); return; }
+      revealStudio();
     });
     // Share-Links (#dna=…) und Studio-Anker öffnen das Studio direkt.
     const check = () => { if (shouldRevealForHash(location.hash)) revealStudio(); };
