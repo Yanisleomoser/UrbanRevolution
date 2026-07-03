@@ -78,12 +78,15 @@
   }
 
   // Wann wird ein Studio-Anker-Klick zum Portal? Nur mit voller Bewegung
-  // (html.fx), noch verborgenem Studio, keinem laufenden Portal und einem
-  // einfachen Haupttasten-Klick (Modifier-Klicks behalten die native
-  // Anker-Semantik). Pure Truth-Table → unit-testbar.
+  // (html.fx UND live erlaubter Motion — reduced-motion kann sich NACH dem
+  // Laden ändern, während das fx-Snapshot stehen bleibt; der CSS-Belt würde
+  // das Portal dann unsichtbar machen und der Klick wäre tot), noch
+  // verborgenem Studio, keinem laufenden Portal und einem einfachen
+  // Haupttasten-Klick (Modifier-Klicks behalten die native Anker-Semantik).
+  // Pure Truth-Table → unit-testbar.
   function shouldPortal(o) {
     const s = o || {};
-    return !!s.fx && !!s.hidden && !s.active && !s.modified;
+    return !!s.fx && !s.reduce && !!s.hidden && !s.active && !s.modified;
   }
 
   if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS, pivotBendPath, portalGeometry, shouldPortal };
@@ -174,10 +177,17 @@
   let portalActive = false;
   function portalReveal(origin, href, modified) {
     const studio = document.getElementById("studio");
-    if (!shouldPortal({ fx, hidden: !!(studio && studio.hidden), active: portalActive, modified })) return false;
+    const reduceNow = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!shouldPortal({ fx, reduce: reduceNow, hidden: !!(studio && studio.hidden), active: portalActive, modified })) return false;
     if (!origin || !origin.getBoundingClientRect) return false;
     portalActive = true;
-    const g = portalGeometry(origin.getBoundingClientRect(), window.innerWidth, window.innerHeight);
+    // Layout-Viewport-Maße (nicht nur innerWidth/-Height): iOS-Safari meldet
+    // unter Pinch-Zoom die VISUELLEN Maße, während getBoundingClientRect in
+    // Layout-Koordinaten liefert — die Scheibe würde einen gezoomten, weit
+    // gepannten Ausschnitt sonst nicht sicher decken.
+    const vw = Math.max(window.innerWidth, (document.documentElement && document.documentElement.clientWidth) || 0);
+    const vh = Math.max(window.innerHeight, (document.documentElement && document.documentElement.clientHeight) || 0);
+    const g = portalGeometry(origin.getBoundingClientRect(), vw, vh);
     const portal = document.createElement("div");
     portal.className = "lp-portal";
     portal.setAttribute("aria-hidden", "true");
@@ -188,12 +198,27 @@
     disc.style.left = (g.cx - g.D / 2) + "px";
     disc.style.top = (g.cy - g.D / 2) + "px";
     disc.style.transform = "scale(" + g.scale0 + ")";
+    // Seed 41: dichtes Feld (Thread-Count ist bei 34 gedeckelt) UND eine
+    // Gradient-Id (nbGlow41), die die parallel im verborgenen Studio
+    // gemountete Genesis-Nebula (Seed = beantwortete Fragen, ≤ ~19) nie
+    // erzeugt — sonst gewänne deren gleichnamiger Paint-Server im Dokument.
     if (window.GarmentSVG && window.GarmentSVG.nebula) {
-      disc.innerHTML = window.GarmentSVG.nebula({ seed: 4, energy: 0.55 });
+      disc.innerHTML = window.GarmentSVG.nebula({ seed: 41, energy: 0.55 });
     }
     portal.appendChild(disc);
     document.body.appendChild(portal);
-    const cleanup = () => { portal.remove(); portalActive = false; };
+    // A11y: das Portal selbst ist aria-hidden — Screenreader hörten während
+    // der ~0,8 s Abdeckung sonst NICHTS auf ihre Aktivierung (liest sich wie
+    // ein toter Button). Eine höfliche Status-Region sagt an, was passiert;
+    // der Fokus zieht wie bisher in revealStudio() ins Studio.
+    const srStatus = document.createElement("span");
+    srStatus.className = "visually-hidden";
+    srStatus.setAttribute("role", "status");
+    document.body.appendChild(srStatus);
+    setTimeout(() => {
+      srStatus.textContent = window.I18N ? window.I18N.t("landing.portal_opening") : "Studio öffnet …";
+    }, 0);
+    const cleanup = () => { portal.remove(); srStatus.remove(); portalActive = false; };
     // Phase 2 synchronisiert auf das ECHTE Transition-Ende (transitionend),
     // nicht auf eine Wanduhr-Schätzung: auf langsamen Geräten startet die
     // Transition verspätet (erste Rasterisierung der großen Scheibe), und ein
@@ -203,6 +228,14 @@
     const phase2 = () => {
       if (covered || !portal.isConnected) return;
       covered = true;
+      // Kommt phase2 über den Fallback-Timer (Transition auf einem sehr
+      // langsamen Gerät noch mitten im Wachsen), erst die Scheibe in EINEM
+      // Frame auf volle Deckung schnappen — ein Sprung der Abdeckung ist
+      // unauffällig, der Studio-Umbau in offener Sicht nicht.
+      disc.style.transition = "none";
+      disc.style.transform = "scale(1)";
+      void disc.offsetWidth;
+      disc.style.transition = "";
       // Unter der Abdeckung: Fragment setzen (History-Eintrag wie beim
       // nativen Klick), Reveal + Fokus — alles mit Instant-Scroll.
       const html = document.documentElement;
@@ -235,6 +268,11 @@
       const href = a.getAttribute("href") || "";
       if (!STUDIO_ANCHORS.includes(href.slice(1))) return;
       const modified = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
+      // Läuft das Portal bereits (Doppelklick auf den Orb), gehört ihm die
+      // Transition: den zweiten Klick schlucken statt instant zu enthüllen
+      // und einen nativen Smooth-Scroll gegen die wachsende Scheibe rennen
+      // zu lassen. Modifier-Klicks bleiben unangetastet (neuer Tab etc.).
+      if (portalActive && !modified) { e.preventDefault(); return; }
       // §5.1: mit erlaubter Bewegung und noch geschlossenem Studio wird der
       // Klick zur Schwelle — der Kreis wächst aus dem berührten Element.
       if (portalReveal(a, href, modified)) { e.preventDefault(); return; }

@@ -49,7 +49,7 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
         y: Math.round(window.scrollY),
         hash: location.hash,
       });
-      if (performance.now() - t0 < 2000) setTimeout(tick, 80);
+      if (performance.now() - t0 < 3200) setTimeout(tick, 80);
     };
     tick();
   });
@@ -77,7 +77,7 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
     hidden: document.getElementById("studio").hidden,
     hash: location.hash,
     focus: document.activeElement && document.activeElement.id,
-    engineVisible: (() => { const el = document.getElementById("engine-host"); return !!el && el.getBoundingClientRect().top < innerHeight; })(),
+    engineVisible: (() => { const el = document.getElementById("engine-host"); if (!el) return false; const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })(),
   }));
   check(sawPortal, "the portal overlay appears on the orb click");
   check(growth.length >= 2 && growth[growth.length - 1] > growth[0], `the disc visibly grows (${growth[0]} → ${growth[growth.length - 1]})`);

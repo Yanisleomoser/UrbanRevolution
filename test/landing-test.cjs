@@ -121,11 +121,12 @@ assert(portalGeometry(null, 0, 0).D >= 1 && !Number.isNaN(portalGeometry(null, 0
 assert(portalGeometry({ left: NaN, top: NaN, width: NaN, height: NaN }, NaN, NaN).D >= 1, "NaN rect/viewport → clamped, never throws");
 
 console.log("\n— shouldPortal truth table: the portal only takes plain clicks on a closed studio under html.fx —");
-assert(shouldPortal({ fx: true, hidden: true, active: false, modified: false }) === true, "fx + hidden studio + plain click → portal");
-assert(shouldPortal({ fx: false, hidden: true, active: false, modified: false }) === false, "no fx (GSAP missing / reduced motion) → instant reveal");
-assert(shouldPortal({ fx: true, hidden: false, active: false, modified: false }) === false, "studio already open → native anchor behaviour");
-assert(shouldPortal({ fx: true, hidden: true, active: true, modified: false }) === false, "portal already in flight → no double portal");
-assert(shouldPortal({ fx: true, hidden: true, active: false, modified: true }) === false, "modifier/secondary click → native anchor semantics");
+assert(shouldPortal({ fx: true, reduce: false, hidden: true, active: false, modified: false }) === true, "fx + live motion + hidden studio + plain click → portal");
+assert(shouldPortal({ fx: false, reduce: false, hidden: true, active: false, modified: false }) === false, "no fx (GSAP missing) → instant reveal");
+assert(shouldPortal({ fx: true, reduce: true, hidden: true, active: false, modified: false }) === false, "reduced motion toggled AFTER load (stale fx snapshot) → instant reveal, never a dead click");
+assert(shouldPortal({ fx: true, reduce: false, hidden: false, active: false, modified: false }) === false, "studio already open → native anchor behaviour");
+assert(shouldPortal({ fx: true, reduce: false, hidden: true, active: true, modified: false }) === false, "portal already in flight → no double portal");
+assert(shouldPortal({ fx: true, reduce: false, hidden: true, active: false, modified: true }) === false, "modifier/secondary click → native anchor semantics");
 assert(shouldPortal(null) === false && shouldPortal({}) === false, "junk input → false, never throws");
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
