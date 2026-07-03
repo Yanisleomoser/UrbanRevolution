@@ -5299,6 +5299,37 @@ html.fx .de-body.is-refine .de-refine-actions { animation: deRefineIn 0.45s var(
     html.fx .de-body.is-refine .de-refine-actions { animation: none !important; }
 }
 
+/* §5.4 Die Maschine näht: während AI.generateDesign läuft, kehrt das
+   Genesis-Fadenfeld ÜBER dem Flat zurück — die Fäden laufen als Stiche über
+   ihre eigenen Bahnen (pathLength=1 → wandernde dash-Stiche), das Stück liegt
+   leicht abgedunkelt darunter. Von flow.js nur unter html.fx + ohne
+   reduced-motion erzeugt; der globale Reduced-Reset friert zusätzlich ein. */
+.de-sew { position: absolute; inset: 0; pointer-events: none; z-index: 3; opacity: 0; animation: deSewIn 0.4s var(--ease-out) forwards; }
+.de-sew svg { width: 100%; height: 100%; }
+.de-sew path { stroke-dasharray: 0.16 0.84; animation: deSewRun 1.15s linear infinite; }
+.de-sew path:nth-child(3n) { animation-duration: 1.5s; animation-delay: 0.2s; }
+.de-sew path:nth-child(3n+1) { animation-duration: 0.9s; animation-delay: 0.45s; }
+@keyframes deSewRun { to { stroke-dashoffset: -1; } }
+@keyframes deSewIn { to { opacity: 0.85; } }
+.de-sew.is-done { animation: deSewOut 0.4s var(--ease-out) forwards; }
+@keyframes deSewOut { from { opacity: 0.85; } to { opacity: 0; } }
+.de-preview.is-sewing .de-garment-wrap { filter: brightness(0.8); transition: filter 0.4s var(--ease-out); }
+
+/* Namensschild (§5.4): das fertige Stück bekommt seinen Namen in der
+   Maschinenstimme — tippt sich auf (typeOn) und bleibt auf der Bühne stehen. */
+.de-nameplate { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 4; font-family: var(--font-mono); font-size: var(--text-sm); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-3); background: rgba(10, 22, 34, 0.78); border: 1px solid rgba(100, 214, 196, 0.32); border-radius: 999px; padding: 6px 16px; max-width: 92%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.de-nameplate.is-typing::after { content: "▎"; color: var(--accent-3); animation: deCaret 0.7s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+    .de-sew, .de-sew path, .de-sew.is-done { animation: none !important; opacity: 0.5; }
+    .de-preview.is-sewing .de-garment-wrap { transition: none; }
+    .de-nameplate.is-typing::after { animation: none !important; content: none; }
+}
+
+/* §9 Ownership-Nahtstelle: die Karte gleitet herein (ur-create setzt
+   .own-arrive nur unter html.fx beim ersten Enthüllen). */
+html.fx #ownership.own-arrive { animation: ownArrive 0.55s var(--ease-out) backwards; }
+@keyframes ownArrive { from { opacity: 0; transform: translateY(18px); } }
+
 /* Phasen-Interstitial: fest reservierte Mono-Zeile zwischen Stepper und Frage
    (KEIN Layout-Sprung) — beim Kapitelwechsel blendet der neue Phasen-Titel
    kurz ein und wieder aus; der aktuelle Stepper-Punkt pulst einmal mit. */

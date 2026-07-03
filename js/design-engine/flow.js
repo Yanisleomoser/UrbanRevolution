@@ -225,6 +225,29 @@ const DesignFlow = (() => {
     return keys.length ? keys : ["concept.subtle"];
   }
 
+  // ── "Made for one" (roadmap §9) ────────────────────────────────────────────
+  // Gentle silhouette multipliers from the user's own measurements, relative
+  // to the M reference body: the shoulder drives the frame, the waist/chest
+  // ratio the suppression, the hips the trouser/skirt frame. Capped at ±8 %
+  // (GarmentSVG clamps again) — a subtle personal silhouette, never a
+  // caricature. Pure; null when nothing usable exists (flat stays generic).
+  function bodyFactors(m, ref) {
+    const R = ref || ((typeof CONFIG !== "undefined" && CONFIG.MEASUREMENT_PRESETS && CONFIG.MEASUREMENT_PRESETS.M) || { chest: 96, waist: 82, hips: 98, shoulder: 44 });
+    if (!m || typeof m !== "object") return null;
+    const num = (v) => (typeof v === "number" && isFinite(v) && v > 0 ? v : null);
+    const cl = (v) => Math.max(0.92, Math.min(1.08, v));
+    const shoulder = num(m.shoulder), chest = num(m.chest), waist = num(m.waist), hips = num(m.hips);
+    if (!shoulder && !chest && !waist && !hips) return null;
+    const f = { shoulder: 1, waist: 1, hip: 1 };
+    if (shoulder) f.shoulder = cl(shoulder / R.shoulder);
+    // Waist relative to the chest (the suppression), normalised by the
+    // reference ratio — the absolute waist alone would just rescale the flat.
+    if (waist && chest) f.waist = cl((waist / chest) / (R.waist / R.chest));
+    else if (waist) f.waist = cl(waist / R.waist);
+    if (hips) f.hip = cl(hips / R.hips);
+    return f;
+  }
+
   // Honest progress: a calm orientation stepper over the journey's named phases
   // (A–E). NOT a 0–100% gauge — the journey is adaptive and always-viable, so a
   // fill bar would have to invent a finish line (which is exactly what made the
@@ -548,6 +571,9 @@ const DesignFlow = (() => {
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
+          // "Made for one" (§9): once measurements exist, the flat carries the
+          // user's own proportions — the brand thesis made visible.
+          body: bodyFactors(window.StateManager ? window.StateManager.get("measurements") : null),
         });
       }
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
@@ -677,6 +703,7 @@ const DesignFlow = (() => {
         lastRenderAt = nowMs(); // guard counts from the visible paint
         cancelTypeOn();
         body.classList.remove("is-refine"); // "Tiefer verfeinern" kehrt zur Frage zurück
+        clearNameplate(); // zurück in die Reise → das Namensschild gehört zum Ergebnis
         // Preview refresh (morph) starts WITH the new question's entrance —
         // one clean sequence: sink out → question staggers in while the
         // garment reshapes. (Running it during the leave starves the leave.)
@@ -865,11 +892,54 @@ const DesignFlow = (() => {
       }
     }
 
+    // ── §5.4 Die Maschine näht ──────────────────────────────────────────────
+    // Während AI.generateDesign läuft (1–4 s), kehrt das Genesis-Fadenfeld
+    // ÜBER dem Flat zurück — die autonome Fertigung stitcht, die Wartezeit
+    // wird zur Geschichte statt zum Spinner. Auf Resolve tippt sich das
+    // Namensschild in Mono auf (Maschinenstimme), DANN übernimmt der
+    // Ownership-Moment. Nur unter html.fx; reduced-motion/no-fx behalten den
+    // reinen Button-Zustand und den sofortigen Handoff.
+    function startSewing() {
+      if (!fxOn() || reduceMotion() || !window.GarmentSVG || !window.GarmentSVG.nebula) return null;
+      const sew = document.createElement("div");
+      sew.className = "de-sew";
+      sew.setAttribute("aria-hidden", "true");
+      sew.innerHTML = window.GarmentSVG.nebula({
+        energy: DesignDNA.get(dna, "intent.energy"),
+        structure: DesignDNA.get(dna, "silhouette.structure"),
+        archetype: DesignDNA.topArchetype(dna),
+        seed: answered.size + 4,
+      });
+      previewEl.appendChild(sew);
+      previewEl.classList.add("is-sewing");
+      return sew;
+    }
+    function stopSewing(sew) {
+      previewEl.classList.remove("is-sewing");
+      if (sew && sew.isConnected) { sew.classList.add("is-done"); setTimeout(() => sew.remove(), 450); }
+    }
+    // Mono-Namensschild auf der Bühne (bleibt stehen, role=status übernimmt
+    // die SR-Ansage — der flüchtige Flash entfällt auf diesem Pfad).
+    let plateEl = null;
+    const stageForPlate = hostEl.querySelector(".de-preview-stage");
+    function nameplate(name) {
+      if (!stageForPlate) return;
+      if (!plateEl || !plateEl.isConnected) {
+        plateEl = document.createElement("span");
+        plateEl.className = "de-nameplate";
+        plateEl.setAttribute("role", "status");
+        stageForPlate.appendChild(plateEl);
+      }
+      typeOn(plateEl, name);
+    }
+    function clearNameplate() { if (plateEl) { plateEl.remove(); plateEl = null; } }
+
     async function handoff(prompt, type, btn) {
       if (!window.AI) return;
       btn.disabled = true;
       btn.textContent = t("engine.generating");
       T("generate", { type: type || "jacket", archetype: DesignDNA.topArchetype(dna) });
+      const sew = startSewing();
       try {
         const design = await window.AI.generateDesign(prompt, type || "jacket");
         // "Made for one": carry the body data onto the saved design so the later
@@ -887,22 +957,43 @@ const DesignFlow = (() => {
         // across reloads, so the in-memory design is the surviving DNA source for
         // this hand-off flow (ur-create's currentDna() reads it as a fallback).
         if (design) design.dna = dna;
-        if (window.StateManager) S("currentDesign", design);
-        clearSaved();
-        generated = true;
-        T("generate_ok", { type: type || "jacket" });
-        if (typeof options.onDesign === "function") options.onDesign(design);
-        if (design && design.name) flash(design.name);
-        // Per click kein Render (brief §4): die KI läuft nur auf explizites
-        // Generieren. Danach lädt der Button zum "Neu generieren — mehr
-        // individualisieren" ein; das Ergebnis ersetzt die Stilvorschau über
-        // den onDesign-Handoff in die bestehende Render-Pipeline.
-        btn.disabled = false;
-        btn.textContent = t("engine.regenerate");
+        stopSewing(sew);
+        // §9 Ownership-Nahtstelle: EIN durchgehender Bogen — Nähen endet,
+        // das Namensschild tippt sich auf, DANN erst zündet der Handoff
+        // (S(currentDesign) enthüllt den Ownership-Moment und startet dessen
+        // Scroll). Ohne fx/Name: sofort wie bisher, mit Flash als Ansage.
+        const finish = () => {
+          if (window.StateManager) S("currentDesign", design);
+          clearSaved();
+          generated = true;
+          T("generate_ok", { type: type || "jacket" });
+          // onDesign läuft (fx-Pfad) in einem setTimeout — ein Fehler im
+          // App-Renderer darf den Button nicht dauerhaft sperren.
+          try {
+            if (typeof options.onDesign === "function") options.onDesign(design);
+          } catch (e2) {
+            console.error("[DesignFlow] onDesign failed:", e2);
+            if (window.Sentry) window.Sentry.captureException(e2, { tags: { area: "engine" } });
+          }
+          // Per click kein Render (brief §4): die KI läuft nur auf explizites
+          // Generieren. Danach lädt der Button zum "Neu generieren — mehr
+          // individualisieren" ein; das Ergebnis ersetzt die Stilvorschau über
+          // den onDesign-Handoff in die bestehende Render-Pipeline.
+          btn.disabled = false;
+          btn.textContent = t("engine.regenerate");
+        };
+        if (fxOn() && !reduceMotion() && design && design.name) {
+          nameplate(design.name);
+          setTimeout(finish, 750);
+        } else {
+          if (design && design.name) flash(design.name);
+          finish();
+        }
       } catch (e) {
         console.error("[DesignFlow] generate failed:", e);
         if (window.Sentry) window.Sentry.captureException(e, { tags: { area: "engine" } });
         T("generate_fail");
+        stopSewing(sew);
         btn.disabled = false;
         btn.textContent = t("engine.generate");
       }
@@ -931,6 +1022,7 @@ const DesignFlow = (() => {
 
     function resetJourney() {
       clearSaved();
+      clearNameplate();
       dna = DesignDNA.create();
       answered = new Set();
       history.length = 0;
@@ -1009,7 +1101,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

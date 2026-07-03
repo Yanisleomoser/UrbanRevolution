@@ -278,5 +278,26 @@ const inBox = (a) => a && a.x >= 14 && a.x <= 226 && a.y >= 14 && a.y <= 326;
   assert(Object.values(g).every(inBox), "garbage params still yield finite in-box anchors");
 }
 
+// ─── made-for-one body factors (roadmap §9) ─────────────────────────────────
+console.log("\n— p.body re-proportions the flat, clamped, invariants intact —");
+{
+  const base = GarmentSVG.model("tshirt", { fit: 0.5 }).g;
+  const broad = GarmentSVG.model("tshirt", { fit: 0.5, body: { shoulder: 1.08 } }).g;
+  assert(broad.shoulderHalf > base.shoulderHalf, "shoulder factor widens the frame");
+  assert(Math.abs(broad.shoulderHalf / base.shoulderHalf - 1.08) < 0.001, "…by exactly the clamped factor");
+  const huge = GarmentSVG.model("tshirt", { fit: 0.5, body: { shoulder: 5 } }).g;
+  assert(Math.abs(huge.shoulderHalf - broad.shoulderHalf) < 0.001, "a hostile 5× factor clamps to +8% (never a caricature)");
+  const wide = GarmentSVG.model("jacket", { fit: 1, body: { waist: 1.08 } }).g;
+  assert(wide.waistHalf <= wide.chestHalf, "waist factor stays capped at the chest (no bell torso)");
+  const hips = GarmentSVG.model("pants", { fit: 0.5, body: { hip: 1.08 } }).g;
+  const hips0 = GarmentSVG.model("pants", { fit: 0.5 }).g;
+  assert(hips.hipHalf > hips0.hipHalf, "hip factor widens the trouser frame");
+  const junk = GarmentSVG.build("dress", { body: { shoulder: NaN, waist: "x", hip: Infinity } });
+  assert(junk.includes("<svg") && !/NaN|undefined/.test(junk), "garbage body factors never leak NaN into the markup");
+  const noUid = (s) => s.replace(/g\d+/g, "g#"); // per-render uid in gradient ids
+  assert(noUid(GarmentSVG.build("hoodie", { fit: 0.5 })) === noUid(GarmentSVG.build("hoodie", { fit: 0.5, body: null })),
+    "no body → identical flat geometry (generic silhouette preserved)");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
