@@ -10,9 +10,10 @@
  *
  * Answers deterministically (always the first option, slider at 0.78,
  * duo-gradient with two swatches), so runs are comparable across sessions.
- * Also samples 5 frames of the genesis→silhouette weave right after the
- * category pick (journey/<vp>-weave-*.png) — the morph must be judged from
- * frames, not stills. Fails loudly on page errors.
+ * Also samples 10 frames of the genesis→silhouette weave right after the
+ * category pick (journey/<vp>-weave-*.png), spread over the full ~1.7 s hero
+ * beat — the moment must be judged from frames, not stills. Fails loudly on
+ * page errors.
  */
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
@@ -73,9 +74,10 @@ async function walk(vp) {
       if (isCategory && CAT_LABEL[CATEGORY]) await page.click(`.de-cards .de-card[aria-label="${CAT_LABEL[CATEGORY]}"]`);
       else await page.click(".de-cards .de-card");
       if (isCategory) {
-        // sample the weave-in over ~600 ms — the beat must be judged as motion
-        for (let f = 0; f < 5; f++) {
-          await page.waitForTimeout(120);
+        // sample the weave-in over its full ~1.7 s (ghost converge → outline
+        // draw → seams → fill → sweep) — the beat must be judged as motion
+        for (let f = 0; f < 10; f++) {
+          await page.waitForTimeout(150);
           const el = await page.$("#de-preview");
           if (el) await el.screenshot({ path: `${OUT}/${vp.name}-${CATEGORY}-weave-${f}.png` });
         }

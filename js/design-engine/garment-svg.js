@@ -732,10 +732,14 @@ const GarmentSVG = (() => {
       const grx = r(clamp(num(ground.half, 60) * 1.28, 22, CX - 4));
       const gop = r(0.4 * reveal);
       groundDefs = `<radialGradient id="${id}gs" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#03070c" stop-opacity="${gop}"/><stop offset="0.55" stop-color="#03070c" stop-opacity="${r(gop * 0.46)}"/><stop offset="1" stop-color="#03070c" stop-opacity="0"/></radialGradient>`;
-      groundShadow = `<ellipse cx="${CX}" cy="${gy}" rx="${grx}" ry="9" fill="url(#${id}gs)"/>`;
+      groundShadow = `<ellipse class="gs-ground" cx="${CX}" cy="${gy}" rx="${grx}" ry="9" fill="url(#${id}gs)"/>`;
     }
     // Clip every soft layer to the silhouette so shading, drape and AO never
     // bleed past the cloth edge.
+    // The gs-* layer classes below (gs-ground / gs-int / gs-outline / gs-seams)
+    // let CSS stage the one-time weave-in as a SEQUENCE (outline draws first,
+    // seams stitch, panels fill last — roadmap §5.3) instead of one blanket
+    // path animation. They carry no styling of their own.
     const clip = `<clipPath id="${clipId}">${paths.map((d) => `<path d="${d}"/>`).join("")}</clipPath>`;
     // Interior shading stack (back→front): flat colour → body volume → the
     // directional key light (form) → weave grain → decorative pattern → drape
@@ -767,13 +771,16 @@ const GarmentSVG = (() => {
     const rim = paths.map((d) =>
       `<path d="${d}" fill="none" stroke="#dff1f4" stroke-width="1.6" stroke-opacity="${rimOp}" stroke-linejoin="round" style="stroke-dasharray:none"/>`
     ).join("");
-    const interior = `<g clip-path="url(#${clipId})">${inner}${folds}${ao}${rim}</g>`;
+    const interior = `<g class="gs-int" clip-path="url(#${clipId})">${inner}${folds}${ao}${rim}</g>`;
     // Crisp outline on top of all shading (this is the line that "draws in" on
     // the weave moment), then the construction seams.
     const outlineStroke = paths.map((d) =>
-      `<path d="${d}" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`
+      `<path class="gs-outline" d="${d}" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`
     ).join("");
-    const seams = seamMarkup ? `<g opacity="${seamOp}">${seamMarkup}</g>` : "";
+    // Outer g takes the weave-in fade (CSS opacity), the inner g keeps the
+    // maturity opacity as an ATTRIBUTE — a CSS animation with fill:both would
+    // otherwise permanently override seamOp.
+    const seams = seamMarkup ? `<g class="gs-seams"><g opacity="${seamOp}">${seamMarkup}</g></g>` : "";
     // pathLength=1 normalises every path so CSS can draw the flat in with one
     // stroke-dasharray animation (the genesis "weave-in" moment).
     return `<svg class="de-garment" viewBox="0 0 ${VB} ${VH}" aria-hidden="true"><defs>${f.defs}${clip}${groundDefs}</defs>${groundShadow}${interior}${outlineStroke}${seams}</svg>`
@@ -787,7 +794,13 @@ const GarmentSVG = (() => {
   // threads with every answer (seed). Deterministic per (seed,i) so re-renders
   // are stable and answering only ADDS material — the cloth is being spun
   // before it is woven into a silhouette.
-  function nebula(p) {
+  //
+  // Split into model → paint (mirroring the garment flats) so render-preview
+  // can TWEEN between two nebula states (roadmap §5.2): the hash-driven values
+  // are param-independent, so a mood answer keeps every thread's anchors and
+  // only swings its control points — the cloud visibly RE-TENSIONS (calm =
+  // long slow arcs, bold = tight fast crossings) instead of redrawing.
+  function nebulaModel(p) {
     const energy = clamp(num(p && p.energy, 0.5), 0, 1);
     const structure = clamp(num(p && p.structure, 0.5), 0, 1);
     const seed = Math.max(0, Math.floor(num(p && p.seed, 0)));
@@ -800,32 +813,66 @@ const GarmentSVG = (() => {
     const count = Math.min(34, 14 + seed * 2);
     const amp = lerp(22, 82, energy);
     const threads = [];
-    const nodes = [];
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 + hash(i, 1) * 0.9;
       const rad = 54 + hash(i, 2) * 56;
-      const x0 = r(cx + Math.cos(a) * rad), y0 = r(cy + Math.sin(a) * rad * 1.25);
-      const x1 = r(cx - Math.cos(a) * rad * (0.7 + hash(i, 3) * 0.5)), y1 = r(cy - Math.sin(a) * rad * 1.15);
       const px = -Math.sin(a), py = Math.cos(a);
       const w1 = (hash(i, 4) - 0.5) * 2 * amp, w2 = (hash(i, 5) - 0.5) * 2 * amp * lerp(1, 0.32, structure);
-      const c1x = r(cx + px * w1), c1y = r(cy + py * w1 - 24);
-      const c2x = r(cx + px * w2), c2y = r(cy + py * w2 + 24);
       const accent = hash(i, 6) > 0.62;
-      const col = accent ? accentCol : tint;
-      const op = r(0.18 + hash(i, 7) * (accent ? 0.5 : 0.3));
-      const sw = r(1.1 + hash(i, 8) * (accent ? 1.9 : 1.1));
-      const d = `M ${x0} ${y0} C ${c1x} ${c1y} ${c2x} ${c2y} ${x1} ${y1}`;
+      threads.push({
+        x0: cx + Math.cos(a) * rad, y0: cy + Math.sin(a) * rad * 1.25,
+        x1: cx - Math.cos(a) * rad * (0.7 + hash(i, 3) * 0.5), y1: cy - Math.sin(a) * rad * 1.15,
+        c1x: cx + px * w1, c1y: cy + py * w1 - 24,
+        c2x: cx + px * w2, c2y: cy + py * w2 + 24,
+        col: accent ? accentCol : tint,
+        op: 0.18 + hash(i, 7) * (accent ? 0.5 : 0.3),
+        sw: 1.1 + hash(i, 8) * (accent ? 1.9 : 1.1),
+        // A few bright fibre nodes where threads originate — they pulse in CSS.
+        node: (accent && hash(i, 9) > 0.5) ? { r: 1.4 + hash(i, 10) * 1.8, op: 0.4 + hash(i, 11) * 0.4 } : null,
+      });
+    }
+    return { seed, energy, tint, accentCol, glowOp: 0.06 + energy * 0.09, threads };
+  }
+
+  function nebulaPaint(m) {
+    if (!m) return "";
+    const threads = [];
+    const nodes = [];
+    m.threads.forEach((th) => {
+      const d = `M ${r(th.x0)} ${r(th.y0)} C ${r(th.c1x)} ${r(th.c1y)} ${r(th.c2x)} ${r(th.c2y)} ${r(th.x1)} ${r(th.y1)}`;
       // Bloom: a wide, very faint stroke under a crisp bright one (cheap glow,
       // no SVG filter so it stays fast on mobile).
-      threads.push(`<path pathLength="1" d="${d}" fill="none" stroke="${col}" stroke-width="${r(sw * 3)}" stroke-linecap="round" opacity="${r(op * 0.16)}"/>`);
-      threads.push(`<path pathLength="1" d="${d}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" opacity="${op}"/>`);
-      // A few bright fibre nodes where threads originate — they pulse in CSS.
-      if (accent && hash(i, 9) > 0.5) nodes.push(`<circle class="de-neb-node" cx="${x0}" cy="${y0}" r="${r(1.4 + hash(i, 10) * 1.8)}" fill="${accentCol}" opacity="${r(0.4 + hash(i, 11) * 0.4)}"/>`);
-    }
-    const glowOp = r(0.06 + energy * 0.09);
+      threads.push(`<path pathLength="1" d="${d}" fill="none" stroke="${th.col}" stroke-width="${r(th.sw * 3)}" stroke-linecap="round" opacity="${r(th.op * 0.16)}"/>`);
+      threads.push(`<path pathLength="1" d="${d}" fill="none" stroke="${th.col}" stroke-width="${r(th.sw)}" stroke-linecap="round" opacity="${r(th.op)}"/>`);
+      if (th.node) nodes.push(`<circle class="de-neb-node" cx="${r(th.x0)}" cy="${r(th.y0)}" r="${r(th.node.r)}" fill="${m.accentCol}" opacity="${r(th.node.op)}"/>`);
+    });
     return `<svg class="de-garment de-nebula" viewBox="0 0 ${VB} ${VH}" aria-hidden="true">` +
-      `<defs><radialGradient id="nbGlow${seed}" cx="0.5" cy="0.46" r="0.6"><stop offset="0" stop-color="${tint}" stop-opacity="${glowOp}"/><stop offset="1" stop-color="${tint}" stop-opacity="0"/></radialGradient></defs>` +
-      `<rect x="0" y="0" width="${VB}" height="${VH}" fill="url(#nbGlow${seed})"/>${threads.join("")}${nodes.join("")}</svg>`;
+      `<defs><radialGradient id="nbGlow${m.seed}" cx="0.5" cy="0.46" r="0.6"><stop offset="0" stop-color="${m.tint}" stop-opacity="${r(m.glowOp)}"/><stop offset="1" stop-color="${m.tint}" stop-opacity="0"/></radialGradient></defs>` +
+      `<rect x="0" y="0" width="${VB}" height="${VH}" fill="url(#nbGlow${m.seed})"/>${threads.join("")}${nodes.join("")}</svg>`;
+  }
+
+  // Numeric geometry tweens a→b; colours snap to the target (archetype shifts
+  // are rare and read fine as a cut). Threads only present in b — an answer
+  // just ADDED material — fade in with t instead of popping.
+  const NEB_LERP_KEYS = ["x0", "y0", "x1", "y1", "c1x", "c1y", "c2x", "c2y", "sw", "op"];
+  function lerpNebulaModel(a, b, t) {
+    if (!a || !b) return b;
+    const threads = b.threads.map((tb, i) => {
+      const ta = a.threads[i];
+      const th = Object.assign({}, tb);
+      if (!ta) {
+        th.op = tb.op * t;
+        if (tb.node) th.node = { r: tb.node.r, op: tb.node.op * t };
+        return th;
+      }
+      NEB_LERP_KEYS.forEach((k) => { th[k] = lerp(ta[k], tb[k], t); });
+      return th;
+    });
+    return { seed: b.seed, energy: b.energy, tint: b.tint, accentCol: b.accentCol, glowOp: lerp(a.glowOp, b.glowOp, t), threads };
+  }
+
+  function nebula(p) {
+    return nebulaPaint(nebulaModel(p));
   }
 
   // ---- morph model -------------------------------------------------------
@@ -870,7 +917,7 @@ const GarmentSVG = (() => {
     return paint(model(category, params));
   }
 
-  return { build, model, paint, lerpModel, nebula, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

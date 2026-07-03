@@ -22,9 +22,11 @@ const DesignPreview = (() => {
   // reshape (shoulder widening, hem dropping, waist nipping). This is the fix
   // for "the morph works but is so minimal it feels like nothing happens".
   const MORPH_MS = 380; // per-answer reshape: snappy but still legibly animated
+  const RETENSION_MS = 620; // genesis re-tension per answer (§5.2): calm but visible
   const lastModel = new WeakMap(); // preview el → last GarmentSVG model
-  const tweenId = new WeakMap();   // preview el → running rAF id
+  const tweenId = new WeakMap();   // preview el → running rAF id (morph OR re-tension)
   const wasGenesis = new WeakMap(); // preview el → last render was the nebula
+  const lastNebula = new WeakMap(); // preview el → last nebula model (re-tension tween)
   // preview el → current render's generation. A realism render's photo probe
   // resolves asynchronously (network image load); if renderInto is called again
   // on the same el before it lands (e.g. the user hits "back" right after
@@ -62,6 +64,41 @@ const DesignPreview = (() => {
         tweenId.delete(el);
         paintBoth(window.GarmentSVG.paint(toM)); // clean final frame
       }
+    };
+    tweenId.set(el, requestAnimationFrame(step));
+  }
+
+  // §5.2 — the nebula's idle tempo follows the mood: calm = long slow breaths,
+  // bold = quick tight pulses. CSS custom properties so the keyframes stay in
+  // the stylesheet (deBreath / deNodePulse read --neb-breath / --neb-pulse).
+  function nebulaTempo(energy) {
+    const e = Math.max(0, Math.min(1, typeof energy === "number" ? energy : 0.5));
+    return `--neb-breath:${(9.5 - e * 5.5).toFixed(2)}s;--neb-pulse:${(4.6 - e * 2.4).toFixed(2)}s`;
+  }
+
+  // §5.2 — genesis re-tension: rAF-tween the previous thread cloud into the
+  // new one (same pattern as the garment morph) so a mood answer visibly
+  // re-tensions the threads instead of redrawing them from scratch. The wrap
+  // keeps .is-retension from the first tween on: the per-frame repaints would
+  // otherwise restart the one-time CSS draw-in every frame and pin every path
+  // at dashoffset 1 (invisible). Freshly added threads fade in via the lerped
+  // opacity instead.
+  function retension(el, wrap, fromN, toN, mirror) {
+    const prev = tweenId.get(el);
+    if (prev) cancelAnimationFrame(prev);
+    wrap.classList.add("is-retension");
+    wrap.style.cssText = nebulaTempo(toN.energy);
+    const paintBoth = (html) => {
+      wrap.innerHTML = html;
+      if (mirror) mirror.innerHTML = html;
+    };
+    paintBoth(window.GarmentSVG.nebulaPaint(window.GarmentSVG.lerpNebulaModel(fromN, toN, 0)));
+    const start = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / RETENSION_MS);
+      paintBoth(window.GarmentSVG.nebulaPaint(window.GarmentSVG.lerpNebulaModel(fromN, toN, easeOut(t))));
+      if (t < 1) tweenId.set(el, requestAnimationFrame(step));
+      else tweenId.delete(el);
     };
     tweenId.set(el, requestAnimationFrame(step));
   }
@@ -172,6 +209,12 @@ const DesignPreview = (() => {
     if (!el) return;
     const gen = (renderGen.get(el) || 0) + 1;
     renderGen.set(el, gen);
+    // A still-running tween (morph or re-tension) would keep painting into the
+    // wrap it captured — detached after the innerHTML swap below, but its
+    // MIRROR (the live dock) is not. Every path below either repaints wholesale
+    // or starts its own tween, so stop the old one first.
+    const running = tweenId.get(el);
+    if (running) { cancelAnimationFrame(running); tweenId.delete(el); }
     const realism = !!(opts && opts.realism);
     // A converged design leaves .de-preview in its realism state (the dimmed
     // flat under the crossfaded photo — .is-realism stays on the container even
@@ -188,16 +231,30 @@ const DesignPreview = (() => {
     // category decision then WEAVES the threads into the silhouette (CSS
     // draw-in via .is-weave) — the piece visibly comes into being.
     if (opts && opts.genesis && window.GarmentSVG && window.GarmentSVG.nebula) {
-      const badgeG = window.I18N ? window.I18N.t("dpreview.genesis_badge") : "ES ENTSTEHT …";
-      const nebula = window.GarmentSVG.nebula({
-        energy: p.energy, structure: p.structure, archetype: p.archetype, seed: (opts.seed || 0),
-      });
-      el.innerHTML = `
-        <div class="de-garment-wrap is-genesis">${nebula}</div>
-        <span class="de-preview-badge">${badgeG}</span>`;
-      if (opts.mirror) opts.mirror.innerHTML = nebula;
+      const G = window.GarmentSVG;
+      const nebParams = { energy: p.energy, structure: p.structure, archetype: p.archetype, seed: (opts.seed || 0) };
       lastModel.delete(el);
       wasGenesis.set(el, true);
+      const toN = G.nebulaModel ? G.nebulaModel(nebParams) : null;
+      const fromN = toN ? lastNebula.get(el) : null;
+      if (toN) lastNebula.set(el, toN);
+      // Re-tension (§5.2): an answer during genesis doesn't redraw the cloud —
+      // the existing threads TWEEN to their new tension (energy bows them
+      // wider, structure straightens them, a fresh answer fades new threads
+      // in), so the user feels the engine listening. Fresh paint only on the
+      // first genesis render, when the cloud SHRANK (back/restart = an honest
+      // reset), and under reduced motion.
+      const wrap = el.querySelector ? el.querySelector(".de-garment-wrap.is-genesis") : null;
+      if (toN && fromN && wrap && fromN.threads.length <= toN.threads.length && !reduceMotion()) {
+        retension(el, wrap, fromN, toN, opts.mirror);
+        return;
+      }
+      const badgeG = window.I18N ? window.I18N.t("dpreview.genesis_badge") : "ES ENTSTEHT …";
+      const nebula = toN ? G.nebulaPaint(toN) : G.nebula(nebParams);
+      el.innerHTML = `
+        <div class="de-garment-wrap is-genesis" style="${nebulaTempo(p.energy)}">${nebula}</div>
+        <span class="de-preview-badge">${badgeG}</span>`;
+      if (opts.mirror) opts.mirror.innerHTML = nebula;
       return;
     }
 
@@ -216,11 +273,29 @@ const DesignPreview = (() => {
     // Fresh out of genesis → the silhouette draws itself in (weave moment).
     const weaveIn = wasGenesis.get(el) === true && !reduceMotion();
     wasGenesis.delete(el);
+    lastNebula.delete(el);
+
+    // Hero beat, phase 1 (§5.3): the genesis threads don't vanish on a hard
+    // cut — a ghost copy of the nebula converges into the piece (CSS
+    // deGhostConverge) while the outline is drawn out of it. A running
+    // re-tension tween dies with the innerHTML swap below; the ghost is a
+    // static copy, removed once its exit animation is over.
+    let ghost = "";
+    if (weaveIn && el.querySelector) {
+      const neb = el.querySelector(".de-nebula");
+      if (neb && neb.outerHTML) ghost = `<div class="de-weave-ghost" aria-hidden="true">${neb.outerHTML}</div>`;
+    }
 
     el.innerHTML = `
       <div class="de-preview-photo${schemeChosen ? " is-duo" : ""}" hidden><img alt="" /><div class="de-preview-duo"></div></div>
-      <div class="de-garment-wrap${weaveIn ? " is-weave" : ""}">${targetSvg}</div>
+      <div class="de-garment-wrap${weaveIn ? " is-weave" : ""}">${ghost}${targetSvg}</div>
       <span class="de-preview-badge">${badge}</span>`;
+    if (ghost) {
+      setTimeout(() => {
+        const g = el.querySelector && el.querySelector(".de-weave-ghost");
+        if (g) g.remove();
+      }, 700);
+    }
     // Mobile dock mini-preview: mirrors the flat (and, below, every morph
     // frame) so the "choose → see it change" loop survives the preview
     // scrolling out of view on small screens. Photo/badge are NOT mirrored —
@@ -286,7 +361,7 @@ const DesignPreview = (() => {
     return { type: p.category || "tshirt", color: stops[0] || "#9aa0a8", material: p.material || "cotton", pattern, name: "" };
   }
 
-  return { params, heroCandidates, photoMatches, matchingCandidates, duoBackground, descriptor, renderInto };
+  return { params, heroCandidates, photoMatches, matchingCandidates, duoBackground, descriptor, renderInto, nebulaTempo };
 })();
 
 if (typeof window !== "undefined") window.DesignPreview = DesignPreview;

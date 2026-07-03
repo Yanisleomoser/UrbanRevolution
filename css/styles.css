@@ -5446,28 +5446,40 @@ footer.footer {
    Silhouette: alle Pfade zeichnen sich per Stroke-Draw selbst (is-weave),
    die Füllung blendet nach. Reduced-Motion: Zustände erscheinen sofort. */
 @media (prefers-reduced-motion: no-preference) {
-  /* Cinematic genesis curve used across the moment for one coherent feel. */
-  .de-garment-wrap.is-genesis .de-nebula { animation: deBreath 7s ease-in-out infinite alternate; will-change: opacity, transform; }
-  .de-garment-wrap.is-genesis .de-nebula path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  /* Cinematic genesis curve used across the moment for one coherent feel.
+     Tempo follows the mood (§5.2): calm = long slow breaths, bold = quick
+     tight pulses — render-preview sets --neb-breath/--neb-pulse from energy. */
+  .de-garment-wrap.is-genesis .de-nebula { animation: deBreath var(--neb-breath, 7s) ease-in-out infinite alternate; will-change: opacity, transform; }
+  /* One-time draw-in on the FIRST genesis paint only: during a re-tension
+     tween (.is-retension, per-frame repaints) a restarting draw-in would pin
+     every fresh path at dashoffset 1 (invisible). */
+  .de-garment-wrap.is-genesis:not(.is-retension) .de-nebula path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
   /* Bright fibre nodes pulse (staggered) so the spun threads feel alive. */
-  .de-garment-wrap.is-genesis .de-neb-node { animation: deNodePulse 3.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
-  .de-garment-wrap.is-genesis .de-neb-node:nth-of-type(2n) { animation-delay: .8s; animation-duration: 4.1s; }
-  .de-garment-wrap.is-genesis .de-neb-node:nth-of-type(3n) { animation-delay: 1.5s; animation-duration: 3.7s; }
-  /* Weave-in: the silhouette draws itself limb-by-limb (tight stagger), then a
-     soft light sweep passes over it — the garment is woven into being. */
-  .de-garment-wrap.is-weave svg path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw .9s cubic-bezier(0.22, 1, 0.36, 1) forwards; will-change: stroke-dashoffset; }
-  .de-garment-wrap.is-weave svg path:nth-of-type(2) { animation-delay: .12s; }
-  .de-garment-wrap.is-weave svg path:nth-of-type(3) { animation-delay: .24s; }
-  .de-garment-wrap.is-weave svg path:nth-of-type(4) { animation-delay: .34s; }
-  .de-garment-wrap.is-weave svg path:nth-of-type(n+5) { animation-delay: .44s; }
-  .de-garment-wrap.is-weave svg { animation: deMaterialize 1.1s var(--ease-out); }
+  .de-garment-wrap.is-genesis .de-neb-node { animation: deNodePulse var(--neb-pulse, 3.4s) ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+  .de-garment-wrap.is-genesis .de-neb-node:nth-of-type(2n) { animation-delay: .8s; animation-duration: calc(var(--neb-pulse, 3.4s) * 1.2); }
+  .de-garment-wrap.is-genesis .de-neb-node:nth-of-type(3n) { animation-delay: 1.5s; animation-duration: calc(var(--neb-pulse, 3.4s) * 1.08); }
+  /* Weave-in — the journey's sanctioned hero beat (§5.3, ~1.6 s):
+       1) the genesis threads converge into the piece (.de-weave-ghost),
+       2) the OUTLINE draws itself along its paths out of them,
+       3) the construction seams stitch on,
+       4) the panels (fill/shading/ground shadow) materialise LAST,
+       5) a soft light sweep passes over the finished cloth.
+     The gs-* layer classes come from garment-svg renderFlat; reduced-motion
+     never sets .is-weave (everything appears complete, instantly). */
+  .de-weave-ghost { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; padding: var(--space-6); pointer-events: none; animation: deGhostConverge .6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  .de-garment-wrap.is-weave .gs-outline { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw 1.1s cubic-bezier(0.22, 1, 0.36, 1) .12s both; will-change: stroke-dashoffset; }
+  .de-garment-wrap.is-weave .gs-seams { opacity: 0; animation: deFillIn .45s var(--ease-out) .9s both; }
+  .de-garment-wrap.is-weave .gs-seams path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: deWeaveDraw .6s cubic-bezier(0.22, 1, 0.36, 1) .95s both; }
+  .de-garment-wrap.is-weave .gs-int,
+  .de-garment-wrap.is-weave .gs-ground { opacity: 0; animation: deFillIn .6s var(--ease-out) 1s both; }
   .de-garment-wrap.is-weave::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
     background: linear-gradient(115deg, transparent 40%, rgba(100,214,196,0.18) 50%, transparent 60%);
-    background-size: 260% 100%; animation: deSweep 1.25s cubic-bezier(0.22, 1, 0.36, 1) .3s both; }
+    background-size: 260% 100%; animation: deSweep 1.15s cubic-bezier(0.22, 1, 0.36, 1) 1s both; }
   .de-garment-wrap:not(.is-genesis) .de-garment { animation: deFloat 8s ease-in-out infinite alternate; }
 }
 @keyframes deWeaveDraw { to { stroke-dashoffset: 0; } }
-@keyframes deMaterialize { from { opacity: 0.1; } to { opacity: 1; } }
+@keyframes deFillIn { to { opacity: 1; } }
+@keyframes deGhostConverge { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.85); } }
 @keyframes deBreath { from { opacity: 0.84; transform: scale(0.99); } to { opacity: 1; transform: scale(1.012); } }
 @keyframes deFloat { from { transform: translateY(-2.5px); } to { transform: translateY(2.5px); } }
 @keyframes deNodePulse { from { opacity: 0.25; transform: scale(0.7); } to { opacity: 0.9; transform: scale(1.25); } }
