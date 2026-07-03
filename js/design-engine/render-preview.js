@@ -40,21 +40,27 @@ const DesignPreview = (() => {
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
       : false;
 
-  function morph(el, wrap, fromM, toM) {
+  // `mirror` (optional): a second, smaller element that receives every frame
+  // paint too — the mobile dock mini-preview morphs in sync with the stage.
+  function morph(el, wrap, fromM, toM, mirror) {
     const prev = tweenId.get(el);
     if (prev) cancelAnimationFrame(prev);
+    const paintBoth = (html) => {
+      wrap.innerHTML = html;
+      if (mirror) mirror.innerHTML = html;
+    };
     // Start painted at t=0 (the previous shape) so there's no flash of the
     // target before the animation runs.
-    wrap.innerHTML = window.GarmentSVG.paint(window.GarmentSVG.lerpModel(fromM, toM, 0));
+    paintBoth(window.GarmentSVG.paint(window.GarmentSVG.lerpModel(fromM, toM, 0)));
     const start = (typeof performance !== "undefined" ? performance.now() : Date.now());
     const step = (now) => {
       const t = Math.min(1, (now - start) / MORPH_MS);
-      wrap.innerHTML = window.GarmentSVG.paint(window.GarmentSVG.lerpModel(fromM, toM, easeOut(t)));
+      paintBoth(window.GarmentSVG.paint(window.GarmentSVG.lerpModel(fromM, toM, easeOut(t))));
       if (t < 1) {
         tweenId.set(el, requestAnimationFrame(step));
       } else {
         tweenId.delete(el);
-        wrap.innerHTML = window.GarmentSVG.paint(toM); // clean final frame
+        paintBoth(window.GarmentSVG.paint(toM)); // clean final frame
       }
     };
     tweenId.set(el, requestAnimationFrame(step));
@@ -183,11 +189,13 @@ const DesignPreview = (() => {
     // draw-in via .is-weave) — the piece visibly comes into being.
     if (opts && opts.genesis && window.GarmentSVG && window.GarmentSVG.nebula) {
       const badgeG = window.I18N ? window.I18N.t("dpreview.genesis_badge") : "ES ENTSTEHT …";
+      const nebula = window.GarmentSVG.nebula({
+        energy: p.energy, structure: p.structure, archetype: p.archetype, seed: (opts.seed || 0),
+      });
       el.innerHTML = `
-        <div class="de-garment-wrap is-genesis">${window.GarmentSVG.nebula({
-          energy: p.energy, structure: p.structure, archetype: p.archetype, seed: (opts.seed || 0),
-        })}</div>
+        <div class="de-garment-wrap is-genesis">${nebula}</div>
         <span class="de-preview-badge">${badgeG}</span>`;
+      if (opts.mirror) opts.mirror.innerHTML = nebula;
       lastModel.delete(el);
       wasGenesis.set(el, true);
       return;
@@ -213,6 +221,11 @@ const DesignPreview = (() => {
       <div class="de-preview-photo${schemeChosen ? " is-duo" : ""}" hidden><img alt="" /><div class="de-preview-duo"></div></div>
       <div class="de-garment-wrap${weaveIn ? " is-weave" : ""}">${targetSvg}</div>
       <span class="de-preview-badge">${badge}</span>`;
+    // Mobile dock mini-preview: mirrors the flat (and, below, every morph
+    // frame) so the "choose → see it change" loop survives the preview
+    // scrolling out of view on small screens. Photo/badge are NOT mirrored —
+    // the dock is always the honest flat.
+    if (opts && opts.mirror) opts.mirror.innerHTML = targetSvg;
 
     const duo = el.querySelector(".de-preview-duo");
     if (duo) duo.style.background = schemeChosen ? duoBackground(dna) : "transparent";
@@ -224,7 +237,7 @@ const DesignPreview = (() => {
       const fromModel = lastModel.get(el);
       const wrap = el.querySelector(".de-garment-wrap");
       if (wrap && fromModel && fromModel.cat === toModel.cat && !reduceMotion()) {
-        morph(el, wrap, fromModel, toModel);
+        morph(el, wrap, fromModel, toModel, opts && opts.mirror);
       }
       lastModel.set(el, toModel);
     }

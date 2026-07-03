@@ -204,6 +204,7 @@ const I18N = (() => {
       "chip.length": "Länge",
       "chip.material": "Stoff",
       "chip.pattern": "Muster",
+      "engine.dock_aria": "Zur Vorschau springen",
 
       // ── Design Engine (Reise) ──
       "engine.back": "Zurück",
@@ -820,6 +821,7 @@ const I18N = (() => {
       "chip.length": "Length",
       "chip.material": "Fabric",
       "chip.pattern": "Pattern",
+      "engine.dock_aria": "Jump to the preview",
 
       // ── Design Engine (journey) ──
       "engine.back": "Back",
