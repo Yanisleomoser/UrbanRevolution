@@ -20,38 +20,38 @@
     if (window.__urFactsLab) return;
     window.__urFactsLab = true;
 
-    var VARIANTS = ["a", "b", "c"];
+    const VARIANTS = ["a", "b", "c"];
 
-    var active = "a";
+    let active = "a";
     try {
-        var q = String(new URLSearchParams(window.location.search).get("facts") || "a").toLowerCase();
+        const q = String(new URLSearchParams(window.location.search).get("facts") || "a").toLowerCase();
         if (VARIANTS.indexOf(q) >= 0) active = q;
     } catch (_e) { active = "a"; }
 
     // Synchron (nicht erst auf DOMContentLoaded warten): nachfolgende
     // defer-Skripte sollen den Endzustand sehen.
     VARIANTS.forEach(function (v) {
-        var el = document.querySelector('[data-facts-variant="' + v + '"]');
+        const el = document.querySelector('[data-facts-variant="' + v + '"]');
         if (el) el.hidden = (v !== active);
     });
     document.documentElement.setAttribute("data-facts-active", active);
 
-    var t = function (key, fallback) {
-        var s = (window.I18N && typeof I18N.t === "function") ? I18N.t(key) : null;
+    const t = function (key, fallback) {
+        const s = (window.I18N && typeof I18N.t === "function") ? I18N.t(key) : null;
         return (s && s !== key) ? s : fallback;
     };
 
     function buildPill() {
         if (document.querySelector(".facts-lab-pill")) return;
-        var nav = document.createElement("nav");
+        const nav = document.createElement("nav");
         nav.className = "facts-lab-pill";
-        var label = document.createElement("span");
+        const label = document.createElement("span");
         label.className = "facts-lab-pill-label";
         label.setAttribute("data-i18n", "factsLab.label");
         label.textContent = t("factsLab.label", "Variante");
         nav.appendChild(label);
         VARIANTS.forEach(function (v) {
-            var a = document.createElement("a");
+            const a = document.createElement("a");
             a.className = "facts-lab-chip" + (v === active ? " is-active" : "");
             a.href = "?facts=" + v + "#facts";
             a.textContent = v.toUpperCase();
@@ -60,7 +60,7 @@
             if (v === active) a.setAttribute("aria-current", "true");
             nav.appendChild(a);
         });
-        var apply = function () {
+        const apply = function () {
             nav.setAttribute("aria-label", t("factsLab.nav", "Facts-Variante wählen"));
         };
         apply();
