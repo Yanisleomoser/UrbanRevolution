@@ -73,6 +73,10 @@ export default async function handler(req) {
       if (!configured) return jsonError(503, "Gallery unavailable", "service_unavailable");
       let body;
       try { body = await req.json(); } catch (_e) { return jsonError(400, "Invalid JSON", "bad_request"); }
+      // `body` can be `null`/`false`/`0` — all valid JSON — so fall back to {}
+      // before reading fields, instead of throwing (which the outer catch
+      // would misreport as a 503 "Gallery unavailable").
+      body = body || {};
       const d = validateDna(body.d);
       if (!d) return jsonError(400, "Invalid creation data", "bad_request");
       const name = clampField(body.name, MAX_NAME);

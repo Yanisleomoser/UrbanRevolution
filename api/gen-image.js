@@ -81,7 +81,13 @@ export default async function handler(request) {
     return jsonError(502, "Upstream error", "service_unavailable");
   }
 
-  let pred = await res.json();
+  let pred;
+  try {
+    pred = await res.json();
+  } catch {
+    console.error("[gen-image] Replicate returned non-JSON on a 2xx response");
+    return jsonError(502, "Generation failed", "service_unavailable");
+  }
   // Short server-side poll within the edge budget (token never leaves Vercel).
   let tries = 0;
   while (pred.status !== "succeeded" && pred.status !== "failed" && tries++ < 3) {
@@ -90,6 +96,10 @@ export default async function handler(request) {
       const poll = await fetch(pred.urls.get, { headers: { Authorization: `Bearer ${apiKey}` } });
       pred = await poll.json();
     } catch { break; }
+  }
+  if (pred.status === "failed" || pred.status === "canceled") {
+    console.error(`[gen-image] prediction ${pred.status}: ${pred.error || ""}`);
+    return jsonError(502, "Generation failed", "failed");
   }
   if (pred.status !== "succeeded") {
     return jsonError(504, "Generation pending — retry", "pending");

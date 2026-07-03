@@ -67,7 +67,11 @@ const DesignEngine = (() => {
   // weights (nothing decided yet) → 1 (max uncertainty) → mood nodes win early.
   function archetypeEntropy(dna) {
     const ws = Object.values(dna.archetypeWeights || {});
-    if (!ws.length) return 0;
+    // A single archetype (or none) leaves nothing to be uncertain about — also
+    // guards Math.log(ps.length) below, which would be Math.log(1) === 0 and
+    // produce NaN (and NaN silently poisons Math.max in informationGain, e.g.
+    // via a crafted/legacy #dna= share link with a single-key archetypeWeights).
+    if (ws.length <= 1) return 0;
     const exps = ws.map((w) => Math.exp(w));
     const sum = exps.reduce((a, b) => a + b, 0) || 1;
     const ps = exps.map((e) => e / sum);

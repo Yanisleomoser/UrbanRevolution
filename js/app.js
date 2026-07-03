@@ -391,8 +391,11 @@
       try {
         const design = await AI.generateDesign(prompt, S.get("currentType"));
         S.set("currentDesign", design);
-        renderDesignResult(design);
+        // Sync design.type to the live selector (in case it changed while the
+        // request was in flight) before rendering, so the card reflects the
+        // user's current choice instead of the stale click-time type.
         applyDesignToState(design);
+        renderDesignResult(design);
         updateProductionPreview();
         if (window.Preferences) {
           // Track preferences after the design has been applied to state so
@@ -631,9 +634,13 @@
     // their defaults for each fresh design so the preview starts clean.
     S.set("currentLength", design.length || "regular");
     S.set("currentPrint", design.print || "");
-    if (design.type && design.type !== S.get("currentType")) {
-      if (S.set("currentType", design.type)) setActiveType(design.type);
-    }
+    // The live type selector is authoritative over design.type (frozen at the
+    // moment the AI request started): if the user changed the type while the
+    // request was in flight, correct design.type to match rather than
+    // snapping state/UI back to the stale value (mirrors applyJourneyDesign's
+    // state-wins rule for the same race).
+    const liveType = S.get("currentType");
+    if (liveType && design.type !== liveType) design.type = liveType;
   }
 
   // Flag an out-of-range measurement so the user sees/hears it, instead of
@@ -1066,6 +1073,10 @@
     }
   }
 
+  // Bumped on every choosePreset call so an in-flight fetch from an earlier
+  // click can tell it's stale once it resolves.
+  let presetRequestSeq = 0;
+
   async function choosePreset(btn, buttons) {
     buttons.forEach((b) => {
       const on = b === btn;
@@ -1074,6 +1085,7 @@
     });
     const id = btn.dataset.preset;
     btn.classList.add("is-loading");
+    const requestId = ++presetRequestSeq;
     try {
       const res = await fetch(`assets/presets/${id}.jpg`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1084,9 +1096,14 @@
         fr.onerror = () => reject(fr.error);
         fr.readAsDataURL(blob);
       });
+      // A later click may have started (and possibly already resolved) while
+      // this fetch was in flight — only the most recent click should ever
+      // win, so the stored photo always matches the visually selected preset.
+      if (requestId !== presetRequestSeq) return;
       // Sets userPhoto → the subscribed updateVtoButtonState enables the button.
       S.set("userPhoto", dataUrl);
     } catch (_err) {
+      if (requestId !== presetRequestSeq) return;
       btn.classList.remove("is-selected");
       btn.setAttribute("aria-pressed", "false");
       showToast(t("vto.error_unexpected"), "error");
@@ -1419,6 +1436,7 @@
         return;
       }
 
+      btn.disabled = true;
       startVtoInline();
       setVtoStatus(t("vto.status_sending"));
 
@@ -1629,6 +1647,12 @@
   // pattern selector calls renderDesignResult mid-render) keep the loading
   // state instead of snapping back to the button, and blocks a double-fire.
   let previewGenerating = false;
+  // Which design the in-flight request belongs to — a global boolean isn't
+  // enough once the user can generate a new design while a previous one's
+  // preview is still loading: without this, the new design's card would
+  // wrongly show a spinner (previewGenerating is still true) and, worse, the
+  // old request's result would land in what is now the new design's slot.
+  let previewGeneratingDesignId = null;
 
   function getPreviewCount() {
     try {
@@ -1680,7 +1704,8 @@
     // (the pattern selector re-renders the whole card), unless we already
     // have a result or an explicit error to show.
     if (opts.loading ||
-        (previewGenerating && !opts.error && !opts.fallback && !(design && design.previewImageUrl))) {
+        (previewGenerating && design && previewGeneratingDesignId === design.designId &&
+          !opts.error && !opts.fallback && !design.previewImageUrl)) {
       slot.innerHTML =
         `<div class="design-preview-loading">` +
         `<span class="design-preview-spinner" aria-hidden="true"></span>` +
@@ -1771,6 +1796,7 @@
     if (getPreviewCount() >= PREVIEW_LIMIT) return; // belt-and-suspenders
 
     previewGenerating = true;
+    previewGeneratingDesignId = design.designId;
 
     try {
       // Inside the try so the finally below always clears previewGenerating —
@@ -1788,6 +1814,12 @@
         body: JSON.stringify({ designPrompt }),
       });
       const body = await res.json().catch(() => ({}));
+
+      // The user may have generated a different design while this request
+      // was in flight — don't paint a stale result into what is now a
+      // different design's slot (#design-preview-slot is looked up by id,
+      // not tied to a specific design).
+      if (S.get("currentDesign")?.designId !== design.designId) return;
 
       if (!res.ok) {
         renderPreviewSlot(design, window.PreviewFallback
@@ -1827,6 +1859,7 @@
         : { error: t("dpreview.error_network", { msg: err.message }) });
     } finally {
       previewGenerating = false;
+      previewGeneratingDesignId = null;
     }
   }
 

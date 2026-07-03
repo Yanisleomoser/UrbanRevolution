@@ -42,7 +42,10 @@ export default async function handler(request) {
         return jsonError(400, "Body must be JSON");
     }
 
-    const { userPhoto, designPrompt } = payload;
+    // `payload` can be `null`/`false`/`0` — all valid JSON that request.json()
+    // resolves without throwing — so destructure a safe fallback instead of
+    // crashing uncaught.
+    const { userPhoto, designPrompt } = payload || {};
     if (!userPhoto || !designPrompt) {
         return jsonError(400, "Missing userPhoto or designPrompt");
     }
