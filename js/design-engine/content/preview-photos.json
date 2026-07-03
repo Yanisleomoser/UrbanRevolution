@@ -1,0 +1,46 @@
+{
+  "_comment": "Honesty manifest for the curated convergence photos (img/preview/*): what each photo VISIBLY shows, authored by inspecting the images (they were FLUX-generated from archetype mood prompts — the concrete construction was never controlled, so it must be described, not assumed). The realism layer may only crossfade a photo whose entries do not contradict the design DNA: for every key present here, a DECIDED dna value must equal it (undecided values don't gate). Keys are DNA paths. `unusable: true` retires a photo entirely — colorblock/two-piece/wrong-garment shots no engine design can truthfully claim. A photo missing from this manifest never shows (fail-closed). If a photo is regenerated, re-describe it here.",
+  "photos": {
+    "jacket-quietMinimal": { "subArchetype": "blazer", "construction.collar": "notched", "construction.closure": "button", "length": "regular", "pattern.type": "none" },
+    "jacket-techAvant": { "construction.collar": "hood", "construction.closure": "zip", "length": "regular", "pattern.type": "none" },
+    "jacket-y2kStreet": { "unusable": true, "_note": "colorblock coach jacket — no engine design is colorblock" },
+    "jacket-softCouture": { "construction.collar": "notched", "construction.closure": "none", "length": "regular", "pattern.type": "none" },
+    "jacket-utility": { "subArchetype": "work", "construction.collar": "shirt", "construction.closure": "button", "length": "regular", "pattern.type": "none" },
+    "jacket-sport": { "construction.collar": "hood", "construction.closure": "zip", "length": "regular", "pattern.type": "none" },
+
+    "hoodie-quietMinimal": { "subArchetype": "pullover", "construction.collar": "hood", "construction.closure": "none", "construction.pockets": "kangaroo", "length": "regular", "pattern.type": "none" },
+    "hoodie-techAvant": { "subArchetype": "pullover", "construction.collar": "hood", "construction.closure": "none", "construction.pockets": "kangaroo", "length": "regular", "pattern.type": "none" },
+    "hoodie-y2kStreet": { "subArchetype": "pullover", "construction.collar": "hood", "construction.closure": "none", "color.scheme": "duo-gradient", "pattern.type": "none" },
+    "hoodie-softCouture": { "subArchetype": "pullover", "construction.collar": "hood", "construction.closure": "none", "fabric.material": "silk", "pattern.type": "none" },
+    "hoodie-utility": { "unusable": true, "_note": "tan/mint colorblock — no engine design is colorblock" },
+    "hoodie-sport": { "unusable": true, "_note": "cream/teal colorblock sleeve — no engine design is colorblock" },
+
+    "tshirt-quietMinimal": { "construction.collar": "crew", "construction.sleeveLength": "short", "length": "regular", "pattern.type": "none" },
+    "tshirt-techAvant": { "construction.collar": "crew", "construction.sleeveLength": "short", "length": "regular", "pattern.type": "none" },
+    "tshirt-y2kStreet": { "construction.collar": "crew", "construction.sleeveLength": "short", "length": "long", "pattern.type": "none" },
+    "tshirt-softCouture": { "construction.collar": "crew", "construction.sleeveLength": "short", "fabric.material": "silk", "pattern.type": "none" },
+    "tshirt-utility": { "construction.collar": "crew", "construction.sleeveLength": "short", "length": "regular", "pattern.type": "none" },
+    "tshirt-sport": { "construction.collar": "crew", "construction.sleeveLength": "short", "length": "regular", "pattern.type": "none" },
+
+    "shirt-quietMinimal": { "construction.collar": "shirt", "construction.closure": "button", "construction.sleeveLength": "long", "pattern.type": "none" },
+    "shirt-techAvant": { "unusable": true, "_note": "half-mint/half-black colorblock — no engine design is colorblock" },
+    "shirt-y2kStreet": { "unusable": true, "_note": "multicolour colorblock — no engine design is colorblock" },
+    "shirt-softCouture": { "construction.collar": "shirt", "construction.closure": "button", "construction.sleeveLength": "long", "fabric.material": "silk", "pattern.type": "none" },
+    "shirt-utility": { "construction.collar": "shirt", "construction.closure": "button", "construction.sleeveLength": "long", "pattern.type": "none" },
+    "shirt-sport": { "construction.collar": "shirt", "construction.closure": "button", "construction.sleeveLength": "long", "pattern.type": "none" },
+
+    "pants-quietMinimal": { "unusable": true, "_note": "photo shows a full suit (jacket + trousers), not a pair of pants" },
+    "pants-techAvant": { "unusable": true, "_note": "photo shows a full coat-and-trousers look, not a pair of pants" },
+    "pants-y2kStreet": { "unusable": true, "_note": "photo shows a full suit, not a pair of pants" },
+    "pants-softCouture": { "unusable": true, "_note": "photo shows a full draped jumpsuit look, not a pair of pants" },
+    "pants-utility": { "subArchetype": "cargo", "construction.pockets": "cargo", "pattern.type": "none" },
+    "pants-sport": { "unusable": true, "_note": "photo shows a full suit, not a pair of pants" },
+
+    "dress-quietMinimal": { "construction.collar": "crew", "construction.sleeveLength": "long", "length": "regular", "pattern.type": "none" },
+    "dress-techAvant": { "construction.collar": "stand", "construction.sleeveLength": "long", "pattern.type": "none" },
+    "dress-y2kStreet": { "unusable": true, "_note": "photo shows a cami top + denim two-piece look, not a dress" },
+    "dress-softCouture": { "subArchetype": "wrap", "construction.collar": "vneck", "construction.sleeveLength": "long", "fabric.material": "silk", "pattern.type": "none" },
+    "dress-utility": { "unusable": true, "_note": "khaki/teal two-tone shirt-coat — colorblock, no engine design matches" },
+    "dress-sport": { "construction.sleeveLength": "long", "color.scheme": "duo-gradient", "pattern.type": "none" }
+  }
+}

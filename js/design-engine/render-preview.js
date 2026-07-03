@@ -113,6 +113,35 @@ const DesignPreview = (() => {
     return list;
   }
 
+  // ── Honesty gate (roadmap §3.5) ──────────────────────────────────────────
+  // The curated photos were generated from archetype MOOD prompts — their
+  // concrete construction (closure, collar, length …) was never controlled.
+  // A photo may only crossfade over the flat when nothing it visibly shows
+  // contradicts the design: for every DNA path in its manifest entry, a
+  // DECIDED dna value must equal the photo's value. Undecided values don't
+  // gate (the photo makes no claim the user hasn't made). The flat is always
+  // correct — a wrong photo at the decisive moment is worse than no photo.
+  function photoMatches(dna, entry) {
+    if (!entry || entry.unusable) return false;
+    for (const [path, want] of Object.entries(entry)) {
+      if (path === "unusable" || path.charAt(0) === "_") continue;
+      const have = DesignDNA.get(dna, path);
+      if (have != null && have !== want) return false;
+    }
+    return true;
+  }
+
+  // heroCandidates filtered by the manifest. Fail-closed: no manifest, or a
+  // photo without an entry, → no photo (never "probe and hope").
+  function matchingCandidates(dna, manifest) {
+    const photos = manifest && manifest.photos;
+    if (!photos) return [];
+    return heroCandidates(dna).filter((src) => {
+      const base = src.slice(src.lastIndexOf("/") + 1).replace(/\.jpg$/, "");
+      return photoMatches(dna, photos[base]);
+    });
+  }
+
   function duoBackground(dna) {
     const stops = DesignDNA.get(dna, "color.stops") || [];
     const scheme = DesignDNA.get(dna, "color.scheme");
@@ -204,8 +233,11 @@ const DesignPreview = (() => {
     // convergence / on generate — it crossfades OVER the flat, never sits
     // dimmed behind it during the journey. No photo is even loaded mid-journey.
     if (!realism) return;
-    const cands = heroCandidates(dna);
-    // Realism requested but no curated photo for this design → keep the flat
+    // Honesty gate: only photos whose manifest entry doesn't contradict the
+    // DNA are even considered (opts.photoManifest from content/preview-photos
+    // .json). No matching photo → the always-correct flat stays.
+    const cands = matchingCandidates(dna, opts && opts.photoManifest);
+    // Realism requested but no honest photo for this design → keep the flat
     // (clear any stale realism dim from a previous, photo-backed design).
     if (!cands.length) { el.classList.remove("is-realism"); return; }
     const photoWrap = el.querySelector(".de-preview-photo");
@@ -241,7 +273,7 @@ const DesignPreview = (() => {
     return { type: p.category || "tshirt", color: stops[0] || "#9aa0a8", material: p.material || "cotton", pattern, name: "" };
   }
 
-  return { params, heroCandidates, duoBackground, descriptor, renderInto };
+  return { params, heroCandidates, photoMatches, matchingCandidates, duoBackground, descriptor, renderInto };
 })();
 
 if (typeof window !== "undefined") window.DesignPreview = DesignPreview;
