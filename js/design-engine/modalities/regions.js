@@ -153,7 +153,7 @@
     // project's transition ceiling.
     const fx = () => document.documentElement.classList.contains("fx") &&
       !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    let lastM = null, lastA = null, raf = 0;
+    let lastA = null, raf = 0; // lastA: target anchors (picker position, glow)
     // What is PAINTED right now — an interrupted tween (hover-ghost → click)
     // retargets from here, so the garment glides through, never jump-cuts.
     let shownM = null, shownA = null;
@@ -193,7 +193,6 @@
         };
         raf = requestAnimationFrame(step);
       }
-      lastM = toM;
       lastA = toA;
     }
     // Ghost try-on: hovering/focusing a picker option previews it ON THE BOARD
