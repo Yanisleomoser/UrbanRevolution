@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260703-akt2">
+    <link rel="stylesheet" href="css/styles.css?v=20260703-faden1">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -428,6 +428,10 @@
             </footer>
         </section>
 
+        <div class="fil-seam" data-fil="1" aria-hidden="true">
+        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path" d="M50 0 L50 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
+    </div>
+
     <!-- ── DIE WENDE (#pivot) — das Akt-Scharnier. Die Linie aus Akt I steht auf
          der Bühne und wird beim Scrollen zum Kreis gebogen (gepinnter Scrub,
          js/landing.js initPivot; Bogen-Mathe pur parametrisch, unit-getestet).
@@ -476,6 +480,11 @@
     <!-- ── AKT II · DER KREIS — die Vision als gepinnte Kreis-Reise (4 Stationen).
          Der STATUS-Vermerk (Mono) macht die Vorlaunch-Ehrlichkeit zur Geste:
          Vision, noch nicht gebaut — das hier ist der Bauplan. -->
+        <div class="fil-seam" data-fil="2" aria-hidden="true">
+        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path" d="M50 0 C50 80 44 160 50 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
+        <span class="fil-glint"></span>
+    </div>
+
     <section class="lp-loop" id="loop">
         <div class="lp-loop-pin" id="loop-pin">
             <!-- Asche-Schicht (gleiche Partikelsprache wie #facts): wenige Motten
@@ -551,6 +560,11 @@
 
     <!-- ★ KI, richtig eingesetzt — Botschaft #4: Linie beschleunigen vs. Kreis
          schliessen (die Mensch-vs-KI-Grenze, jetzt in der Akt-Geometrie) -->
+        <div class="fil-seam" data-fil="3" aria-hidden="true">
+        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path" d="M50 0 C50 90 10 130 10 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
+        <span class="fil-glint"></span>
+    </div>
+
     <section class="lp-aidr lp-block" id="ai-done-right" data-lp-reveal>
         <p class="lp-label" data-i18n="aidr.label">KI, richtig eingesetzt</p>
         <h2 class="lp-aidr-title" data-i18n-html="aidr.h2_html">KI kann die Linie <em>beschleunigen</em>. Oder den Kreis <em>schliessen</em>.</h2>
@@ -572,7 +586,13 @@
     <!-- ★ DER MITTELPUNKT — Botschaft #2, der Identitäts-Beat (der eine warme
          Akzent): das Zentrum des Kreises ist ein Mensch — die Auflösung der
          Hero-Tagline (die Linie fertigt für alle, der Kreis für einen). -->
+        <div class="fil-seam" data-fil="4" aria-hidden="true">
+        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path" d="M10 0 C10 110 50 130 50 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
+        <span class="fil-glint"></span>
+    </div>
+
     <section class="lp-identity lp-block" id="your-style" data-lp-reveal>
+        <span class="lp-identity-fuse" aria-hidden="true"></span>
         <!-- Feiner Haarlinien-Kreis (statt Zier-Strichelung) mit EINER warmen
              Glut: ein einzelner Funke (--accent-warm) bei ~1 Uhr, im
              Negativraum über der Headline — der einzige warme, der einzige
@@ -597,6 +617,11 @@
          · gedimmte Zeile). Desktop: Stations-Punkte sitzen AUF dem Faden;
          Mobil: Faden vertikal in der Gosse, Stationen rechts als Protokollrand.
          Alles über das bestehende [data-reveal]-System (animations.js). ── -->
+        <div class="fil-seam" data-fil="5" aria-hidden="true">
+        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path" d="M50 0 C50 110 6 130 6 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
+        <span class="fil-glint"></span>
+    </div>
+
     <section class="lp-how lp-block" id="how" aria-labelledby="how-title">
         <header class="lp-how-head" data-reveal>
             <p class="lp-label" data-i18n="how.label">So funktioniert's</p>
@@ -662,6 +687,11 @@
 
     <!-- Finale — Übergabe-Zeile (Mono) + magnetischer Kreis-CTA, öffnet das Studio.
          Der Orb ist die geometrische Konklusion: die Seite endet auf dem Kreis. -->
+        <div class="fil-seam" data-fil="6" aria-hidden="true">
+        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path fil-d" d="M95 0 C95 110 50 130 50 240" pathLength="1" vector-effect="non-scaling-stroke"/><path class="fil-path fil-m" d="M8 0 C8 110 50 130 50 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
+        <span class="fil-glint"></span>
+    </div>
+
     <section class="lp-finale lp-block" data-lp-reveal>
         <p class="lp-handoff" data-i18n="landing.handoff">Der Kreis wartet auf sein erstes Stück.</p>
         <h2 class="lp-finale-title" data-i18n-html="landing.cta_title_html">Trag etwas, das es <em>nur einmal</em> gibt.</h2>
@@ -1308,6 +1338,7 @@
     <script defer src="js/ur-create.js?v=20260611-weave"></script>
     <script defer src="js/ambient-ticker.js"></script>
     <script defer src="js/facts-mass.js?v=20260703-masse1"></script>
+    <script defer src="js/faden.js"></script>
     <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
          dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
          Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->
