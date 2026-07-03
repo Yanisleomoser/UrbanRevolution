@@ -625,6 +625,7 @@ const I18N = (() => {
       "landing.handoff": "Der Kreis wartet auf sein erstes Stück.",
       "landing.tap_hint": "Tipp ins Bild — die Fäden formen dein nächstes Stück.",
       "landing.orb_aria": "UR Create starten — öffnet das Studio",
+      "landing.portal_opening": "Studio öffnet …",
 
       // ── Die Wende (#pivot) — die Linie biegt sich zum Kreis ──
       "pivot.label": "Die Wende",
@@ -1265,6 +1266,7 @@ const I18N = (() => {
       "landing.handoff": "The circle is waiting for its first piece.",
       "landing.tap_hint": "Tap anywhere — the threads weave your next piece.",
       "landing.orb_aria": "Start UR Create — opens the studio",
+      "landing.portal_opening": "Opening the studio …",
 
       // ── The turn (#pivot) — the line bends into a circle ──
       "pivot.label": "The turn",

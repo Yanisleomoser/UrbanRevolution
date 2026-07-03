@@ -8078,3 +8078,32 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     transition: transform 0.3s var(--ease-out);
 }
 .lp-cta-orb:hover .lp-cta-orb-arrow { transform: translateX(6px); }
+
+/* §5.1 Threshold-Portal — der Kreis der Landing öffnet sich wörtlich ins
+   Studio: eine REINE Scheibe (Midnight-Fläche + Ocean-Ring, bewusst ohne
+   Inhalt — eingebettete Grafik würde beim Skalieren zum aufgeblasenen Bild)
+   wächst lesbar vom angeklickten CTA über den Viewport, darunter wird das
+   Studio instant enthüllt, dann öffnet sich die Scheibe auf die
+   Studio-Oberfläche (landing.js portalReveal). Nur transform/opacity →
+   Compositor, iOS-tauglich. JS gated auf html.fx + Live-Motion; hier
+   zusätzlich abgesichert. Über allem (Loader 150, Navbar 100, Egg 1200).
+   Kurve: ausgewogen (schneller Ansprung, lange lesbare Landung) — eine
+   kopflastige Ease deckte in ~120 ms und las sich als Blitz statt Wachstum. */
+.lp-portal { position: fixed; inset: 0; z-index: 1300; }
+/* Ab dem Reveal (is-out) gehört der Input dem Studio — die auslaufende
+   Scheibe darf den ersten Tap auf die enthüllte Bühne nicht mehr schlucken. */
+.lp-portal.is-out { pointer-events: none; }
+html:not(.fx) .lp-portal { display: none; }
+@media (prefers-reduced-motion: reduce) { .lp-portal { display: none; } }
+.lp-portal-disc {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(120% 90% at 50% 30%, #16293b, #0a1622 78%);
+    box-shadow:
+        inset 0 0 0 2px rgba(100, 214, 196, 0.32),
+        inset 0 0 120px rgba(39, 121, 168, 0.24),
+        0 0 90px rgba(6, 14, 22, 0.8);
+    transition: transform .56s cubic-bezier(0.4, 0.08, 0.22, 1);
+    will-change: transform, opacity;
+}
+.lp-portal.is-out .lp-portal-disc { transition: opacity .32s var(--ease-out), transform .32s var(--ease-out); }
