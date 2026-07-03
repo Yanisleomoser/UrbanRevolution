@@ -7022,7 +7022,11 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
     .fxb-mass-note { max-width: 34ch; }
 }
 
-/* ── KI, richtig eingesetzt (AI, done right) ── */
+/* ── KI, richtig eingesetzt — das Urteil als Protokoll ──────────────────────
+   Offenes typografisches Verdikt-Ledger statt Karten (Gerichtsakte, in der
+   Sprache von #facts): EINE Haarlinie, zwei Spalten reiner Text. Die Linie
+   weicht zurück (gedämpft — der verworfene Weg), der Kreis trägt ruhiges
+   Gewicht. Bewusst statisch — nur der bestehende Entrance-Reveal. */
 .lp-aidr { max-width: 1100px; margin: 0 auto; }
 .lp-aidr-title {
     font-family: var(--font-display);
@@ -7035,57 +7039,48 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
 }
 .lp-aidr-title em { font-style: italic; color: var(--accent-3); }
 .lp-aidr-grid {
+    border-top: 1px solid var(--border);
     display: grid;
     grid-template-columns: 1fr;
-    gap: clamp(16px, 3vw, 28px);
     margin-bottom: clamp(36px, 6vw, 64px);
 }
+.lp-aidr-card { padding: clamp(24px, 3.5vw, 36px) 0 0; }
+/* Mobil gestapelt: jede Aussage beginnt an ihrer eigenen Haarlinie */
+.lp-aidr-card + .lp-aidr-card {
+    border-top: 1px solid var(--border);
+    margin-top: clamp(26px, 4vw, 40px);
+}
 @media (min-width: 760px) {
-    .lp-aidr-grid { grid-template-columns: 1fr 1fr; }
+    .lp-aidr-grid { grid-template-columns: 1fr 1fr; column-gap: clamp(48px, 7vw, 110px); }
+    .lp-aidr-card + .lp-aidr-card { border-top: 0; margin-top: 0; }
 }
-.lp-aidr-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: clamp(24px, 3.5vw, 40px);
-}
-/* "Das Übliche" — flach und zurückgenommen */
-.lp-aidr-card.is-dim { background: transparent; }
+/* „Auf der Linie" — der verworfene Weg tritt zurück */
 .lp-aidr-card.is-dim .lp-aidr-tag { color: var(--text-muted); }
-.lp-aidr-card.is-dim h3 { color: var(--text-dim); }
+.lp-aidr-card.is-dim h3 { color: var(--text-muted); }
 .lp-aidr-card.is-dim p { color: var(--text-muted); }
-/* "Unser Einsatz" — subtiler Verlaufsschimmer + akzentgetönter Rand */
-.lp-aidr-card.is-lit {
-    border-color: rgba(42, 157, 143, 0.5); /* --accent */
-    background:
-        radial-gradient(120% 120% at 0% 0%, rgba(42, 157, 143, 0.12) /* --accent */, transparent 60%),
-        var(--bg-card);
-    box-shadow: var(--shadow-glow);
-}
-.lp-aidr-card.is-lit .lp-aidr-tag {
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
+/* „Im Kreis" — trägt ruhiges Gewicht */
+.lp-aidr-card.is-lit .lp-aidr-tag { color: var(--accent-3); }
+.lp-aidr-card.is-lit h3 { color: var(--text); }
+.lp-aidr-card.is-lit p { color: var(--text-dim); }
 .lp-aidr-tag {
     font-family: var(--font-mono);
     font-size: 11.5px;
     font-weight: 500;
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
-    margin-bottom: 14px;
+    margin-bottom: clamp(14px, 2vw, 20px);
 }
+.lp-aidr-tag::before { content: "[ "; color: var(--text-muted); }
+.lp-aidr-tag::after { content: " ]"; color: var(--text-muted); }
 .lp-aidr-card h3 {
     font-family: var(--font-display);
     font-weight: 500;
-    font-size: clamp(20px, 2.6vw, 27px);
+    font-size: clamp(21px, 2.8vw, 30px);
     letter-spacing: -0.01em;
     line-height: 1.2;
     margin-bottom: 12px;
-    color: var(--text);
 }
 .lp-aidr-card p {
-    color: var(--text-dim);
     font-weight: 300;
     font-size: clamp(14.5px, 1.5vw, 16px);
     line-height: 1.6;
@@ -7110,8 +7105,11 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
     /* fauchter warmer Schimmer hinter dem Block — fällt zum Rand auf 0 ab */
     background: radial-gradient(58% 52% at 50% 42%, rgba(232, 160, 106, 0.10) /* --accent-warm */, transparent 70%);
 }
-/* Gestrichelter Kreis mit warmem Mittelpunkt hinter dem Text — dieselbe
-   Ring-Sprache wie der Finale-Orb; unter fx eine sehr langsame Drehung. */
+/* Haarlinien-Kreis mit EINER warmen Glut hinter dem Text — dieselbe
+   Ring-Sprache wie der Finale-Orb. Die Glut ist der einzige warme und der
+   einzige bewegte Punkt der Sektion: unter html.fx treibt sie langsam am
+   Ring entlang (Rotation der Gruppe im SVG-Raum) und atmet (Opacity).
+   Ruhezustand (no-JS / reduced-motion): stiller warmer Punkt bei ~1 Uhr. */
 .lp-identity-ring {
     position: absolute;
     inset: 0;
@@ -7123,11 +7121,25 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
     opacity: 0.9;
     pointer-events: none;
 }
-/* Drehung auf dem INNEREN Kreis, nicht dem quadratischen SVG-Host: die
-   rotierte Host-Box würde scrollWidth aufblähen (mobil > Viewport → flakiger
-   e2e-No-Overflow-Gate); die BBox eines zentrierten Kreises ist rotations-
-   invariant. transform-origin = viewBox-Zentrum (200×200). */
-html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-orb-spin 72s linear infinite; }
+.lp-identity-ember-halo { fill: rgba(232, 160, 106, 0.16); } /* --accent-warm */
+.lp-identity-ember-dot { fill: var(--accent-warm); }
+/* Drift auf der GRUPPE im SVG-Koordinatenraum (transform-origin = viewBox-
+   Zentrum 200×200): bewegt den Punkt am Ring entlang, ohne die Layout-Box
+   anzufassen — kein scrollWidth-Risiko wie bei rotierter Host-Box. */
+html.fx .lp-identity-ember {
+    transform-origin: 100px 100px;
+    animation: lp-ember-drift 18s ease-in-out infinite alternate;
+}
+html.fx .lp-identity-ember-halo,
+html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out infinite; }
+@keyframes lp-ember-drift {
+    from { transform: rotate(-6deg); }
+    to { transform: rotate(6deg); }
+}
+@keyframes lp-ember-breathe {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
 .lp-label--warm { color: var(--accent-warm); }
 .lp-identity-title {
     font-family: var(--font-display);
@@ -7304,7 +7316,7 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     flex-direction: column;
     align-items: center;
 }
-/* Übergabe-Zeile — der letzte Stich: eine gestrichelte Naht führt in den Orb */
+/* Übergabe-Zeile — Protokoll-Klammer wie .lp-label: [ … ] statt Zier-Naht */
 .lp-handoff {
     font-family: var(--font-mono);
     font-size: 11.5px;
@@ -7313,18 +7325,9 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     text-transform: uppercase;
     color: var(--accent-3);
     margin-bottom: clamp(22px, 4vw, 36px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
 }
-.lp-handoff::before {
-    content: "";
-    width: 1px;
-    height: 40px;
-    background: repeating-linear-gradient(180deg, var(--accent-3) 0 3px, transparent 3px 9px);
-    opacity: 0.7;
-}
+.lp-handoff::before { content: "[ "; color: var(--text-muted); }
+.lp-handoff::after { content: " ]"; color: var(--text-muted); }
 .lp-finale-title {
     font-family: var(--font-display);
     font-weight: 500;
@@ -7359,13 +7362,21 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 .lp-cta-orb:hover { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+/* Haarlinien-Orbit: der Ring steht still; die eine Bewegung ist der Tracer —
+   die entkommene Faser aus #facts umkreist ihr Ziel (nur html.fx, ~14 s).
+   Ruhezustand (no-JS / reduced-motion): stiller Aqua-Punkt oben am Ring. */
 .lp-cta-orb-ring {
     position: absolute;
     inset: -12px;
     width: calc(100% + 24px);
     height: calc(100% + 24px);
-    color: var(--text-muted);
-    animation: lp-orb-spin 36s linear infinite;
+    color: var(--border);
+}
+.lp-cta-orb-tracer-halo { fill: rgba(100, 214, 196, 0.18); } /* --accent-3 */
+.lp-cta-orb-tracer-dot { fill: var(--accent-3); }
+html.fx .lp-cta-orb-tracer {
+    transform-origin: 100px 100px;
+    animation: lp-orb-spin 14s linear infinite;
 }
 @keyframes lp-orb-spin { to { transform: rotate(360deg); } }
 .lp-cta-orb-label {

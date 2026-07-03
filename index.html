@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260703-wende1">
+    <link rel="stylesheet" href="css/styles.css?v=20260703-akt2">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -573,8 +573,18 @@
          Akzent): das Zentrum des Kreises ist ein Mensch — die Auflösung der
          Hero-Tagline (die Linie fertigt für alle, der Kreis für einen). -->
     <section class="lp-identity lp-block" id="your-style" data-lp-reveal>
+        <!-- Feiner Haarlinien-Kreis (statt Zier-Strichelung) mit EINER warmen
+             Glut: ein einzelner Funke (--accent-warm) bei ~1 Uhr, im
+             Negativraum über der Headline — der einzige warme, der einzige
+             bewegte Punkt der Seite. Unter html.fx treibt er langsam am Ring
+             entlang und atmet; Ruhezustand (no-JS / reduced-motion): stiller
+             warmer Punkt. -->
         <svg class="lp-identity-ring" viewBox="0 0 200 200" aria-hidden="true">
-            <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 9"/>
+            <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/>
+            <g class="lp-identity-ember">
+                <circle class="lp-identity-ember-halo" cx="148" cy="16.9" r="7"/>
+                <circle class="lp-identity-ember-dot" cx="148" cy="16.9" r="2.2"/>
+            </g>
         </svg>
         <p class="lp-label lp-label--warm" data-i18n="identity.label">Der Mittelpunkt</p>
         <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">In der Mitte dieses Kreises: <em>du</em>.</h2>
@@ -657,8 +667,15 @@
         <h2 class="lp-finale-title" data-i18n-html="landing.cta_title_html">Trag etwas, das es <em>nur einmal</em> gibt.</h2>
         <p class="lp-finale-sub" data-i18n="landing.cta_sub">Beschreibe deine Idee — UR Create macht daraus dein Stück. Nach Mass, aus recycelter Kleidung.</p>
         <a class="lp-cta-orb" id="cta-orb" href="#design" data-i18n-aria-label="landing.orb_aria" aria-label="UR Create starten — öffnet das Studio">
+            <!-- Haarlinien-Orbit statt Strichelkreis: EIN Aqua-Tracer — die
+                 entkommene Faser aus #facts umkreist ihr Ziel (~14 s, nur
+                 html.fx); Ruhezustand: stiller Punkt oben auf dem Ring. -->
             <svg class="lp-cta-orb-ring" viewBox="0 0 200 200" aria-hidden="true">
-                <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 9"/>
+                <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <g class="lp-cta-orb-tracer">
+                    <circle class="lp-cta-orb-tracer-halo" cx="100" cy="4" r="6"/>
+                    <circle class="lp-cta-orb-tracer-dot" cx="100" cy="4" r="2.4"/>
+                </g>
             </svg>
             <span class="lp-cta-orb-label" data-i18n="nav.enter">UR Create starten</span>
             <span class="lp-cta-orb-arrow" aria-hidden="true">→</span>
