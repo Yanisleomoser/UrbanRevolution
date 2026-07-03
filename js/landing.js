@@ -167,13 +167,14 @@
   }
 
   // §5.1 — die Schwelle: der Kreis, mit dem die Landing endet, öffnet sich
-  // wörtlich ins Studio. Die Scheibe wächst vom angeklickten CTA über den
-  // Viewport (die Genesis-Fäden treiben schon darin — dasselbe Gewebe, das
-  // die Studio-Bühne zeigt), darunter passieren Reveal + Fragment-Sprung
-  // INSTANT, dann löst sich die Scheibe auf die Studio-Oberfläche auf.
-  // Nur transform/opacity (Compositor, iOS-tauglich). Reduced-Motion, fehlendes
-  // GSAP und Deep-Links behalten den Instant-Reveal — das Portal läuft dann nie.
-  // Gibt true zurück, wenn es den Klick übernommen hat.
+  // wörtlich ins Studio. Eine REINE Scheibe (Midnight-Fläche + Ocean-Ring,
+  // bewusst ohne Inhalt: jede eingebettete Grafik würde beim Skalieren zum
+  // aufgeblasenen Bild) wächst lesbar vom angeklickten CTA über den Viewport;
+  // darunter passieren Reveal + Fragment-Sprung INSTANT, dann öffnet sich die
+  // Scheibe auf die Studio-Oberfläche — deren echte, feine Genesis-Fäden sind
+  // der Payoff. Nur transform/opacity (Compositor, iOS-tauglich).
+  // Reduced-Motion, fehlendes GSAP und Deep-Links behalten den Instant-Reveal
+  // — das Portal läuft dann nie. Gibt true zurück, wenn es den Klick übernahm.
   let portalActive = false;
   function portalReveal(origin, href, modified) {
     const studio = document.getElementById("studio");
@@ -198,13 +199,6 @@
     disc.style.left = (g.cx - g.D / 2) + "px";
     disc.style.top = (g.cy - g.D / 2) + "px";
     disc.style.transform = "scale(" + g.scale0 + ")";
-    // Seed 41: dichtes Feld (Thread-Count ist bei 34 gedeckelt) UND eine
-    // Gradient-Id (nbGlow41), die die parallel im verborgenen Studio
-    // gemountete Genesis-Nebula (Seed = beantwortete Fragen, ≤ ~19) nie
-    // erzeugt — sonst gewänne deren gleichnamiger Paint-Server im Dokument.
-    if (window.GarmentSVG && window.GarmentSVG.nebula) {
-      disc.innerHTML = window.GarmentSVG.nebula({ seed: 41, energy: 0.55 });
-    }
     portal.appendChild(disc);
     document.body.appendChild(portal);
     // A11y: das Portal selbst ist aria-hidden — Screenreader hörten während
@@ -254,8 +248,14 @@
     };
     disc.addEventListener("transitionend", (e) => { if (e.propertyName === "transform") phase2(); }, { once: true });
     setTimeout(phase2, 1300);
-    void disc.offsetWidth; // Start-Frame committen, dann die Transition fahren
-    disc.style.transform = "scale(1)";
+    // Den Start-Frame GARANTIERT malen lassen (Doppel-rAF): Safari koalesziert
+    // Append + Umstylen im selben Frame sonst gern zu einem Sprung OHNE
+    // Transition — statt Wachstum stünde ein eingefrorenes Vollbild, bis der
+    // Fallback-Timer greift. Ein reiner Reflow (offsetWidth) reicht dort nicht.
+    void disc.offsetWidth;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { disc.style.transform = "scale(1)"; });
+    });
     // Sicherheitsnetz: die Seite bleibt NIE hinter einem Overlay gefangen.
     setTimeout(() => { if (portal.isConnected) cleanup(); }, 2600);
     return true;
