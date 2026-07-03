@@ -18,13 +18,21 @@
 
     const wrap = V.el("div", { class: "de-slider" });
     const poles = V.el("div", { class: "de-slider-poles" });
-    const lo = V.el("span", {}); lo.textContent = axis[0];
-    const hi = V.el("span", {}); hi.textContent = axis[1];
+    const lo = V.el("span", { class: "de-pole de-pole-lo" }); lo.textContent = axis[0];
+    const hi = V.el("span", { class: "de-pole de-pole-hi" }); hi.textContent = axis[1];
     poles.appendChild(lo); poles.appendChild(hi);
 
     const input = V.el("input", { type: "range", min: "0", max: "100", value: "50", class: "de-range" });
     input.setAttribute("aria-label", node.question ? node.question[lang] : "");
-    input.addEventListener("input", () => ctx.live(input.value / 100));
+    // --val füttert die CSS-Füllung der Spur; data-side hebt den Pol hervor,
+    // dem sich der Regler nähert — die Achse liest sich als Spannung zwischen
+    // zwei Worten, nicht als Browser-Widget. (Der Flat morpht ohnehin live.)
+    const sync = () => {
+      input.style.setProperty("--val", input.value + "%");
+      wrap.dataset.side = input.value < 34 ? "lo" : input.value > 66 ? "hi" : "mid";
+    };
+    input.addEventListener("input", () => { sync(); ctx.live(input.value / 100); });
+    sync();
 
     wrap.appendChild(poles);
     wrap.appendChild(input);

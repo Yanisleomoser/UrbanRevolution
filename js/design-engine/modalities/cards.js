@@ -13,13 +13,34 @@
 (function () {
   const V = window.DEVisuals;
 
-  // A tile that is never a flat colour field: the category pivot → a line-art
-  // silhouette; every other pick → a parametric GarmentSVG of the CURRENT
-  // garment with this choice's effects applied (cloned DNA → real params →
-  // flat, identical to the live preview / refine tiles, so the option reads as
-  // a precise flat in the right category instead of a gradient placeholder).
+  // A tile that is never a flat colour field: the category pivot → a bespoke
+  // mini-flat from the SAME parametric builder as the live preview; every
+  // other pick → a parametric GarmentSVG of the CURRENT garment with this
+  // choice's effects applied (cloned DNA → real params → flat, identical to
+  // the live preview / refine tiles, so the option reads as a precise flat in
+  // the right category instead of a gradient placeholder).
+
+  // Category tile params (roadmap §6): tuned so each cut's SIGNATURE reads at
+  // tile size — zip vs button placket vs hood vs short sleeves vs A-line.
+  // Before this, t-shirt/hemd/jacke were near-identical 64×64 line glyphs.
+  const CATEGORY_TILE_PARAMS = {
+    // Jacke als OUTERWEAR-Block (cropped + boxy, Bomber-Read) — auf
+    // Kachelgröße sonst kaum vom langen, schlanken Hemd zu unterscheiden.
+    jacket: { closure: "zip", length: "cropped", fit: 0.68, structure: 0.75 },
+    hoodie: { length: "regular", fit: 0.65 },
+    tshirt: { sleeveLength: "short", length: "regular", fit: 0.45 },
+    shirt: { length: "regular", fit: 0.32, structure: 0.65 },
+    pants: { length: "regular", fit: 0.5 },
+    dress: { length: "regular", fit: 0.3 },
+  };
+
   function tileFallback(node, choice, ctx) {
     if (node.id === "category_select") {
+      if (window.GarmentSVG) {
+        const w = V.el("div", { class: "de-visual de-visual-garment" });
+        w.innerHTML = window.GarmentSVG.build(choice.id, CATEGORY_TILE_PARAMS[choice.id] || {});
+        return w;
+      }
       const w = V.el("div", { class: "de-visual" });
       w.appendChild(V.silhouette(choice.id));
       return w;

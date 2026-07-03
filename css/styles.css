@@ -4940,23 +4940,55 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-tot-panel:hover, .de-tot-panel:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-glow); outline: none; }
 .de-tot-label { position: relative; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
 
+/* Slider → Couture (roadmap §6): Haarlinien-Spur mit Live-Füllung (--val vom
+   Input), Ring-Daumen, und der Pol, dem sich der Regler nähert, hellt auf —
+   die Achse liest sich als Spannung zwischen zwei Worten, nicht als
+   Browser-Widget. Natives <input type=range> darunter (A11y unverändert). */
 .de-slider { padding: var(--space-5) 0; }
 .de-slider-poles { display: flex; justify-content: space-between; color: var(--text-dim); font-size: var(--text-sm); margin-bottom: var(--space-3); }
-.de-range { width: 100%; accent-color: var(--accent); height: 32px; }
+.de-slider-poles .de-pole { transition: color .2s var(--ease-out), opacity .2s var(--ease-out); opacity: .75; }
+.de-slider[data-side="lo"] .de-pole-lo,
+.de-slider[data-side="hi"] .de-pole-hi { color: var(--accent-3); opacity: 1; }
+.de-range { -webkit-appearance: none; appearance: none; width: 100%; height: 32px; background: transparent; cursor: pointer; --val: 50%; }
+.de-range::-webkit-slider-runnable-track { height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3) var(--val), var(--border) var(--val)); }
+.de-range::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; margin-top: -10px;
+    background: var(--bg-elevated); border: 2px solid var(--accent-3);
+    box-shadow: 0 0 0 4px rgba(100, 214, 196, 0.14), 0 2px 10px rgba(0, 0, 0, 0.5); }
+.de-range::-moz-range-track { height: 2px; border-radius: 2px; background: var(--border); }
+.de-range::-moz-range-progress { height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--accent-2), var(--accent-3)); }
+.de-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-elevated); border: 2px solid var(--accent-3);
+    box-shadow: 0 0 0 4px rgba(100, 214, 196, 0.14), 0 2px 10px rgba(0, 0, 0, 0.5); }
+.de-range:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: 4px; border-radius: 4px; }
 
-.de-gradient-preview { width: 100%; height: 96px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: var(--space-5); transition: background .3s var(--ease-out); }
-.de-scheme-tabs { display: inline-flex; gap: var(--space-1); background: var(--surface); border-radius: 999px; padding: 4px; margin-bottom: var(--space-5); }
+/* Farb-Atelier (roadmap §6): das Kleidungsstück auf der Bühne IST die
+   Vorschau (das tote Farb-Rechteck ist weg) — benannte Stoff-Chips statt
+   roher Punkte. Chip = Stoff-Feld (mit feiner Web-Struktur) + Farbname in
+   Mono-Micro; Auswahl trägt die Karten-Selektionssprache (Accent-Ring). */
+.de-scheme-tabs { display: inline-flex; gap: var(--space-1); background: var(--surface); border-radius: 999px; padding: 4px; margin-bottom: var(--space-2); }
 .de-scheme-tab { border: 0; background: none; color: var(--text-dim); padding: var(--space-2) var(--space-5); border-radius: 999px; cursor: pointer; font-size: var(--text-sm); transition: all .2s var(--ease-out); }
 .de-scheme-tab.is-active { background: var(--gradient); color: #fff; }
-.de-palette { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.de-palette-swatch { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; transition: transform .15s var(--ease-out); }
-.de-palette-swatch:hover { transform: scale(1.12); border-color: var(--text); }
+/* Fest reservierte Hinweiszeile (kein Layout-Sprung beim Moduswechsel). */
+.de-scheme-hint { min-height: 18px; margin: 0 0 var(--space-3); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-dim); }
+.de-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--space-3); }
+.de-palette-swatch { display: flex; flex-direction: column; gap: 8px; padding: 8px 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: transform .15s var(--ease-out), border-color .15s var(--ease-out); }
+.de-fabric-field { position: relative; display: block; height: 60px; border-radius: calc(var(--radius) - 4px); overflow: hidden; }
+/* Feine Web-Struktur + Lichtkante: die Fläche liest sich als Stoff. */
+.de-fabric-field::after { content: ""; position: absolute; inset: 0;
+    background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px),
+        linear-gradient(160deg, rgba(255, 255, 255, 0.10), transparent 45%);
+}
+.de-fabric-name { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); text-align: center; }
+.de-palette-swatch:hover { transform: translateY(-2px); border-color: var(--text-muted); }
 .de-palette-swatch:focus-visible { outline: 2px solid var(--accent-3, #64d6c4); outline-offset: 2px; }
-/* Selected stop(s): a ring (with a bg gap so it reads on any swatch colour);
-   the order badge shows the gradient direction (1 → 2) in duo mode. */
-.de-palette-swatch.is-selected { border-color: transparent; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-3, #64d6c4); }
+/* Selected stop(s): accent ring + brightened name; the order badge shows the
+   gradient direction (1 → 2) in duo mode. */
+.de-palette-swatch.is-selected { border-color: transparent; box-shadow: 0 0 0 2px var(--accent), 0 8px 24px rgba(42, 157, 143, 0.25); }
+.de-palette-swatch.is-selected .de-fabric-name { color: var(--text); }
 .de-palette-order {
-    position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px;
+    position: absolute; top: 6px; right: 6px; min-width: 16px; height: 16px;
     padding: 0 4px; display: none; place-items: center; box-sizing: border-box;
     border-radius: 999px; background: var(--gradient); color: #fff;
     font-size: 10px; font-weight: 700; line-height: 1;

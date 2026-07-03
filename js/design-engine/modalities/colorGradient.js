@@ -1,8 +1,10 @@
 /**
  * Urban Revolution — Design Engine · Modality "colorGradient"
- * Scheme toggle (Uni / Verlauf) + palette swatches from CONFIG.COLORS. mono
- * picks one stop, duo-gradient picks two (in tap order). Live gradient bar +
- * ctx.live for instant preview. Commits { scheme, stops, value, saturation }.
+ * Das Farb-Atelier (roadmap §6): benannte Stoff-Chips statt roher Farbpunkte,
+ * Scheme-Toggle (Uni / Verlauf; duo nimmt zwei Stops in Tipp-Reihenfolge).
+ * Es gibt KEIN totes Vorschau-Rechteck — das Kleidungsstück auf der Bühne IST
+ * die Vorschau: jeder Tap färbt den Flat live über ctx.live. Commits
+ * { scheme, stops, value, saturation }.
  */
 (function () {
   const V = window.DEVisuals;
@@ -39,11 +41,7 @@
     q.textContent = node.question ? node.question[lang] : "";
     host.appendChild(q);
 
-    const preview = V.el("div", { class: "de-gradient-preview" });
     const paint = () => {
-      preview.style.background = stops.length >= 2
-        ? `linear-gradient(120deg, ${stops[0]}, ${stops[1]})`
-        : stops[0] || "#1a1a1a";
       markSelected();
       ctx.live(payloadFor(scheme, stops));
     };
@@ -51,6 +49,10 @@
     // Single-choice between two schemes → a radiogroup (not a tablist: these
     // toggle the palette in place, they don't switch tabpanels).
     const tabs = V.el("div", { class: "de-scheme-tabs", role: "radiogroup", "aria-labelledby": "de-scheme-q" });
+    // Der Verlauf braucht eine Zeile Anleitung (zwei Stops, Reihenfolge zählt);
+    // im Uni-Modus bleibt die Zeile leer reserviert (kein Layout-Sprung).
+    const hint = V.el("p", { class: "de-scheme-hint", "aria-hidden": "true" });
+    const syncHint = () => { hint.textContent = scheme === "mono" ? "" : ctx.t("engine.duo_hint"); };
     [["mono", ctx.t("engine.scheme_mono")], ["duo-gradient", ctx.t("engine.scheme_duo")]].forEach(([id, label]) => {
       const tab = V.el("button", { type: "button", class: "de-scheme-tab", role: "radio" });
       tab.textContent = label;
@@ -65,6 +67,7 @@
           t.classList.toggle("is-active", sel);
           t.setAttribute("aria-checked", sel ? "true" : "false");
         });
+        syncHint();
         paint();
       });
       tabs.appendChild(tab);
@@ -76,12 +79,18 @@
       // A11y: name the swatch by its human colour name (bilingual), not the raw
       // hex — a screen reader otherwise announces "number sign one a one a…".
       // Mirrors the Ownership palette (app.js colorAdjective → I18N.colorName).
+      // The visible name is aria-hidden so the accessible name isn't doubled.
       const swLabel = (window.I18N && window.I18N.colorName) ? window.I18N.colorName(hex) : hex;
       const sw = V.el("button", { type: "button", class: "de-palette-swatch", "aria-label": swLabel, "aria-pressed": "false" });
-      sw.style.background = hex;
       sw.dataset.hex = hex;
+      const field = V.el("span", { class: "de-fabric-field", "aria-hidden": "true" });
+      field.style.background = hex;
       const badge = V.el("span", { class: "de-palette-order", "aria-hidden": "true" });
-      sw.appendChild(badge);
+      field.appendChild(badge);
+      const name = V.el("span", { class: "de-fabric-name", "aria-hidden": "true" });
+      name.textContent = swLabel;
+      sw.appendChild(field);
+      sw.appendChild(name);
       sw.addEventListener("click", () => {
         if (scheme === "mono") stops = [hex];
         else { stops.push(hex); stops = stops.slice(-2); }
@@ -104,9 +113,10 @@
       });
     };
 
-    host.appendChild(preview);
     host.appendChild(tabs);
+    host.appendChild(hint);
     host.appendChild(grid);
+    syncHint();
 
     const confirm = V.el("button", { type: "button", class: "de-confirm" });
     confirm.textContent = ctx.t("engine.confirm");
