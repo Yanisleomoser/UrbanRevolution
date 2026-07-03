@@ -470,7 +470,7 @@ const DesignFlow = (() => {
           const word = (path, value) => choiceWord(content.nodes, cat, lang(), path, value);
           const sub = g("subArchetype"); if (sub) chips.push({ dim: t("chip.style"), text: word("subArchetype", sub) || cap(sub) });
           const fit = g("silhouette.fit");
-          if (typeof fit === "number") chips.push({ dim: t("chip.fit"), text: window.I18N ? window.I18N.t(fit < 0.34 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.34 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular") });
+          if (typeof fit === "number") chips.push({ dim: t("chip.fit"), text: window.I18N ? window.I18N.t(fit < 0.33 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.33 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular") });
           const len = g("length"); if (len) chips.push({ dim: t("chip.length"), text: word("length", len) || (window.I18N ? window.I18N.t("length." + len) : len) });
           const mat = g("fabric.material"); if (mat) chips.push({ dim: t("chip.material"), text: word("fabric.material", mat) || (window.I18N ? window.I18N.material(mat) : mat) });
           const pat = g("pattern.type"); if (pat && pat !== "none") chips.push({ dim: t("chip.pattern"), text: word("pattern.type", pat) || (window.I18N ? window.I18N.pattern(pat) : pat) });

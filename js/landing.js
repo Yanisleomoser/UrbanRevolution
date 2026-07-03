@@ -415,6 +415,9 @@
     let raf = 0;
     let running = false;
     const pointer = { x: -9999, y: -9999, active: false };
+    // Canvas-Rect fürs Pointer-Mapping gecacht (Muster wie facts-instruments.js) —
+    // sonst zwingt jede Mausbewegung ein synchrones Layout-Read.
+    let canvasRect = null;
 
     // ── Kleidungs-Silhouetten (64×64-Raster, wie die Typ-Icons im Studio).
     //    Tap/Klick: die Punkte fliegen auf die Kontur und verbinden sich
@@ -655,6 +658,7 @@
     }
 
     function resize() {
+      canvasRect = null;
       const rect = canvas.getBoundingClientRect();
       dpr = Math.min(2, window.devicePixelRatio || 1);
       w = rect.width;
@@ -1071,9 +1075,9 @@
     });
 
     hero.addEventListener("pointermove", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.x = e.clientX - rect.left;
-      pointer.y = e.clientY - rect.top;
+      if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - canvasRect.left;
+      pointer.y = e.clientY - canvasRect.top;
       pointer.active = true;
     }, { passive: true });
     hero.addEventListener("pointerleave", () => { pointer.active = false; });
@@ -1082,11 +1086,20 @@
     // verbinden sich zur Silhouette des nächsten Kleidungsstücks.
     hero.addEventListener("pointerdown", (e) => {
       if (e.target.closest && e.target.closest("a, button")) return;
-      const rect = canvas.getBoundingClientRect();
-      formGarment(e.clientX - rect.left, e.clientY - rect.top);
+      if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
+      formGarment(e.clientX - canvasRect.left, e.clientY - canvasRect.top);
     }, { passive: true });
 
     window.addEventListener("resize", resize, { passive: true });
+    // Scroll verschiebt das Canvas relativ zum Viewport → Rect-Cache verwerfen.
+    window.addEventListener("scroll", () => { canvasRect = null; }, { passive: true, capture: true });
+    // Sprachwechsel und spät ladende Web-Fonts verschieben die Headline-Box —
+    // sonst bleibt die Schutzmaske bis zum nächsten Resize auf der alten Position.
+    // (Bei reduced-motion das Standbild einmal neu zeichnen; die Maske wirkt
+    // nur als Alpha-Feld in frame(), Positionen bleiben unberührt.)
+    const remask = () => { computeMask(); if (reduceMotion) frame(); };
+    window.addEventListener("language:change", remask);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(remask);
     resize();
   }
 
