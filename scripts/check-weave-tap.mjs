@@ -27,8 +27,9 @@ for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile
       await page.waitForTimeout(wait);
       await page.screenshot({ path: `screenshots/tap-${vp.name}-g${g}-f${fi}.png` });
     }
-    // Auflösung abwarten (FORM_HOLD 4200ms + Puffer)
-    await page.waitForTimeout(3200);
+    // Auflösung abwarten (FORM_HOLD ~1770 ms; 1700 ms sind durch die
+    // Frame-Serie oben schon verstrichen — kleiner Puffer reicht)
+    await page.waitForTimeout(500);
   }
   await page.screenshot({ path: `screenshots/tap-${vp.name}-released.png` });
   console.log(`[${vp.name}] errors: ${errors.length ? "\n  " + errors.join("\n  ") : "none"}`);
