@@ -230,6 +230,10 @@ const DesignPreview = (() => {
     // below re-adds .is-realism only once a curated photo actually loads.
     if (!realism) el.classList.remove("is-realism");
     const p = params(dna);
+    // "Made for one" (roadmap §9): the caller may pass gentle body multipliers
+    // (flow.js bodyFactors from the user's measurements) — GarmentSVG clamps
+    // them, and the morph tween carries them like any other geometry change.
+    if (opts && opts.body) p.body = opts.body;
 
     // ── Genesis stage (before the user has chosen a category) ──────────────
     // No garment exists yet, so none is shown: an abstract thread-flow reacts

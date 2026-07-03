@@ -78,6 +78,36 @@ console.log("\n— resolveEffects · cards (multi-select aggregates each card's 
   assert(r.eff.set.details === "x+y", "bind joins the selected ids");
 }
 
+console.log("\n— resolveEffects · regions (detail atelier merges the touched regions) —");
+{
+  const node = { modality: "regions", regions: [
+    { id: "closure", choices: [
+      { id: "zip", effects: { set: { "construction.closure": "zip" }, weight: { techAvant: 0.1 } } },
+      { id: "button", effects: { set: { "construction.closure": "button" } } },
+    ] },
+    { id: "hem", choices: [
+      { id: "ribbed", effects: { set: { "construction.hem": "ribbed", "construction.cuffs": "ribbed" }, weight: { techAvant: 0.2, sport: 0.1 } } },
+    ] },
+  ] };
+  const r = Flow.resolveEffects(node, { closure: "zip", hem: "ribbed" });
+  assert(r.conf === 1, "board picks land fully confident");
+  assert(r.eff.set["construction.closure"] === "zip" && r.eff.set["construction.hem"] === "ribbed"
+    && r.eff.set["construction.cuffs"] === "ribbed", "every touched region's set() merges (multi-path choices too)");
+  assert(Math.abs(r.eff.weight.techAvant - 0.3) < 1e-9 && r.eff.weight.sport === 0.1, "archetype weights ADD across regions");
+
+  const partial = Flow.resolveEffects(node, { hem: "ribbed" });
+  assert(partial.eff.set["construction.closure"] === undefined, "untouched regions set NOTHING (inference fills them)");
+
+  const empty = Flow.resolveEffects(node, {});
+  assert(Object.keys(empty.eff.set).length === 0 && Object.keys(empty.eff.weight).length === 0,
+    "'accept as is' commits empty effects (node answered, attrs stay open)");
+
+  const junk = Flow.resolveEffects(node, "regular");
+  assert(Object.keys(junk.eff.set).length === 0, "a non-object payload is treated as 'accept as is', never iterated as chars");
+  const unknown = Flow.resolveEffects(node, { closure: "nope", ghost: "zip" });
+  assert(Object.keys(unknown.eff.set).length === 0, "unknown region/choice ids are ignored");
+}
+
 console.log("\n— shiftHex (HSL hue/lightness drift, invalid input passes through) —");
 {
   assert(/^#[0-9a-f]{6}$/i.test(Flow.shiftHex("#2779a8", 30, 0.05)), "valid hex → valid hex");
@@ -105,6 +135,83 @@ console.log("\n— mutateDna (deterministic concept-studio variants, base untouc
 
   const fit = global.DesignDNA.get(v1a, "silhouette.fit");
   assert(typeof fit === "number" && fit >= 0 && fit <= 1, "mutated fit stays clamped to 0..1");
+}
+
+console.log("\n— mutateDna respects a DECIDED 'no pattern' (roadmap §8.2) —");
+{
+  const mk = (conf) => {
+    const d = global.DesignDNA.create();
+    global.DesignDNA.set(d, "category", "jacket", 1);
+    global.DesignDNA.set(d, "color.stops", ["#8a2f2f", "#5a1f2f"], 1);
+    global.DesignDNA.set(d, "pattern.type", "none", conf);
+    return d;
+  };
+  // Explicit "Keins" (conf 1): NO variant of NO version may re-introduce a
+  // pattern — the lottery previously overrode the user's cleaned-away choice.
+  let reintroduced = false;
+  for (let idx = 0; idx < 4; idx++) {
+    for (let v = 1; v <= 4; v++) {
+      if (global.DesignDNA.get(Flow.mutateDna(mk(1), idx, v), "pattern.type") !== "none") reintroduced = true;
+    }
+  }
+  assert(!reintroduced, "explicit pattern.type 'none' (conf 1) survives every concept × version");
+  // Merely inferred none (conf 0.4) keeps the playful lottery: SOME variant dares a pattern.
+  let dared = false;
+  for (let idx = 0; idx < 4; idx++) {
+    for (let v = 1; v <= 4; v++) {
+      if (global.DesignDNA.get(Flow.mutateDna(mk(0.4), idx, v), "pattern.type") !== "none") dared = true;
+    }
+  }
+  assert(dared, "an INFERRED none still lets some variant dare a pattern (lottery intact)");
+  // The clean variant still visibly moves: its colour swings instead.
+  const base = mk(1);
+  const variant = Flow.mutateDna(base, 1, 1);
+  assert(JSON.stringify(global.DesignDNA.get(variant, "color.stops")) !== JSON.stringify(global.DesignDNA.get(base, "color.stops")),
+    "the pattern-respecting variant shifts colour instead of going inert");
+}
+
+console.log("\n— conceptDeltas (each direction is named by what it changes, §8.2) —");
+{
+  const D = global.DesignDNA;
+  const mk = (mods) => {
+    const d = D.create();
+    D.set(d, "silhouette.fit", 0.5, 1);
+    D.set(d, "fabric.finishWeight", 0.4, 1);
+    D.set(d, "color.stops", ["#2779a8"], 1); // ocean blue (cool)
+    D.set(d, "pattern.type", "none", 1);
+    D.set(d, "length", "regular", 1);
+    Object.entries(mods || {}).forEach(([p, v]) => D.set(d, p, v, 1));
+    return d;
+  };
+  const base = mk();
+  assert(eq(Flow.conceptDeltas(base, mk({ "color.stops": ["#a85527"] })), ["concept.warmer"]),
+    "blue → rust names the direction 'warmer'");
+  assert(Flow.conceptDeltas(base, mk({ "silhouette.fit": 0.8 })).includes("concept.wider"), "fit +0.3 → 'roomier'");
+  assert(Flow.conceptDeltas(base, mk({ "silhouette.fit": 0.2 })).includes("concept.slimmer"), "fit -0.3 → 'slimmer'");
+  assert(Flow.conceptDeltas(base, mk({ "fabric.finishWeight": 0.8 })).includes("concept.sheen"), "finish up → 'more sheen'");
+  assert(Flow.conceptDeltas(base, mk({ "pattern.type": "graphic" })).includes("concept.pattern"), "none → graphic names the dared pattern");
+  assert(Flow.conceptDeltas(mk({ "pattern.type": "camo" }), mk({ "pattern.type": "none" })).includes("concept.cleaner"), "pattern → none reads 'calmer'");
+  assert(Flow.conceptDeltas(base, mk({ length: "cropped" })).includes("concept.len_cropped"), "length change carries its value key");
+  assert(eq(Flow.conceptDeltas(base, mk()), ["concept.subtle"]), "no perceptible delta → 'subtle shift', never an empty name");
+  const many = Flow.conceptDeltas(base, mk({ "silhouette.fit": 0.9, "fabric.finishWeight": 0.9, "pattern.type": "camo", length: "long" }));
+  assert(many.length === 2, "at most TWO deltas make the name (biggest first), not a laundry list");
+  assert(Flow.hexHue("#808080") === null && Flow.hexHue("garbage") === null, "grey / invalid hex carries no hue (no NaN warmth)");
+}
+
+console.log("\n— bodyFactors (made-for-one silhouette from the user's measurements, §9) —");
+{
+  const REF = { chest: 96, waist: 82, hips: 98, shoulder: 44 };
+  const M = { height: 175, weight: 70, chest: 96, waist: 82, hips: 98, shoulder: 44, arm: 62, inseam: 82, neck: 38 };
+  const f = Flow.bodyFactors(M, REF);
+  assert(f && Math.abs(f.shoulder - 1) < 1e-9 && Math.abs(f.waist - 1) < 1e-9 && Math.abs(f.hip - 1) < 1e-9,
+    "the M reference body maps to identity (no visible change)");
+  const broad = Flow.bodyFactors({ shoulder: 50, chest: 96, waist: 82, hips: 98 }, REF);
+  assert(Math.abs(broad.shoulder - 1.08) < 1e-9, "broad shoulders cap at +8% (50/44 → clamp 1.08)");
+  const nipped = Flow.bodyFactors({ chest: 100, waist: 74, hips: 98 }, REF);
+  assert(nipped.waist < 1 && nipped.waist >= 0.92, `waist factor uses the CHEST-RELATIVE ratio (got ${nipped.waist.toFixed(3)})`);
+  assert(Flow.bodyFactors(null, REF) === null && Flow.bodyFactors({}, REF) === null
+    && Flow.bodyFactors({ shoulder: NaN, chest: -3, waist: "x" }, REF) === null,
+    "no usable measurements → null (the flat stays generic)");
 }
 
 console.log("\n— phaseStepper (honest orientation: where you are, never a % gauge) —");

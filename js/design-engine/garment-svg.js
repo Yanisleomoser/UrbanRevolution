@@ -267,6 +267,19 @@ const GarmentSVG = (() => {
     return `<pattern id="${id}" width="${W(34)}" height="${W(34)}" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><path d="M0 ${W(17)} Q${W(8)} ${W(5)} ${W(17)} ${W(17)} T${W(34)} ${W(17)}" fill="none" stroke="${ink}" stroke-width="2.4"/></pattern>`;
   }
 
+  // ---- "Made for one" body factors (roadmap §9) ----------------------------
+  // Once real measurements exist, the flat is subtly RE-PROPORTIONED toward
+  // the user's own body — a personal silhouette nobody else renders
+  // client-side. p.body carries gentle multipliers (flow.js bodyFactors
+  // derives them from the measurements vs the M reference); hard-clamped HERE
+  // so hostile share data / garbage can never distort the drawing, and the
+  // brief §2 invariants (shoulder widest, hem never a bell) stay enforced by
+  // the existing min/max maths downstream.
+  const bodyK = (p, key) => {
+    const v = p && p.body && p.body[key];
+    return typeof v === "number" && isFinite(v) ? clamp(v, 0.92, 1.08) : 1;
+  };
+
   // ---- shared width model (tops) ------------------------------------------
   function topWidths(p, cfg) {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
@@ -277,13 +290,14 @@ const GarmentSVG = (() => {
     // garment proportions (~40–60 % of frame, matching the photoreal renders)
     // instead of filling the box like a boxy slab — while keeping a clear
     // slim ↔ oversized spread.
-    const shoulderHalf = 44 + structure * 6 + vol * 6 + fit * 12 + (drop ? 8 : 0);
+    const shoulderHalf = (44 + structure * 6 + vol * 6 + fit * 12 + (drop ? 8 : 0)) * bodyK(p, "shoulder");
     // Chest derived FROM the shoulder, ALWAYS narrower (capped so the invariant
     // "shoulder is widest" holds). Slim tapers hard from the shoulder line;
     // oversized fills almost to it.
     const chestHalf = Math.min(shoulderHalf - 2, shoulderHalf * lerp(0.74, 0.985, fit) + Math.max(0, vol) * 3);
     // slim nips the waist hard; oversized keeps it straight (boxy column).
-    const waistHalf = chestHalf * lerp(0.74, 1.0, fit);
+    // The personal waist factor stays capped AT the chest (no bell torso).
+    const waistHalf = Math.min(chestHalf, chestHalf * lerp(0.74, 1.0, fit) * bodyK(p, "waist"));
     // hem never wider than the chest (no bell). slim tapers in; oversized = column.
     const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.82, 1.0, fit)) + (vol > 0 ? 4 : 0);
     return { shoulderHalf, chestHalf, waistHalf, hemHalf, fit, vol, drop };
@@ -525,7 +539,7 @@ const GarmentSVG = (() => {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
     const topY = 70, hemY = { cropped: 250, regular: 300, long: 318 }[p.length] || 300;
-    const hipHalf = 44 + vol * 7;
+    const hipHalf = (44 + vol * 7) * bodyK(p, "hip");
     const legTop = hipHalf;
     // CONTINUOUS slim↔wide morph (no step jumps) so the fit slider visibly
     // reshapes the leg frame by frame. Wide-leg must stay FULL down to the hem
@@ -629,7 +643,8 @@ const GarmentSVG = (() => {
     const waistY = armpitY + 34;
     const hemY = cfg.hem[p.length] != null ? cfg.hem[p.length] : 300;
     // Waist emphasis: "fitted" nips the waist hard, "relaxed" barely shapes it.
-    const waistHalf = w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84);
+    // Personal waist factor rides along, capped at the chest (no bell bodice).
+    const waistHalf = Math.min(w.chestHalf, w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84) * bodyK(p, "waist"));
     // CONTINUOUS A-line ↔ column morph: low fit = strong flare from the waist,
     // high fit = the hem stays at waist width (true straight sheath) — the
     // silhouette slider visibly sweeps the skirt instead of snapping. Slip /
@@ -922,7 +937,49 @@ const GarmentSVG = (() => {
     return paint(model(category, params));
   }
 
-  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  // ---- region anchors (detail atelier, roadmap §7) -------------------------
+  // Viewbox-space anchor points for the tappable region hotspots of the
+  // "regions" modality. Derived from the SAME resolved geometry as the flat,
+  // so a hood, a cropped hem or a wide leg carries its hotspot with it. The
+  // spread is deliberate — sleeve marker on the right limb, cuffs on the left
+  // wrist, pockets opposite the cuffs — so 40 px tap targets never stack.
+  // Pure (category + params in, {region: {x,y}} out) → unit-testable.
+  function regionAnchors(category, params) {
+    const m = model(category, params || {});
+    const g = m.g;
+    const cl = (x, y) => ({ x: r(clamp(x, 14, VB - 14)), y: r(clamp(y, 14, VH - 14)) });
+    const a = {};
+    if (m.kind === "pants") {
+      a.waistband = cl(CX, g.topY + 8);
+      a.pockets = cl(CX - (g.legTop - 10), g.topY + 30);
+      a.hem = cl(CX - (g.ankleHalf + g.thighHalf * 0.05) / 2, g.hemY - 10);
+      return a;
+    }
+    if (m.kind === "dress") {
+      a.collar = cl(CX, g.neckY - 6);
+      a.waist = cl(CX, g.waistY);
+      a.hem = cl(CX, g.hemY - 8);
+      return a;
+    }
+    a.collar = cl(CX, g.neckY - 6);
+    // 0.4 keeps the closure marker's value line clear of the hem marker even
+    // on cropped bodies (the tightest stack: closure → hem ~40 units).
+    a.closure = cl(CX, lerp(g.armpitY, g.hemY, 0.4));
+    // High on the right limb (upper third), centred between its inner and
+    // outer edge — clear of the pocket hotspot that lives lower on that side.
+    const limbX = (lerp(g.shoulderHalf, g.coX, 0.32) + lerp(g.chestHalf, g.ciX, 0.32)) / 2;
+    a.sleeve = cl(CX + (g.sleeveless ? g.chestHalf : limbX), lerp(g.shoulderY, g.wristY, 0.32));
+    a.cuffs = cl(CX - (g.coX + g.ciX) / 2, g.wristY - 8);
+    // Chest pockets (shirt/tee) sit up left; body pockets (jacket/hoodie) low
+    // right — where the respective choices actually draw on the flat.
+    a.pockets = (m.cat === "shirt" || m.cat === "tshirt")
+      ? cl(CX - g.chestHalf * 0.55, g.armpitY + 18)
+      : cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));
+    a.hem = cl(CX, g.hemY - 6);
+    return a;
+  }
+
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

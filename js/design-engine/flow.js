@@ -96,6 +96,22 @@ const DesignFlow = (() => {
       if (node.bind && (payload || []).length) eff.set[node.bind] = payload[0];
       return { eff, conf: 1 };
     }
+    if (node.modality === "regions") {
+      // Detail atelier (roadmap §7): payload = { regionId: choiceId } for the
+      // regions the user actually touched. Untouched regions stay undecided —
+      // the archetype inference fills them at finalize, which is exactly the
+      // compression the board exists for. Effects merge like multi-cards.
+      const picks = payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+      const eff = { set: {}, weight: {} };
+      Object.entries(picks).forEach(([rid, cid]) => {
+        const region = (node.regions || []).find((rg) => rg.id === rid);
+        const choice = region && (region.choices || []).find((c) => c.id === cid);
+        const e = choice && choice.effects;
+        if (e && e.set) Object.assign(eff.set, e.set);
+        if (e && e.weight) Object.entries(e.weight).forEach(([k, v]) => { eff.weight[k] = (eff.weight[k] || 0) + v; });
+      });
+      return { eff, conf: 1 };
+    }
     if (node.modality === "cards" && Array.isArray(payload)) {
       const eff = { set: {}, weight: {} };
       payload.forEach((id) => {
@@ -145,16 +161,91 @@ const DesignFlow = (() => {
     set("silhouette.fit", Math.min(1, Math.max(0, fit + (r2 - 0.5) * 0.3)));
     const fin = typeof g("fabric.finishWeight") === "number" ? g("fabric.finishWeight") : 0.4;
     set("fabric.finishWeight", Math.min(1, Math.max(0, fin + (r3 - 0.5) * 0.36)));
-    // Eine Variante wagt ein anderes Muster / eine andere Länge
+    // Eine Variante wagt ein anderes Muster / eine andere Länge — ABER ein vom
+    // User ENTSCHIEDENES "kein Muster" (conf ≥ 0.6; Inferenz stempelt nur bis
+    // 0.5) bleibt respektiert (roadmap §8.2): statt der Muster-Lotterie dreht
+    // diese Variante dann stärker an Farbton und Licht.
+    const keepClean = g("pattern.type") === "none" && DesignDNA.confidence(d, "pattern.type") >= 0.6;
     if (idx % 2 === 1 && r1 > 0.35) {
-      set("pattern.type", PATTERN_POOL[Math.floor(r2 * PATTERN_POOL.length) % PATTERN_POOL.length]);
-      set("pattern.scale", 0.25 + r3 * 0.6);
+      if (keepClean) {
+        const swung = (g("color.stops") || []).map((s) => shiftHex(s, (r2 - 0.5) * 44, (r3 - 0.5) * 0.12));
+        if (swung.length) set("color.stops", swung);
+      } else {
+        set("pattern.type", PATTERN_POOL[Math.floor(r2 * PATTERN_POOL.length) % PATTERN_POOL.length]);
+        set("pattern.scale", 0.25 + r3 * 0.6);
+      }
     }
     if (idx === 3 && r2 > 0.5) {
       const L = ["cropped", "regular", "long"]; const cur = Math.max(0, L.indexOf(g("length")));
       set("length", L[(cur + 1 + Math.floor(r3 * 2)) % 3]);
     }
     return d;
+  }
+
+  // ── Konzept-Namen aus dem Delta (roadmap §8.2) ─────────────────────────────
+  // Vier fast identische dunkle Kacheln lesen sich nicht — jede Richtung
+  // bekommt einen NAMEN aus dem, was sie tatsächlich verschiebt ("Wärmer ·
+  // Weiter"). Pure: (Basis-DNA, Varianten-DNA) → bis zu 2 i18n-Keys, der
+  // Aufrufer übersetzt. Unter Node testbar wie die anderen Helfer.
+  function hexHue(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+    if (!m) return null;
+    const r = parseInt(m[1].slice(0, 2), 16) / 255, g = parseInt(m[1].slice(2, 4), 16) / 255, b = parseInt(m[1].slice(4, 6), 16) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    if (!d) return null; // grau trägt keinen Farbton
+    let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h *= 60;
+    return h < 0 ? h + 360 : h;
+  }
+  // Distanz zum warmen Pol (30° Rot-Orange) auf dem Farbkreis — sinkt sie,
+  // wurde die Variante wärmer.
+  const warmDist = (h) => { const d = Math.abs(h - 30); return Math.min(d, 360 - d); };
+  function conceptDeltas(base, variant) {
+    const gb = (p) => DesignDNA.get(base, p);
+    const gv = (p) => DesignDNA.get(variant, p);
+    const cand = [];
+    const hb = hexHue((gb("color.stops") || [])[0]);
+    const hv = hexHue((gv("color.stops") || [])[0]);
+    if (hb != null && hv != null) {
+      const dw = warmDist(hv) - warmDist(hb);
+      if (Math.abs(dw) >= 10) cand.push({ k: dw < 0 ? "concept.warmer" : "concept.cooler", m: Math.abs(dw) / 180 + 0.1 });
+    }
+    const fb = gb("silhouette.fit"), fv = gv("silhouette.fit");
+    if (typeof fb === "number" && typeof fv === "number" && Math.abs(fv - fb) >= 0.06)
+      cand.push({ k: fv > fb ? "concept.wider" : "concept.slimmer", m: Math.abs(fv - fb) * 1.4 });
+    const nb = gb("fabric.finishWeight"), nv = gv("fabric.finishWeight");
+    if (typeof nb === "number" && typeof nv === "number" && Math.abs(nv - nb) >= 0.08)
+      cand.push({ k: nv > nb ? "concept.sheen" : "concept.matte", m: Math.abs(nv - nb) });
+    const pb = gb("pattern.type") || "none", pv = gv("pattern.type") || "none";
+    if (pb !== pv) cand.push({ k: pv === "none" ? "concept.cleaner" : "concept.pattern", m: 0.42 });
+    const lb = gb("length"), lv = gv("length");
+    if (lb !== lv && lv) cand.push({ k: "concept.len_" + lv, m: 0.4 });
+    cand.sort((a, b) => b.m - a.m);
+    const keys = cand.slice(0, 2).map((c) => c.k);
+    return keys.length ? keys : ["concept.subtle"];
+  }
+
+  // ── "Made for one" (roadmap §9) ────────────────────────────────────────────
+  // Gentle silhouette multipliers from the user's own measurements, relative
+  // to the M reference body: the shoulder drives the frame, the waist/chest
+  // ratio the suppression, the hips the trouser/skirt frame. Capped at ±8 %
+  // (GarmentSVG clamps again) — a subtle personal silhouette, never a
+  // caricature. Pure; null when nothing usable exists (flat stays generic).
+  function bodyFactors(m, ref) {
+    const R = ref || ((typeof CONFIG !== "undefined" && CONFIG.MEASUREMENT_PRESETS && CONFIG.MEASUREMENT_PRESETS.M) || { chest: 96, waist: 82, hips: 98, shoulder: 44 });
+    if (!m || typeof m !== "object") return null;
+    const num = (v) => (typeof v === "number" && isFinite(v) && v > 0 ? v : null);
+    const cl = (v) => Math.max(0.92, Math.min(1.08, v));
+    const shoulder = num(m.shoulder), chest = num(m.chest), waist = num(m.waist), hips = num(m.hips);
+    if (!shoulder && !chest && !waist && !hips) return null;
+    const f = { shoulder: 1, waist: 1, hip: 1 };
+    if (shoulder) f.shoulder = cl(shoulder / R.shoulder);
+    // Waist relative to the chest (the suppression), normalised by the
+    // reference ratio — the absolute waist alone would just rescale the flat.
+    if (waist && chest) f.waist = cl((waist / chest) / (R.waist / R.chest));
+    else if (waist) f.waist = cl(waist / R.waist);
+    if (hips) f.hip = cl(hips / R.hips);
+    return f;
   }
 
   // Honest progress: a calm orientation stepper over the journey's named phases
@@ -233,6 +324,10 @@ const DesignFlow = (() => {
       return top && top.label ? top.label[l] : "";
     }
     if (node.modality === "cards" && Array.isArray(payload)) return payload.length + "×";
+    if (node.modality === "regions") {
+      const n = payload && typeof payload === "object" ? Object.keys(payload).length : 0;
+      return n ? n + "×" : t("engine.changed_details");
+    }
     if (node.modality === "cards") {
       const c = (node.choices || []).find((x) => x.id === payload);
       return c && c.label ? c.label[l] : "";
@@ -404,6 +499,28 @@ const DesignFlow = (() => {
       }, 150);
     }
 
+    // ── Ankunfts-Beat (roadmap §8.1): der Satz tippt sich in Mono auf ──────
+    // Die Maschinenstimme spricht das Design aus, EINEN Atemzug bevor die
+    // Optionen erscheinen (deren Eintritt verzögert .is-refine im CSS).
+    // Ohne fx / mit reduced-motion: sofort voller Text. Ein Re-Render bricht
+    // die laufende Animation sauber ab (cancelTypeOn).
+    let typeRaf = 0;
+    function cancelTypeOn() { if (typeRaf) { cancelAnimationFrame(typeRaf); typeRaf = 0; } }
+    function typeOn(el, text) {
+      cancelTypeOn();
+      if (!el) return;
+      if (!fxOn() || reduceMotion()) { el.textContent = text; return; }
+      el.classList.add("is-typing");
+      let i = 0;
+      const step = () => {
+        i = Math.min(text.length, i + 2);
+        el.textContent = text.slice(0, i);
+        if (i < text.length) typeRaf = requestAnimationFrame(step);
+        else { typeRaf = 0; el.classList.remove("is-typing"); }
+      };
+      typeRaf = requestAnimationFrame(step);
+    }
+
     // Phase interstitial: crossing A→B→…→F flashes the new chapter's mono
     // title on its permanently reserved line (no layout jump) and pulses the
     // stepper's current beat. Decorative (aria-hidden) — the stepper's
@@ -454,6 +571,9 @@ const DesignFlow = (() => {
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
+          // "Made for one" (§9): once measurements exist, the flat carries the
+          // user's own proportions — the brand thesis made visible.
+          body: bodyFactors(window.StateManager ? window.StateManager.get("measurements") : null),
         });
       }
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
@@ -491,8 +611,10 @@ const DesignFlow = (() => {
       }
       // The live sentence only appears once it reads as a sentence — below
       // half maturity it would be a bare fragment ("Stück.", "Jacke.") that
-      // looks like debris under the controls (roadmap §3.1).
-      live.textContent = maturity() >= 0.5 ? DesignSummary.toSentence(dna, lang()) : "";
+      // looks like debris under the controls (roadmap §3.1). On the refine
+      // screen the typed-on summary IS the design's voice — the same sentence
+      // a second time under the controls was §8.4's duplicate; suppress it.
+      live.textContent = (!atRefine && maturity() >= 0.5) ? DesignSummary.toSentence(dna, lang()) : "";
     }
     // Orientation stepper: light the current phase, mark earlier ones done.
     // Label it for assistive tech with the current beat ("Design-Phase: Stoff").
@@ -579,6 +701,9 @@ const DesignFlow = (() => {
       if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
       swapBody(() => {
         lastRenderAt = nowMs(); // guard counts from the visible paint
+        cancelTypeOn();
+        body.classList.remove("is-refine"); // "Tiefer verfeinern" kehrt zur Frage zurück
+        clearNameplate(); // zurück in die Reise → das Namensschild gehört zum Ergebnis
         // Preview refresh (morph) starts WITH the new question's entrance —
         // one clean sequence: sink out → question staggers in while the
         // garment reshapes. (Running it during the leave starves the leave.)
@@ -638,9 +763,13 @@ const DesignFlow = (() => {
       swapBody(() => {
       lastRenderAt = nowMs(); // guard counts from the visible paint
       refreshChrome(); // realism crossfade starts with the refine screen's entrance
+      // Ankunfts-Beat (roadmap §8.1): .is-refine verzögert im CSS den Eintritt
+      // der Options-Sektionen, während der Satz sich in Mono auftippt — die
+      // finale Materialisierung der Vorschau läuft synchron (refreshChrome).
+      body.classList.add("is-refine");
       body.innerHTML = `
         <h2 class="de-question">${t("engine.refine_title")}</h2>
-        <p class="de-summary" id="de-refine-summary">${DesignSummary.toSentence(dna, l)}</p>
+        <p class="de-summary de-summary-type" id="de-refine-summary"></p>
         <div class="de-concepts">
           <p class="de-inferred-h">${t("engine.concepts_title")}</p>
           <div class="de-concept-grid" id="de-concept-grid"></div>
@@ -658,7 +787,8 @@ const DesignFlow = (() => {
           <button type="button" class="de-confirm de-generate" id="de-generate">${t("engine.generate")}</button>
         </div>`;
 
-      const reSummary = () => { body.querySelector("#de-refine-summary").textContent = DesignSummary.toSentence(dna, lang()); };
+      const reSummary = () => { cancelTypeOn(); const el = body.querySelector("#de-refine-summary"); el.classList.remove("is-typing"); el.textContent = DesignSummary.toSentence(dna, lang()); };
+      typeOn(body.querySelector("#de-refine-summary"), DesignSummary.toSentence(dna, l));
 
       // ── Concept-Studio: 4 Varianten der konvergierten DNA, jede mit EVOLVE
       // (Versionskette V1→V2→…) und „Wählen“. Wählen macht die Variante zur
@@ -686,15 +816,22 @@ const DesignFlow = (() => {
         if (!grid) return;
         grid.innerHTML = concepts.map((c, i) => {
           const cur = c.history[c.history.length - 1];
+          // Jede Richtung trägt ihren Namen aus dem eigenen Delta (§8.2):
+          // "Wärmer · Weiter" statt vier ununterscheidbarer dunkler Kacheln.
+          // Nur i18n-Wörter (kein User-Input) → sicher im Template.
+          const name = (i === 0 && c.version === 1)
+            ? t("engine.concept_original")
+            : conceptDeltas(baseDna, cur).map((k) => t(k)).join(" · ");
           return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
-            <button type="button" class="de-concept-pick" data-pick="${i}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}">
+            <button type="button" class="de-concept-pick" data-pick="${i}" aria-pressed="${i === selected}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}: ${name}">
               <span class="de-concept-stage">${tileSvg(cur)}</span>
-              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span>${i === 0 && c.version === 1 ? `<span class="de-concept-tag">${t("engine.concept_original")}</span>` : ""}</span>
+              <span class="de-concept-name">${name}</span>
+              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span></span>
             </button>
-            <div class="de-concept-actions">
+            ${i === selected ? `<div class="de-concept-actions">
               <button type="button" class="de-concept-evolve" data-evolve="${i}">${t("engine.evolve")}</button>
               ${c.history.length > 1 ? `<button type="button" class="de-concept-back" data-back="${i}" aria-label="${t("engine.evolve_back_aria")}">↩</button>` : ""}
-            </div>
+            </div>` : ""}
           </figure>`;
         }).join("");
         grid.querySelectorAll("[data-pick]").forEach((b) => b.addEventListener("click", () => {
@@ -755,11 +892,54 @@ const DesignFlow = (() => {
       }
     }
 
+    // ── §5.4 Die Maschine näht ──────────────────────────────────────────────
+    // Während AI.generateDesign läuft (1–4 s), kehrt das Genesis-Fadenfeld
+    // ÜBER dem Flat zurück — die autonome Fertigung stitcht, die Wartezeit
+    // wird zur Geschichte statt zum Spinner. Auf Resolve tippt sich das
+    // Namensschild in Mono auf (Maschinenstimme), DANN übernimmt der
+    // Ownership-Moment. Nur unter html.fx; reduced-motion/no-fx behalten den
+    // reinen Button-Zustand und den sofortigen Handoff.
+    function startSewing() {
+      if (!fxOn() || reduceMotion() || !window.GarmentSVG || !window.GarmentSVG.nebula) return null;
+      const sew = document.createElement("div");
+      sew.className = "de-sew";
+      sew.setAttribute("aria-hidden", "true");
+      sew.innerHTML = window.GarmentSVG.nebula({
+        energy: DesignDNA.get(dna, "intent.energy"),
+        structure: DesignDNA.get(dna, "silhouette.structure"),
+        archetype: DesignDNA.topArchetype(dna),
+        seed: answered.size + 4,
+      });
+      previewEl.appendChild(sew);
+      previewEl.classList.add("is-sewing");
+      return sew;
+    }
+    function stopSewing(sew) {
+      previewEl.classList.remove("is-sewing");
+      if (sew && sew.isConnected) { sew.classList.add("is-done"); setTimeout(() => sew.remove(), 450); }
+    }
+    // Mono-Namensschild auf der Bühne (bleibt stehen, role=status übernimmt
+    // die SR-Ansage — der flüchtige Flash entfällt auf diesem Pfad).
+    let plateEl = null;
+    const stageForPlate = hostEl.querySelector(".de-preview-stage");
+    function nameplate(name) {
+      if (!stageForPlate) return;
+      if (!plateEl || !plateEl.isConnected) {
+        plateEl = document.createElement("span");
+        plateEl.className = "de-nameplate";
+        plateEl.setAttribute("role", "status");
+        stageForPlate.appendChild(plateEl);
+      }
+      typeOn(plateEl, name);
+    }
+    function clearNameplate() { if (plateEl) { plateEl.remove(); plateEl = null; } }
+
     async function handoff(prompt, type, btn) {
       if (!window.AI) return;
       btn.disabled = true;
       btn.textContent = t("engine.generating");
       T("generate", { type: type || "jacket", archetype: DesignDNA.topArchetype(dna) });
+      const sew = startSewing();
       try {
         const design = await window.AI.generateDesign(prompt, type || "jacket");
         // "Made for one": carry the body data onto the saved design so the later
@@ -777,22 +957,43 @@ const DesignFlow = (() => {
         // across reloads, so the in-memory design is the surviving DNA source for
         // this hand-off flow (ur-create's currentDna() reads it as a fallback).
         if (design) design.dna = dna;
-        if (window.StateManager) S("currentDesign", design);
-        clearSaved();
-        generated = true;
-        T("generate_ok", { type: type || "jacket" });
-        if (typeof options.onDesign === "function") options.onDesign(design);
-        if (design && design.name) flash(design.name);
-        // Per click kein Render (brief §4): die KI läuft nur auf explizites
-        // Generieren. Danach lädt der Button zum "Neu generieren — mehr
-        // individualisieren" ein; das Ergebnis ersetzt die Stilvorschau über
-        // den onDesign-Handoff in die bestehende Render-Pipeline.
-        btn.disabled = false;
-        btn.textContent = t("engine.regenerate");
+        stopSewing(sew);
+        // §9 Ownership-Nahtstelle: EIN durchgehender Bogen — Nähen endet,
+        // das Namensschild tippt sich auf, DANN erst zündet der Handoff
+        // (S(currentDesign) enthüllt den Ownership-Moment und startet dessen
+        // Scroll). Ohne fx/Name: sofort wie bisher, mit Flash als Ansage.
+        const finish = () => {
+          if (window.StateManager) S("currentDesign", design);
+          clearSaved();
+          generated = true;
+          T("generate_ok", { type: type || "jacket" });
+          // onDesign läuft (fx-Pfad) in einem setTimeout — ein Fehler im
+          // App-Renderer darf den Button nicht dauerhaft sperren.
+          try {
+            if (typeof options.onDesign === "function") options.onDesign(design);
+          } catch (e2) {
+            console.error("[DesignFlow] onDesign failed:", e2);
+            if (window.Sentry) window.Sentry.captureException(e2, { tags: { area: "engine" } });
+          }
+          // Per click kein Render (brief §4): die KI läuft nur auf explizites
+          // Generieren. Danach lädt der Button zum "Neu generieren — mehr
+          // individualisieren" ein; das Ergebnis ersetzt die Stilvorschau über
+          // den onDesign-Handoff in die bestehende Render-Pipeline.
+          btn.disabled = false;
+          btn.textContent = t("engine.regenerate");
+        };
+        if (fxOn() && !reduceMotion() && design && design.name) {
+          nameplate(design.name);
+          setTimeout(finish, 750);
+        } else {
+          if (design && design.name) flash(design.name);
+          finish();
+        }
       } catch (e) {
         console.error("[DesignFlow] generate failed:", e);
         if (window.Sentry) window.Sentry.captureException(e, { tags: { area: "engine" } });
         T("generate_fail");
+        stopSewing(sew);
         btn.disabled = false;
         btn.textContent = t("engine.generate");
       }
@@ -821,6 +1022,7 @@ const DesignFlow = (() => {
 
     function resetJourney() {
       clearSaved();
+      clearNameplate();
       dna = DesignDNA.create();
       answered = new Set();
       history.length = 0;
@@ -899,7 +1101,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

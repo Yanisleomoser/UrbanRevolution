@@ -280,95 +280,29 @@
       "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
-      "id": "hoodie_pocket",
+      "id": "hoodie_details",
       "phase": "E",
-      "modality": "cards",
-      "when": "category == 'hoodie' && _confidence.construction.pockets < 0.5",
+      "modality": "regions",
+      "when": "category == 'hoodie'",
       "priority": 0.5,
-      "question": {
-        "de": "Tasche?",
-        "en": "Pocket?"
-      },
-      "choices": [
+      "question": { "de": "Die Details — direkt am Stück", "en": "The details — right on the piece" },
+      "regions": [
         {
-          "id": "kangaroo",
-          "label": {
-            "de": "Kängurutasche",
-            "en": "Kangaroo"
-          },
-          "effects": {
-            "set": {
-              "construction.pockets": "kangaroo"
-            }
-          }
+          "id": "pockets",
+          "label": { "de": "Tasche", "en": "Pocket" },
+          "choices": [
+            { "id": "kangaroo", "label": { "de": "Kängurutasche", "en": "Kangaroo" }, "effects": { "set": { "construction.pockets": "kangaroo" } } },
+            { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } }
+          ]
         },
         {
-          "id": "none",
-          "label": {
-            "de": "Clean",
-            "en": "Clean"
-          },
-          "effects": {
-            "set": {
-              "construction.pockets": "none"
-            },
-            "weight": {
-              "quietMinimal": 0.1
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "hoodie_hem",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'hoodie' && _confidence.construction.hem < 0.4",
-      "priority": 0.4,
-      "question": {
-        "de": "Saum & Bündchen?",
-        "en": "Hem & cuffs?"
-      },
-      "choices": [
-        {
-          "id": "ribbed",
-          "label": {
-            "de": "Gerippt",
-            "en": "Ribbed"
-          },
-          "effects": {
-            "set": {
-              "construction.hem": "ribbed",
-              "construction.cuffs": "ribbed"
-            }
-          }
-        },
-        {
-          "id": "drawcord",
-          "label": {
-            "de": "Kordelzug",
-            "en": "Drawcord"
-          },
-          "effects": {
-            "set": {
-              "construction.hem": "drawcord"
-            },
-            "weight": {
-              "sport": 0.1
-            }
-          }
-        },
-        {
-          "id": "straight",
-          "label": {
-            "de": "Gerade",
-            "en": "Straight"
-          },
-          "effects": {
-            "set": {
-              "construction.hem": "straight"
-            }
-          }
+          "id": "hem",
+          "label": { "de": "Saum & Bündchen", "en": "Hem & cuffs" },
+          "choices": [
+            { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed", "construction.cuffs": "ribbed" } } },
+            { "id": "drawcord", "label": { "de": "Kordelzug", "en": "Drawcord" }, "effects": { "set": { "construction.hem": "drawcord" }, "weight": { "sport": 0.1 } } },
+            { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } }
+          ]
         }
       ]
     },

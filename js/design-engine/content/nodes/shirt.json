@@ -364,40 +364,39 @@
       "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
-      "id": "shirt_pockets",
+      "id": "shirt_details",
       "phase": "E",
-      "modality": "cards",
-      "when": "category == 'shirt' && _confidence.construction.pockets < 0.5",
+      "modality": "regions",
+      "when": "category == 'shirt'",
       "priority": 0.44,
-      "question": { "de": "Taschen?", "en": "Pockets?" },
-      "choices": [
-        { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
-        { "id": "chest", "label": { "de": "Brusttasche", "en": "Chest pocket" }, "effects": { "set": { "construction.pockets": "chest" } } },
-        { "id": "flap", "label": { "de": "Patten (Western)", "en": "Flap (western)" }, "effects": { "set": { "construction.pockets": "flap" }, "weight": { "utility": 0.15 } } }
-      ]
-    },
-    {
-      "id": "shirt_cuffs",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'shirt' && construction.sleeveLength != 'short' && _confidence.construction.cuffs < 0.4",
-      "priority": 0.38,
-      "question": { "de": "Manschetten?", "en": "Cuffs?" },
-      "choices": [
-        { "id": "button", "label": { "de": "Knopf", "en": "Button" }, "effects": { "set": { "construction.cuffs": "button" } } },
-        { "id": "plain", "label": { "de": "Glatt", "en": "Plain" }, "effects": { "set": { "construction.cuffs": "plain" }, "weight": { "quietMinimal": 0.1 } } }
-      ]
-    },
-    {
-      "id": "shirt_hem",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'shirt' && _confidence.construction.hem < 0.4",
-      "priority": 0.36,
-      "question": { "de": "Saumabschluss?", "en": "Hem finish?" },
-      "choices": [
-        { "id": "curved", "label": { "de": "Gerundet", "en": "Curved" }, "effects": { "set": { "construction.hem": "curved" } } },
-        { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" }, "weight": { "quietMinimal": 0.05 } } }
+      "question": { "de": "Die Details — direkt am Stück", "en": "The details — right on the piece" },
+      "regions": [
+        {
+          "id": "pockets",
+          "label": { "de": "Taschen", "en": "Pockets" },
+          "choices": [
+            { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
+            { "id": "chest", "label": { "de": "Brusttasche", "en": "Chest pocket" }, "effects": { "set": { "construction.pockets": "chest" } } },
+            { "id": "flap", "label": { "de": "Patten (Western)", "en": "Flap (western)" }, "effects": { "set": { "construction.pockets": "flap" }, "weight": { "utility": 0.15 } } }
+          ]
+        },
+        {
+          "id": "cuffs",
+          "label": { "de": "Manschetten", "en": "Cuffs" },
+          "when": "construction.sleeveLength != 'short'",
+          "choices": [
+            { "id": "button", "label": { "de": "Knopf", "en": "Button" }, "effects": { "set": { "construction.cuffs": "button" } } },
+            { "id": "plain", "label": { "de": "Glatt", "en": "Plain" }, "effects": { "set": { "construction.cuffs": "plain" }, "weight": { "quietMinimal": 0.1 } } }
+          ]
+        },
+        {
+          "id": "hem",
+          "label": { "de": "Saum", "en": "Hem" },
+          "choices": [
+            { "id": "curved", "label": { "de": "Gerundet", "en": "Curved" }, "effects": { "set": { "construction.hem": "curved" } } },
+            { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" }, "weight": { "quietMinimal": 0.05 } } }
+          ]
+        }
       ]
     },
     {

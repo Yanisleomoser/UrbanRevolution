@@ -52,6 +52,19 @@ function resolveEffects(node, choice) {
     return { eff, conf: 0.8 };
   }
   if (node.modality === "colorGradient") return { eff: choice, conf: 1 };
+  if (node.modality === "regions") {
+    // Mirrors flow.js: { regionId: choiceId } picks merge; a non-object payload
+    // (a persona's _default string) means "accept as is" — empty effects.
+    const picks = choice && typeof choice === "object" && !Array.isArray(choice) ? choice : {};
+    const eff = { set: {}, weight: {} };
+    Object.entries(picks).forEach(([rid, cid]) => {
+      const region = (node.regions || []).find((rg) => rg.id === rid);
+      const c = region && (region.choices || []).find((x) => x.id === cid);
+      if (c && c.effects && c.effects.set) Object.assign(eff.set, c.effects.set);
+      if (c && c.effects && c.effects.weight) Object.entries(c.effects.weight).forEach(([k, v]) => { eff.weight[k] = (eff.weight[k] || 0) + v; });
+    });
+    return { eff, conf: 1 };
+  }
   return { eff: Engine.choiceEffects(node, choice), conf: 1 };
 }
 
@@ -83,7 +96,9 @@ const calm = {
   jacket_material: "wool",
   jacket_finish: 0.2,
   jacket_color: { set: { "color.scheme": "mono", "color.stops": ["#1a1a1a"], "color.value": 0.2, "color.saturation": 0.1 } },
-  jacket_collar: "notched",
+  // Detail board: calm touches ONE region and leaves the rest to inference —
+  // exactly the partial-answer path the board exists for.
+  jacket_details: { collar: "notched" },
   _default: () => "regular",
 };
 
@@ -100,12 +115,7 @@ const bold = {
   jacket_color: { set: { "color.scheme": "duo-gradient", "color.stops": ["#ec4899", "#06b6d4"], "color.value": 0.4, "color.saturation": 0.85 } },
   jacket_pattern: "graphic",
   jacket_pattern_scale: 0.7,
-  jacket_closure: "zip",
-  jacket_collar: "hood",
-  jacket_sleeve: "drop",
-  jacket_pockets: "cargo",
-  jacket_cuffs: "ribbed",
-  jacket_hem: "drawcord",
+  jacket_details: { closure: "zip", collar: "hood", sleeve: "drop", pockets: "cargo", cuffs: "ribbed", hem: "drawcord" },
   jacket_hardware: "metal",
   jacket_signature: "branding",
   _default: () => "regular",
@@ -144,7 +154,12 @@ assert(B.order.includes("jacket_hardware"), "bold path INCLUDES jacket_hardware 
 assert(["y2kStreet", "techAvant", "sport"].includes(DNA.topArchetype(B.dna)), "bold → y2k/tech/sport archetype");
 assert(JSON.stringify(C.order) !== JSON.stringify(B.order), "the two personas take DIFFERENT paths (emergent branching)");
 assert(B.order.includes("jacket_pattern"), "bold reaches Phase-D pattern node (deep branch)");
-assert(B.order.includes("jacket_pockets") && B.order.includes("jacket_cuffs") && B.order.includes("jacket_signature"), "bold reaches deep Phase-E detail nodes");
+assert(B.order.includes("jacket_details") && B.order.includes("jacket_signature"), "bold reaches the Phase-E detail board + signature");
+assert(DNA.get(B.dna, "construction.pockets") === "cargo" && DNA.get(B.dna, "construction.cuffs") === "ribbed"
+  && DNA.get(B.dna, "construction.hem") === "drawcord" && DNA.get(B.dna, "construction.closure") === "zip",
+  "one board answer lands ALL touched regions in the DNA (Eingabe == Output)");
+assert(B.order.length <= 14,
+  `the board compresses phase E: even the answer-everything bold path fits in 14 screens, was 19 (${B.order.length})`);
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
 assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
 
@@ -204,13 +219,40 @@ const setsPath = (ns, p) => ns.some((n) =>
   (n.bind === p) ||
   (n.choices || []).some((c) => c.effects && c.effects.set && Object.prototype.hasOwnProperty.call(c.effects.set, p)) ||
   (n.regions || []).some((rg) => (rg.choices || []).some((c) => c.effects && c.effects.set && Object.prototype.hasOwnProperty.call(c.effects.set, p))));
+// The regions board replaced the phase-E card grids (roadmap §7) — depth now
+// lives in the board's regions, so parity counts SURFACES (nodes + regions).
+const REGIONS_CATS = ["jacket", "hoodie", "shirt", "tshirt", "pants"];
 GARMENTS.forEach((g) => {
   const ns = fileNodes[g];
-  assert(ns.length >= 12, `${g}: >= 12 nodes (has ${ns.length})`);
+  const regionCount = ns.reduce((s, n) => s + (n.regions || []).length, 0);
+  assert(ns.length + regionCount >= 12, `${g}: >= 12 decision surfaces (has ${ns.length} nodes + ${regionCount} regions)`);
   ["subArchetype", "silhouette.fit", "length", "fabric.material", "fabric.finishWeight", "pattern.type", "pattern.scale", "signature"]
     .forEach((p) => assert(setsPath(ns, p), `${g}: resolves ${p}`));
   assert(ns.some((n) => n.modality === "colorGradient"), `${g}: has a colour node`);
 });
+REGIONS_CATS.forEach((g) => {
+  const board = fileNodes[g].find((n) => n.modality === "regions");
+  assert(board && board.id === `${g}_details` && (board.regions || []).length >= 2,
+    `${g}: has a regions detail board with >= 2 regions`);
+  const ids = (board.regions || []).map((r) => r.id);
+  assert(new Set(ids).size === ids.length, `${g}: region ids are unique`);
+  (board.regions || []).forEach((rg) => {
+    assert((rg.choices || []).length >= 2, `${g}/${rg.id}: >= 2 choices`);
+    assert(rg.label && rg.label.de && rg.label.en, `${g}/${rg.id}: bilingual label`);
+    (rg.choices || []).forEach((c) => assert(c.label && c.label.de && c.label.en && c.effects && c.effects.set,
+      `${g}/${rg.id}/${c.id}: bilingual label + set effects`));
+  });
+});
+{
+  const board = fileNodes.jacket.find((n) => n.id === "jacket_details");
+  assert(board.regions.length === 6, "jacket board carries all six construction regions");
+  const tp = Engine.targetPaths(board);
+  ["construction.closure", "construction.collar", "construction.sleeve", "construction.pockets", "construction.cuffs", "construction.hem"]
+    .forEach((p) => assert(tp.includes(p), `jacket board targets ${p} (engine gain sees the regions)`));
+  // Blazer: closure decided at the subarch pick → the region gate hides it.
+  assert(board.regions[0].id === "closure" && /blazer/.test(board.regions[0].when || ""),
+    "closure region is gated off for the blazer subarchetype");
+}
 
 // Every attribute path a node sets must surface in the preview params mapping
 // (Eingabe == Output: no choice may silently disappear before the renderer).
@@ -261,7 +303,7 @@ const street = {
   hoodie_material: "fleece", hoodie_finish: 0.8,
   hoodie_color: { set: { "color.scheme": "mono", "color.stops": ["#2a9d8f"], "color.value": 0.5, "color.saturation": 0.6 } },
   hoodie_pattern: "graphic", hoodie_pattern_scale: 0.8,
-  hoodie_pocket: "kangaroo", hoodie_hem: "ribbed", hoodie_hardware: "metal", hoodie_signature: "branding",
+  hoodie_details: { pockets: "kangaroo", hem: "ribbed" }, hoodie_hardware: "metal", hoodie_signature: "branding",
   _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
 };
 const H = runOn(hoodieNodes, street);
