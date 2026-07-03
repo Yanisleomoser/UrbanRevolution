@@ -5073,6 +5073,53 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
     .de-rank-btn { transition: none !important; }
 }
 
+/* Design Engine — Detail-Atelier (Modalität "regions", Roadmap §7): das Stück
+   gross in der Mitte, ein tippbarer Hotspot pro Bauteil, der Micro-Picker
+   öffnet AM Teil. Ein Screen statt sechs Kartenraster — Direktmanipulation am
+   Kleidungsstück. Hotspots sind normale Buttons (Tastaturpfad in DOM-Folge);
+   der Puls ist rein dekorativ und nur unter html.fx aktiv. */
+.de-regions-hint { margin: calc(var(--space-2) * -1) 0 0; color: var(--text-dim); font-size: var(--text-sm); }
+.de-regions { position: relative; width: min(320px, 100%); margin: var(--space-4) auto 0; }
+.de-regions-stage { aspect-ratio: 240 / 340; }
+.de-regions-stage svg { width: 100%; height: 100%; display: block; }
+.de-hotspot { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; padding: 0; background: none; border: 0; cursor: pointer; z-index: 2; }
+.de-hotspot-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent-3); background: rgba(10, 22, 34, 0.72); box-shadow: 0 0 0 3px rgba(100, 214, 196, 0.14); transition: background .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s ease-in-out infinite; }
+@keyframes deSpotBreath { 0%, 100% { box-shadow: 0 0 0 3px rgba(100, 214, 196, 0.14); } 50% { box-shadow: 0 0 0 7px rgba(100, 214, 196, 0.05); } }
+.de-hotspot:hover .de-hotspot-dot, .de-hotspot:focus-visible .de-hotspot-dot, .de-hotspot[aria-expanded="true"] .de-hotspot-dot { background: rgba(42, 157, 143, 0.55); box-shadow: 0 0 0 6px rgba(100, 214, 196, 0.12); }
+.de-hotspot.is-set .de-hotspot-dot { background: var(--accent); }
+.de-hotspot-tag { position: absolute; top: calc(50% + 12px); left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); white-space: nowrap; pointer-events: none; }
+.de-hotspot-val { position: absolute; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); font-size: 10.5px; color: var(--accent-3); white-space: nowrap; pointer-events: none; }
+/* Seitenbewusste Labels (data-side, gesetzt aus der Anker-Geometrie): links
+   liegende Hotspots beschriften nach links, rechte nach rechts — Labels
+   benachbarter Regionen stapeln sich nie mehr in der Körpermitte. */
+.de-hotspot[data-side="l"] .de-hotspot-tag { top: auto; bottom: calc(50% - 4px); left: auto; right: calc(50% + 13px); transform: none; }
+.de-hotspot[data-side="l"] .de-hotspot-val { top: calc(50% + 6px); left: auto; right: calc(50% + 13px); transform: none; }
+.de-hotspot[data-side="r"] .de-hotspot-tag { top: auto; bottom: calc(50% - 4px); left: calc(50% + 13px); right: auto; transform: none; }
+.de-hotspot[data-side="r"] .de-hotspot-val { top: calc(50% + 6px); left: calc(50% + 13px); right: auto; transform: none; }
+.de-region-picker { position: absolute; z-index: 4; min-width: 172px; max-width: min(236px, 96%); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; gap: var(--space-2); }
+/* display:flex würde sonst das UA-[hidden]{display:none} überstimmen — der
+   „geschlossene" Picker bliebe sichtbar und finge Taps ab. */
+.de-region-picker[hidden] { display: none; }
+.de-region-picker-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.de-region-picker-h { margin: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); }
+.de-region-close { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: 1px solid var(--border); border-radius: 50%; color: var(--text-dim); font-size: 12px; cursor: pointer; transition: border-color .2s var(--ease-out); }
+.de-region-close:hover { border-color: var(--accent); color: var(--text); }
+.de-region-opt { display: block; width: 100%; text-align: left; padding: var(--space-2) var(--space-3); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out); }
+.de-region-opt:hover { border-color: var(--accent); }
+.de-region-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+/* No-Board-Fallback (kein SVG/keine Kategorie): Regions als schlichte Gruppen */
+.de-regions-list { display: flex; flex-direction: column; gap: var(--space-4); }
+.de-region-group .de-region-opt { display: inline-block; width: auto; margin: var(--space-1) var(--space-1) 0 0; }
+@media (max-width: 480px) {
+    .de-regions { width: min(276px, 94%); }
+    .de-hotspot-tag { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .de-hotspot-dot, .de-region-opt, .de-region-close { transition: none !important; }
+    html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: none !important; }
+}
+
 /* §3.2 — Fallback „nie flach": Duotone-Sheen + feines Filmkorn auf allen Tile-Platzhaltern */
 .de-swatch { position: relative; overflow: hidden; }
 .de-swatch::before { content: ""; position: absolute; inset: 0; background: radial-gradient(130% 90% at 28% 18%, rgba(255,255,255,0.22), rgba(255,255,255,0) 55%); pointer-events: none; }

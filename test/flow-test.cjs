@@ -78,6 +78,36 @@ console.log("\n— resolveEffects · cards (multi-select aggregates each card's 
   assert(r.eff.set.details === "x+y", "bind joins the selected ids");
 }
 
+console.log("\n— resolveEffects · regions (detail atelier merges the touched regions) —");
+{
+  const node = { modality: "regions", regions: [
+    { id: "closure", choices: [
+      { id: "zip", effects: { set: { "construction.closure": "zip" }, weight: { techAvant: 0.1 } } },
+      { id: "button", effects: { set: { "construction.closure": "button" } } },
+    ] },
+    { id: "hem", choices: [
+      { id: "ribbed", effects: { set: { "construction.hem": "ribbed", "construction.cuffs": "ribbed" }, weight: { techAvant: 0.2, sport: 0.1 } } },
+    ] },
+  ] };
+  const r = Flow.resolveEffects(node, { closure: "zip", hem: "ribbed" });
+  assert(r.conf === 1, "board picks land fully confident");
+  assert(r.eff.set["construction.closure"] === "zip" && r.eff.set["construction.hem"] === "ribbed"
+    && r.eff.set["construction.cuffs"] === "ribbed", "every touched region's set() merges (multi-path choices too)");
+  assert(Math.abs(r.eff.weight.techAvant - 0.3) < 1e-9 && r.eff.weight.sport === 0.1, "archetype weights ADD across regions");
+
+  const partial = Flow.resolveEffects(node, { hem: "ribbed" });
+  assert(partial.eff.set["construction.closure"] === undefined, "untouched regions set NOTHING (inference fills them)");
+
+  const empty = Flow.resolveEffects(node, {});
+  assert(Object.keys(empty.eff.set).length === 0 && Object.keys(empty.eff.weight).length === 0,
+    "'accept as is' commits empty effects (node answered, attrs stay open)");
+
+  const junk = Flow.resolveEffects(node, "regular");
+  assert(Object.keys(junk.eff.set).length === 0, "a non-object payload is treated as 'accept as is', never iterated as chars");
+  const unknown = Flow.resolveEffects(node, { closure: "nope", ghost: "zip" });
+  assert(Object.keys(unknown.eff.set).length === 0, "unknown region/choice ids are ignored");
+}
+
 console.log("\n— shiftHex (HSL hue/lightness drift, invalid input passes through) —");
 {
   assert(/^#[0-9a-f]{6}$/i.test(Flow.shiftHex("#2779a8", 30, 0.05)), "valid hex → valid hex");

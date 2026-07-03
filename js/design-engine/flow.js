@@ -96,6 +96,22 @@ const DesignFlow = (() => {
       if (node.bind && (payload || []).length) eff.set[node.bind] = payload[0];
       return { eff, conf: 1 };
     }
+    if (node.modality === "regions") {
+      // Detail atelier (roadmap §7): payload = { regionId: choiceId } for the
+      // regions the user actually touched. Untouched regions stay undecided —
+      // the archetype inference fills them at finalize, which is exactly the
+      // compression the board exists for. Effects merge like multi-cards.
+      const picks = payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+      const eff = { set: {}, weight: {} };
+      Object.entries(picks).forEach(([rid, cid]) => {
+        const region = (node.regions || []).find((rg) => rg.id === rid);
+        const choice = region && (region.choices || []).find((c) => c.id === cid);
+        const e = choice && choice.effects;
+        if (e && e.set) Object.assign(eff.set, e.set);
+        if (e && e.weight) Object.entries(e.weight).forEach(([k, v]) => { eff.weight[k] = (eff.weight[k] || 0) + v; });
+      });
+      return { eff, conf: 1 };
+    }
     if (node.modality === "cards" && Array.isArray(payload)) {
       const eff = { set: {}, weight: {} };
       payload.forEach((id) => {
@@ -233,6 +249,10 @@ const DesignFlow = (() => {
       return top && top.label ? top.label[l] : "";
     }
     if (node.modality === "cards" && Array.isArray(payload)) return payload.length + "×";
+    if (node.modality === "regions") {
+      const n = payload && typeof payload === "object" ? Object.keys(payload).length : 0;
+      return n ? n + "×" : t("engine.changed_details");
+    }
     if (node.modality === "cards") {
       const c = (node.choices || []).find((x) => x.id === payload);
       return c && c.label ? c.label[l] : "";

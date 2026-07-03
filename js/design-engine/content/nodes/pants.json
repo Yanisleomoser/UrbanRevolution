@@ -262,84 +262,40 @@
       "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
-      "id": "pants_waistband",
+      "id": "pants_details",
       "phase": "E",
-      "modality": "cards",
-      "when": "category == 'pants' && _confidence.construction.waistband < 0.5",
-      "priority": 0.48,
-      "question": { "de": "Bund?", "en": "Waistband?" },
-      "choices": [
-        { "id": "belt", "label": { "de": "Gürtelschlaufen", "en": "Belt loops" }, "effects": { "set": { "construction.waistband": "belt" } } },
-        { "id": "drawcord", "label": { "de": "Kordelzug", "en": "Drawcord" }, "effects": { "set": { "construction.waistband": "drawcord" }, "weight": { "sport": 0.15 } } },
-        { "id": "elastic", "label": { "de": "Elastisch", "en": "Elastic" }, "effects": { "set": { "construction.waistband": "elastic" }, "weight": { "sport": 0.1, "quietMinimal": 0.05 } } }
-      ]
-    },
-    {
-      "id": "pants_pockets",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'pants' && _confidence.construction.pockets < 0.5",
+      "modality": "regions",
+      "when": "category == 'pants'",
       "priority": 0.5,
-      "question": {
-        "de": "Taschen?",
-        "en": "Pockets?"
-      },
-      "choices": [
+      "question": { "de": "Die Details — direkt am Stück", "en": "The details — right on the piece" },
+      "regions": [
         {
-          "id": "side",
-          "label": {
-            "de": "Seitlich",
-            "en": "Side"
-          },
-          "effects": {
-            "set": {
-              "construction.pockets": "side"
-            }
-          }
+          "id": "waistband",
+          "label": { "de": "Bund", "en": "Waistband" },
+          "choices": [
+            { "id": "belt", "label": { "de": "Gürtelschlaufen", "en": "Belt loops" }, "effects": { "set": { "construction.waistband": "belt" } } },
+            { "id": "drawcord", "label": { "de": "Kordelzug", "en": "Drawcord" }, "effects": { "set": { "construction.waistband": "drawcord" }, "weight": { "sport": 0.15 } } },
+            { "id": "elastic", "label": { "de": "Elastisch", "en": "Elastic" }, "effects": { "set": { "construction.waistband": "elastic" }, "weight": { "sport": 0.1, "quietMinimal": 0.05 } } }
+          ]
         },
         {
-          "id": "cargo",
-          "label": {
-            "de": "Cargo",
-            "en": "Cargo"
-          },
-          "effects": {
-            "set": {
-              "construction.pockets": "cargo"
-            },
-            "weight": {
-              "utility": 0.2
-            }
-          }
+          "id": "pockets",
+          "label": { "de": "Taschen", "en": "Pockets" },
+          "choices": [
+            { "id": "side", "label": { "de": "Seitlich", "en": "Side" }, "effects": { "set": { "construction.pockets": "side" } } },
+            { "id": "cargo", "label": { "de": "Cargo", "en": "Cargo" }, "effects": { "set": { "construction.pockets": "cargo" }, "weight": { "utility": 0.2 } } },
+            { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } }
+          ]
         },
         {
-          "id": "none",
-          "label": {
-            "de": "Clean",
-            "en": "Clean"
-          },
-          "effects": {
-            "set": {
-              "construction.pockets": "none"
-            },
-            "weight": {
-              "quietMinimal": 0.1
-            }
-          }
+          "id": "hem",
+          "label": { "de": "Beinabschluss", "en": "Leg opening" },
+          "choices": [
+            { "id": "raw", "label": { "de": "Gerade", "en": "Plain" }, "effects": { "set": { "construction.hem": "straight" } } },
+            { "id": "cuffed", "label": { "de": "Umschlag", "en": "Cuffed" }, "effects": { "set": { "construction.hem": "cuffed" }, "weight": { "softCouture": 0.1 } } },
+            { "id": "elastic", "label": { "de": "Bündchen", "en": "Elastic" }, "effects": { "set": { "construction.hem": "elastic" }, "weight": { "sport": 0.15 } } }
+          ]
         }
-      ]
-    },
-    {
-      "id": "pants_hem",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'pants' && _confidence.construction.hem < 0.4",
-      "priority": 0.38,
-      "question": { "de": "Beinabschluss?", "en": "Leg opening?" },
-      "choices": [
-        { "id": "raw", "label": { "de": "Gerade", "en": "Plain" }, "effects": { "set": { "construction.hem": "straight" } } },
-        { "id": "cuffed", "label": { "de": "Umschlag", "en": "Cuffed" }, "effects": { "set": { "construction.hem": "cuffed" }, "weight": { "softCouture": 0.1 } } },
-        { "id": "elastic", "label": { "de": "Bündchen", "en": "Elastic" }, "effects": { "set": { "construction.hem": "elastic" }, "weight": { "sport": 0.15 } } }
       ]
     },
     {

@@ -99,82 +99,69 @@
       "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
-      "id": "jacket_closure",
+      "id": "jacket_details",
       "phase": "E",
-      "modality": "cards",
-      "when": "category == 'jacket' && subArchetype != 'blazer' && _confidence.construction.closure < 0.6",
+      "modality": "regions",
+      "when": "category == 'jacket'",
       "priority": 0.6,
-      "question": { "de": "Wie schliesst sie?", "en": "How does it close?" },
-      "choices": [
-        { "id": "zip", "label": { "de": "Reissverschluss", "en": "Zip" }, "effects": { "set": { "construction.closure": "zip" }, "weight": { "techAvant": 0.1 } } },
-        { "id": "button", "label": { "de": "Knöpfe", "en": "Buttons" }, "effects": { "set": { "construction.closure": "button" }, "weight": { "softCouture": 0.1 } } },
-        { "id": "open", "label": { "de": "Offen", "en": "Open" }, "effects": { "set": { "construction.closure": "none" }, "weight": { "quietMinimal": 0.1 } } }
-      ]
-    },
-    {
-      "id": "jacket_collar",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'jacket' && _confidence.construction.collar < 0.6",
-      "priority": 0.58,
-      "question": { "de": "Kragen?", "en": "Collar?" },
-      "choices": [
-        { "id": "stand", "label": { "de": "Stehkragen", "en": "Stand" }, "effects": { "set": { "construction.collar": "stand" } } },
-        { "id": "notched", "label": { "de": "Revers", "en": "Notched" }, "effects": { "set": { "construction.collar": "notched" }, "weight": { "softCouture": 0.1 } } },
-        { "id": "hood", "label": { "de": "Kapuze", "en": "Hood" }, "effects": { "set": { "construction.collar": "hood" }, "weight": { "sport": 0.1, "techAvant": 0.1 } } }
-      ]
-    },
-    {
-      "id": "jacket_sleeve",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'jacket' && _confidence.construction.sleeve < 0.5",
-      "priority": 0.45,
-      "question": { "de": "Ärmelschnitt?", "en": "Sleeve cut?" },
-      "choices": [
-        { "id": "set-in", "label": { "de": "Eingesetzt", "en": "Set-in" }, "effects": { "set": { "construction.sleeve": "set-in" }, "weight": { "softCouture": 0.1 } } },
-        { "id": "raglan", "label": { "de": "Raglan", "en": "Raglan" }, "effects": { "set": { "construction.sleeve": "raglan" }, "weight": { "sport": 0.15 } } },
-        { "id": "drop", "label": { "de": "Drop-Shoulder", "en": "Drop" }, "effects": { "set": { "construction.sleeve": "drop" }, "weight": { "y2kStreet": 0.15 } } }
-      ]
-    },
-    {
-      "id": "jacket_pockets",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'jacket' && _confidence.construction.pockets < 0.5",
-      "priority": 0.42,
-      "question": { "de": "Taschen?", "en": "Pockets?" },
-      "choices": [
-        { "id": "none", "label": { "de": "Keine", "en": "None" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
-        { "id": "side", "label": { "de": "Seitlich", "en": "Side" }, "effects": { "set": { "construction.pockets": "side" } } },
-        { "id": "flap", "label": { "de": "Patten", "en": "Flap" }, "effects": { "set": { "construction.pockets": "flap" }, "weight": { "utility": 0.1 } } },
-        { "id": "cargo", "label": { "de": "Cargo", "en": "Cargo" }, "effects": { "set": { "construction.pockets": "cargo" }, "weight": { "utility": 0.2, "sport": 0.1 } } }
-      ]
-    },
-    {
-      "id": "jacket_cuffs",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'jacket' && _confidence.construction.cuffs < 0.4",
-      "priority": 0.38,
-      "question": { "de": "Bündchen?", "en": "Cuffs?" },
-      "choices": [
-        { "id": "plain", "label": { "de": "Glatt", "en": "Plain" }, "effects": { "set": { "construction.cuffs": "plain" } } },
-        { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.cuffs": "ribbed" }, "weight": { "sport": 0.1 } } },
-        { "id": "button", "label": { "de": "Knopf", "en": "Button" }, "effects": { "set": { "construction.cuffs": "button" }, "weight": { "softCouture": 0.1 } } }
-      ]
-    },
-    {
-      "id": "jacket_hem",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'jacket' && _confidence.construction.hem < 0.4",
-      "priority": 0.36,
-      "question": { "de": "Saumabschluss?", "en": "Hem finish?" },
-      "choices": [
-        { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } },
-        { "id": "drawcord", "label": { "de": "Kordelzug", "en": "Drawcord" }, "effects": { "set": { "construction.hem": "drawcord" }, "weight": { "sport": 0.1, "techAvant": 0.1 } } },
-        { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed" }, "weight": { "y2kStreet": 0.1 } } }
+      "question": { "de": "Die Details — direkt am Stück", "en": "The details — right on the piece" },
+      "regions": [
+        {
+          "id": "closure",
+          "label": { "de": "Verschluss", "en": "Closure" },
+          "when": "subArchetype != 'blazer'",
+          "choices": [
+            { "id": "zip", "label": { "de": "Reissverschluss", "en": "Zip" }, "effects": { "set": { "construction.closure": "zip" }, "weight": { "techAvant": 0.1 } } },
+            { "id": "button", "label": { "de": "Knöpfe", "en": "Buttons" }, "effects": { "set": { "construction.closure": "button" }, "weight": { "softCouture": 0.1 } } },
+            { "id": "open", "label": { "de": "Offen", "en": "Open" }, "effects": { "set": { "construction.closure": "none" }, "weight": { "quietMinimal": 0.1 } } }
+          ]
+        },
+        {
+          "id": "collar",
+          "label": { "de": "Kragen", "en": "Collar" },
+          "choices": [
+            { "id": "stand", "label": { "de": "Stehkragen", "en": "Stand" }, "effects": { "set": { "construction.collar": "stand" } } },
+            { "id": "notched", "label": { "de": "Revers", "en": "Notched" }, "effects": { "set": { "construction.collar": "notched" }, "weight": { "softCouture": 0.1 } } },
+            { "id": "hood", "label": { "de": "Kapuze", "en": "Hood" }, "effects": { "set": { "construction.collar": "hood" }, "weight": { "sport": 0.1, "techAvant": 0.1 } } }
+          ]
+        },
+        {
+          "id": "sleeve",
+          "label": { "de": "Ärmel", "en": "Sleeve" },
+          "choices": [
+            { "id": "set-in", "label": { "de": "Eingesetzt", "en": "Set-in" }, "effects": { "set": { "construction.sleeve": "set-in" }, "weight": { "softCouture": 0.1 } } },
+            { "id": "raglan", "label": { "de": "Raglan", "en": "Raglan" }, "effects": { "set": { "construction.sleeve": "raglan" }, "weight": { "sport": 0.15 } } },
+            { "id": "drop", "label": { "de": "Drop-Shoulder", "en": "Drop" }, "effects": { "set": { "construction.sleeve": "drop" }, "weight": { "y2kStreet": 0.15 } } }
+          ]
+        },
+        {
+          "id": "pockets",
+          "label": { "de": "Taschen", "en": "Pockets" },
+          "choices": [
+            { "id": "none", "label": { "de": "Keine", "en": "None" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
+            { "id": "side", "label": { "de": "Seitlich", "en": "Side" }, "effects": { "set": { "construction.pockets": "side" } } },
+            { "id": "flap", "label": { "de": "Patten", "en": "Flap" }, "effects": { "set": { "construction.pockets": "flap" }, "weight": { "utility": 0.1 } } },
+            { "id": "cargo", "label": { "de": "Cargo", "en": "Cargo" }, "effects": { "set": { "construction.pockets": "cargo" }, "weight": { "utility": 0.2, "sport": 0.1 } } }
+          ]
+        },
+        {
+          "id": "cuffs",
+          "label": { "de": "Bündchen", "en": "Cuffs" },
+          "choices": [
+            { "id": "plain", "label": { "de": "Glatt", "en": "Plain" }, "effects": { "set": { "construction.cuffs": "plain" } } },
+            { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.cuffs": "ribbed" }, "weight": { "sport": 0.1 } } },
+            { "id": "button", "label": { "de": "Knopf", "en": "Button" }, "effects": { "set": { "construction.cuffs": "button" }, "weight": { "softCouture": 0.1 } } }
+          ]
+        },
+        {
+          "id": "hem",
+          "label": { "de": "Saum", "en": "Hem" },
+          "choices": [
+            { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } },
+            { "id": "drawcord", "label": { "de": "Kordelzug", "en": "Drawcord" }, "effects": { "set": { "construction.hem": "drawcord" }, "weight": { "sport": 0.1, "techAvant": 0.1 } } },
+            { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed" }, "weight": { "y2kStreet": 0.1 } } }
+          ]
+        }
       ]
     },
     {

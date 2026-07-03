@@ -245,5 +245,38 @@ GARBAGE.concat([{ material: '"><img onerror=x>', stops: ["#000\"><img>"] }]).for
     `dress + ${JSON.stringify(bad)} → grounded, clean, no injection`);
 });
 
+// ─── regionAnchors — hotspot geometry for the detail atelier (roadmap §7) ───
+console.log("\n— regionAnchors() places hotspots on the resolved geometry —");
+const inBox = (a) => a && a.x >= 14 && a.x <= 226 && a.y >= 14 && a.y <= 326;
+["jacket", "hoodie", "shirt", "tshirt"].forEach((cat) => {
+  const a = GarmentSVG.regionAnchors(cat, { fit: 0.5, length: "regular" });
+  ["collar", "closure", "sleeve", "pockets", "cuffs", "hem"].forEach((rg) =>
+    assert(inBox(a[rg]), `${cat}: ${rg} anchor inside the viewBox`));
+  assert(a.collar.y < a.closure.y && a.closure.y < a.hem.y, `${cat}: collar above closure above hem`);
+  assert(a.sleeve.x > 120 && a.cuffs.x < 120, `${cat}: sleeve right limb, cuffs left wrist (markers never stack)`);
+});
+{
+  const p = GarmentSVG.regionAnchors("pants", { fit: 0.5, length: "regular" });
+  ["waistband", "pockets", "hem"].forEach((rg) => assert(inBox(p[rg]), `pants: ${rg} anchor inside the viewBox`));
+  assert(p.waistband.y < p.pockets.y && p.pockets.y < p.hem.y, "pants: waistband above pockets above hem");
+  assert(p.collar === undefined, "pants: no collar anchor (different topology)");
+  const d = GarmentSVG.regionAnchors("dress", {});
+  assert(inBox(d.collar) && inBox(d.waist) && inBox(d.hem), "dress: collar/waist/hem anchors inside the viewBox");
+}
+{
+  // The anchors ride the SAME geometry as the flat: a cropped jacket pulls its
+  // hem hotspot up, a long one pushes it down.
+  const cropped = GarmentSVG.regionAnchors("jacket", { length: "cropped" });
+  const longA = GarmentSVG.regionAnchors("jacket", { length: "long" });
+  assert(cropped.hem.y < longA.hem.y, "jacket: hem anchor follows the length morph");
+  // Chest pockets (shirt/tee) anchor high-left; body pockets (jacket) low.
+  const shirtA = GarmentSVG.regionAnchors("shirt", {});
+  const jacketA = GarmentSVG.regionAnchors("jacket", {});
+  assert(shirtA.pockets.y < jacketA.pockets.y, "shirt chest pocket sits above jacket body pockets");
+  // Garbage params must not produce NaN anchors (same bar as build()).
+  const g = GarmentSVG.regionAnchors("jacket", { fit: "x", length: null, structure: NaN });
+  assert(Object.values(g).every(inBox), "garbage params still yield finite in-box anchors");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
