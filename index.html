@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260703-atelier2">
+    <link rel="stylesheet" href="css/styles.css?v=20260703-wende1">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -444,9 +444,21 @@
                         <stop offset="50%" stop-color="#2a9d8f"/>
                         <stop offset="100%" stop-color="#64d6c4"/>
                     </linearGradient>
+                    <radialGradient id="pivot-comet-grad">
+                        <stop offset="0" stop-color="#64d6c4" stop-opacity="0.5"/>
+                        <stop offset="1" stop-color="#64d6c4" stop-opacity="0"/>
+                    </radialGradient>
                 </defs>
                 <path class="lp-pivot-line" id="pivot-line" d="M280 10 L280 610" fill="none" stroke="currentColor" stroke-width="2"/>
                 <path class="lp-pivot-arc" id="pivot-arc" d="M280 190 A120 120 0 1 1 279.9 190" fill="none" stroke="url(#pivot-grad)" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Die eine Faser aus #facts (der entkommene Tracer): ein kleiner
+                     Kometenkopf reitet unter fx auf der Spitze des sich biegenden
+                     Pfads (js/landing.js setPivot). Statischer Default = ruhender
+                     Glimmpunkt an der Naht, wo sich der Kreis schliesst (160 310). -->
+                <g class="lp-pivot-comet" id="pivot-comet" transform="translate(160 310)">
+                    <circle class="lp-pivot-comet-halo" r="14" fill="url(#pivot-comet-grad)"/>
+                    <circle class="lp-pivot-comet-core" r="2.6"/>
+                </g>
             </svg>
             <div class="lp-pivot-copy">
                 <div class="lp-pivot-q" id="pivot-q">
@@ -466,6 +478,11 @@
          Vision, noch nicht gebaut — das hier ist der Bauplan. -->
     <section class="lp-loop" id="loop">
         <div class="lp-loop-pin" id="loop-pin">
+            <!-- Asche-Schicht (gleiche Partikelsprache wie #facts): wenige Motten
+                 treiben unter fx langsam von aussen auf den Ring zu und lösen
+                 sich an ihm auf — was die Linie wegwarf, kehrt in den Kreis
+                 zurück (js/landing.js initLoop). Ohne JS/fx bleibt sie leer. -->
+            <canvas class="lp-loop-canvas" aria-hidden="true"></canvas>
             <div class="lp-loop-head">
                 <p class="lp-label" data-i18n="landing.loop_label">Akt II — Der Kreis</p>
                 <h2 class="lp-loop-title" data-i18n="landing.loop_title">Vier Stationen. Ein Kreis.</h2>
@@ -482,17 +499,20 @@
                                 <stop offset="100%" stop-color="#64d6c4"/>
                             </linearGradient>
                         </defs>
-                        <circle class="lp-loop-track" cx="160" cy="160" r="130" fill="none" stroke-width="2" stroke-dasharray="2 10"/>
-                        <circle class="lp-loop-progress" id="loop-progress" cx="160" cy="160" r="130" fill="none" stroke="url(#loop-grad)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 160 160)"/>
+                        <!-- Haarlinien statt Deko-Strichelung: der STATUS-Vermerk
+                             trägt die „noch Vision"-Ehrlichkeit, die Geometrie
+                             bleibt ruhig (Sprache der #facts-Beats). -->
+                        <circle class="lp-loop-track" cx="160" cy="160" r="130" fill="none" stroke-width="1"/>
+                        <circle class="lp-loop-progress" id="loop-progress" cx="160" cy="160" r="130" fill="none" stroke="url(#loop-grad)" stroke-width="3" stroke-linecap="round" transform="rotate(-90 160 160)"/>
                         <g class="lp-loop-needle" id="loop-needle" transform="rotate(16 160 160)">
                             <path d="M149.5 64 A10.5 10.5 0 0 1 170.5 64 L163.5 206 L160 264 L156.5 206 Z" fill="currentColor"/>
                             <rect class="lp-loop-eye" x="156" y="77" width="8" height="48" rx="4"/>
                         </g>
                         <g class="lp-loop-dots" id="loop-dots">
-                            <circle cx="160" cy="30" r="7"/>
-                            <circle cx="290" cy="160" r="7"/>
-                            <circle cx="160" cy="290" r="7"/>
-                            <circle cx="30" cy="160" r="7"/>
+                            <circle cx="160" cy="30" r="4.5"/>
+                            <circle cx="290" cy="160" r="4.5"/>
+                            <circle cx="160" cy="290" r="4.5"/>
+                            <circle cx="30" cy="160" r="4.5"/>
                         </g>
                     </svg>
                     <p class="lp-loop-count" aria-hidden="true"><span id="loop-num">01</span><span class="lp-loop-count-total"> / 04</span></p>

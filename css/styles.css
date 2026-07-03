@@ -6454,6 +6454,35 @@ html:not(.fx) .lp-loader { display: none; }
     /* Kompakt: auf kurzen Viewports muss Kopf + Kreis + Stationstext
        gemeinsam in eine (gepinnte) Viewport-Höhe passen. */
     padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 48px) clamp(24px, 4vw, 60px);
+    /* Eigener Stacking-Context: Vignette + Asche-Canvas liegen auf z -1
+       HINTER Kopf/Grid, aber über dem Seiten-Hintergrund (Muster wie
+       .lp-identity / .lp-identity-ring). */
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+}
+/* Bühnen-Vignette — dieselbe stille Tiefe wie #pivot und die fxb-Beats */
+.lp-loop-pin::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(94% 52% at 50% -8%, rgba(2, 7, 12, 0.45), rgba(2, 7, 12, 0) 64%),
+        radial-gradient(130% 44% at 50% 114%, rgba(2, 7, 12, 0.45), rgba(2, 7, 12, 0) 68%);
+}
+/* Asche-Schicht: ganze Bühne, hinter allem Inhalt; ohne JS/fx leer.
+   max-width: none schlägt die 1160px-Klemme der .lp-loop-pin-Kinder —
+   die Bühnen-Schicht ist full-bleed wie die Vignette. */
+.lp-loop-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
 }
 .lp-loop-head { margin-bottom: clamp(16px, 3.5vw, 56px); }
 .lp-loop-title {
@@ -6519,9 +6548,9 @@ html:not(.fx) .lp-loader { display: none; }
 }
 .lp-loop-track { stroke: var(--border); }
 .lp-loop-dots circle {
-    fill: var(--surface);
+    fill: var(--bg);
     stroke: var(--border);
-    stroke-width: 2;
+    stroke-width: 1.5;
     transition: fill 0.4s, stroke 0.4s;
 }
 .lp-loop-dots circle.is-active { fill: var(--accent-3); stroke: var(--accent-3); }
@@ -6698,6 +6727,19 @@ html.fx .lp-loop-step.is-active {
     position: relative;
     overflow: hidden;
 }
+/* Bühnen-Vignette (gleiche Theater-Sprache wie die fxb-Beats in #facts):
+   dunkle Pools oben/unten + ein kaum wahrnehmbarer Aqua-Atem hinter dem
+   Kreis. Immer sichtbar — Tiefe, kein Zustand. */
+.lp-pivot-pin::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(94% 52% at 50% -8%, rgba(2, 7, 12, 0.5), rgba(2, 7, 12, 0) 64%),
+        radial-gradient(130% 44% at 50% 114%, rgba(2, 7, 12, 0.5), rgba(2, 7, 12, 0) 68%),
+        radial-gradient(46% 40% at 50% 50%, rgba(100, 214, 196, 0.045), rgba(100, 214, 196, 0) 72%);
+}
 .lp-pivot-svg {
     position: absolute;
     left: 50%;
@@ -6715,6 +6757,11 @@ html.fx .lp-loop-step.is-active {
 /* Default (statisch): nur der fertige Verlaufs-Kreis, ruhig hinter dem Text */
 .lp-pivot-line { opacity: 0; }
 .lp-pivot-arc { opacity: 0.55; }
+/* Die eine Faser: statisch ein stiller Glimmpunkt an der Naht des Kreises;
+   unter fx übernimmt js/landing.js Position (Pfadspitze) und Opazität. */
+.lp-pivot-comet-core { fill: var(--text); }
+.lp-pivot-comet { opacity: 0.75; }
+html.fx .lp-pivot-comet { opacity: 0; }
 .lp-pivot-copy {
     position: relative;
     z-index: 1;

@@ -381,6 +381,10 @@
     const arc = document.getElementById("pivot-arc");
     const q = document.getElementById("pivot-q");
     const answer = document.getElementById("pivot-answer");
+    // Die eine Faser aus #facts (der entkommene Tracer): ein Kometenkopf,
+    // der auf der Spitze des sich biegenden Pfads reitet — SIE biegt die
+    // Linie zum Kreis. Optional (fehlt das Element, läuft der Scrub wie zuvor).
+    const comet = document.getElementById("pivot-comet");
     if (!pin || !line || !arc || !q || !answer) return;
 
     // Endkreis r = 120 im 560×620-viewBox (Umfang 2π·120 ≈ 754) — muss zum
@@ -397,9 +401,21 @@
         line.setAttribute("d", d);
         arc.setAttribute("d", d);
         lastD = d;
+        if (comet) {
+          // Pfad-Ende = die wandernde Spitze: sie startet oben (wo die Faser
+          // aus #facts ankommt), zieht die Linie einmal im Uhrzeigersinn
+          // herum und ruht am Ende an der Naht, wo sich der Kreis schliesst.
+          const tip = arc.getPointAtLength(arc.getTotalLength());
+          comet.setAttribute("transform", "translate(" + tip.x.toFixed(1) + " " + tip.y.toFixed(1) + ")");
+        }
       }
       line.style.opacity = String(1 - bend);
       arc.style.opacity = String(bend);
+      // Die Faser blendet ein, während ihre Spitze von oben in die Bühne
+      // sinkt (bend ≈ 0.18: die gebogene Figur passt erstmals in die viewBox;
+      // davor läge der Kopf im Clip) — sie kommt sichtbar von oben an, aus
+      // Richtung #facts, und beginnt zu ziehen.
+      if (comet) comet.style.opacity = String(clamp01((bend - 0.14) / 0.12));
       // Frage raus 0.30–0.42, Antwort rein ab 0.44 — nur ein kurzer Atemzug
       // ohne Text (~4 % des Pins), kein leeres Loch in der Mitte.
       const qOut = clamp01((p - 0.30) / 0.12);
@@ -461,6 +477,118 @@
       scrub: true,
       onUpdate: (self) => setProgress(self.progress),
     });
+
+    initLoopMotes(pin);
+  }
+
+  // „Was die Linie wegwarf, kehrt in den Kreis zurück": eine hauchdünne
+  // Asche-Schicht (dieselbe Partikelsprache wie #facts, js/facts-mass.js) —
+  // wenige Motten treiben von aussen langsam auf den Ring zu und lösen sich
+  // an ihm auf. Bewusst kaum da: der Kreislauf ist Vision, kein Instrument.
+  // Nur unter fx erreichbar (initLoop-Guard); rAF pausiert offscreen und bei
+  // verstecktem Tab; DPR ≤ 2; Budget 84 Desktop / 36 Mobil.
+  function initLoopMotes(pin) {
+    const canvas = pin.querySelector(".lp-loop-canvas");
+    const svg = pin.querySelector(".lp-loop-svg");
+    const ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
+    if (!canvas || !svg || !ctx) return;
+
+    const C_WHITE = "238,244,248"; // --text  (Canvas liest keine CSS-Variablen)
+    const C_AQUA = "100,214,196";  // --accent-3
+    const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+    let W = 0, H = 0, cx = 0, cy = 0, ringR = 0;
+    const motes = [];
+
+    // Spawn irgendwo auf der Bühne ausserhalb des Rings; vorgewärmt (pre=true)
+    // steht die Schicht schon, wenn die Sektion einblendet — wie die Fahne
+    // in #facts: Unerbittlichkeit, kein Aufbau-Spektakel.
+    function spawnMote(pre) {
+      let x = 0, y = 0, r = 0;
+      for (let tries = 0; tries < 8; tries++) {
+        x = Math.random() * W;
+        y = Math.random() * H;
+        r = Math.hypot(x - cx, y - cy);
+        if (r > ringR + 28) break;
+      }
+      return {
+        a: Math.atan2(y - cy, x - cx),
+        r,
+        v: 6 + Math.random() * 8,             // px/s einwärts — Asche, kein Sturm
+        w: (Math.random() - 0.5) * 0.05,      // leichte tangentiale Drift
+        s: 0.8 + Math.random() * 1.4,
+        al: 0.1 + Math.random() * 0.18,
+        ph: Math.random() * Math.PI * 2,
+        aqua: Math.random() < 0.3,
+        age: pre ? Math.random() * 4 : 0,
+      };
+    }
+
+    function size() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (!w || !h) return false;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = w; H = h;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // Ring-Mitte + -Radius aus dem realen SVG-Layout (r=130 im 320er-viewBox)
+      const cr = canvas.getBoundingClientRect();
+      const sr = svg.getBoundingClientRect();
+      cx = sr.left - cr.left + sr.width / 2;
+      cy = sr.top - cr.top + sr.height / 2;
+      ringR = sr.width * (130 / 320);
+      motes.length = 0;
+      const n = W < 640 ? 44 : 110; // Budget ≤ 120 Desktop / ≤ 50 Mobil
+      for (let i = 0; i < n; i++) motes.push(spawnMote(true));
+      return true;
+    }
+
+    let rafId = 0;
+    let lastT = 0;
+    let visible = false;
+    function tick(now) {
+      rafId = 0;
+      if (document.hidden || !visible) return;
+      const dt = Math.min(0.05, Math.max(0.001, (now - lastT) / 1000));
+      lastT = now;
+      const t = now / 1000;
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < motes.length; i++) {
+        const m = motes[i];
+        m.age += dt;
+        m.r -= m.v * dt;
+        m.a += m.w * dt;
+        if (m.r <= ringR + 1) { motes[i] = spawnMote(false); continue; }
+        // Weich erscheinen nach dem Spawn, auflösen kurz vor dem Ring —
+        // das Material kehrt zurück, es prallt nicht ab.
+        const env = clamp01(m.age / 3) * clamp01((m.r - ringR) / 36);
+        if (env <= 0.02) continue;
+        const a = m.al * env * (0.7 + Math.sin(t * 0.5 + m.ph) * 0.3);
+        ctx.fillStyle = "rgba(" + (m.aqua ? C_AQUA : C_WHITE) + "," + a.toFixed(3) + ")";
+        ctx.fillRect(cx + Math.cos(m.a) * m.r, cy + Math.sin(m.a) * m.r, m.s, m.s);
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    function wake() {
+      if (!rafId && visible && !document.hidden) {
+        lastT = performance.now();
+        rafId = requestAnimationFrame(tick);
+      }
+    }
+
+    if (!size() || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { visible = en.isIntersecting; });
+      wake();
+    }, { rootMargin: "80px 0px 80px 0px", threshold: 0 });
+    io.observe(pin);
+    document.addEventListener("visibilitychange", wake);
+    let rt = 0;
+    window.addEventListener("resize", () => {
+      clearTimeout(rt);
+      rt = setTimeout(() => { size(); wake(); }, 160);
+    }, { passive: true });
   }
 
   /* ── Sichtbarkeits-Reveals + Zahlen-Count-up ─────────────── */
