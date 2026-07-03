@@ -296,3 +296,60 @@ holds.
   photo mid-journey, shoulder widest, sleeves visible, morph via transforms.
 - Bump `?v=` for any versioned JS/CSS touched; unit tests for every new pure
   helper (mutation respect, honesty gate, region effects) — coverage floor.
+
+---
+
+## 12. Status & session handoff (updated 2026-07-03)
+
+### Shipped (slices 1–4, all merged to `main`)
+
+| # | Slice | PR | What landed |
+|---|-------|----|-------------|
+| 1 | `fix/studio-trust-details` | #328 | Fragment-free live sentence (≥ half maturity); chips with mono dimension labels that echo **the tapped card's word** across all six categories (`choiceWord`, side-effect-safe: fewest-set-paths wins); Nylon→Polyester truth + gender-correct German finish adjective ("aus matter Wolle"); engine-pattern i18n fallbacks; 350 ms double-tap guard (`isGuardedTap`) on commits **and** generate; `jacket_subarch` before `jacket_fit` (0.85→0.72) |
+| 2 | `engine/realism-honesty-gate` | #329 | `content/preview-photos.json` — all 36 convergence photos individually described; **12 retired** (colorblock no DNA can produce, a two-piece "dress", 4 of 6 "pants" photos show full suits). `photoMatches`/`matchingCandidates` in render-preview.js: photo only crossfades when nothing it shows contradicts a decided DNA value; fail-closed, rejected photos never loaded |
+| 3 | `layout/mobile-docked-preview` | #330 | 76 px dock, thumb corner, ≤480 px + preview <30 % visible + journey on screen (`dockShouldShow`); mirrors **every** render/morph frame (`opts.mirror` in renderInto/morph); tap = rAF scroll-tween back to the stage; hoisted to `<body>` (see pitfalls); iPhone-verified by the user |
+| 4 | `visual/question-choreography` | #332 | Two-phase question swap (`deStepOut` 150 ms → `deStepIn` 240 ms staggered, `html.fx` only); preview morph starts WITH the entrance (see pitfalls); commits blocked mid-swap, pending paint replaced on double navigation; phase interstitial on a permanently reserved mono line + stepper-dot pulse (no interstitial on the crossing into refine); "Fertig" as gradient pill. Verified across all six categories: every swap choreographed, interstitials only on real chapter crossings, 0 page errors |
+
+Also permanent: `scripts/shoot-journey.mjs [viewport] [category]` — deterministic
+walkthrough of any branch, every question screen + weave frames to
+`screenshots/journey/`, fails on page errors. Use it for **every** studio change.
+
+### Next up
+
+Slice 5 `visual/weave-hero-beat` (§5.2–5.3), then slice 6
+`visual/studio-threshold` (§5.1, **iPhone-gated**), then 7–10 per §10.
+
+### Hard-won pitfalls (cost real debugging time — read before touching the studio)
+
+1. **This container renders ~13 fps** (software raster; the genesis nebula keeps
+   the compositor busy). Sub-300 ms motion CANNOT be verified by screenshots or
+   even rAF-opacity sampling — a 150 ms window can pass without a single frame.
+   Verify short motion via in-page rAF curves for ≥400 ms animations, and via
+   `el.getAnimations()` (name/duration/playState) + an isolated manual-class
+   curve for shorter ones. Long-running loops (morph) starve everything else:
+   sequence heavy work AFTER short animations, never in parallel.
+2. **`position: fixed` is hijacked inside the studio.** The revealed `#design`
+   section keeps an identity `transform` from its reveal animation and
+   `.design-journey` has `will-change: transform` — both create containing
+   blocks. Any fixed overlay must be hoisted to `document.body` (the dock does
+   this at mount).
+3. **Single-select cards commit on tap and the next screen renders under the
+   finger.** Any new tappable surface near the confirm position needs the
+   `isGuardedTap`/`swapping` guards; test tools must not blind-click
+   `.de-confirm` after a card tap (that's how the bot once fired generate).
+4. **The `test` CI check (deno lint) flakes on Deno-CDN outages** ("fetch
+   failed" in setup-deno before lint runs). Re-run failed jobs after ~15–20 min;
+   never "fix" code for it.
+5. **After every squash-merge the remote branch auto-deletes** → `git remote
+   prune origin` before pushing the restarted branch, or push rejects with
+   "stale info". Session branch flow: restart from `origin/main`, keep the same
+   branch name, one PR per slice; never push while a gated PR is open on the
+   branch (hold commits locally, cherry-pick after the merge).
+6. **Verify per category, not per code path.** Chips/labels/photos/flats all
+   have per-branch data; three separate cross-category defects were only found
+   by walking all six branches at the render (`shoot-journey.mjs desktop dress`
+   etc.). "It's category-agnostic code" is a hypothesis, not a verification.
+7. **Merge gates:** docs/CI/api = autonomous merge on green CI. Animation feel,
+   scroll/sticky/`svh`, iOS layout = user checks the Vercel preview on a real
+   iPhone first (the dock and the choreography both went through this). CI =
+   seven functional checks; "Vercel Agent Review" is neutral/non-blocking.
