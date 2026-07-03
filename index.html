@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260703-threshold2">
+    <link rel="stylesheet" href="css/styles.css?v=20260703-masse1">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -340,61 +340,93 @@
         <p class="lp-verbs" data-lp-reveal data-i18n="landing.verbs">Produzieren — Tragen — Wegwerfen</p>
     </section>
 
-    <!-- Protokoll der Linie — belegte Fast-Fashion-Fakten (Akt I, das Beweisband).
-         Erzähl-Reihenfolge = der Weg der Linie: Produzieren → Wegwerfen → Zurück,
-         endet auf dem <1 % (die Linie kennt kein Zurück → Coda → #pivot). -->
-    <section class="lp-stats lp-block" id="facts" data-lp-reveal>
-        <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
-        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
-        <div class="lp-stats-grid">
-            <!-- Jede Zahl ist ein interaktives Daten-Instrument statt Deko:
-                 Radial-Gauge · Live-Aufschüttung · 1-von-100-Matrix. Instrumente
-                 sind aria-hidden (Aussage steht in Zahl + Label); Bewegung/Pointer
-                 nur als Progressive Enhancement (html.fx, pointer:fine). Treiber:
-                 js/facts-instruments.js + ambient-ticker.js. -->
-            <div class="lp-stat">
-                <!-- Radial-Gauge: 8 % des Rings = Anteil der Mode an globalem CO₂. Bogen
-                     steht per CSS auf Endwert (no-JS), html.fx fährt ihn beim Reveal auf. -->
-                <div class="fx-gauge-wrap" aria-hidden="true">
-                    <svg class="fx-gauge" width="132" height="132" viewBox="0 0 120 120">
-                        <circle class="fx-gauge-track" cx="60" cy="60" r="52" fill="none" stroke-width="9"/>
-                        <circle class="fx-gauge-arc" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                        <defs><linearGradient id="fxGaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2779a8"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs>
+    <!-- Protokoll der Linie — „Die Masse" (Akt I, das Beweisband).
+         Drei cineastische Full-Height-Beats mit Canvas-Partikeln: die absolute
+         Masse hinter den Zahlen (CO₂-Wolke + Live-Zähler ≈38 t/s · wachsender
+         Abfallberg 1 Klumpen/s · 100 Tracer, einer entkommt). Ruhezustand =
+         CSS/SVG-Default (no-JS/reduced-motion vollständig); Canvas nur als
+         Progressive Enhancement. Treiber: js/facts-mass.js + ambient-ticker.js. -->
+    <section class="lp-stats lp-block lp-stats-vb" id="facts">
+            <header class="fxb-head" data-lp-reveal>
+                <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+                <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+            </header>
+
+            <!-- Beat 1 · PRODUZIEREN — die Fahne: die absolute Masse hinter ≤8 % -->
+            <div class="fxb-beat fxb-beat--produce" data-fxb-beat="produce">
+                <div class="fxb-vignette" aria-hidden="true"></div>
+                <div class="fxb-static" aria-hidden="true"></div>
+                <canvas class="fxb-canvas" aria-hidden="true"></canvas>
+                <div class="fxb-copy">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
+                    <p class="lp-stat-value fxb-value fxb-value--star"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+                    <div class="fxb-mass">
+                        <p class="fxb-mass-rate" data-i18n="factsB.co2_year">≈ 1,2 Mrd. Tonnen CO₂ pro Jahr</p>
+                        <p class="fxb-mass-live" aria-hidden="true"><span class="fxb-mass-live-num" data-fxb-co2>≈ +0</span> <span data-i18n="factsB.co2_since">t CO₂ seit du hier bist</span></p>
+                        <p class="fxb-mass-note" data-i18n="factsB.co2_compare">mehr als internationale Flüge (≈ 2 %) und Schifffahrt (≈ 2 %) zusammen</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beat 2 · WEGWERFEN — die Halde: jede Sekunde eine Ladung -->
+            <div class="fxb-beat fxb-beat--dump" data-fxb-beat="dump">
+                <div class="fxb-vignette" aria-hidden="true"></div>
+                <div class="fxb-static" aria-hidden="true">
+                    <svg class="fxb-static-svg" viewBox="0 0 1200 240" preserveAspectRatio="none" focusable="false">
+                        <path class="fxb-svg-mound fxb-svg-mound--far" d="M0,240 L0,214 C220,208 380,182 490,160 C540,150 575,143 600,142 C625,143 660,150 710,160 C820,182 980,208 1200,214 L1200,240 Z"/>
+                        <path class="fxb-svg-mound" d="M0,240 L0,228 C280,224 450,204 550,186 C575,181 592,178 600,177 C608,178 625,181 650,186 C750,204 920,224 1200,228 L1200,240 Z"/>
                     </svg>
                 </div>
-                <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
-                <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
-            </div>
-            <div class="lp-stat">
-                <!-- Live-Aufschüttung: der Stapel als Silhouette, die kg-Zahl tickt real
-                     hoch (ambient-ticker, +2'918 kg/s). Balken dekorativ, Aussage im Label. -->
-                <div class="fx-acc" aria-hidden="true">
-                    <span class="fx-acc-bar" style="height:16%"></span><span class="fx-acc-bar" style="height:22%"></span><span class="fx-acc-bar" style="height:28%"></span><span class="fx-acc-bar" style="height:35%"></span><span class="fx-acc-bar" style="height:42%"></span><span class="fx-acc-bar" style="height:49%"></span><span class="fx-acc-bar" style="height:56%"></span><span class="fx-acc-bar" style="height:63%"></span><span class="fx-acc-bar" style="height:70%"></span><span class="fx-acc-bar" style="height:77%"></span><span class="fx-acc-bar" style="height:84%"></span><span class="fx-acc-bar" style="height:90%"></span><span class="fx-acc-bar" style="height:95%"></span><span class="fx-acc-bar" style="height:99%"></span>
+                <canvas class="fxb-canvas" aria-hidden="true"></canvas>
+                <div class="fxb-copy">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                    <p class="lp-stat-value fxb-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                    <div class="fxb-odo" aria-hidden="true">
+                        <p class="fxb-odo-rate" data-i18n="factsB.truck_rate">1 Lkw-Ladung / Sekunde</p>
+                        <p class="fxb-odo-kg"><span data-ticker-kg>0</span> <span class="fxb-odo-unit" data-i18n="ticker.unit">kg</span></p>
+                        <p class="fxb-odo-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</p>
+                    </div>
                 </div>
-                <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
-                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
-                <p class="lp-stat-live" aria-hidden="true">
-                    <span class="lp-stat-live-dot" aria-hidden="true"></span>
-                    <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
-                    <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
-                    <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
-                </p>
             </div>
-            <div class="lp-stat">
-                <!-- 1 von 100 Feldern leuchtet = der <1 %, der recycelt wird. JS baut
-                     die Zellen (ohne JS via :empty ausgeblendet — Zahl+Label tragen die
-                     Aussage); Pointer-Spotlight nur bei feinem Zeiger; reduced-motion = Ruhe. -->
-                <div class="fx-matrix" id="fx-matrix" aria-hidden="true"></div>
-                <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
-                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+
+            <!-- Beat 3 · ZURÜCK — 100 Tracer: 99 fallen zurück, einer steigt -->
+            <div class="fxb-beat fxb-beat--return" data-fxb-beat="return">
+                <div class="fxb-vignette" aria-hidden="true"></div>
+                <div class="fxb-static" aria-hidden="true">
+                    <svg class="fxb-static-svg" viewBox="0 0 1200 620" preserveAspectRatio="none" focusable="false">
+                        <defs>
+                            <linearGradient id="fxb-ret-grad-b" x1="0" y1="1" x2="0" y2="0">
+                                <stop offset="0" stop-color="#2A9D8F" stop-opacity="0"/>
+                                <stop offset="0.55" stop-color="#64D6C4" stop-opacity="0.5"/>
+                                <stop offset="1" stop-color="#64D6C4" stop-opacity="0.9"/>
+                            </linearGradient>
+                        </defs>
+                        <path class="fxb-svg-arc" d="M804,556 C764,436 664,436 620,532"/>
+                        <path class="fxb-svg-arc" d="M804,556 C864,416 964,426 996,540"/>
+                        <path class="fxb-svg-arc" d="M804,556 C776,476 716,476 694,548"/>
+                        <line class="fxb-svg-one" x1="806" y1="552" x2="806" y2="10" stroke="url(#fxb-ret-grad-b)"/>
+                        <circle class="fxb-svg-one-halo" cx="806" cy="64" r="13"/>
+                        <circle class="fxb-svg-one-dot" cx="806" cy="64" r="4.5"/>
+                        <path class="fxb-svg-mound fxb-svg-mound--far" d="M0,620 L0,596 C260,590 460,566 600,548 C700,536 770,530 804,528 C838,530 900,538 980,550 C1060,562 1140,572 1200,576 L1200,620 Z"/>
+                        <path class="fxb-svg-mound" d="M0,620 L0,608 C320,604 520,586 640,570 C720,559 780,553 804,552 C828,553 870,558 920,566 C1010,578 1120,588 1200,592 L1200,620 Z"/>
+                    </svg>
+                </div>
+                <canvas class="fxb-canvas" aria-hidden="true"></canvas>
+                <div class="fxb-copy">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                    <p class="lp-stat-value fxb-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                    <p class="fxb-return-note" data-i18n="factsB.return_note">Von 100 Teilen schafft es nicht einmal eines zurück.</p>
+                </div>
             </div>
-        </div>
-        <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
-        <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
-    </section>
+
+            <footer class="fxb-epilogue">
+                <p class="lp-stats-coda" data-lp-reveal data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+                <p class="lp-stats-sources" data-lp-reveal data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+            </footer>
+        </section>
 
     <!-- ── DIE WENDE (#pivot) — das Akt-Scharnier. Die Linie aus Akt I steht auf
          der Bühne und wird beim Scrollen zum Kreis gebogen (gepinnter Scrub,
@@ -1238,7 +1270,7 @@
     <script defer src="js/flair.js"></script>
     <script defer src="js/ur-create.js?v=20260611-weave"></script>
     <script defer src="js/ambient-ticker.js"></script>
-    <script defer src="js/facts-instruments.js?v=20260630-fxgo"></script>
+    <script defer src="js/facts-mass.js?v=20260703-masse1"></script>
     <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
          dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
          Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->

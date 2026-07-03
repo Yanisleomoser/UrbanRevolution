@@ -193,7 +193,7 @@ js/
   landing.js            # Landing-experience controller + studio reveal (GSAP, side effect)
   ur-create.js          # Wires UR-Create sections (hero/ownership/community/join) to the engine
   ambient-ticker.js     # Live cited textile-waste counter (kg/sec, side effect)
-  facts-instruments.js  # #facts data-instruments: 1-in-100 matrix, pile bars, CO₂ gauge (side effect)
+  facts-mass.js         # #facts „Die Masse": 3 Canvas-Partikel-Beats + Live-CO₂-Zähler (side effect)
   community-sphere.js   # WebGL community globe (ES module — three.js + GSAP, lazy)
   design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
@@ -239,7 +239,7 @@ not two stills (project rule).
 | `#loader` `.lp-loader` | Preloader logo-draw                          | `landing.js` `initLoader` (`.lp-mark-arc/-dashes/-needle`)        | GSAP stroke-draw (transient)            | —           |
 | `#top` `.lp-hero`      | Hero: thread-particle field + headline       | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`)          | GSAP intro + canvas particle weave      | `hero`      |
 | `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
-| `#facts` `.lp-stats`   | Cited fast-fashion evidence, counted up      | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-instruments.js` | count-up + live kg odometer + instrument sweeps (`html.fx`) | `facts`     |
+| `#facts` `.lp-stats`   | Cited fast-fashion evidence — „Die Masse": 3 full-height canvas-particle beats | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-mass.js` (`html.fxb-go`, `.is-live` je Beat) | count-up + live kg/CO₂ odometer + particle plume/mound/tracer (canvas, offscreen-paused) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
 | `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
 | `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | —           |
@@ -296,7 +296,7 @@ window.Foo = Foo;
 | `landing.js`      | (none — side effect)    | classic         |
 | `ur-create.js`    | (none — side effect)    | classic         |
 | `ambient-ticker.js`| (none — side effect)   | classic         |
-| `facts-instruments.js`| (none — side effect) | classic        |
+| `facts-mass.js`   | (none — side effect)    | classic         |
 | `community-sphere.js`| (none — side effect) | **ES module** (`type="module"`) |
 
 The **live garment preview** (inside the studio) is a **data-driven 2D
@@ -316,7 +316,7 @@ subscribe to its events). The bottom-of-body order is:
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → focus-trap → animations →
 design-engine/* (dna … flow) → spec-view → app → flair → ur-create → ambient-ticker →
-facts-instruments → [importmap] → gsap + ScrollTrigger (CDN) → landing →
+facts-mass → [importmap] → gsap + ScrollTrigger (CDN) → landing →
 community-sphere (module)
 ```
 
@@ -360,15 +360,19 @@ stepping up since page load, in one dramatic counter (`.cost-ticker`) plus
 compact "Live … kg" badges beside other section numbers. Swiss thousands
 grouping (`1'234'567`), bilingual via `ticker.*` i18n keys.
 
-**`js/facts-instruments.js`** turns the three numbers into tactile
-data-instruments: a 1-in-100 cell matrix (exactly one cell glows = < 1 %
-recycled, with a fine-pointer spotlight sweep), live accumulation bars beside
-the kg odometer (`[data-ticker-kg]`), and a radial 8 %-CO₂ gauge. Classic
-IIFE side-effect module (no global), mirrors `ambient-ticker.js`. Progressive
-enhancement is load-bearing: the instruments are `aria-hidden` (the meaning
-lives in the adjacent real-text number + caption), default CSS is the final
-resting state, and all motion is gated under `html.fx` / `(pointer: fine)` —
-no-JS and reduced-motion show everything calm and complete.
+**`js/facts-mass.js`** stages the three numbers as „Die Masse" — three
+full-height canvas-particle beats (one shared ash-like particle language):
+a never-ending CO₂ plume behind the ≤8 % with a live "≈ +38 t seit du hier
+bist" counter (1.2 Gt/yr ÷ seconds, always marked ≈), a waste mound that
+grows by one truckload-clump per real second beside the kg odometer, and
+100 tracers of which exactly one escapes (= the <1 %). Classic IIFE
+side-effect module (no global), mirrors ambient-ticker.js. Progressive
+enhancement is load-bearing: canvases are `aria-hidden` (the meaning lives
+in the adjacent real-text number + caption), the default CSS/SVG state is
+the final resting scene, and all motion is opt-in under `html.fxb-go` /
+per-beat `.is-live` — no-JS and reduced-motion show everything calm and
+complete (only the textual CO₂ ticker keeps counting, like the kg ticker).
+rAF pauses offscreen and on hidden tabs; canvas DPR is capped at 2.
 
 ## AI design generation (`ai.js` + `api/generate-design.js`)
 
@@ -685,7 +689,7 @@ run on Vercel (or `vercel dev`).
   full allowlist — out of scope here. HSTS is already set by Vercel.
 - **Caching headers** (`vercel.json`): HTML and `/` are `no-store` — browsers
   never serve a stale page after a deploy. CSS/JS referenced **with a `?v=`
-  query** (e.g. `ur-create.js?v=…`, `facts-instruments.js?v=…`) are
+  query** (e.g. `ur-create.js?v=…`, `facts-mass.js?v=…`) are
   `immutable` for a year — **bump the `?v=` value in `index.html` whenever you
   change such a file**, or returning visitors keep the old one. CSS/JS without
   `?v=` are `must-revalidate` (cheap 304s).
