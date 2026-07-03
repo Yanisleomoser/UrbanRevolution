@@ -5082,9 +5082,24 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    Kleidungsstück. Hotspots sind normale Buttons (Tastaturpfad in DOM-Folge);
    der Puls ist rein dekorativ und nur unter html.fx aktiv. */
 .de-regions-hint { margin: calc(var(--space-2) * -1) 0 0; color: var(--text-dim); font-size: var(--text-sm); }
-.de-regions { position: relative; width: min(320px, 100%); margin: var(--space-4) auto 0; }
-.de-regions-stage { aspect-ratio: 240 / 340; }
+.de-regions { position: relative; width: min(340px, 100%); margin: var(--space-4) auto 0; }
+/* Werkbank-Bühne: dasselbe Studio-Licht wie die Hauptvorschau (sanftes
+   Key-Light von oben, abgedunkelter Boden, Tiefen-Verlauf) — das Atelier ist
+   ein beleuchteter Arbeitsplatz, kein schwebendes Icon. */
+.de-regions-stage { aspect-ratio: 240 / 340; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.11), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%); }
 .de-regions-stage svg { width: 100%; height: 100%; display: block; }
+/* Hotspots treten gestaffelt auf wie gesetzte Stecknadeln (Delay inline aus
+   JS, Reihenfolge = JSON-Reihenfolge). */
+html.fx .de-hotspot { animation: deSpotIn 0.32s var(--ease-out) backwards; }
+@keyframes deSpotIn { from { opacity: 0; transform: scale(0.4); } }
+/* Pick-Bestätigung: die Nadel „setzt sich" mit einem kurzen Pop … */
+html.fx .de-hotspot.is-just-set .de-hotspot-dot { animation: deSpotPop 0.28s var(--ease-out); }
+@keyframes deSpotPop { 40% { transform: scale(1.45); } }
+/* … und das geänderte Teil blüht kurz auf (§6 Preview-Reaktion). */
+.de-region-glow { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; pointer-events: none; z-index: 1; background: radial-gradient(circle, rgba(100, 214, 196, 0.34), rgba(100, 214, 196, 0.1) 45%, rgba(100, 214, 196, 0) 70%); animation: deRegionGlow 0.55s var(--ease-out) forwards; }
+@keyframes deRegionGlow { from { opacity: 0; transform: scale(0.5); } 35% { opacity: 1; } to { opacity: 0; transform: scale(1.25); } }
+html.fx .de-region-picker.is-open { animation: dePickerIn 0.18s var(--ease-out); }
+@keyframes dePickerIn { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
 .de-hotspot { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; padding: 0; background: none; border: 0; cursor: pointer; z-index: 2; }
 .de-hotspot-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent-3); background: rgba(10, 22, 34, 0.72); box-shadow: 0 0 0 3px rgba(100, 214, 196, 0.14); transition: background .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s ease-in-out infinite; }
@@ -5121,6 +5136,9 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 @media (prefers-reduced-motion: reduce) {
     .de-hotspot-dot, .de-region-opt, .de-region-close { transition: none !important; }
     html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: none !important; }
+    html.fx .de-hotspot, html.fx .de-hotspot.is-just-set .de-hotspot-dot,
+    .de-region-glow, html.fx .de-region-picker.is-open { animation: none !important; }
+    .de-region-glow { display: none; }
 }
 
 /* §3.2 — Fallback „nie flach": Duotone-Sheen + feines Filmkorn auf allen Tile-Platzhaltern */
