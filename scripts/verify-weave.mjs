@@ -135,4 +135,7 @@ if (el) await el.screenshot({ path: `${OUT}/${CATEGORY}-final.png` });
 console.log("pageerrors:", errors.length ? errors : "none");
 await browser.close();
 server.close();
+// A run that never reached the category pick verified nothing — fail loudly
+// instead of passing vacuously.
+if (!clicked || !weave.length) { console.error("✗ weave beat never sampled (category question not reached)"); process.exit(1); }
 process.exit(errors.length ? 1 : 0);

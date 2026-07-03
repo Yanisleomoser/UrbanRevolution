@@ -97,6 +97,11 @@ const GarmentSVG = (() => {
   // → mood / inspo / occasion / season shift the flat's tone because they shift
   // the archetype. Cool tech ↔ warm couture/utility ↔ playful street.
   const ARCH_TINT = { quietMinimal: "#9a9aa2", softCouture: "#b9a79b", utility: "#9ca08c", techAvant: "#8c99ab", y2kStreet: "#b48cac", sport: "#8caaa2" };
+  // The archetype comes from shared/remixed DNA (attacker-controlled JSON): a
+  // prototype key like "constructor" would resolve to a truthy non-string on
+  // the bare object above and be stringified into the SVG paint (no markup
+  // escape possible, but the render breaks). Only ever hand out real tints.
+  const archTint = (a) => { const v = ARCH_TINT[a]; return typeof v === "string" ? v : null; };
 
   // ---- recolour + material/finish/energy/archetype -------------------------
   // Light stroke always; chosen colour fills as a SOFT tonal wash (energy =
@@ -105,7 +110,7 @@ const GarmentSVG = (() => {
   function fillSpec(id, p) {
     // Hard-clamp each stop to a safe hex literal (see safeHex above): stops are
     // written unescaped into the SVG, and a shared DNA can carry hostile values.
-    const tint = ARCH_TINT[p.archetype] || "#8b8f96";
+    const tint = archTint(p.archetype) || "#8b8f96";
     const stops = Array.isArray(p.stops) && p.stops.length
       ? p.stops.map((s) => safeHex(s, tint)) : null;
     const energy = clamp(num(p.energy, 0.5), 0, 1);
@@ -131,7 +136,7 @@ const GarmentSVG = (() => {
       }
       opacity = lerp(0.34, 0.62, energy); // bold = more present / saturated-looking
     } else {
-      fill = ARCH_TINT[p.archetype] || "#8b8f96";
+      fill = tint;
       opacity = lerp(0.05, 0.17, energy); // calm wash → bolder neutral
     }
     // Sheen overlay — a diagonal SPECULAR BAND across the body. Its physics:
@@ -804,10 +809,10 @@ const GarmentSVG = (() => {
     const energy = clamp(num(p && p.energy, 0.5), 0, 1);
     const structure = clamp(num(p && p.structure, 0.5), 0, 1);
     const seed = Math.max(0, Math.floor(num(p && p.seed, 0)));
-    const tint = (p && ARCH_TINT[p.archetype]) || "#8b96a4";
+    const tint = (p && archTint(p.archetype)) || "#8b96a4";
     // Second, brighter ocean accent so the threads read as luminous fibre, not
     // grey scribble — aqua by default, warmed toward the archetype tint.
-    const accentCol = (p && ARCH_TINT[p.archetype]) ? "#64d6c4" : "#76c7c0";
+    const accentCol = (p && archTint(p.archetype)) ? "#64d6c4" : "#76c7c0";
     const cx = CX, cy = 158;
     const hash = (i, k) => { const s = Math.sin(i * 127.1 + k * 311.7 + 13.37) * 43758.5453; return s - Math.floor(s); };
     const count = Math.min(34, 14 + seed * 2);

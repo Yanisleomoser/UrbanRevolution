@@ -166,6 +166,17 @@ assert(!hostile.includes("<img") && !hostile.toLowerCase().includes("onerror"),
 assert(hostile.includes("#64d6c4"), "the legitimate hex stop in the same array survives");
 assert(GarmentSVG.build("tshirt", { scheme: "duo-gradient", stops: ["javascript:alert(1)", "rgb(0,0,0)"] }).startsWith("<svg"),
   "non-hex stops (url:/rgb()) fall back cleanly to a neutral tone, no throw");
+// A shared DNA can carry prototype keys as the winning archetype
+// ("constructor" → Object constructor on a bare-object lookup); the tint must
+// stay a real hex, never a stringified function/object in the paint.
+["constructor", "__proto__", "toString", "hasOwnProperty"].forEach((evilArch) => {
+  const flat = GarmentSVG.build("tshirt", { archetype: evilArch, energy: 0.6 });
+  const neb = GarmentSVG.nebula({ archetype: evilArch, seed: 1 });
+  assert(!/function|\[object|native code/.test(flat) && flat.includes("#8b8f96"),
+    `flat with archetype "${evilArch}" → neutral hex tint, no stringified prototype member`);
+  assert(!/function|\[object|native code/.test(neb) && neb.includes("#8b96a4"),
+    `nebula with archetype "${evilArch}" → neutral hex tint, no stringified prototype member`);
+});
 
 console.log("\n— rich Phase-E params exercise the detail layers cleanly —");
 ["jacket", "hoodie", "shirt", "dress", "pants"].forEach((cat) => {

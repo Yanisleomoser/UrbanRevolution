@@ -87,6 +87,12 @@ const DesignPreview = (() => {
     const prev = tweenId.get(el);
     if (prev) cancelAnimationFrame(prev);
     wrap.classList.add("is-retension");
+    // .is-tweening pauses the infinite breath/pulse animations for the tween's
+    // duration: the per-frame repaints would restart them at t=0 every frame,
+    // pinning nodes at their dimmest keyframe and overriding the lerped
+    // fade-in opacity of freshly added threads. Removed at tween end, so the
+    // idle life resumes with ONE clean restart instead of ~40.
+    wrap.classList.add("is-tweening");
     wrap.style.cssText = nebulaTempo(toN.energy);
     const paintBoth = (html) => {
       wrap.innerHTML = html;
@@ -98,7 +104,7 @@ const DesignPreview = (() => {
       const t = Math.min(1, (now - start) / RETENSION_MS);
       paintBoth(window.GarmentSVG.nebulaPaint(window.GarmentSVG.lerpNebulaModel(fromN, toN, easeOut(t))));
       if (t < 1) tweenId.set(el, requestAnimationFrame(step));
-      else tweenId.delete(el);
+      else { tweenId.delete(el); wrap.classList.remove("is-tweening"); }
     };
     tweenId.set(el, requestAnimationFrame(step));
   }
@@ -246,6 +252,11 @@ const DesignPreview = (() => {
       // reset), and under reduced motion.
       const wrap = el.querySelector ? el.querySelector(".de-garment-wrap.is-genesis") : null;
       if (toN && fromN && wrap && fromN.threads.length <= toN.threads.length && !reduceMotion()) {
+        // The badge lives outside the wrap and would otherwise keep the
+        // language it was first painted with (the fresh-paint path below
+        // rebuilds it; this path must not skip that).
+        const badgeEl = el.querySelector(".de-preview-badge");
+        if (badgeEl && window.I18N) badgeEl.textContent = window.I18N.t("dpreview.genesis_badge");
         retension(el, wrap, fromN, toN, opts.mirror);
         return;
       }
@@ -291,10 +302,26 @@ const DesignPreview = (() => {
       <div class="de-garment-wrap${weaveIn ? " is-weave" : ""}">${ghost}${targetSvg}</div>
       <span class="de-preview-badge">${badge}</span>`;
     if (ghost) {
+      // gen-guarded like the photo probe below: a stale timer from THIS weave
+      // must not delete the ghost of a LATER weave (fast back → re-pick).
       setTimeout(() => {
+        if (renderGen.get(el) !== gen) return;
         const g = el.querySelector && el.querySelector(".de-weave-ghost");
         if (g) g.remove();
       }, 700);
+    }
+    if (weaveIn) {
+      // Drop .is-weave once the beat is over (sweep ends ~2.15 s): its
+      // stroke-dasharray:1 declaration would otherwise keep overriding the
+      // ATTRIBUTE dashes of zip/stitch seams (pathLength=1 → dasharray 1 =
+      // solid) until the next re-render, and will-change would linger.
+      // Removing the class lands exactly on the resting state the animations'
+      // fill:both already shows.
+      setTimeout(() => {
+        if (renderGen.get(el) !== gen) return;
+        const w = el.querySelector && el.querySelector(".de-garment-wrap.is-weave");
+        if (w) w.classList.remove("is-weave");
+      }, 2400);
     }
     // Mobile dock mini-preview: mirrors the flat (and, below, every morph
     // frame) so the "choose → see it change" loop survives the preview
