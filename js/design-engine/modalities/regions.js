@@ -100,11 +100,13 @@
 
     // Hotspot buttons are created ONCE and repositioned on every repaint —
     // stable elements keep focus, tap handling and test handles valid while
-    // the flat behind them reshapes.
+    // the flat behind them reshapes. They enter staggered, like pins being
+    // set into the piece (CSS deSpotIn, fx-gated via the html.fx selector).
     const spots = new Map();
-    regions.forEach((rg) => {
+    regions.forEach((rg, i) => {
       const label = (rg.label && rg.label[lang]) || rg.id;
       const spot = V.el("button", { type: "button", class: "de-hotspot", "aria-expanded": "false" });
+      spot.style.animationDelay = (140 + i * 50) + "ms";
       spot.appendChild(V.el("span", { class: "de-hotspot-dot", "aria-hidden": "true" }));
       const tag = V.el("span", { class: "de-hotspot-tag", "aria-hidden": "true" });
       tag.textContent = label;
@@ -119,11 +121,20 @@
       board.appendChild(spot);
     });
 
-    function syncSpots(anchors) {
-      spots.forEach(({ rg, spot, val, label }) => {
-        const a = anchors[rg.anchor || rg.id] || { x: VB / 2, y: VH * 0.4 };
+    const anchorOf = (anchors, rg) => anchors[rg.anchor || rg.id] || { x: VB / 2, y: VH * 0.4 };
+    // Positions ride EVERY morph frame (cheap: left/top only); the decoration
+    // (label side, chosen word, ARIA) updates once per state change with the
+    // TARGET anchors so labels never flip sides mid-tween.
+    function positionSpots(anchors) {
+      spots.forEach(({ rg, spot }) => {
+        const a = anchorOf(anchors, rg);
         spot.style.left = (a.x / VB * 100).toFixed(1) + "%";
         spot.style.top = (a.y / VH * 100).toFixed(1) + "%";
+      });
+    }
+    function decorateSpots(anchors) {
+      spots.forEach(({ rg, spot, val, label }) => {
+        const a = anchorOf(anchors, rg);
         // Tags flow away from the garment's centre line (left spot → label
         // left, right spot → label right, centre → below) so neighbouring
         // labels never pile up mid-body.
@@ -135,11 +146,81 @@
       });
     }
 
-    function repaint() {
-      const p = boardParams();
-      stage.innerHTML = window.GarmentSVG.build(p.category, p);
-      syncSpots(window.GarmentSVG.regionAnchors(p.category, p));
+    // ── Living board: picks (and hover try-ons) MORPH the flat ──────────────
+    // Same lerpModel tween as the main preview — the surface the user touches
+    // reshapes fluidly, and the hotspots ride the moving geometry. fx-gated;
+    // reduced-motion / cross-category snap instantly. 240 ms keeps the
+    // project's transition ceiling.
+    const fx = () => document.documentElement.classList.contains("fx") &&
+      !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    let lastM = null, lastA = null, raf = 0;
+    // What is PAINTED right now — an interrupted tween (hover-ghost → click)
+    // retargets from here, so the garment glides through, never jump-cuts.
+    let shownM = null, shownA = null;
+    const lerpAnchors = (a, b, k) => {
+      const out = {};
+      Object.keys(b).forEach((key) => {
+        const av = a && a[key];
+        out[key] = av ? { x: av.x + (b[key].x - av.x) * k, y: av.y + (b[key].y - av.y) * k } : b[key];
+      });
+      return out;
+    };
+    function paintParams(p) {
+      const G = window.GarmentSVG;
+      const toM = G.model(p.category, p);
+      const toA = G.regionAnchors(p.category, p);
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      decorateSpots(toA);
+      if (!fx() || !shownM || shownM.cat !== toM.cat || !G.lerpModel) {
+        stage.innerHTML = G.paint ? G.paint(toM) : G.build(p.category, p);
+        positionSpots(toA);
+        shownM = toM;
+        shownA = toA;
+      } else {
+        const fromM = shownM, fromA = shownA || toA;
+        const t0 = performance.now(), D = 240;
+        const ease = (x) => 1 - Math.pow(1 - x, 3);
+        const step = (now) => {
+          if (!stage.isConnected) { raf = 0; return; } // question swapped away
+          const k = Math.min(1, (now - t0) / D);
+          const m = G.lerpModel(fromM, toM, ease(k));
+          const a = lerpAnchors(fromA, toA, ease(k));
+          stage.innerHTML = G.paint(m);
+          positionSpots(a);
+          shownM = m;
+          shownA = a;
+          raf = k < 1 ? requestAnimationFrame(step) : 0;
+        };
+        raf = requestAnimationFrame(step);
+      }
+      lastM = toM;
+      lastA = toA;
     }
+    // Ghost try-on: hovering/focusing a picker option previews it ON THE BOARD
+    // only — no DNA write, no commitment; leaving reverts to the picked state.
+    function paintPicked() { paintParams(boardParams()); }
+    function paintGhost(rg, choice) {
+      const clone = JSON.parse(JSON.stringify(ctx.dna));
+      regions.forEach((r) => {
+        const cid = r === rg ? choice.id : picks[r.id];
+        const c = cid && (r.choices || []).find((x) => x.id === cid);
+        if (c && c.effects && c.effects.set) {
+          Object.entries(c.effects.set).forEach(([p, v]) => window.DesignDNA.set(clone, p, v, 1));
+        }
+      });
+      paintParams(window.DesignPreview.params(clone));
+    }
+    // §6 preview reaction: a brief glow blooms on the part a pick just changed.
+    function flashRegion(rg) {
+      if (!fx() || !lastA) return;
+      const a = anchorOf(lastA, rg);
+      const glow = V.el("span", { class: "de-region-glow", "aria-hidden": "true" });
+      glow.style.left = (a.x / VB * 100).toFixed(1) + "%";
+      glow.style.top = (a.y / VH * 100).toFixed(1) + "%";
+      board.appendChild(glow);
+      setTimeout(() => glow.remove(), 700);
+    }
+    function repaint() { paintPicked(); }
 
     function closePicker(refocus) {
       if (openRegion === null) return;
@@ -172,10 +253,26 @@
         const b = V.el("button", { type: "button", class: "de-region-opt" });
         b.setAttribute("aria-pressed", picks[rg.id] === c.id ? "true" : "false");
         b.textContent = (c.label && c.label[lang]) || c.id;
+        // Try-on before choosing: pointer-over or keyboard focus previews the
+        // option on the board (ghost — nothing committed), leaving reverts.
+        // :focus-visible keeps the programmatic focus after a TAP from
+        // ghosting option 1 uninvited on touch — only real keyboard focus
+        // tries on; hover covers the pointer.
+        b.addEventListener("mouseenter", () => paintGhost(rg, c));
+        b.addEventListener("focus", () => { try { if (b.matches(":focus-visible")) paintGhost(rg, c); } catch (_e) { /* old engines: no ghost */ } });
+        b.addEventListener("mouseleave", paintPicked);
+        b.addEventListener("blur", paintPicked);
         b.addEventListener("click", () => {
           picks[rg.id] = c.id;
           ctx.live(Object.assign({}, picks));
           repaint();
+          flashRegion(rg);
+          const entrySpot = spots.get(rg.id);
+          if (entrySpot) {
+            entrySpot.spot.classList.remove("is-just-set");
+            void entrySpot.spot.offsetWidth;
+            entrySpot.spot.classList.add("is-just-set");
+          }
           syncConfirmLabel();
           closePicker(true);
         });
@@ -183,14 +280,16 @@
       });
       // Anchor the panel to the part: open toward the free side/edge so it
       // stays inside the board (no position:fixed — hijacked in the studio).
-      const bp = boardParams();
-      const a = window.GarmentSVG.regionAnchors(bp.category, bp)[rg.anchor || rg.id] || { x: VB / 2, y: VH * 0.4 };
+      const a = anchorOf(lastA || {}, rg);
       const xPct = a.x / VB * 100, yPct = a.y / VH * 100;
       picker.style.left = xPct < 50 ? Math.max(0, xPct - 8) + "%" : "auto";
       picker.style.right = xPct >= 50 ? Math.max(0, 100 - xPct - 8) + "%" : "auto";
       picker.style.top = yPct < 62 ? (yPct + 8) + "%" : "auto";
       picker.style.bottom = yPct >= 62 ? Math.min(92, 100 - yPct + 6) + "%" : "auto";
       picker.hidden = false;
+      picker.classList.remove("is-open");
+      void picker.offsetWidth;
+      picker.classList.add("is-open");
       // DOM position right after the hotspot: Tab order = hotspot → options.
       entry.spot.after(picker);
       const first = picker.querySelector('[aria-pressed="true"]') || picker.querySelector(".de-region-opt");
