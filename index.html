@@ -591,12 +591,12 @@
         <p class="lp-identity-body" data-i18n-html="identity.body_html">Die Linie fertigte für alle — dasselbe Stück, millionenfach, in einer Grösse, die niemandem gehört. Der Kreis dreht sich anders: um dich. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
     </section>
 
-    <!-- ── So funktioniert's — dein Bogen: der 4-Schritte-Pfad als flacher
-         Kreis-Bogen (Akt-II-Geometrie statt gerader Naht). On-Ramp ins Studio
-         (why → how → act), zwischen Identitäts-Beat und Finale-Orb.
-         Desktop: SVG-Bogen zeichnet sich per stroke-dashoffset (pathLength=1);
-         Mobil: die bewährte vertikale Naht-Leiste bleibt. Beides über das
-         bestehende [data-reveal]-System (animations.js), keine neue JS. ── -->
+    <!-- ── So funktioniert's — vier Stationen auf offenem Faden: der Bogen
+         (stroke-dashoffset, pathLength=1) bleibt der Erzähler, die Stationen
+         sind offene Typo-Blöcke ohne Karten-Boxen (Mono-Index · Fraunces-Titel
+         · gedimmte Zeile). Desktop: Stations-Punkte sitzen AUF dem Faden;
+         Mobil: Faden vertikal in der Gosse, Stationen rechts als Protokollrand.
+         Alles über das bestehende [data-reveal]-System (animations.js). ── -->
     <section class="lp-how lp-block" id="how" aria-labelledby="how-title">
         <header class="lp-how-head" data-reveal>
             <p class="lp-label" data-i18n="how.label">So funktioniert's</p>
@@ -605,7 +605,7 @@
         </header>
         <div class="lp-how-track">
             <!-- EIN Zeichen-Mechanismus für beide Breakpoints (stroke-dashoffset,
-                 pathLength=1): Desktop = horizontaler Bogen durch die Icon-Reihe,
+                 pathLength=1): Desktop = horizontaler Bogen durch die Punkt-Reihe,
                  Mobil = vertikaler Bogen in der linken Gosse. Die frühere mobile
                  clip-path-Leiste + Wander-Nadel sind ersetzt (iOS-Zicken, und die
                  Sektion verspricht einen BOGEN — auch auf dem iPhone). -->
@@ -633,25 +633,25 @@
             </div>
             <ol class="lp-how-grid" data-reveal-stagger>
                 <li class="lp-how-station" data-reveal>
-                    <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20l3-1 11-11-2-2L5 17l-1 3z"/><path d="M14.5 6.5l3 3"/></svg></span>
+                    <span class="lp-how-dot" aria-hidden="true"></span>
                     <span class="lp-how-num" aria-hidden="true">01</span>
                     <h3 class="lp-how-label" data-i18n="how.s1_label">Du entwirfst</h3>
                     <p class="lp-how-line" data-i18n="how.s1_line">Ein Satz genügt. Die Idee ist deine — und bleibt es.</p>
                 </li>
                 <li class="lp-how-station" data-reveal>
-                    <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><path d="M12 8.5l1.4 2.1L15.5 12l-2.1 1.4L12 15.5l-1.4-2.1L8.5 12l2.1-1.4z"/></svg></span>
+                    <span class="lp-how-dot" aria-hidden="true"></span>
                     <span class="lp-how-num" aria-hidden="true">02</span>
                     <h3 class="lp-how-label" data-i18n="how.s2_label">Du entscheidest</h3>
                     <p class="lp-how-line" data-i18n="how.s2_line">Die Engine fragt, du wählst: Schnitt, Stoff, Farbe. Jede Antwort schärft dein Stück.</p>
                 </li>
                 <li class="lp-how-station" data-reveal>
-                    <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg></span>
+                    <span class="lp-how-dot" aria-hidden="true"></span>
                     <span class="lp-how-num" aria-hidden="true">03</span>
                     <h3 class="lp-how-label" data-i18n="how.s3_label">Deine Masse</h3>
                     <p class="lp-how-line" data-i18n="how.s3_line">Neun Körpermasse — per Foto direkt im Browser, von Hand oder als Preset. Eine Schätzung, jederzeit anpassbar.</p>
                 </li>
                 <li class="lp-how-station" data-reveal>
-                    <span class="lp-how-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg></span>
+                    <span class="lp-how-dot" aria-hidden="true"></span>
                     <span class="lp-how-num" aria-hidden="true">04</span>
                     <h3 class="lp-how-label" data-i18n="how.s4_label">Deine Vorlage</h3>
                     <p class="lp-how-line" data-i18n="how.s4_line">Ein dokumentiertes Einzelstück — bereit für den Tag, an dem sich der Kreis zum ersten Mal schliesst.</p>

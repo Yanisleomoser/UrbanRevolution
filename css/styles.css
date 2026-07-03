@@ -7161,14 +7161,17 @@ html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out in
 }
 .lp-identity-body strong { color: var(--text); font-weight: 500; }
 
-/* ── So funktioniert's — User-Journey-Naht ─────────────────────────────────
-   Vier Stationen, von EINER geraden glühenden Naht verbunden (Anfang→Ende) —
-   bewusst linear, als Gegenstück zum geschlossenen Kreis von #loop. Naht zeichnet
-   sich beim Scroll-in (clip-path-Wipe, verzerrungsfrei), Nadel wandert mit der
-   Spitze, Stationen leuchten gestaffelt — alles über das bestehende
+/* ── So funktioniert's — vier Stationen auf offenem Faden ──────────────────
+   Der Bogen (stroke-dashoffset, pathLength=1) bleibt der Erzähler: die Linie,
+   die zu deinem Faden wird. Die Stationen sind offene Typo-Blöcke OHNE
+   Karten-Boxen — Mono-Index, Fraunces-Titel, gedimmte Zeile — im Duktus von
+   #facts (viel Negativraum, Typografie trägt). Desktop: ein Stations-Punkt
+   sitzt AUF dem Faden (Hairline-Ring, füllt sich accent-3 beim Reveal), die
+   mittleren Stationen reiten die Wölbung. Mobil: Faden vertikal in der Gosse,
+   Stationen rechts davon wie ein Protokollrand. Alles über das bestehende
    [data-reveal]-System (animations.js), keine neue JS. */
 .lp-how { max-width: 1180px; margin: 0 auto; scroll-margin-top: 84px; }
-.lp-how-head { max-width: 760px; margin: 0 auto clamp(40px, 6vw, 64px); text-align: center; }
+.lp-how-head { max-width: 760px; margin: 0 auto clamp(48px, 8vw, 96px); text-align: center; }
 .lp-how-title {
     font-family: var(--font-display);
     font-weight: 500;
@@ -7196,9 +7199,9 @@ html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out in
 .lp-how-seam {
     position: absolute;
     left: 0; right: 0;
-    top: 16px;
+    top: 0;
     height: 88px;
-    z-index: 0;            /* hinter den Karten-Inhalten; Karten sind transparent */
+    z-index: 0;            /* hinter den Stationen; die sind offener Text */
     pointer-events: none;
 }
 .lp-how-arc, .lp-how-arc-v { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -7210,14 +7213,16 @@ html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out in
     filter: drop-shadow(0 0 6px rgba(100, 214, 196, 0.4)); /* --accent-3 Glow wie die Naht */
 }
 .lp-how-seam.is-revealed .lp-how-arc-path { stroke-dashoffset: 0; }
-/* Desktop: die MITTLEREN Stationen sitzen tiefer — die vier Karten REITEN
-   sichtbar auf dem Bogen, statt dass eine fast-gerade Linie sie kreuzt.
+/* Desktop: die MITTLEREN Stationen sitzen tiefer — Punkt + Text reiten die
+   Wölbung des Fadens. Faden-y an den Spaltenmitten (Quadratik
+   M10 25 Q 500 73 990 25, y-Skala 1:1 bei 88px Seam-Höhe): aussen ≈34px,
+   innen ≈47px → 13px Versatz, Punkt-Offset bleibt für alle gleich.
    860.02px statt 861px: schliesst das 1px-Loch zum mobilen max-width:860px-
    Block (fraktionale Zoom-Breiten zeigten sonst BEIDE Naht-Systeme). */
 @media (min-width: 860.02px) {
     .lp-how-grid { align-items: start; }
     .lp-how-station:nth-child(2),
-    .lp-how-station:nth-child(3) { margin-top: 24px; }
+    .lp-how-station:nth-child(3) { margin-top: 13px; }
 }
 /* Die Naht selbst nicht mit-faden/-translaten — sie wird gezeichnet. */
 .lp-how-seam[data-reveal] { opacity: 1; transform: none; transition: none; }
@@ -7227,86 +7232,97 @@ html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out in
     margin: 0; padding: 0;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-5);
+    gap: clamp(20px, 3vw, 36px);
     position: relative;
 }
+/* Offene Station: kein Rahmen, keine Fläche — der Text hängt am Faden. */
 .lp-how-station {
-    background: transparent;   /* Naht glüht durch — Stationen sitzen AUF dem Faden */
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: var(--space-6) var(--space-6) var(--space-7);
     position: relative;
     z-index: 1;
-    text-align: left;
-    /* Reveal (opacity/transform inkl. Stagger-Delay) aus [data-reveal] beibehalten,
-       Hover-Lift ergänzen. */
+    text-align: center;
+    padding-top: 78px;     /* Luft für die Faden-Zone; der Punkt sitzt bei 34px */
     transition:
         opacity var(--duration-slow) var(--ease-out) var(--reveal-delay, 0ms),
-        transform var(--duration-slow) var(--ease-out) var(--reveal-delay, 0ms),
-        border-color var(--duration-base) var(--ease-out),
-        box-shadow var(--duration-base) var(--ease-out);
+        transform var(--duration-slow) var(--ease-out) var(--reveal-delay, 0ms);
 }
-.lp-how-station:hover {
-    border-color: var(--accent);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-soft);
+/* Desktop-Kaskade: die vier Stationen stehen nebeneinander und triggern
+   gleichzeitig — das Reveal kaskadiert dem Faden hinterher (3× das
+   animations.js-Stagger-Delay: 0/180/360/540ms). Die Stationen erscheinen
+   sichtbar ENTLANG des sich zeichnenden Bogens — das ist die ganze
+   Choreografie der Sektion. Mobil (eigener Scroll-Trigger je Station)
+   bleibt das schnelle Basis-Delay, sonst wirkt Station 04 verschleppt. */
+@media (min-width: 860.02px) {
+    .lp-how-station { transition-delay: calc(var(--reveal-delay, 0ms) * 3); }
 }
-.lp-how-ico {
-    width: 36px; height: 36px;
-    display: block;
-    margin-bottom: var(--space-5);
-    color: var(--accent-3);
-    filter: drop-shadow(0 0 6px rgba(100, 214, 196, 0.35)); /* --accent-3 chromatischer Saum */
+/* Der Stations-Punkt AUF dem Faden: Hairline-Ring, der Grund stanzt den Faden
+   aus; füllt sich accent-3, sobald die Station enthüllt ist — der Faden
+   „knotet" die Station fest, kurz nachdem ihre Spitze vorbeigezogen ist. */
+.lp-how-dot {
+    position: absolute;
+    top: 34px; left: 50%;
+    width: 9px; height: 9px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid var(--accent-3);
+    background: var(--bg);
+    transition:
+        background-color var(--duration-slow) var(--ease-out) calc(var(--reveal-delay, 0ms) * 3 + 300ms),
+        box-shadow var(--duration-slow) var(--ease-out) calc(var(--reveal-delay, 0ms) * 3 + 300ms);
 }
-.lp-how-ico svg {
-    width: 100%; height: 100%;
-    stroke: currentColor; stroke-width: 1.4; fill: none;
-    stroke-linecap: round; stroke-linejoin: round;
+.lp-how-station.is-revealed .lp-how-dot {
+    background: var(--accent-3);
+    box-shadow: 0 0 12px rgba(100, 214, 196, 0.45);
 }
 .lp-how-num {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    letter-spacing: 0.1em;
-    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
+    color: var(--text-muted);
     display: block;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-3);
 }
 .lp-how-label {
     font-family: var(--font-display);
-    font-size: var(--text-xl);
+    font-size: clamp(22px, 2.4vw, 28px);
     font-weight: 400;
     color: var(--text);
-    margin: 0 0 var(--space-2);
+    margin: 0 0 var(--space-3);
     line-height: 1.15;
 }
 .lp-how-line {
     font-family: var(--font-body);
     font-size: var(--text-sm);
+    font-weight: 300;
     color: var(--text-dim);
-    line-height: var(--leading-normal);
-    margin: 0;
+    line-height: 1.65;
+    margin: 0 auto;
+    max-width: 24ch;
 }
 
-/* Mobil + Tablet (<860px): Stationen stapeln; Naht läuft vertikal in der linken
-   Gosse, Karten eingerückt, damit sie sie freihalten. Die Spalte wird gedeckelt
-   und zentriert, sonst werden die Karten auf iPad-Breite (768–860px) absurd
-   breit (~700px) mit toter Fläche rechts. Auf echten Phones (<560px) greift das
-   max-width nicht → volle Breite wie gehabt. */
+/* Mobil + Tablet (<860px): Faden vertikal in der linken Gosse (Wölbung zu den
+   Stationen), Stationen rechts davon als Protokollrand — offener Text,
+   linksbündig, grosszügig gestapelt. Punkte nur auf dem Desktop: das Wölbungs-x
+   der Gosse variiert mit der Inhaltshöhe, ein fixer Punkt sässe daneben — der
+   Mono-Index übernimmt die Marke. Spalte gedeckelt + zentriert, sonst wird der
+   Text auf iPad-Breite absurd breit; auf Phones (<560px) volle Breite. */
 @media (max-width: 860px) {
     .lp-how-track { max-width: 560px; margin-inline: auto; }
-    .lp-how-grid { grid-template-columns: 1fr; gap: var(--space-4); padding-left: var(--space-8); }
+    .lp-how-grid { grid-template-columns: 1fr; gap: clamp(40px, 7svh, 64px); padding-left: var(--space-8); }
     .lp-how-arc { display: none; }
     .lp-how-arc-v { display: block; }  /* der Bogen läuft vertikal in der Gosse */
     .lp-how-seam { top: 0; bottom: 0; left: 2px; right: auto; width: 40px; height: auto; }
-    .lp-how-station { padding: var(--space-5) var(--space-5) var(--space-6); }
-    .lp-how-ico { width: 30px; height: 30px; margin-bottom: var(--space-4); }
+    .lp-how-dot { display: none; }
+    .lp-how-station { padding: 0; text-align: left; }
+    .lp-how-line { margin: 0; max-width: 36ch; }
 }
 
-/* Reduced-motion: Bogen vollständig gezeichnet, keine Bewegung.
-   (Das globale [data-reveal]-Reset deckt die Karten ab; der Naht-Pfad braucht
-   seinen eigenen Guard, da er kein [data-reveal] trägt.) */
+/* Reduced-motion: Bogen vollständig gezeichnet, Punkte gefüllt, keine Bewegung.
+   (Das globale [data-reveal]-Reset deckt die Stationen ab; Naht-Pfad und Punkt
+   brauchen eigene Guards, da sie kein [data-reveal] tragen.) */
 @media (prefers-reduced-motion: reduce) {
     .lp-how-arc-path { transition: none; stroke-dashoffset: 0 !important; }
+    .lp-how-dot { transition: none; background: var(--accent-3); }
 }
 
 /* ── Finale ── */
