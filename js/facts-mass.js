@@ -9,7 +9,9 @@
  *       dazu ein Live-Zähler ≈ +38 t/s (immer mit „≈" ausgewiesen).
  *   2 · WEGWERFEN — jede echte Sekunde fällt eine Ladung Partikel und
  *       setzt sich auf eine wachsende Halde (deterministisch, kein
- *       Physik-Zirkus; Wachstum flacht asymptotisch ab).
+ *       Physik-Zirkus). Die Halde wächst, bis ihr Kamm die Oberkante
+ *       des Beats — die Grenze zum CO₂-Beat darüber — berührt (~75 s
+ *       Verweilzeit), läuft davor weich aus und ruht dann.
  *   3 · ZURÜCK — alle ~4,6 s starten 100 Tracer von der Halde; 99 fallen
  *       matt zurück, genau EINER steigt weiter, hellt zu Aqua auf und
  *       verlässt die Bühne oben. Leise, fast traurig.
@@ -155,7 +157,7 @@
         }
         ctx.lineTo(b.w + 2, b.h - hm[COLS - 1] * b.h);
     }
-    function drawMound(b, hm, rim, fill) {
+    function drawMound(b, hm, rim, fill, rimAlpha) {
         const ctx = b.ctx;
         ctx.beginPath();
         crestPath(b, hm);
@@ -168,7 +170,7 @@
             // Nur der Kamm bekommt Licht — kein Rahmen an den Kanten
             ctx.beginPath();
             crestPath(b, hm);
-            ctx.strokeStyle = "rgba(" + C_AQUA + ",0.14)";
+            ctx.strokeStyle = "rgba(" + C_AQUA + "," + (rimAlpha || 0.14) + ")";
             ctx.lineWidth = 1;
             ctx.stroke();
         }
@@ -188,7 +190,13 @@
         const rnd = prng(22);
         // Normierte Halden-Höhen bleiben über Resizes erhalten (b.hm)
         const hm = b.hm || (b.hm = baseProfile(0.05, 0.06));
-        const MAXH = 0.34;
+        // Der Berg wächst, bis sein Kamm die Oberkante des Beats berührt —
+        // die Grenze zum CO₂-Beat (Produzieren) direkt darüber. Der Abfall
+        // reicht bis an die Emissionen heran; erst kurz davor läuft das
+        // Wachstum weich aus (Soft-Landing statt hartem Anschlag).
+        const MAXH = 0.985;
+        const RISE = 0.0125;  // Kamm-Steigung/s → Oberkante nach ~75 s Verweilzeit
+        const EASE_ZONE = 0.08;
         const SEQ = [0, -0.16, 0.12, -0.27, 0.2, 0.05, -0.08, 0.26, -0.21, 0.15];
         const falling = [];
         const puffs = [];
@@ -228,7 +236,25 @@
 
         b.step = (dt) => {
             acc += dt;
-            if (acc >= 1) { acc -= 1; clump(); }
+            if (acc >= 1) {
+                acc -= 1;
+                clump();
+                // Verlauf folgt dem wachsenden Berg (1×/s reicht, kein Flackern)
+                b.moundFill = moundGradient(b, Math.max.apply(null, hm));
+            }
+            // Unerbittliches Anwachsen der ganzen Halde: proportional zur
+            // eigenen Silhouette (die Form bleibt, der Berg reckt sich),
+            // zeitbasiert (aufl.-unabhängig), weich auslaufend vor der Kante.
+            let peak = 0;
+            for (let i = 0; i < COLS; i++) if (hm[i] > peak) peak = hm[i];
+            if (peak > 0 && peak < MAXH) {
+                const ease = Math.min(1, (MAXH - peak) / EASE_ZONE);
+                const gain = dt * RISE * ease;
+                for (let i = 0; i < COLS; i++) {
+                    hm[i] = Math.min(MAXH, hm[i] + gain * (hm[i] / peak));
+                }
+            }
+            b.atTop = peak >= MAXH - 0.02;
             for (let i = falling.length - 1; i >= 0; i--) {
                 const p = falling[i];
                 p.vy = Math.min(560, p.vy + 620 * dt);
@@ -275,7 +301,9 @@
                 ctx.fillStyle = "rgba(" + C_WHITE + "," + (0.3 * p.life * 2).toFixed(3) + ")";
                 ctx.fillRect(p.x, p.y, 1.4, 1.4);
             }
-            drawMound(b, hm, true, b.moundFill);
+            // Ankunft an der Oberkante (dem CO₂-Beat): der Kamm fängt etwas
+            // mehr Licht — ein stilles Anerkennen, kein Effekt-Feuerwerk.
+            drawMound(b, hm, true, b.moundFill, b.atTop ? 0.28 : 0.14);
         };
     }
 
