@@ -285,6 +285,7 @@ const DesignFlow = (() => {
         </div>
         <div class="de-ask-col">
           <div class="de-stepper" id="de-stepper" role="img"></div>
+          <span class="de-phase-flash" id="de-phase-flash" aria-hidden="true"></span>
           <div class="de-body" id="de-body"></div>
           <p class="de-live" id="de-live"></p>
           <div class="de-controls">
@@ -367,6 +368,62 @@ const DesignFlow = (() => {
         };
         requestAnimationFrame(step);
       });
+    }
+
+    // ── Question-swap choreography (roadmap §6) ─────────────────────────────
+    // Two phases: the outgoing content sinks away (150 ms), then the new
+    // question's children stagger in (CSS .is-entering, ≤250 ms total). Only
+    // under html.fx and without prefers-reduced-motion — everyone else keeps
+    // the instant swap. While leaving, commits are blocked (swapping flag +
+    // pointer-events CSS); a second navigation during the leave simply
+    // replaces the pending paint, so back/skip can't double-render.
+    let swapping = false;
+    let pendingPaint = null;
+    const fxOn = () => typeof document !== "undefined" && document.documentElement.classList.contains("fx");
+    const reduceMotion = () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        : false;
+    function swapBody(paint) {
+      if (!fxOn() || reduceMotion() || !firstQuestionShown) { paint(); return; }
+      pendingPaint = paint;
+      if (swapping) return; // leave already running — it will paint the latest
+      swapping = true;
+      // The leave owns its frames: nothing else runs during the sink-out (the
+      // preview morph is deliberately inside paint(), i.e. after the leave —
+      // starting it earlier starves the leave animation on slow devices).
+      body.classList.add("is-leaving");
+      setTimeout(() => {
+        body.classList.remove("is-leaving");
+        swapping = false;
+        const p = pendingPaint;
+        pendingPaint = null;
+        if (p) p();
+        body.classList.add("is-entering");
+        setTimeout(() => body.classList.remove("is-entering"), 450);
+      }, 150);
+    }
+
+    // Phase interstitial: crossing A→B→…→F flashes the new chapter's mono
+    // title on its permanently reserved line (no layout jump) and pulses the
+    // stepper's current beat. Decorative (aria-hidden) — the stepper's
+    // aria-label already announces the phase to assistive tech.
+    const phaseFlashEl = hostEl.querySelector("#de-phase-flash");
+    let lastPhase = null;
+    let phaseFlashTimer = null;
+    function phaseFlash(phase) {
+      if (!phaseFlashEl || !fxOn() || reduceMotion()) return;
+      const ci = PHASE_ORDER.indexOf(String(phase || "A").toUpperCase());
+      const beat = PHASE_BEATS[ci < 0 ? 0 : Math.min(ci, PHASE_BEATS.length - 1)];
+      phaseFlashEl.textContent = t(beat.key);
+      phaseFlashEl.classList.remove("is-on");
+      void phaseFlashEl.offsetWidth;
+      phaseFlashEl.classList.add("is-on");
+      stepperEl.classList.remove("is-crossed");
+      void stepperEl.offsetWidth;
+      stepperEl.classList.add("is-crossed");
+      clearTimeout(phaseFlashTimer);
+      phaseFlashTimer = setTimeout(() => { phaseFlashEl.classList.remove("is-on"); phaseFlashEl.textContent = ""; }, 950);
     }
 
     const chipsEl = hostEl.querySelector("#de-preview-chips");
@@ -491,7 +548,7 @@ const DesignFlow = (() => {
         updatePreview();
       },
       commit(payload) {
-        if (isGuardedTap(nowMs(), lastRenderAt)) return;
+        if (swapping || isGuardedTap(nowMs(), lastRenderAt)) return;
         const { eff, conf } = resolveEffects(currentNode, payload);
         if (currentNode) T("node_choice", { id: currentNode.id, modality: currentNode.modality });
         snapshot();
@@ -505,9 +562,10 @@ const DesignFlow = (() => {
 
     function renderModality(node) {
       atRefine = false; // back to the morphing flat for any question
-      lastRenderAt = nowMs();
       currentNode = node;
       updateStepper(node.phase);
+      const crossed = lastPhase !== null && node.phase !== lastPhase;
+      lastPhase = node.phase;
       T("node_shown", { id: node.id, phase: node.phase, modality: node.modality, lang: lang() });
       // Journey breadcrumb for Sentry: which step the user was on when an error
       // later fires (no answer values — only node id / phase / garment category).
@@ -519,20 +577,27 @@ const DesignFlow = (() => {
       }
       const renderer = window.DEModalities && window.DEModalities[node.modality];
       if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
-      renderer(body, node, ctx);
-      refreshChrome();
-      // A11y: each render replaces the question DOM, so the control the user just
-      // activated is gone and focus falls to <body> — leaving keyboard/SR users
-      // with no announcement of the new question and a blind re-Tab from the top.
-      // Move focus to the new question heading (focusable via tabindex=-1), which
-      // both announces it and makes the next Tab land logically. Skip the first
-      // mount so arriving at the studio doesn't yank the viewport.
-      const q = body.querySelector(".de-question");
-      if (q) {
-        q.setAttribute("tabindex", "-1");
-        if (firstQuestionShown) q.focus();
-        else firstQuestionShown = true;
-      }
+      swapBody(() => {
+        lastRenderAt = nowMs(); // guard counts from the visible paint
+        // Preview refresh (morph) starts WITH the new question's entrance —
+        // one clean sequence: sink out → question staggers in while the
+        // garment reshapes. (Running it during the leave starves the leave.)
+        refreshChrome();
+        renderer(body, node, ctx);
+        if (crossed) phaseFlash(node.phase);
+        // A11y: each render replaces the question DOM, so the control the user
+        // just activated is gone and focus falls to <body> — leaving keyboard/SR
+        // users with no announcement of the new question and a blind re-Tab from
+        // the top. Move focus to the new question heading (focusable via
+        // tabindex=-1), which both announces it and makes the next Tab land
+        // logically. Skip the first mount so arriving doesn't yank the viewport.
+        const q = body.querySelector(".de-question");
+        if (q) {
+          q.setAttribute("tabindex", "-1");
+          if (firstQuestionShown) q.focus();
+          else firstQuestionShown = true;
+        }
+      });
     }
 
     function renderNext() {
@@ -553,10 +618,9 @@ const DesignFlow = (() => {
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
-      lastRenderAt = nowMs();
+      lastPhase = "F";
       atRefine = true; // Phase F → crossfade the flat to the realism photo
       updateStepper("F"); // the arc is traversed; the user is refining/generating
-      refreshChrome();
       finishBtn.hidden = true;
       const l = lang();
       const sugg = window.DesignInference ? DesignInference.suggestions(dna, content.attributes, l) : [];
@@ -571,6 +635,9 @@ const DesignFlow = (() => {
           <button type="button" class="de-nudge" data-ax="${ax}" data-dir="1" aria-label="${label} ${t("engine.nudge_up")}">${t("engine.nudge_up")}</button></div>`;
       }).join("");
 
+      swapBody(() => {
+      lastRenderAt = nowMs(); // guard counts from the visible paint
+      refreshChrome(); // realism crossfade starts with the refine screen's entrance
       body.innerHTML = `
         <h2 class="de-question">${t("engine.refine_title")}</h2>
         <p class="de-summary" id="de-refine-summary">${DesignSummary.toSentence(dna, l)}</p>
@@ -678,6 +745,10 @@ const DesignFlow = (() => {
         const extra = ftEl && ftEl.value.trim() ? " " + ftEl.value.trim() : "";
         handoff(DesignSummary.toPrompt(dna, lang()) + extra, DesignDNA.get(dna, "category"), e.currentTarget);
       });
+      // No interstitial on the crossing INTO refine: the phase list has no F
+      // beat (it would clamp to "Details" — wrong word while arriving at
+      // "Dein Design"); the refine headline itself is the arrival marker.
+      }); // end swapBody paint
 
       if (typeof options.onFinish === "function") {
         options.onFinish({ dna, sentence: DesignSummary.toSentence(dna, l), prompt: DesignSummary.toPrompt(dna, l) });
