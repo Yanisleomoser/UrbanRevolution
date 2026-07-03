@@ -95,5 +95,38 @@ assert(shouldRevealForHash(null) === false, "null → false");
 assert(shouldRevealForHash(undefined) === false, "undefined → false");
 assert(shouldRevealForHash("design") === true, "a fragment without the leading # still resolves");
 
+console.log("\n— portalGeometry (§5.1): the disc always covers the viewport, starting on the origin's circle —");
+const { portalGeometry, shouldPortal } = Landing;
+{
+  // Orb-like origin, centred low in a desktop viewport.
+  const g = portalGeometry({ left: 620, top: 700, width: 200, height: 200 }, 1440, 900);
+  assert(g.cx === 720 && g.cy === 800, "origin centre = element centre");
+  // Farthest corner from (720,800) is (0,0) or (1440,0): sqrt(720² + 800²) ≈ 1076 → D ≥ 2×1076.
+  assert(g.D >= 2 * Math.hypot(720, 800), "disc diameter reaches the farthest viewport corner");
+  assert(g.D <= 2 * Math.hypot(720, 800) * 1.07 + 1, "…with only the intended 6 % breathing room");
+  assert(Math.abs(g.scale0 * g.D - 200) < 1, "start scale puts the disc exactly on the orb's 200px circle");
+}
+{
+  // Corner origin (worst case): radius must span the full diagonal.
+  const g = portalGeometry({ left: 0, top: 0, width: 0, height: 0 }, 390, 844);
+  assert(g.D >= 2 * Math.hypot(390, 844), "corner origin → disc spans the whole diagonal");
+  assert(g.scale0 > 0 && g.scale0 <= 1, "zero-size origin still yields a sane, visible seed (clamped d0)");
+}
+{
+  // Text-link origin (thin rect): the seed circle never collapses below 24px.
+  const g = portalGeometry({ left: 100, top: 100, width: 180, height: 18 }, 1440, 900);
+  assert(Math.abs(g.scale0 * g.D - 24) < 1, "thin origins are clamped to a 24px seed circle");
+}
+assert(portalGeometry(null, 0, 0).D >= 1 && !Number.isNaN(portalGeometry(null, 0, 0).scale0), "junk input → no NaN, no zero diameter");
+assert(portalGeometry({ left: NaN, top: NaN, width: NaN, height: NaN }, NaN, NaN).D >= 1, "NaN rect/viewport → clamped, never throws");
+
+console.log("\n— shouldPortal truth table: the portal only takes plain clicks on a closed studio under html.fx —");
+assert(shouldPortal({ fx: true, hidden: true, active: false, modified: false }) === true, "fx + hidden studio + plain click → portal");
+assert(shouldPortal({ fx: false, hidden: true, active: false, modified: false }) === false, "no fx (GSAP missing / reduced motion) → instant reveal");
+assert(shouldPortal({ fx: true, hidden: false, active: false, modified: false }) === false, "studio already open → native anchor behaviour");
+assert(shouldPortal({ fx: true, hidden: true, active: true, modified: false }) === false, "portal already in flight → no double portal");
+assert(shouldPortal({ fx: true, hidden: true, active: false, modified: true }) === false, "modifier/secondary click → native anchor semantics");
+assert(shouldPortal(null) === false && shouldPortal({}) === false, "junk input → false, never throws");
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

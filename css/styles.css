@@ -7228,3 +7228,31 @@ html.fx .lp-identity-ring circle { transform-origin: 100px 100px; animation: lp-
     transition: transform 0.3s var(--ease-out);
 }
 .lp-cta-orb:hover .lp-cta-orb-arrow { transform: translateX(6px); }
+
+/* §5.1 Threshold-Portal — der Kreis der Landing öffnet sich wörtlich ins
+   Studio: eine Scheibe wächst per transform vom angeklickten CTA über den
+   Viewport (Genesis-Fäden treiben darin), darunter wird das Studio instant
+   enthüllt, dann löst sich die Scheibe auf die Studio-Oberfläche auf
+   (landing.js portalReveal). Nur transform/opacity → Compositor, iOS-tauglich.
+   JS gated auf html.fx + motion; hier zusätzlich abgesichert. Über allem
+   (Loader 150, Navbar 100, Egg-Burst 1200). */
+.lp-portal { position: fixed; inset: 0; z-index: 1300; }
+html:not(.fx) .lp-portal { display: none; }
+@media (prefers-reduced-motion: reduce) { .lp-portal { display: none; } }
+.lp-portal-disc {
+    position: absolute;
+    border-radius: 50%;
+    overflow: hidden;
+    background: radial-gradient(120% 90% at 50% 30%, #16293b, #0a1622 78%);
+    box-shadow:
+        inset 0 0 0 2px rgba(100, 214, 196, 0.26),
+        inset 0 0 90px rgba(39, 121, 168, 0.22),
+        0 0 90px rgba(6, 14, 22, 0.8);
+    transition: transform .42s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
+}
+.lp-portal.is-out .lp-portal-disc { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out); }
+/* Die Fäden füllen die Scheibe (Nebula-SVG kommt mit .de-garment-Basisklasse —
+   deren Stage-Sizing/Schatten hier neutralisieren) und treiben langsam. */
+.lp-portal-disc .de-garment.de-nebula { width: 100%; height: 100%; max-width: none; filter: none; animation: lpPortalDrift 9s linear infinite alternate; }
+@keyframes lpPortalDrift { from { transform: rotate(-2deg) scale(1.12); } to { transform: rotate(3deg) scale(1.2); } }

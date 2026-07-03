@@ -59,7 +59,34 @@
     return "M" + pts.map((pt) => (pt[0] + ox).toFixed(2) + " " + (pt[1] + oy).toFixed(2)).join(" L");
   }
 
-  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS, pivotBendPath };
+  // §5.1 Threshold-Portal — pure Geometrie: der Kreis, der vom angeklickten
+  // CTA in den Viewport wächst. Die Scheibe muss den GANZEN Viewport von einem
+  // beliebigen Ursprung aus decken, also ist ihr Radius die Distanz zur
+  // fernsten Viewport-Ecke (+6 % Luft für iOS-Toolbar-Shifts); sie startet
+  // exakt auf dem Kreis des Ursprungs-Elements — der Orb IST das Portal.
+  // DOM-frei → headless unit-testbar.
+  function portalGeometry(rect, vw, vh) {
+    const r = rect || {};
+    const w = Number(r.width) || 0, h = Number(r.height) || 0;
+    const cx = (Number(r.left) || 0) + w / 2;
+    const cy = (Number(r.top) || 0) + h / 2;
+    const W = Math.max(1, Number(vw) || 1), H = Math.max(1, Number(vh) || 1);
+    const fx2 = Math.max(cx, W - cx), fy2 = Math.max(cy, H - cy);
+    const D = Math.ceil(Math.sqrt(fx2 * fx2 + fy2 * fy2) * 2 * 1.06);
+    const d0 = Math.max(24, Math.min(w, h)); // Text-Links bekommen einen kleinen, aber sichtbaren Start-Kreis
+    return { cx, cy, D, scale0: Math.min(1, d0 / D) };
+  }
+
+  // Wann wird ein Studio-Anker-Klick zum Portal? Nur mit voller Bewegung
+  // (html.fx), noch verborgenem Studio, keinem laufenden Portal und einem
+  // einfachen Haupttasten-Klick (Modifier-Klicks behalten die native
+  // Anker-Semantik). Pure Truth-Table → unit-testbar.
+  function shouldPortal(o) {
+    const s = o || {};
+    return !!s.fx && !!s.hidden && !s.active && !s.modified;
+  }
+
+  if (typeof module !== "undefined" && module.exports) module.exports = { shouldRevealForHash, STUDIO_ANCHORS, pivotBendPath, portalGeometry, shouldPortal };
   if (typeof window === "undefined") return; // non-DOM (tests/SSR): nothing to mount
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -136,11 +163,82 @@
     }
   }
 
+  // §5.1 — die Schwelle: der Kreis, mit dem die Landing endet, öffnet sich
+  // wörtlich ins Studio. Die Scheibe wächst vom angeklickten CTA über den
+  // Viewport (die Genesis-Fäden treiben schon darin — dasselbe Gewebe, das
+  // die Studio-Bühne zeigt), darunter passieren Reveal + Fragment-Sprung
+  // INSTANT, dann löst sich die Scheibe auf die Studio-Oberfläche auf.
+  // Nur transform/opacity (Compositor, iOS-tauglich). Reduced-Motion, fehlendes
+  // GSAP und Deep-Links behalten den Instant-Reveal — das Portal läuft dann nie.
+  // Gibt true zurück, wenn es den Klick übernommen hat.
+  let portalActive = false;
+  function portalReveal(origin, href, modified) {
+    const studio = document.getElementById("studio");
+    if (!shouldPortal({ fx, hidden: !!(studio && studio.hidden), active: portalActive, modified })) return false;
+    if (!origin || !origin.getBoundingClientRect) return false;
+    portalActive = true;
+    const g = portalGeometry(origin.getBoundingClientRect(), window.innerWidth, window.innerHeight);
+    const portal = document.createElement("div");
+    portal.className = "lp-portal";
+    portal.setAttribute("aria-hidden", "true");
+    const disc = document.createElement("div");
+    disc.className = "lp-portal-disc";
+    disc.style.width = g.D + "px";
+    disc.style.height = g.D + "px";
+    disc.style.left = (g.cx - g.D / 2) + "px";
+    disc.style.top = (g.cy - g.D / 2) + "px";
+    disc.style.transform = "scale(" + g.scale0 + ")";
+    if (window.GarmentSVG && window.GarmentSVG.nebula) {
+      disc.innerHTML = window.GarmentSVG.nebula({ seed: 4, energy: 0.55 });
+    }
+    portal.appendChild(disc);
+    document.body.appendChild(portal);
+    const cleanup = () => { portal.remove(); portalActive = false; };
+    // Phase 2 synchronisiert auf das ECHTE Transition-Ende (transitionend),
+    // nicht auf eine Wanduhr-Schätzung: auf langsamen Geräten startet die
+    // Transition verspätet (erste Rasterisierung der großen Scheibe), und ein
+    // fixer Timer würde das Studio enthüllen, bevor die Scheibe deckt. Der
+    // Timeout-Fallback (~3× Nominaldauer) fängt verschluckte Events ab.
+    let covered = false;
+    const phase2 = () => {
+      if (covered || !portal.isConnected) return;
+      covered = true;
+      // Unter der Abdeckung: Fragment setzen (History-Eintrag wie beim
+      // nativen Klick), Reveal + Fokus — alles mit Instant-Scroll.
+      const html = document.documentElement;
+      const prevSB = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto";
+      try {
+        if (href && location.hash !== href) location.hash = href;
+        revealStudio();
+      } finally {
+        html.style.scrollBehavior = prevSB;
+      }
+      portal.classList.add("is-out");
+      disc.style.opacity = "0";
+      disc.style.transform = "scale(1.05)";
+      setTimeout(cleanup, 340);
+    };
+    disc.addEventListener("transitionend", (e) => { if (e.propertyName === "transform") phase2(); }, { once: true });
+    setTimeout(phase2, 1300);
+    void disc.offsetWidth; // Start-Frame committen, dann die Transition fahren
+    disc.style.transform = "scale(1)";
+    // Sicherheitsnetz: die Seite bleibt NIE hinter einem Overlay gefangen.
+    setTimeout(() => { if (portal.isConnected) cleanup(); }, 2600);
+    return true;
+  }
+
   function initStudioReveal() {
     document.addEventListener("click", (e) => {
       const a = e.target.closest && e.target.closest('a[href^="#"]');
       if (!a) return;
-      if (STUDIO_ANCHORS.includes((a.getAttribute("href") || "").slice(1))) revealStudio();
+      const href = a.getAttribute("href") || "";
+      if (!STUDIO_ANCHORS.includes(href.slice(1))) return;
+      const modified = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
+      // §5.1: mit erlaubter Bewegung und noch geschlossenem Studio wird der
+      // Klick zur Schwelle — der Kreis wächst aus dem berührten Element.
+      if (portalReveal(a, href, modified)) { e.preventDefault(); return; }
+      revealStudio();
     });
     // Share-Links (#dna=…) und Studio-Anker öffnen das Studio direkt.
     const check = () => { if (shouldRevealForHash(location.hash)) revealStudio(); };
