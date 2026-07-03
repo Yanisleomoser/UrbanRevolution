@@ -152,9 +152,15 @@ console.log("\n— renderInto ignores a stale realism photo-probe superseded by 
     querySelector: (sel) => (sel === ".de-preview-photo" ? photoWrap : sel === ".de-preview-photo img" ? img : null),
   };
 
-  DP.renderInto(el, jacketDna(), { realism: true }); // kicks off the (never-resolved) probe
-  assert(instances.length === 1, "realism render with a curated photo starts one probe");
-  DP.renderInto(el, jacketDna(), { realism: false }); // user backs out before it resolves
+  // The honesty gate now sits before the probe: pass a manifest whose entry
+  // matches this DNA so the probe still starts (gate behaviour itself is
+  // covered in the photoMatches block below).
+  const probeDna = jacketDna();
+  probeDna.archetypeWeights.techAvant = 1; // deterministic top archetype
+  const probeManifest = { photos: { "jacket-techAvant": { "length": "long", "pattern.type": "stripe" } } };
+  DP.renderInto(el, probeDna, { realism: true, photoManifest: probeManifest }); // kicks off the (never-resolved) probe
+  assert(instances.length === 1, "realism render with a curated, honest photo starts one probe");
+  DP.renderInto(el, probeDna, { realism: false }); // user backs out before it resolves
 
   instances[0].onload(); // the superseded probe finally resolves
   assert(img.src === "", "a superseded probe never applies its image");
@@ -164,6 +170,48 @@ console.log("\n— renderInto ignores a stale realism photo-probe superseded by 
 
   global.Image = realImage;
   global.requestAnimationFrame = realRaf;
+}
+
+console.log("\n— photoMatches / matchingCandidates (honesty gate: no photo may contradict the DNA) —");
+{
+  const mkDna = (attrs) => {
+    const d = DesignDNA.create();
+    Object.entries(attrs).forEach(([p, v]) => DesignDNA.set(d, p, v, 1));
+    return d;
+  };
+  const blazerEntry = { subArchetype: "blazer", "construction.collar": "notched", "construction.closure": "button", "length": "regular", "pattern.type": "none" };
+
+  const blazer = mkDna({ category: "jacket", subArchetype: "blazer", "construction.collar": "notched", "construction.closure": "button", length: "regular", "pattern.type": "none" });
+  assert(DP.photoMatches(blazer, blazerEntry) === true, "a design matching every shown attribute passes");
+
+  const puffer = mkDna({ category: "jacket", subArchetype: "puffer", "construction.closure": "zip", length: "cropped" });
+  assert(DP.photoMatches(puffer, blazerEntry) === false, "the zip puffer never gets the button blazer photo (the original defect)");
+
+  const undecided = mkDna({ category: "jacket", "construction.closure": "button" });
+  assert(DP.photoMatches(undecided, blazerEntry) === true, "attributes the DNA doesn't carry don't gate (photo makes no contradicted claim)");
+
+  assert(DP.photoMatches(blazer, { unusable: true, _note: "suit" }) === false, "an unusable photo never shows");
+  assert(DP.photoMatches(blazer, null) === false, "a photo without a manifest entry never shows (fail-closed)");
+  assert(DP.photoMatches(blazer, { "pattern.type": "none", _note: "ignored" }) === true, "_note metadata is not treated as a gate");
+
+  const duo = mkDna({ category: "hoodie", "color.scheme": "duo-gradient" });
+  const mono = mkDna({ category: "hoodie", "color.scheme": "mono" });
+  const gradientEntry = { "color.scheme": "duo-gradient" };
+  assert(DP.photoMatches(duo, gradientEntry) === true && DP.photoMatches(mono, gradientEntry) === false, "a gradient photo only shows for gradient designs");
+
+  // matchingCandidates: manifest filters the heroCandidates list
+  const manifest = { photos: {
+    "jacket-quietMinimal": blazerEntry,
+    "jacket-quietMinimal-blazer": { unusable: true },
+  } };
+  // top archetype: nudge quietMinimal up so candidates resolve to jacket-quietMinimal
+  blazer.archetypeWeights.quietMinimal = 1;
+  const cands = DP.matchingCandidates(blazer, manifest);
+  assert(cands.length === 1 && /jacket-quietMinimal\.jpg$/.test(cands[0]), "matching design → exactly the honest photo (subarch variant is unusable)");
+  puffer.archetypeWeights.quietMinimal = 1;
+  assert(DP.matchingCandidates(puffer, manifest).length === 0, "contradicting design → no candidates (flat stays)");
+  assert(DP.matchingCandidates(blazer, null).length === 0, "no manifest → no photos (fail-closed)");
+  assert(DP.matchingCandidates(blazer, { photos: {} }).length === 0, "photo missing from manifest → never probed");
 }
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));

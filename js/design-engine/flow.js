@@ -59,7 +59,10 @@ const DesignFlow = (() => {
     ]);
     const nodes = [...intent.nodes];
     cats.forEach((c) => { if (c && Array.isArray(c.nodes)) nodes.push(...c.nodes); });
-    return { archetypes: arch.archetypes, attributes: attrs, nodes };
+    // Photo honesty manifest (roadmap §3.5) — best-effort: without it the
+    // realism layer stays off (fail-closed; the flat is always correct).
+    const photoManifest = await get("preview-photos.json").catch(() => null);
+    return { archetypes: arch.archetypes, attributes: attrs, nodes, photoManifest };
   }
 
   function resolveEffects(node, payload) {
@@ -317,6 +320,7 @@ const DesignFlow = (() => {
         const catConf = DesignDNA.confidence(dna, "category");
         window.DesignPreview.renderInto(previewEl, previewDna, {
           realism: atRefine,
+          photoManifest: content.photoManifest,
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
