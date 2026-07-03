@@ -247,6 +247,7 @@ const I18N = (() => {
       "engine.intro_title": "Finde heraus, was du suchst.",
       "engine.intro_sub": "Keine Beschreibung nötig — wähle, vergleiche, fühle. Dein Stück entsteht aus deinen Entscheidungen. Den letzten Schliff gibst du am Ende mit einem Satz, aus dem die KI dein Einzelstück einmal fertigen soll.",
       "engine.intro_start": "Reise beginnen",
+      "engine.load_fail": "Die Reise konnte nicht geladen werden. Bitte lade die Seite neu.",
       "engine.refine_freetext_label": "Etwas, das wir nicht erraten konnten? Ergänze es in einem Satz.",
       "engine.refine_freetext_ph": "z.B. verdeckte Knopfleiste, Innentasche fürs Handy …",
 
@@ -862,6 +863,7 @@ const I18N = (() => {
       "engine.intro_title": "Find what you're looking for.",
       "engine.intro_sub": "No description needed — choose, compare, feel. Your piece takes shape from your decisions. At the very end, one sentence adds the final touch — the one the AI is meant to make your one-of-one from.",
       "engine.intro_start": "Begin",
+      "engine.load_fail": "The journey couldn't be loaded. Please reload the page.",
       "engine.refine_freetext_label": "Anything we couldn't read from your choices? Add it in one sentence.",
       "engine.refine_freetext_ph": "e.g. hidden placket, inside pocket for a phone …",
 

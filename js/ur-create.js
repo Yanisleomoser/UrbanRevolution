@@ -288,7 +288,12 @@
         // Eigener rAF-Tween: natives smooth-Scrolling (scrollIntoView UND
         // scrollTo{smooth}) ist mit dem globalen overflow-x:hidden auf
         // html/body in Chromium wirkungslos (verifiziert) — instant geht.
+        const scrollAtReveal = window.scrollY;
         if (inCreate) setTimeout(() => {
+          // The user may have scrolled elsewhere in the 900ms window (e.g. down
+          // to browse the community gallery) — respect that instead of yanking
+          // them back to a section they've since navigated away from.
+          if (Math.abs(window.scrollY - scrollAtReveal) > 40) return;
           const target = sec.getBoundingClientRect().top + window.scrollY - 12;
           if (reduce()) { window.scrollTo(0, target); return; }
           const from = window.scrollY, dist = target - from, dur = 700;
@@ -354,10 +359,15 @@
   let galleryReady = false;
   let galleryItems = null;   // dekodierte Items: { it, dna, category }
   let galleryFilter = "all"; // aktiver Kleidungstyp-Filter
+  // Bumped on every renderGallery() call so an overlapping earlier call
+  // (init + an immediate language switch, or a rapid double-publish) can tell
+  // its response is stale once it resolves and skip overwriting newer data.
+  let galleryRequestSeq = 0;
 
   async function renderGallery() {
     const grid = $("#gallery-grid");
     if (!grid) return;
+    const requestId = ++galleryRequestSeq;
     let items = [];
     try {
       const res = await fetch("/api/gallery");
@@ -366,6 +376,7 @@
     } catch (_e) {
       items = await loadCurated();
     }
+    if (requestId !== galleryRequestSeq) return;
     // Session-Veröffentlichungen zuerst, dann Backend/kuratiert; je Item die DNA
     // einmal dekodieren (Typ für den Filter, Geometrie für die Kachel).
     galleryItems = published.concat(items).slice(0, 24).map((it) => {

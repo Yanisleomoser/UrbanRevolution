@@ -278,8 +278,8 @@ const DesignFlow = (() => {
           <p class="de-live" id="de-live"></p>
           <div class="de-controls">
             <button type="button" class="de-nav" id="de-back" data-i18n="engine.back" disabled>${t("engine.back")}</button>
-            <button type="button" class="de-nav" id="de-skip" data-i18n="engine.skip">${t("engine.skip")}</button>
-            <button type="button" class="de-nav" id="de-restart" data-i18n="engine.restart">${t("engine.restart")}</button>
+            <button type="button" class="de-nav" id="de-skip" data-i18n="engine.skip" disabled>${t("engine.skip")}</button>
+            <button type="button" class="de-nav" id="de-restart" data-i18n="engine.restart" disabled>${t("engine.restart")}</button>
             <button type="button" class="de-nav de-finish" id="de-finish" data-i18n="engine.finish_early" hidden>${t("engine.finish_early")}</button>
           </div>
         </div>
@@ -710,6 +710,11 @@ const DesignFlow = (() => {
 
     return loadContent(base).then((c) => {
       content = c;
+      // Skip/Restart both call renderNext()/resetJourney(), which read
+      // content.nodes — only safe once content has actually loaded, so they
+      // start disabled (see the template above) and are enabled here.
+      skipBtn.disabled = false;
+      restartBtn.disabled = false;
       const shared = window.DesignShare ? DesignShare.read() : null;
       if (shared && typeof shared === "object" && shared.archetypeWeights !== undefined) {
         dna = shared;
@@ -737,6 +742,13 @@ const DesignFlow = (() => {
       // als Funktion erhalten, wird aber nicht mehr aufgerufen).
       void showIntro;
       return renderNext();
+    }).catch((err) => {
+      // A content-JSON fetch (archetypes/attributes/nodes) can fail (network,
+      // a 404) leaving `content` permanently null — without this, the journey
+      // hangs on the bare skeleton with no feedback and an unhandled rejection.
+      console.error("[DesignFlow] content load failed:", err);
+      if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "engine" } });
+      body.innerHTML = `<p class="de-question">${t("engine.load_fail")}</p>`;
     });
   }
 

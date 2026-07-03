@@ -139,12 +139,29 @@ const AI = (() => {
     heather: "heather",
   };
 
+  // True if `keyword` occurs in `lower` at the start of a word — not stitched
+  // onto a preceding letter/digit. Deliberately only checks the leading edge
+  // (not both sides) so a German inflected suffix still matches via plain
+  // substring growth ("rotes", "blaue", "grünen"), while a keyword buried
+  // mid-word inside an unrelated term is rejected (e.g. "Karotte"/"Brot" both
+  // contain "rot", "Menge" contains "eng" — none of those are colour/fit words).
+  function startsWordMatch(lower, keyword) {
+    let from = 0;
+    for (;;) {
+      const idx = lower.indexOf(keyword, from);
+      if (idx === -1) return false;
+      const before = idx > 0 ? lower[idx - 1] : "";
+      if (!before || !/[a-zäöüß0-9]/i.test(before)) return true;
+      from = idx + 1;
+    }
+  }
+
   function extractFromPrompt(prompt, dict) {
     const lower = prompt.toLowerCase();
     let bestMatch = null;
     let bestLength = 0;
     for (const [keyword, value] of Object.entries(dict)) {
-      if (lower.includes(keyword) && keyword.length > bestLength) {
+      if (keyword.length > bestLength && startsWordMatch(lower, keyword)) {
         bestMatch = value;
         bestLength = keyword.length;
       }
@@ -184,7 +201,7 @@ const AI = (() => {
     let best = null;
     let bestLen = 0;
     for (const [key, val] of Object.entries(COLOR_DICT)) {
-      if (val !== primaryColor && key.length > bestLen && lower.includes(key)) {
+      if (val !== primaryColor && key.length > bestLen && startsWordMatch(lower, key)) {
         best = val;
         bestLen = key.length;
       }
@@ -242,7 +259,7 @@ const AI = (() => {
       body = {};
     }
 
-    if (response.ok && body && body.name) {
+    if (response.ok && body && typeof body.name === "string") {
       return body;
     }
 

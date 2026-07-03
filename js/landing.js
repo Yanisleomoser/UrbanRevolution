@@ -665,6 +665,14 @@
       mode = "drift";
       formChains = [];
       formButtons = [];
+      // A resize/rotation is a natural checkpoint to re-try full quality: a
+      // permanent CPU spike right after load (GC pause, throttled tab) would
+      // otherwise degrade the field once and never recover for the rest of
+      // the session, since these only ever move one way in degradeField().
+      emaDt = 16;
+      slowFrames = 0;
+      degradeLvl = 0;
+      linksOn = true;
       seed();
       allocGrid();
       computeMask();
