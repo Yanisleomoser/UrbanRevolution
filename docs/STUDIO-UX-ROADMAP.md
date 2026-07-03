@@ -309,6 +309,7 @@ holds.
 | 2 | `engine/realism-honesty-gate` | #329 | `content/preview-photos.json` — all 36 convergence photos individually described; **12 retired** (colorblock no DNA can produce, a two-piece "dress", 4 of 6 "pants" photos show full suits). `photoMatches`/`matchingCandidates` in render-preview.js: photo only crossfades when nothing it shows contradicts a decided DNA value; fail-closed, rejected photos never loaded |
 | 3 | `layout/mobile-docked-preview` | #330 | 76 px dock, thumb corner, ≤480 px + preview <30 % visible + journey on screen (`dockShouldShow`); mirrors **every** render/morph frame (`opts.mirror` in renderInto/morph); tap = rAF scroll-tween back to the stage; hoisted to `<body>` (see pitfalls); iPhone-verified by the user |
 | 4 | `visual/question-choreography` | #332 | Two-phase question swap (`deStepOut` 150 ms → `deStepIn` 240 ms staggered, `html.fx` only); preview morph starts WITH the entrance (see pitfalls); commits blocked mid-swap, pending paint replaced on double navigation; phase interstitial on a permanently reserved mono line + stepper-dot pulse (no interstitial on the crossing into refine); "Fertig" as gradient pill. Verified across all six categories: every swap choreographed, interstitials only on real chapter crossings, 0 page errors |
+| 5 | `visual/weave-hero-beat` | #334 | §5.3: gs-layer classes (`gs-outline/int/seams/ground`) in `renderFlat` + staged CSS: genesis-ghost converges (600 ms) → outline draws (1.1 s) → seams stitch → panels fill LAST (~1.6 s total); `.is-weave` removed 2.4 s post-beat (gen-guarded — else `stroke-dasharray:1` renders zip/stitch dashes solid). §5.2: `nebulaModel/nebulaPaint/lerpNebulaModel` — hash anchors are param-independent, so mood answers re-tension threads via 620 ms rAF tween (`.is-retension` blocks draw-in restarts, `.is-tweening` pauses breath/pulse during per-frame repaints); idle tempo follows energy (`--neb-breath/--neb-pulse`). `archTint()` hardens prototype-key archetypes from shared DNA. New permanent `scripts/verify-weave.mjs` (motion curves, fails on vacuous runs) |
 
 Also permanent: `scripts/shoot-journey.mjs [viewport] [category]` — deterministic
 walkthrough of any branch, every question screen + weave frames to
@@ -316,8 +317,7 @@ walkthrough of any branch, every question screen + weave frames to
 
 ### Next up
 
-Slice 5 `visual/weave-hero-beat` (§5.2–5.3), then slice 6
-`visual/studio-threshold` (§5.1, **iPhone-gated**), then 7–10 per §10.
+Slice 6 `visual/studio-threshold` (§5.1, **iPhone-gated**), then 7–10 per §10.
 
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 

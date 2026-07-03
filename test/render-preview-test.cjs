@@ -214,5 +214,43 @@ console.log("\n— photoMatches / matchingCandidates (honesty gate: no photo may
   assert(DP.matchingCandidates(blazer, { photos: {} }).length === 0, "photo missing from manifest → never probed");
 }
 
+console.log("\n— genesis → weave: nebula stage renders, the category pick triggers the one-time hero beat —");
+{
+  // Wire the real flat builder in so the genesis/weave branches run for real.
+  const GarmentSVG = require(path.join(ROOT, "garment-svg.js"));
+  global.window.GarmentSVG = GarmentSVG;
+
+  const el = fakeEl();
+  const dna = DesignDNA.create();
+  DesignDNA.set(dna, "intent.energy", 0.8, 1);
+  DP.renderInto(el, dna, { genesis: true, seed: 1 });
+  assert(el.innerHTML.includes("is-genesis") && el.innerHTML.includes("de-nebula"), "genesis render mounts the nebula stage");
+  assert(/--neb-breath:\d/.test(el.innerHTML) && /--neb-pulse:\d/.test(el.innerHTML), "the wrap carries the energy-driven tempo vars");
+
+  // Without a live DOM wrap (querySelector → null) a second genesis render
+  // repaints instead of tweening — and must not throw.
+  const dockMirror = { innerHTML: "" };
+  DP.renderInto(el, dna, { genesis: true, seed: 2, mirror: dockMirror });
+  assert(el.innerHTML.includes("de-nebula"), "second genesis render without a DOM wrap repaints cleanly");
+  assert(dockMirror.innerHTML.includes("de-nebula"), "the dock mirror receives the nebula too");
+
+  DesignDNA.set(dna, "category", "jacket", 1);
+  DP.renderInto(el, dna, {});
+  assert(el.innerHTML.includes("is-weave"), "first render after genesis carries .is-weave (the hero beat)");
+  assert(el.innerHTML.includes('class="gs-outline"'), "the weave target is the layered flat (outline can draw separately)");
+  DP.renderInto(el, dna, {});
+  assert(!el.innerHTML.includes("is-weave"), "the weave is one-time — the next render is a plain paint");
+
+  delete global.window.GarmentSVG;
+}
+
+console.log("\n— nebulaTempo maps mood energy to the genesis idle tempo —");
+{
+  assert(DP.nebulaTempo(0) === "--neb-breath:9.50s;--neb-pulse:4.60s", "calm (0) → long slow breaths");
+  assert(DP.nebulaTempo(1) === "--neb-breath:4.00s;--neb-pulse:2.20s", "bold (1) → quick tight pulses");
+  assert(DP.nebulaTempo(undefined) === DP.nebulaTempo(0.5), "no energy yet → the neutral middle tempo");
+  assert(DP.nebulaTempo(9) === DP.nebulaTempo(1) && DP.nebulaTempo(-3) === DP.nebulaTempo(0), "energy is clamped to 0..1");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

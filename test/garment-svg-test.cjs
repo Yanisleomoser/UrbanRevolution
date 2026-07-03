@@ -107,6 +107,49 @@ assert(neb0 === neb0b, "nebula is deterministic for identical input");
 assert(neb8.length > neb0.length, "more seed (more answers) → more woven threads");
 assert(!/NaN|undefined/.test(GarmentSVG.nebula({})), "nebula with empty params → no NaN/undefined");
 
+console.log("\n— nebulaModel / lerpNebulaModel: the §5.2 re-tension tween is pure —");
+{
+  const calm = GarmentSVG.nebulaModel({ seed: 2, energy: 0, structure: 0 });
+  const bold = GarmentSVG.nebulaModel({ seed: 2, energy: 1, structure: 0 });
+  assert(GarmentSVG.nebulaPaint(calm) === GarmentSVG.nebula({ seed: 2, energy: 0, structure: 0 }),
+    "nebula() ≡ nebulaPaint(nebulaModel()) — the split changes nothing for old callers");
+  assert(calm.threads.length === 18, "seed 2 → 14 + 2·2 threads");
+  // The hash-driven anchors are param-independent — a mood answer keeps every
+  // thread pinned and only re-tensions its bow (the §5.2 mechanic).
+  assert(calm.threads[0].x0 === bold.threads[0].x0 && calm.threads[0].y1 === bold.threads[0].y1,
+    "thread anchors don't move with energy (endpoints stay pinned)");
+  const bow = (m) => Math.max(...m.threads.map((t) => Math.abs(t.c1x - 120) + Math.abs(t.c1y - 134)));
+  assert(bow(bold) > bow(calm), "energy swings the control points wider (bolder crossings)");
+  const soft = GarmentSVG.nebulaModel({ seed: 2, energy: 1, structure: 0 });
+  const sharp = GarmentSVG.nebulaModel({ seed: 2, energy: 1, structure: 1 });
+  const secondBow = (m) => Math.max(...m.threads.map((t) => Math.abs(t.c2x - 120)));
+  assert(secondBow(sharp) < secondBow(soft), "structure straightens the second bow (tenser threads)");
+
+  const at0 = GarmentSVG.lerpNebulaModel(calm, bold, 0);
+  const at1 = GarmentSVG.lerpNebulaModel(calm, bold, 1);
+  const mid = GarmentSVG.lerpNebulaModel(calm, bold, 0.5);
+  assert(at0.threads[5].c1y === calm.threads[5].c1y, "t=0 reproduces the previous tension");
+  assert(at1.threads[5].c1y === bold.threads[5].c1y, "t=1 reproduces the new tension");
+  assert(Math.abs(mid.threads[3].c1x - (calm.threads[3].c1x + bold.threads[3].c1x) / 2) < 1e-9,
+    "t=0.5 lands exactly halfway (true interpolation, not a snap)");
+  assert(!/NaN|undefined/.test(GarmentSVG.nebulaPaint(mid)), "a painted lerp frame is clean SVG");
+
+  // An answer ADDS threads — they fade in with t instead of popping.
+  const grown = GarmentSVG.lerpNebulaModel(calm, GarmentSVG.nebulaModel({ seed: 4, energy: 0, structure: 0 }), 0.25);
+  assert(grown.threads.length === 22, "lerp keeps the target's (larger) thread count");
+  assert(Math.abs(grown.threads[20].op - GarmentSVG.nebulaModel({ seed: 4, energy: 0, structure: 0 }).threads[20].op * 0.25) < 1e-9,
+    "freshly added threads fade in with t");
+  assert(GarmentSVG.lerpNebulaModel(null, bold, 0.5) === bold, "null source → returns target (caller repaints)");
+}
+
+console.log("\n— weave hero-beat layer classes (outline draws first, panels fill last) —");
+["tshirt", "hoodie", "shirt", "jacket", "pants", "dress"].forEach((cat) => {
+  const svg = GarmentSVG.build(cat, { fit: 0.5, length: "regular", material: "cotton" });
+  assert(svg.includes('class="gs-int"') && svg.includes('class="gs-outline"')
+    && svg.includes('class="gs-seams"') && svg.includes('class="gs-ground"'),
+    `${cat}: carries the gs-int / gs-outline / gs-seams / gs-ground stage layers`);
+});
+
 console.log("\n— colour stops: duo-gradient renders a gradient fill —");
 const duo = GarmentSVG.build("tshirt", { fit: 0.5, scheme: "duo-gradient", stops: ["#2a9d8f", "#64d6c4"], material: "silk", finish: 0.8, energy: 0.7 });
 assert(duo.includes("linearGradient") && duo.includes("#2a9d8f") && duo.includes("#64d6c4"),
@@ -123,6 +166,17 @@ assert(!hostile.includes("<img") && !hostile.toLowerCase().includes("onerror"),
 assert(hostile.includes("#64d6c4"), "the legitimate hex stop in the same array survives");
 assert(GarmentSVG.build("tshirt", { scheme: "duo-gradient", stops: ["javascript:alert(1)", "rgb(0,0,0)"] }).startsWith("<svg"),
   "non-hex stops (url:/rgb()) fall back cleanly to a neutral tone, no throw");
+// A shared DNA can carry prototype keys as the winning archetype
+// ("constructor" → Object constructor on a bare-object lookup); the tint must
+// stay a real hex, never a stringified function/object in the paint.
+["constructor", "__proto__", "toString", "hasOwnProperty"].forEach((evilArch) => {
+  const flat = GarmentSVG.build("tshirt", { archetype: evilArch, energy: 0.6 });
+  const neb = GarmentSVG.nebula({ archetype: evilArch, seed: 1 });
+  assert(!/function|\[object|native code/.test(flat) && flat.includes("#8b8f96"),
+    `flat with archetype "${evilArch}" → neutral hex tint, no stringified prototype member`);
+  assert(!/function|\[object|native code/.test(neb) && neb.includes("#8b96a4"),
+    `nebula with archetype "${evilArch}" → neutral hex tint, no stringified prototype member`);
+});
 
 console.log("\n— rich Phase-E params exercise the detail layers cleanly —");
 ["jacket", "hoodie", "shirt", "dress", "pants"].forEach((cat) => {
