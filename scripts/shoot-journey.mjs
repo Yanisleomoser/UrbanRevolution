@@ -69,6 +69,23 @@ async function walk(vp) {
 
     if (await page.$(".de-tot")) {
       await page.click(".de-tot .de-tot-panel:first-child");
+    } else if (await page.$(".de-regions")) {
+      // Detail atelier: open every hotspot in DOM order, pick the LAST option
+      // of each micro-picker (never the first = often "none", which would hide
+      // the very details the screenshots must show). Hotspot buttons are
+      // stable elements — the flat repaints under them.
+      const spotCount = await page.$$eval(".de-hotspot", (els) => els.length);
+      for (let s = 0; s < spotCount; s++) {
+        const spot = (await page.$$(".de-hotspot"))[s];
+        await spot.click();
+        await page.waitForTimeout(250);
+        if (s === 0) await shoot("regions-picker-open");
+        const opts = await page.$$(".de-region-picker .de-region-opt");
+        if (opts.length) await opts[opts.length - 1].click();
+        await page.waitForTimeout(250);
+      }
+      await shoot("regions-all-set");
+      await page.click("#de-body .de-confirm");
     } else if (await page.$(".de-cards")) {
       const isCategory = (q || "").includes("entsteht") || /making/i.test(q || "");
       if (isCategory && CAT_LABEL[CATEGORY]) await page.click(`.de-cards .de-card[aria-label="${CAT_LABEL[CATEGORY]}"]`);

@@ -922,7 +922,49 @@ const GarmentSVG = (() => {
     return paint(model(category, params));
   }
 
-  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  // ---- region anchors (detail atelier, roadmap §7) -------------------------
+  // Viewbox-space anchor points for the tappable region hotspots of the
+  // "regions" modality. Derived from the SAME resolved geometry as the flat,
+  // so a hood, a cropped hem or a wide leg carries its hotspot with it. The
+  // spread is deliberate — sleeve marker on the right limb, cuffs on the left
+  // wrist, pockets opposite the cuffs — so 40 px tap targets never stack.
+  // Pure (category + params in, {region: {x,y}} out) → unit-testable.
+  function regionAnchors(category, params) {
+    const m = model(category, params || {});
+    const g = m.g;
+    const cl = (x, y) => ({ x: r(clamp(x, 14, VB - 14)), y: r(clamp(y, 14, VH - 14)) });
+    const a = {};
+    if (m.kind === "pants") {
+      a.waistband = cl(CX, g.topY + 8);
+      a.pockets = cl(CX - (g.legTop - 10), g.topY + 30);
+      a.hem = cl(CX - (g.ankleHalf + g.thighHalf * 0.05) / 2, g.hemY - 10);
+      return a;
+    }
+    if (m.kind === "dress") {
+      a.collar = cl(CX, g.neckY - 6);
+      a.waist = cl(CX, g.waistY);
+      a.hem = cl(CX, g.hemY - 8);
+      return a;
+    }
+    a.collar = cl(CX, g.neckY - 6);
+    // 0.4 keeps the closure marker's value line clear of the hem marker even
+    // on cropped bodies (the tightest stack: closure → hem ~40 units).
+    a.closure = cl(CX, lerp(g.armpitY, g.hemY, 0.4));
+    // High on the right limb (upper third), centred between its inner and
+    // outer edge — clear of the pocket hotspot that lives lower on that side.
+    const limbX = (lerp(g.shoulderHalf, g.coX, 0.32) + lerp(g.chestHalf, g.ciX, 0.32)) / 2;
+    a.sleeve = cl(CX + (g.sleeveless ? g.chestHalf : limbX), lerp(g.shoulderY, g.wristY, 0.32));
+    a.cuffs = cl(CX - (g.coX + g.ciX) / 2, g.wristY - 8);
+    // Chest pockets (shirt/tee) sit up left; body pockets (jacket/hoodie) low
+    // right — where the respective choices actually draw on the flat.
+    a.pockets = (m.cat === "shirt" || m.cat === "tshirt")
+      ? cl(CX - g.chestHalf * 0.55, g.armpitY + 18)
+      : cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));
+    a.hem = cl(CX, g.hemY - 6);
+    return a;
+  }
+
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

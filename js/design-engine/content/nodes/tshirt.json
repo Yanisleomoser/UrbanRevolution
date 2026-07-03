@@ -365,28 +365,30 @@
       "axis": { "de": ["Fein", "Gross"], "en": ["Fine", "Bold"] }
     },
     {
-      "id": "tshirt_pocket",
+      "id": "tshirt_details",
       "phase": "E",
-      "modality": "cards",
-      "when": "category == 'tshirt' && _confidence.construction.pockets < 0.5",
+      "modality": "regions",
+      "when": "category == 'tshirt'",
       "priority": 0.44,
-      "question": { "de": "Brusttasche?", "en": "Chest pocket?" },
-      "choices": [
-        { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
-        { "id": "chest", "label": { "de": "Brusttasche", "en": "Chest pocket" }, "effects": { "set": { "construction.pockets": "chest" }, "weight": { "utility": 0.1 } } }
-      ]
-    },
-    {
-      "id": "tshirt_hem",
-      "phase": "E",
-      "modality": "cards",
-      "when": "category == 'tshirt' && _confidence.construction.hem < 0.4",
-      "priority": 0.38,
-      "question": { "de": "Saumabschluss?", "en": "Hem finish?" },
-      "choices": [
-        { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } },
-        { "id": "curved", "label": { "de": "Gerundet", "en": "Curved" }, "effects": { "set": { "construction.hem": "curved" }, "weight": { "sport": 0.1 } } },
-        { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed" }, "weight": { "y2kStreet": 0.1 } } }
+      "question": { "de": "Die Details — direkt am Stück", "en": "The details — right on the piece" },
+      "regions": [
+        {
+          "id": "pockets",
+          "label": { "de": "Brusttasche", "en": "Chest pocket" },
+          "choices": [
+            { "id": "none", "label": { "de": "Clean", "en": "Clean" }, "effects": { "set": { "construction.pockets": "none" }, "weight": { "quietMinimal": 0.1 } } },
+            { "id": "chest", "label": { "de": "Brusttasche", "en": "Chest pocket" }, "effects": { "set": { "construction.pockets": "chest" }, "weight": { "utility": 0.1 } } }
+          ]
+        },
+        {
+          "id": "hem",
+          "label": { "de": "Saum", "en": "Hem" },
+          "choices": [
+            { "id": "straight", "label": { "de": "Gerade", "en": "Straight" }, "effects": { "set": { "construction.hem": "straight" } } },
+            { "id": "curved", "label": { "de": "Gerundet", "en": "Curved" }, "effects": { "set": { "construction.hem": "curved" }, "weight": { "sport": 0.1 } } },
+            { "id": "ribbed", "label": { "de": "Gerippt", "en": "Ribbed" }, "effects": { "set": { "construction.hem": "ribbed" }, "weight": { "y2kStreet": 0.1 } } }
+          ]
+        }
       ]
     },
     {
