@@ -268,7 +268,16 @@
     if (!sec) return;
     let revealed = false;
     const reveal = (design) => {
-      if (sec.hidden) sec.hidden = false;
+      if (sec.hidden) {
+        sec.hidden = false;
+        // §9 Ownership-Nahtstelle: die Karte GLEITET herein statt einfach da
+        // zu sein — ein Bogen mit dem Namensschild-Beat der Engine (nur fx;
+        // reduced-motion zeigt sofort, der globale Reset stoppt die Animation).
+        if (document.documentElement.classList.contains("fx")) {
+          sec.classList.add("own-arrive");
+          setTimeout(() => sec.classList.remove("own-arrive"), 800);
+        }
+      }
       // Die fotorealistische Anprobe lebt jetzt IM Ownership-Moment (eine
       // Sektion) — sie wird mit ihm sichtbar, kein separates #preview mehr.
       const nameEl = $("#own-name");

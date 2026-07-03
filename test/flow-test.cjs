@@ -198,6 +198,22 @@ console.log("\n— conceptDeltas (each direction is named by what it changes, §
   assert(Flow.hexHue("#808080") === null && Flow.hexHue("garbage") === null, "grey / invalid hex carries no hue (no NaN warmth)");
 }
 
+console.log("\n— bodyFactors (made-for-one silhouette from the user's measurements, §9) —");
+{
+  const REF = { chest: 96, waist: 82, hips: 98, shoulder: 44 };
+  const M = { height: 175, weight: 70, chest: 96, waist: 82, hips: 98, shoulder: 44, arm: 62, inseam: 82, neck: 38 };
+  const f = Flow.bodyFactors(M, REF);
+  assert(f && Math.abs(f.shoulder - 1) < 1e-9 && Math.abs(f.waist - 1) < 1e-9 && Math.abs(f.hip - 1) < 1e-9,
+    "the M reference body maps to identity (no visible change)");
+  const broad = Flow.bodyFactors({ shoulder: 50, chest: 96, waist: 82, hips: 98 }, REF);
+  assert(Math.abs(broad.shoulder - 1.08) < 1e-9, "broad shoulders cap at +8% (50/44 → clamp 1.08)");
+  const nipped = Flow.bodyFactors({ chest: 100, waist: 74, hips: 98 }, REF);
+  assert(nipped.waist < 1 && nipped.waist >= 0.92, `waist factor uses the CHEST-RELATIVE ratio (got ${nipped.waist.toFixed(3)})`);
+  assert(Flow.bodyFactors(null, REF) === null && Flow.bodyFactors({}, REF) === null
+    && Flow.bodyFactors({ shoulder: NaN, chest: -3, waist: "x" }, REF) === null,
+    "no usable measurements → null (the flat stays generic)");
+}
+
 console.log("\n— phaseStepper (honest orientation: where you are, never a % gauge) —");
 {
   const L = (k) => k; // identity label so we can assert on the i18n keys

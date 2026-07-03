@@ -267,6 +267,19 @@ const GarmentSVG = (() => {
     return `<pattern id="${id}" width="${W(34)}" height="${W(34)}" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><path d="M0 ${W(17)} Q${W(8)} ${W(5)} ${W(17)} ${W(17)} T${W(34)} ${W(17)}" fill="none" stroke="${ink}" stroke-width="2.4"/></pattern>`;
   }
 
+  // ---- "Made for one" body factors (roadmap §9) ----------------------------
+  // Once real measurements exist, the flat is subtly RE-PROPORTIONED toward
+  // the user's own body — a personal silhouette nobody else renders
+  // client-side. p.body carries gentle multipliers (flow.js bodyFactors
+  // derives them from the measurements vs the M reference); hard-clamped HERE
+  // so hostile share data / garbage can never distort the drawing, and the
+  // brief §2 invariants (shoulder widest, hem never a bell) stay enforced by
+  // the existing min/max maths downstream.
+  const bodyK = (p, key) => {
+    const v = p && p.body && p.body[key];
+    return typeof v === "number" && isFinite(v) ? clamp(v, 0.92, 1.08) : 1;
+  };
+
   // ---- shared width model (tops) ------------------------------------------
   function topWidths(p, cfg) {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
@@ -277,13 +290,14 @@ const GarmentSVG = (() => {
     // garment proportions (~40–60 % of frame, matching the photoreal renders)
     // instead of filling the box like a boxy slab — while keeping a clear
     // slim ↔ oversized spread.
-    const shoulderHalf = 44 + structure * 6 + vol * 6 + fit * 12 + (drop ? 8 : 0);
+    const shoulderHalf = (44 + structure * 6 + vol * 6 + fit * 12 + (drop ? 8 : 0)) * bodyK(p, "shoulder");
     // Chest derived FROM the shoulder, ALWAYS narrower (capped so the invariant
     // "shoulder is widest" holds). Slim tapers hard from the shoulder line;
     // oversized fills almost to it.
     const chestHalf = Math.min(shoulderHalf - 2, shoulderHalf * lerp(0.74, 0.985, fit) + Math.max(0, vol) * 3);
     // slim nips the waist hard; oversized keeps it straight (boxy column).
-    const waistHalf = chestHalf * lerp(0.74, 1.0, fit);
+    // The personal waist factor stays capped AT the chest (no bell torso).
+    const waistHalf = Math.min(chestHalf, chestHalf * lerp(0.74, 1.0, fit) * bodyK(p, "waist"));
     // hem never wider than the chest (no bell). slim tapers in; oversized = column.
     const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.82, 1.0, fit)) + (vol > 0 ? 4 : 0);
     return { shoulderHalf, chestHalf, waistHalf, hemHalf, fit, vol, drop };
@@ -525,7 +539,7 @@ const GarmentSVG = (() => {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
     const topY = 70, hemY = { cropped: 250, regular: 300, long: 318 }[p.length] || 300;
-    const hipHalf = 44 + vol * 7;
+    const hipHalf = (44 + vol * 7) * bodyK(p, "hip");
     const legTop = hipHalf;
     // CONTINUOUS slim↔wide morph (no step jumps) so the fit slider visibly
     // reshapes the leg frame by frame. Wide-leg must stay FULL down to the hem
@@ -629,7 +643,8 @@ const GarmentSVG = (() => {
     const waistY = armpitY + 34;
     const hemY = cfg.hem[p.length] != null ? cfg.hem[p.length] : 300;
     // Waist emphasis: "fitted" nips the waist hard, "relaxed" barely shapes it.
-    const waistHalf = w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84);
+    // Personal waist factor rides along, capped at the chest (no bell bodice).
+    const waistHalf = Math.min(w.chestHalf, w.chestHalf * (p.waist === "fitted" ? 0.72 : p.waist === "relaxed" ? 0.95 : 0.84) * bodyK(p, "waist"));
     // CONTINUOUS A-line ↔ column morph: low fit = strong flare from the waist,
     // high fit = the hem stays at waist width (true straight sheath) — the
     // silhouette slider visibly sweeps the skirt instead of snapping. Slip /

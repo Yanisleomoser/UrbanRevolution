@@ -320,12 +320,14 @@ walkthrough of any branch, every question screen + weave frames to
 | 8 | `engine/regions-hotspot-board` | #341 | §7 Detail-Atelier: neue Modalität `regions` — Flat gross im Fragenbereich, Hotspots pro Bauteil aus `GarmentSVG.regionAnchors()` (dieselbe aufgelöste Geometrie wie der Flat; seitenbewusste Labels via `data-side`), Micro-Picker am Teil (DOM direkt nach dem Hotspot = Tab-Pfad, Escape/Aussen-Tap, aria-expanded/-pressed). Picks live (conf 0), EIN Confirm committet den Merge; Unberührtes bleibt für die Inferenz offen — Jacke max. 19 → 14 Screens, „Passt so — weiter" adelt das frühe Fertig. JSON: jacket 6 / shirt 3 / pants 3 / hoodie 2 / tshirt 2 Regionen wortgleich aus den Karten-Nodes (Blazer-/Kurzarm-Gates als region.when); hardware/signature bleiben eigene Nodes; dress unverändert. engine.js brauchte NULL Änderung (regions-Parsing war die designte Erweiterungsstelle). CSS-Falle: `.de-region-picker[hidden]{display:none}` — display:flex überstimmt sonst das UA-hidden (fing real Taps ab). Bot traversiert das Board (shoot-journey) |
 | 9 | `visual/refine-crescendo` | #342 | §8: Ankunfts-Beat — Satz tippt sich in Mono auf (rAF, abbruchsicher), Options-Sektionen treten via `.is-refine`-Delays einen Atemzug später ein (gewinnen die Kaskade gegen den is-entering-Stagger); Richtungen heissen nach ihrem Delta (`conceptDeltas`, pure: Warmpol-Distanz/Fit/Finish/Muster/Länge, max. 2 Keys, nie leer) auf grösseren, helleren Kacheln; `mutateDna` respektiert ENTSCHIEDENES pattern:none (conf ≥ 0.6 → Farb-Schwung statt Lotterie; inferiertes none bleibt Lotterie); EIN Evolve auf der Auswahl; Akzent-Stepper; #de-live schweigt im Refine (Duplikat §8.4). Permanent: `scripts/verify-refine.mjs` (springt via #dna= direkt in Phase F, sampelt Tipp-Kurve + verzögerten Options-Eintritt, 16 Checks) |
 
+| 10 | `engine/sewing-handoff` + `visual/ownership-seam` | #344 | §5.4: Generieren-Wartezeit = die Maschine näht — Genesis-Fadenfeld kehrt ÜBER dem Flat zurück, Fäden laufen als wandernde Stiche (pathLength=1-Dash-Zyklus, drei Tempi), Flat abgedunkelt; auf Resolve tippt sich das Mono-Namensschild auf (role=status, bleibt stehen). §9: S(currentDesign)+onDesign zünden erst NACH dem Schild-Beat (~750 ms) → Ownership gleitet herein (.own-arrive, ur-create ?v gebumpt); onDesign try/catch-gehärtet (Fehler im App-Renderer sperrte sonst den Button — im setTimeout entkam er dem catch). Made for one: bodyFactors(measurements) → ±8 %-Multiplikatoren (Schulter/brustrelative Taille/Hüfte) via renderInto opts.body in Preview+Dock; GarmentSVG klemmt doppelt, Invarianten halten, ohne Masse byte-gleich generisch. Permanent: `scripts/verify-sewing.mjs` (KI-Stub vertragsgetreu, 44 laufende Stich-Animationen, Schild-Tipp-Kurve, Ownership NACH Schild, reduced-motion sofort — 15 Checks) |
+
 ### Next up
 
-Slice 10 per §10: `engine/sewing-handoff` + `visual/ownership-seam` (§5.4/§9) —
-Generieren-Wartezeit als Faden-Nähen über dem Flat, Mono-Namensschild beim
-Resolve, nahtloser Übergang in den Ownership-Moment, Made-for-one-Silhouette
-aus den Massen.
+**Alle zehn Slices der Roadmap (§10) sind geliefert.** Was danach käme, wäre
+neues Scoping: Wirkung an den Metriken messen (`insights.html`: completion,
+abandon-Verteilung — der Phase-E-Cluster sollte verschwinden —, generate-Rate,
+time-to-Fertig) und aus den echten Zahlen die nächste Runde schneiden.
 
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
