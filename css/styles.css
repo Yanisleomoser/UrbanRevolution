@@ -6868,6 +6868,52 @@ html.fx .lp-stat-live-dot { animation: lp-stat-live-pulse 2.4s ease-in-out infin
 .lp-stat-live-cap { flex-basis: 100%; color: var(--text-muted); }
 @keyframes lp-stat-live-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
 
+/* ── #facts · Varianten-Labor (NUR Review-Branch) ─────────────────
+   Schwebende Varianten-Pille (A/B/C, js/facts-lab.js) — Review-Affordanz,
+   wird nach der Auswahl mitsamt Verlierer-Slots wieder entfernt. */
+.facts-lab-pill {
+    position: fixed;
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(10, 22, 34, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+.facts-lab-pill-label {
+    padding: 0 4px 0 6px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.facts-lab-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+.facts-lab-chip:hover { border-color: var(--accent-3); color: var(--accent-3); }
+.facts-lab-chip.is-active {
+    background: var(--gradient);
+    border-color: transparent;
+    color: #06121e;
+}
+
 /* ── KI, richtig eingesetzt (AI, done right) ── */
 .lp-aidr { max-width: 1100px; margin: 0 auto; }
 .lp-aidr-title {

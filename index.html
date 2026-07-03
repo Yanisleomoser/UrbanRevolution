@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260703-weavebeat">
+    <link rel="stylesheet" href="css/styles.css?v=20260703-factslab1">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -340,61 +340,94 @@
         <p class="lp-verbs" data-lp-reveal data-i18n="landing.verbs">Produzieren — Tragen — Wegwerfen</p>
     </section>
 
-    <!-- Protokoll der Linie — belegte Fast-Fashion-Fakten (Akt I, das Beweisband).
-         Erzähl-Reihenfolge = der Weg der Linie: Produzieren → Wegwerfen → Zurück,
-         endet auf dem <1 % (die Linie kennt kein Zurück → Coda → #pivot). -->
-    <section class="lp-stats lp-block" id="facts" data-lp-reveal>
-        <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
-        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
-        <div class="lp-stats-grid">
-            <!-- Jede Zahl ist ein interaktives Daten-Instrument statt Deko:
-                 Radial-Gauge · Live-Aufschüttung · 1-von-100-Matrix. Instrumente
-                 sind aria-hidden (Aussage steht in Zahl + Label); Bewegung/Pointer
-                 nur als Progressive Enhancement (html.fx, pointer:fine). Treiber:
-                 js/facts-instruments.js + ambient-ticker.js. -->
-            <div class="lp-stat">
-                <!-- Radial-Gauge: 8 % des Rings = Anteil der Mode an globalem CO₂. Bogen
-                     steht per CSS auf Endwert (no-JS), html.fx fährt ihn beim Reveal auf. -->
-                <div class="fx-gauge-wrap" aria-hidden="true">
-                    <svg class="fx-gauge" width="132" height="132" viewBox="0 0 120 120">
-                        <circle class="fx-gauge-track" cx="60" cy="60" r="52" fill="none" stroke-width="9"/>
-                        <circle class="fx-gauge-arc" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-                        <defs><linearGradient id="fxGaugeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2779a8"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs>
-                    </svg>
+    <!-- ── Protokoll der Linie — VARIANTEN-LABOR (nur Review-Branch) ──
+         Drei vollständige Neu-Inszenierungen des Beweisbands liegen als Slots
+         nebeneinander (#facts-a/-b/-c); genau EINE ist sichtbar. Auswahl per
+         ?facts=a|b|c (Standard: a), geschaltet von js/facts-lab.js — das läuft
+         als defer-Skript VOR gsap/landing.js, damit Reveals/Counter die
+         sichtbare Variante korrekt vermessen. Ohne JS bleibt Variante A
+         sichtbar (statischer Default). Nach der Auswahl: Gewinner behalten,
+         Labor + Verlierer-Slots entfernen. -->
+    <div id="facts" class="lp-facts-lab">
+        <!-- FACTS-LAB · SLOT A — „Das Protokoll" (editoriales Beweis-Register) -->
+        <section class="lp-stats lp-block lp-stats-va" id="facts-a" data-facts-variant="a" data-lp-reveal>
+            <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+            <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+            <div class="lp-stats-grid">
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
+                    <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
                 </div>
-                <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
-                <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
-            </div>
-            <div class="lp-stat">
-                <!-- Live-Aufschüttung: der Stapel als Silhouette, die kg-Zahl tickt real
-                     hoch (ambient-ticker, +2'918 kg/s). Balken dekorativ, Aussage im Label. -->
-                <div class="fx-acc" aria-hidden="true">
-                    <span class="fx-acc-bar" style="height:16%"></span><span class="fx-acc-bar" style="height:22%"></span><span class="fx-acc-bar" style="height:28%"></span><span class="fx-acc-bar" style="height:35%"></span><span class="fx-acc-bar" style="height:42%"></span><span class="fx-acc-bar" style="height:49%"></span><span class="fx-acc-bar" style="height:56%"></span><span class="fx-acc-bar" style="height:63%"></span><span class="fx-acc-bar" style="height:70%"></span><span class="fx-acc-bar" style="height:77%"></span><span class="fx-acc-bar" style="height:84%"></span><span class="fx-acc-bar" style="height:90%"></span><span class="fx-acc-bar" style="height:95%"></span><span class="fx-acc-bar" style="height:99%"></span>
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                    <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                    <p class="lp-stat-live" aria-hidden="true">
+                        <span class="lp-stat-live-dot" aria-hidden="true"></span>
+                        <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
+                        <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
+                        <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
+                    </p>
                 </div>
-                <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
-                <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
-                <p class="lp-stat-live" aria-hidden="true">
-                    <span class="lp-stat-live-dot" aria-hidden="true"></span>
-                    <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
-                    <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
-                    <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
-                </p>
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                    <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                </div>
             </div>
-            <div class="lp-stat">
-                <!-- 1 von 100 Feldern leuchtet = der <1 %, der recycelt wird. JS baut
-                     die Zellen (ohne JS via :empty ausgeblendet — Zahl+Label tragen die
-                     Aussage); Pointer-Spotlight nur bei feinem Zeiger; reduced-motion = Ruhe. -->
-                <div class="fx-matrix" id="fx-matrix" aria-hidden="true"></div>
-                <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
-                <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
-                <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+            <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+        </section>
+        <!-- FACTS-LAB · SLOT B — „Die Masse" (cineastische Partikel-Beats) -->
+        <section class="lp-stats lp-block lp-stats-vb" id="facts-b" data-facts-variant="b" data-lp-reveal hidden>
+            <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+            <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+            <div class="lp-stats-grid">
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
+                    <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num">8</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+                </div>
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                    <p class="lp-stat-value"><span class="lp-stat-num">1</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                </div>
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                    <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num">1</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                </div>
             </div>
-        </div>
-        <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
-        <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
-    </section>
+            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+            <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+        </section>
+        <!-- FACTS-LAB · SLOT C — „Die Linie" (durchgehende Linien-Erzählung) -->
+        <section class="lp-stats lp-block lp-stats-vc" id="facts-c" data-facts-variant="c" data-lp-reveal hidden>
+            <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+            <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+            <div class="lp-stats-grid">
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
+                    <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num">8</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+                </div>
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                    <p class="lp-stat-value"><span class="lp-stat-num">1</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                </div>
+                <div class="lp-stat">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                    <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num">1</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                </div>
+            </div>
+            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+            <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+        </section>
+    </div>
 
     <!-- ── DIE WENDE (#pivot) — das Akt-Scharnier. Die Linie aus Akt I steht auf
          der Bühne und wird beim Scrollen zum Kreis gebogen (gepinnter Scrub,
@@ -1238,7 +1271,13 @@
     <script defer src="js/flair.js"></script>
     <script defer src="js/ur-create.js?v=20260611-weave"></script>
     <script defer src="js/ambient-ticker.js"></script>
-    <script defer src="js/facts-instruments.js?v=20260630-fxgo"></script>
+    <!-- Varianten-Labor (Review-Branch): Umschalter zuerst (schaltet den
+         sichtbaren Slot VOR landing.js), danach die drei Varianten-Controller.
+         Bewusst ohne ?v= (must-revalidate) — die Dateien iterieren im Review. -->
+    <script defer src="js/facts-lab.js"></script>
+    <script defer src="js/facts-a.js"></script>
+    <script defer src="js/facts-b.js"></script>
+    <script defer src="js/facts-c.js"></script>
     <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
          dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
          Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->
