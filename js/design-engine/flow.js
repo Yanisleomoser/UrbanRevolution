@@ -188,6 +188,14 @@ const DesignFlow = (() => {
   // ("Mini" stays "Mini", never a generic "Cropped"; "A-Linie" never a raw
   // "Aline"). Inferred values get the same word the user WOULD have tapped.
   // Pure (nodes + category in, word out) so the offline suite can cover it.
+  // Mobile dock visibility (roadmap §4): the docked mini-preview appears only
+  // when the loop is otherwise broken — small screen, the real preview
+  // scrolled out of view, but the user still inside the journey. Pure so the
+  // offline suite can pin the truth table.
+  function dockShouldShow(small, previewInView, stageInView) {
+    return !!small && !previewInView && !!stageInView;
+  }
+
   // Of all matching choices, the one setting the FEWEST paths wins: the
   // dedicated card for a dimension sets little besides that dimension, while
   // a side-effect setter carries its own attribute too (the dress subarch
@@ -271,6 +279,9 @@ const DesignFlow = (() => {
             <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
           </div>
           <div class="de-preview-chips" id="de-preview-chips"></div>
+          <button type="button" class="de-preview-dock" id="de-preview-dock" hidden aria-label="${t("engine.dock_aria")}">
+            <span class="de-dock-flat" aria-hidden="true"></span>
+          </button>
         </div>
         <div class="de-ask-col">
           <div class="de-stepper" id="de-stepper" role="img"></div>
@@ -297,6 +308,67 @@ const DesignFlow = (() => {
 
     const maturity = () => DesignDNA.maturity(dna, content.attributes.required, content.attributes.confidenceThreshold);
 
+    // ── Mobile dock mini-preview (roadmap §4) ───────────────────────────────
+    // ≤480 px the preview column is static and scrolls away exactly when the
+    // visual decisions (colour, fit) happen. The dock keeps a tiny live flat
+    // in the thumb corner — it mirrors every render AND every morph frame
+    // (render-preview's opts.mirror), and tapping it scrolls back up to the
+    // full preview. Functional UI, not decoration: shown regardless of
+    // html.fx; its entrance transition is CSS-gated on reduced-motion.
+    const dockBtn = hostEl.querySelector("#de-preview-dock");
+    const dockFlat = hostEl.querySelector(".de-dock-flat");
+    // position:fixed is hijacked inside the studio: the revealed section keeps
+    // an identity transform and .design-journey has will-change:transform —
+    // both make ancestors the containing block, so the dock would render
+    // mid-page and scroll with the content. Hoist it to <body>.
+    if (dockBtn && typeof document !== "undefined" && document.body) document.body.appendChild(dockBtn);
+    const smallScreen = () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia("(max-width: 480px)").matches
+        : false;
+    let previewInView = true;
+    let stageInView = true;
+    const syncDock = () => {
+      if (!dockBtn) return;
+      const show = dockShouldShow(smallScreen(), previewInView, stageInView);
+      dockBtn.hidden = !show;
+      // .is-on drives the CSS entrance (fade/rise) after unhide.
+      requestAnimationFrame(() => dockBtn.classList.toggle("is-on", show));
+    };
+    if (dockBtn && typeof IntersectionObserver !== "undefined") {
+      // 0.3: a bottom sliver of the stage (floor shadow, no garment) must not
+      // count as "the user can see the preview" — only ≥30% visible hides the
+      // dock, so it survives the per-answer focus-scroll to the next question.
+      new IntersectionObserver((entries) => {
+        entries.forEach((e) => { previewInView = e.isIntersecting; });
+        syncDock();
+      }, { threshold: 0.3 }).observe(hostEl.querySelector("#de-preview"));
+      new IntersectionObserver((entries) => {
+        entries.forEach((e) => { stageInView = e.isIntersecting; });
+        syncDock();
+      }).observe(hostEl);
+      window.matchMedia("(max-width: 480px)").addEventListener("change", syncDock);
+      dockBtn.addEventListener("click", () => {
+        // Hand-rolled tween: native smooth scrollIntoView/scrollTo are dead in
+        // Chromium under the global overflow-x:hidden (same workaround as
+        // ur-create.js's ownership scroll). Reduced-motion jumps instantly.
+        const target = hostEl.querySelector("#de-preview");
+        const to = target.getBoundingClientRect().top + window.scrollY - 72;
+        const from = window.scrollY;
+        const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) { window.scrollTo(0, to); return; }
+        const t0 = performance.now();
+        const D = 450;
+        const ease = (x) => 1 - Math.pow(1 - x, 3);
+        const step = (now) => {
+          const x = Math.min(1, (now - t0) / D);
+          window.scrollTo(0, from + (to - from) * ease(x));
+          if (x < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+    }
+
     const chipsEl = hostEl.querySelector("#de-preview-chips");
     function updatePreview(animate) {
       // Render the COMPLETED design (chosen + inferred-from-archetype) so the
@@ -321,6 +393,7 @@ const DesignFlow = (() => {
         window.DesignPreview.renderInto(previewEl, previewDna, {
           realism: atRefine,
           photoManifest: content.photoManifest,
+          mirror: dockFlat,
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
@@ -743,7 +816,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

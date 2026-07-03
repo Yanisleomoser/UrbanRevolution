@@ -183,6 +183,15 @@ console.log("\n— choiceWord (chips echo the tapped card label, across every ca
   assert(Flow.choiceWord(nodes, "dress", "de", "subArchetype", "slip") === "Slip", "…while the subarch chip still gets the subarch word");
 }
 
+console.log("\n— dockShouldShow (mobile dock: only when the loop is otherwise broken) —");
+{
+  assert(Flow.dockShouldShow(true, false, true) === true, "small screen + preview gone + journey on screen → dock");
+  assert(Flow.dockShouldShow(true, true, true) === false, "preview still visible → no dock");
+  assert(Flow.dockShouldShow(false, false, true) === false, "desktop/tablet → never a dock (preview is sticky there)");
+  assert(Flow.dockShouldShow(true, false, false) === false, "scrolled past the whole journey → no dock");
+  assert(Flow.dockShouldShow(undefined, false, true) === false, "no matchMedia (old browser) → fails closed, no dock");
+}
+
 console.log("\n— toSentence German adjective agreement (feminine materials) —");
 {
   const Summary = require(path.join(ROOT, "summary.js"));
