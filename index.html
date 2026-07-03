@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260703-factslab1">
+    <link rel="stylesheet" href="css/styles.css?v=20260703-factslab2">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -350,82 +350,254 @@
          Labor + Verlierer-Slots entfernen. -->
     <div id="facts" class="lp-facts-lab">
         <!-- FACTS-LAB · SLOT A — „Das Protokoll" (editoriales Beweis-Register) -->
-        <section class="lp-stats lp-block lp-stats-va" id="facts-a" data-facts-variant="a" data-lp-reveal>
-            <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
-            <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
-            <div class="lp-stats-grid">
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
-                    <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
-                </div>
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
-                    <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
-                    <p class="lp-stat-live" aria-hidden="true">
-                        <span class="lp-stat-live-dot" aria-hidden="true"></span>
-                        <span class="lp-stat-live-label" data-i18n="ticker.live">Live</span>
-                        <span class="lp-stat-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span>
-                        <span class="lp-stat-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
+        <section class="lp-stats lp-block lp-stats-va" id="facts-a" data-facts-variant="a">
+            <header class="fxa-head">
+                <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+                <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+            </header>
+            <div class="fxa-register">
+                <!-- Zeile 01 · PRODUZIEREN — die 8 wird gross durch Kontext:
+                     100er-Massstab, darunter die Referenzbänder (Flüge und
+                     Schifffahrt, je ~2), darüber fegt das Modeband (≤8) ein. -->
+                <article class="fxa-row" data-fxa-row="produce">
+                    <div class="fxa-rail">
+                        <span class="fxa-index" aria-hidden="true">01</span>
+                        <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
+                    </div>
+                    <div class="fxa-main">
+                        <p class="lp-stat-value fxa-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
+                        <p class="lp-stat-label fxa-caption" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+                    </div>
+                    <div class="fxa-instrument fxa-scale" aria-hidden="true">
+                        <div class="fxa-band-row">
+                            <span class="fxa-band"></span>
+                            <span class="fxa-band-tag" data-i18n="factsA.tag_fashion">Mode ≤ 8 %</span>
+                        </div>
+                        <div class="fxa-ruler"></div>
+                        <div class="fxa-axis">
+                            <span>0</span>
+                            <span class="fxa-axis-tag" data-i18n="factsA.scale_tag">Globale CO₂-Emissionen gesamt = 100</span>
+                            <span>100</span>
+                        </div>
+                        <div class="fxa-ref-row">
+                            <span class="fxa-ref"></span>
+                            <span class="fxa-ref-tag" data-i18n="factsA.ref_flights">Internationale Flüge ~2 %</span>
+                        </div>
+                        <div class="fxa-ref-row">
+                            <span class="fxa-ref"></span>
+                            <span class="fxa-ref-tag" data-i18n="factsA.ref_ships">Schifffahrt ~2 %</span>
+                        </div>
+                    </div>
+                    <p class="fxa-annot">
+                        <span class="fxa-annot-ghost" data-i18n="factsA.co2_note">mehr als internationale Flüge und Schifffahrt zusammen — Ellen MacArthur Foundation</span>
+                        <span class="fxa-annot-type" aria-hidden="true"></span>
                     </p>
-                </div>
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
-                    <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
-                </div>
+                </article>
+                <!-- Zeile 02 · WEGWERFEN — der Sekundenzeiger des Protokolls:
+                     jede echte Sekunde zündet ein Strich; rechts wiegt der
+                     Live-Odometer (ambient-ticker.js, [data-ticker-kg]) mit. -->
+                <article class="fxa-row" data-fxa-row="discard">
+                    <div class="fxa-rail">
+                        <span class="fxa-index" aria-hidden="true">02</span>
+                        <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                    </div>
+                    <div class="fxa-main fxa-main-split">
+                        <div class="fxa-main-stat">
+                            <p class="lp-stat-value fxa-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                            <p class="lp-stat-label fxa-caption" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                        </div>
+                        <div class="fxa-odo" aria-hidden="true">
+                            <p class="fxa-odo-head"><span class="fxa-odo-dot"></span><span data-i18n="ticker.live">Live</span></p>
+                            <p class="fxa-odo-num"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></p>
+                            <p class="fxa-odo-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</p>
+                        </div>
+                    </div>
+                    <div class="fxa-instrument fxa-seconds" aria-hidden="true"></div>
+                    <p class="fxa-legend" data-i18n="factsA.strip_legend">1 Strich = 1 Sekunde = 1 Lkw-Ladung</p>
+                </article>
+                <!-- Zeile 03 · ZURÜCK — der Sensor sucht: 100 Punkte, die
+                     Scan-Linie fegt, verlöscht sie und rastet auf dem EINEN
+                     glühenden Punkt ein. Die Leere der 99 ist die Botschaft. -->
+                <article class="fxa-row" data-fxa-row="return">
+                    <div class="fxa-rail">
+                        <span class="fxa-index" aria-hidden="true">03</span>
+                        <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                    </div>
+                    <div class="fxa-main">
+                        <p class="lp-stat-value fxa-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                        <p class="lp-stat-label fxa-caption" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                    </div>
+                    <div class="fxa-instrument fxa-dots" aria-hidden="true"></div>
+                    <p class="fxa-legend" data-i18n="factsA.dots_legend">≙ 1 von 100 Kleidungsstücken</p>
+                </article>
             </div>
-            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
-            <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+            <footer class="fxa-tail">
+                <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+                <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+            </footer>
         </section>
         <!-- FACTS-LAB · SLOT B — „Die Masse" (cineastische Partikel-Beats) -->
-        <section class="lp-stats lp-block lp-stats-vb" id="facts-b" data-facts-variant="b" data-lp-reveal hidden>
-            <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
-            <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
-            <div class="lp-stats-grid">
-                <div class="lp-stat">
+        <section class="lp-stats lp-block lp-stats-vb" id="facts-b" data-facts-variant="b" hidden>
+            <header class="fxb-head" data-lp-reveal>
+                <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+                <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+            </header>
+
+            <!-- Beat 1 · PRODUZIEREN — die Fahne: die absolute Masse hinter ≤8 % -->
+            <div class="fxb-beat fxb-beat--produce" data-fxb-beat="produce">
+                <div class="fxb-vignette" aria-hidden="true"></div>
+                <div class="fxb-static" aria-hidden="true"></div>
+                <canvas class="fxb-canvas" aria-hidden="true"></canvas>
+                <div class="fxb-copy">
                     <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
-                    <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num">8</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-value fxb-value fxb-value--star"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
                     <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
-                </div>
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
-                    <p class="lp-stat-value"><span class="lp-stat-num">1</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
-                </div>
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
-                    <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num">1</span><span class="lp-stat-unit">%</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                    <div class="fxb-mass">
+                        <p class="fxb-mass-rate" data-i18n="factsB.co2_year">≈ 1,2 Mrd. Tonnen CO₂ pro Jahr</p>
+                        <p class="fxb-mass-live" aria-hidden="true"><span class="fxb-mass-live-num" data-fxb-co2>≈ +0</span> <span data-i18n="factsB.co2_since">t CO₂ seit du hier bist</span></p>
+                        <p class="fxb-mass-note" data-i18n="factsB.co2_compare">mehr als internationale Flüge (≈ 2 %) und Schifffahrt (≈ 2 %) zusammen</p>
+                    </div>
                 </div>
             </div>
-            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
-            <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+
+            <!-- Beat 2 · WEGWERFEN — die Halde: jede Sekunde eine Ladung -->
+            <div class="fxb-beat fxb-beat--dump" data-fxb-beat="dump">
+                <div class="fxb-vignette" aria-hidden="true"></div>
+                <div class="fxb-static" aria-hidden="true">
+                    <svg class="fxb-static-svg" viewBox="0 0 1200 240" preserveAspectRatio="none" focusable="false">
+                        <path class="fxb-svg-mound fxb-svg-mound--far" d="M0,240 L0,214 C220,208 380,182 490,160 C540,150 575,143 600,142 C625,143 660,150 710,160 C820,182 980,208 1200,214 L1200,240 Z"/>
+                        <path class="fxb-svg-mound" d="M0,240 L0,228 C280,224 450,204 550,186 C575,181 592,178 600,177 C608,178 625,181 650,186 C750,204 920,224 1200,228 L1200,240 Z"/>
+                    </svg>
+                </div>
+                <canvas class="fxb-canvas" aria-hidden="true"></canvas>
+                <div class="fxb-copy">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
+                    <p class="lp-stat-value fxb-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                    <div class="fxb-odo" aria-hidden="true">
+                        <p class="fxb-odo-rate" data-i18n="factsB.truck_rate">1 Lkw-Ladung / Sekunde</p>
+                        <p class="fxb-odo-kg"><span data-ticker-kg>0</span> <span class="fxb-odo-unit" data-i18n="ticker.unit">kg</span></p>
+                        <p class="fxb-odo-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beat 3 · ZURÜCK — 100 Tracer: 99 fallen zurück, einer steigt -->
+            <div class="fxb-beat fxb-beat--return" data-fxb-beat="return">
+                <div class="fxb-vignette" aria-hidden="true"></div>
+                <div class="fxb-static" aria-hidden="true">
+                    <svg class="fxb-static-svg" viewBox="0 0 1200 620" preserveAspectRatio="none" focusable="false">
+                        <defs>
+                            <linearGradient id="fxb-ret-grad-b" x1="0" y1="1" x2="0" y2="0">
+                                <stop offset="0" stop-color="#2A9D8F" stop-opacity="0"/>
+                                <stop offset="0.55" stop-color="#64D6C4" stop-opacity="0.5"/>
+                                <stop offset="1" stop-color="#64D6C4" stop-opacity="0.9"/>
+                            </linearGradient>
+                        </defs>
+                        <path class="fxb-svg-arc" d="M804,556 C764,436 664,436 620,532"/>
+                        <path class="fxb-svg-arc" d="M804,556 C864,416 964,426 996,540"/>
+                        <path class="fxb-svg-arc" d="M804,556 C776,476 716,476 694,548"/>
+                        <line class="fxb-svg-one" x1="806" y1="552" x2="806" y2="10" stroke="url(#fxb-ret-grad-b)"/>
+                        <circle class="fxb-svg-one-halo" cx="806" cy="64" r="13"/>
+                        <circle class="fxb-svg-one-dot" cx="806" cy="64" r="4.5"/>
+                        <path class="fxb-svg-mound fxb-svg-mound--far" d="M0,620 L0,596 C260,590 460,566 600,548 C700,536 770,530 804,528 C838,530 900,538 980,550 C1060,562 1140,572 1200,576 L1200,620 Z"/>
+                        <path class="fxb-svg-mound" d="M0,620 L0,608 C320,604 520,586 640,570 C720,559 780,553 804,552 C828,553 870,558 920,566 C1010,578 1120,588 1200,592 L1200,620 Z"/>
+                    </svg>
+                </div>
+                <canvas class="fxb-canvas" aria-hidden="true"></canvas>
+                <div class="fxb-copy">
+                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
+                    <p class="lp-stat-value fxb-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                    <p class="fxb-return-note" data-i18n="factsB.return_note">Von 100 Teilen schafft es nicht einmal eines zurück.</p>
+                </div>
+            </div>
+
+            <footer class="fxb-epilogue">
+                <p class="lp-stats-coda" data-lp-reveal data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+                <p class="lp-stats-sources" data-lp-reveal data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+            </footer>
         </section>
-        <!-- FACTS-LAB · SLOT C — „Die Linie" (durchgehende Linien-Erzählung) -->
-        <section class="lp-stats lp-block lp-stats-vc" id="facts-c" data-facts-variant="c" data-lp-reveal hidden>
-            <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
-            <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
-            <div class="lp-stats-grid">
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat3_kicker">Produzieren</p>
-                    <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num">8</span><span class="lp-stat-unit">%</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+        <!-- FACTS-LAB · SLOT C — „Die Linie" (durchgehende Linien-Erzählung)
+             Die Geometrie der Seite wird zur Daten-Visualisierung: EINE Linie
+             durchläuft drei Stationen (Fächer aus 100 Strängen → Sekunden-
+             Ratsche → Abzweigung, 1 Strang kehrt um). Statischer Default =
+             fertig gezeichnete Szene; Bewegung nur via js/facts-c.js
+             (GSAP-Scrub oder IO-Fallback), gated unter html.fxc-go. -->
+        <section class="lp-stats lp-block lp-stats-vc fxc" id="facts-c" data-facts-variant="c" hidden>
+            <div class="fxc-scene" id="fxc-scene">
+                <div class="fxc-row fxc-st fxc-head">
+                    <div class="fxc-rail" aria-hidden="true"><span class="fxc-conn"></span></div>
+                    <div class="fxc-copy" data-lp-reveal>
+                        <p class="lp-label" data-i18n="landing.stats_label">Protokoll der Linie</p>
+                        <h2 class="lp-stats-title" data-i18n="landing.stats_title">Wohin die Linie führt</h2>
+                    </div>
                 </div>
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat2_kicker">Wegwerfen</p>
-                    <p class="lp-stat-value"><span class="lp-stat-num">1</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+
+                <p class="fxc-kicker lp-stat-kicker"><span data-i18n="landing.stat3_kicker">Produzieren</span></p>
+                <div class="fxc-row fxc-st fxc-s1">
+                    <div class="fxc-rail">
+                        <span class="fxc-conn" aria-hidden="true"></span>
+                        <div class="fxc-stage fxc-fan-stage">
+                            <svg class="fxc-only-d" viewBox="0 0 420 560" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fxc-grad-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2779a8"/><stop offset="0.5" stop-color="#2a9d8f"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs><g class="fxc-hair-g"><path class="fxc-strand fxc-hair" data-i="0" pathLength="1" d="M210 0C210 95.2 30 168 30 280C30 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="1" pathLength="1" d="M210 0C210 95.2 33.3 168 33.3 280C33.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="2" pathLength="1" d="M210 0C210 95.2 36.5 168 36.5 280C36.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="3" pathLength="1" d="M210 0C210 95.2 39.8 168 39.8 280C39.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="4" pathLength="1" d="M210 0C210 95.2 43 168 43 280C43 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="5" pathLength="1" d="M210 0C210 95.2 46.3 168 46.3 280C46.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="6" pathLength="1" d="M210 0C210 95.2 49.5 168 49.5 280C49.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="7" pathLength="1" d="M210 0C210 95.2 52.8 168 52.8 280C52.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="8" pathLength="1" d="M210 0C210 95.2 56 168 56 280C56 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="9" pathLength="1" d="M210 0C210 95.2 59.3 168 59.3 280C59.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="10" pathLength="1" d="M210 0C210 95.2 62.5 168 62.5 280C62.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="11" pathLength="1" d="M210 0C210 95.2 65.8 168 65.8 280C65.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="12" pathLength="1" d="M210 0C210 95.2 69 168 69 280C69 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="13" pathLength="1" d="M210 0C210 95.2 72.3 168 72.3 280C72.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="14" pathLength="1" d="M210 0C210 95.2 75.5 168 75.5 280C75.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="15" pathLength="1" d="M210 0C210 95.2 78.8 168 78.8 280C78.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="16" pathLength="1" d="M210 0C210 95.2 82 168 82 280C82 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="17" pathLength="1" d="M210 0C210 95.2 85.3 168 85.3 280C85.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="18" pathLength="1" d="M210 0C210 95.2 88.5 168 88.5 280C88.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="19" pathLength="1" d="M210 0C210 95.2 91.8 168 91.8 280C91.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="20" pathLength="1" d="M210 0C210 95.2 95 168 95 280C95 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="21" pathLength="1" d="M210 0C210 95.2 98.3 168 98.3 280C98.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="22" pathLength="1" d="M210 0C210 95.2 101.5 168 101.5 280C101.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="23" pathLength="1" d="M210 0C210 95.2 104.8 168 104.8 280C104.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="24" pathLength="1" d="M210 0C210 95.2 108 168 108 280C108 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="25" pathLength="1" d="M210 0C210 95.2 111.3 168 111.3 280C111.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="26" pathLength="1" d="M210 0C210 95.2 114.6 168 114.6 280C114.6 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="27" pathLength="1" d="M210 0C210 95.2 117.8 168 117.8 280C117.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="28" pathLength="1" d="M210 0C210 95.2 121.1 168 121.1 280C121.1 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="29" pathLength="1" d="M210 0C210 95.2 124.3 168 124.3 280C124.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="30" pathLength="1" d="M210 0C210 95.2 127.6 168 127.6 280C127.6 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="31" pathLength="1" d="M210 0C210 95.2 130.8 168 130.8 280C130.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="32" pathLength="1" d="M210 0C210 95.2 134.1 168 134.1 280C134.1 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="33" pathLength="1" d="M210 0C210 95.2 137.3 168 137.3 280C137.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="34" pathLength="1" d="M210 0C210 95.2 140.6 168 140.6 280C140.6 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="35" pathLength="1" d="M210 0C210 95.2 143.8 168 143.8 280C143.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="36" pathLength="1" d="M210 0C210 95.2 147.1 168 147.1 280C147.1 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="37" pathLength="1" d="M210 0C210 95.2 150.3 168 150.3 280C150.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="38" pathLength="1" d="M210 0C210 95.2 153.6 168 153.6 280C153.6 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="39" pathLength="1" d="M210 0C210 95.2 156.8 168 156.8 280C156.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="40" pathLength="1" d="M210 0C210 95.2 160.1 168 160.1 280C160.1 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="41" pathLength="1" d="M210 0C210 95.2 163.3 168 163.3 280C163.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="42" pathLength="1" d="M210 0C210 95.2 166.6 168 166.6 280C166.6 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="43" pathLength="1" d="M210 0C210 95.2 169.8 168 169.8 280C169.8 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="44" pathLength="1" d="M210 0C210 95.2 173.1 168 173.1 280C173.1 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="45" pathLength="1" d="M210 0C210 95.2 176.3 168 176.3 280C176.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="54" pathLength="1" d="M210 0C210 95.2 235.2 168 235.2 280C235.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="55" pathLength="1" d="M210 0C210 95.2 238.5 168 238.5 280C238.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="56" pathLength="1" d="M210 0C210 95.2 241.7 168 241.7 280C241.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="57" pathLength="1" d="M210 0C210 95.2 245 168 245 280C245 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="58" pathLength="1" d="M210 0C210 95.2 250.5 168 250.5 280C250.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="59" pathLength="1" d="M210 0C210 95.2 253.4 168 253.4 280C253.4 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="60" pathLength="1" d="M210 0C210 95.2 258.9 168 258.9 280C258.9 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="61" pathLength="1" d="M210 0C210 95.2 262.2 168 262.2 280C262.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="62" pathLength="1" d="M210 0C210 95.2 267.7 168 267.7 280C267.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="63" pathLength="1" d="M210 0C210 95.2 270.7 168 270.7 280C270.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="64" pathLength="1" d="M210 0C210 95.2 276.2 168 276.2 280C276.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="65" pathLength="1" d="M210 0C210 95.2 279.4 168 279.4 280C279.4 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="66" pathLength="1" d="M210 0C210 95.2 282.7 168 282.7 280C282.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="67" pathLength="1" d="M210 0C210 95.2 285.9 168 285.9 280C285.9 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="68" pathLength="1" d="M210 0C210 95.2 289.2 168 289.2 280C289.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="69" pathLength="1" d="M210 0C210 95.2 292.4 168 292.4 280C292.4 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="70" pathLength="1" d="M210 0C210 95.2 295.7 168 295.7 280C295.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="71" pathLength="1" d="M210 0C210 95.2 298.9 168 298.9 280C298.9 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="72" pathLength="1" d="M210 0C210 95.2 302.2 168 302.2 280C302.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="73" pathLength="1" d="M210 0C210 95.2 305.4 168 305.4 280C305.4 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="74" pathLength="1" d="M210 0C210 95.2 308.7 168 308.7 280C308.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="75" pathLength="1" d="M210 0C210 95.2 312 168 312 280C312 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="76" pathLength="1" d="M210 0C210 95.2 315.2 168 315.2 280C315.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="77" pathLength="1" d="M210 0C210 95.2 318.5 168 318.5 280C318.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="78" pathLength="1" d="M210 0C210 95.2 321.7 168 321.7 280C321.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="79" pathLength="1" d="M210 0C210 95.2 325 168 325 280C325 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="80" pathLength="1" d="M210 0C210 95.2 328.2 168 328.2 280C328.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="81" pathLength="1" d="M210 0C210 95.2 331.5 168 331.5 280C331.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="82" pathLength="1" d="M210 0C210 95.2 334.7 168 334.7 280C334.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="83" pathLength="1" d="M210 0C210 95.2 338 168 338 280C338 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="84" pathLength="1" d="M210 0C210 95.2 341.2 168 341.2 280C341.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="85" pathLength="1" d="M210 0C210 95.2 344.5 168 344.5 280C344.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="86" pathLength="1" d="M210 0C210 95.2 347.7 168 347.7 280C347.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="87" pathLength="1" d="M210 0C210 95.2 351 168 351 280C351 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="88" pathLength="1" d="M210 0C210 95.2 354.2 168 354.2 280C354.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="89" pathLength="1" d="M210 0C210 95.2 357.5 168 357.5 280C357.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="90" pathLength="1" d="M210 0C210 95.2 360.7 168 360.7 280C360.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="91" pathLength="1" d="M210 0C210 95.2 364 168 364 280C364 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="92" pathLength="1" d="M210 0C210 95.2 367.2 168 367.2 280C367.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="93" pathLength="1" d="M210 0C210 95.2 370.5 168 370.5 280C370.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="94" pathLength="1" d="M210 0C210 95.2 373.7 168 373.7 280C373.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="95" pathLength="1" d="M210 0C210 95.2 377 168 377 280C377 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="96" pathLength="1" d="M210 0C210 95.2 380.2 168 380.2 280C380.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="97" pathLength="1" d="M210 0C210 95.2 383.5 168 383.5 280C383.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="98" pathLength="1" d="M210 0C210 95.2 386.7 168 386.7 280C386.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-hair" data-i="99" pathLength="1" d="M210 0C210 95.2 390 168 390 280C390 392 210 464.8 210 560"/></g><g class="fxc-heavy-g" stroke="url(#fxc-grad-d)"><path class="fxc-strand fxc-heavy" data-i="46" pathLength="1" d="M210 0C210 95.2 184.1 168 184.1 280C184.1 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="47" pathLength="1" d="M210 0C210 95.2 190.3 168 190.3 280C190.3 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="48" pathLength="1" d="M210 0C210 95.2 196.5 168 196.5 280C196.5 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="49" pathLength="1" d="M210 0C210 95.2 202.7 168 202.7 280C202.7 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="50" pathLength="1" d="M210 0C210 95.2 208.9 168 208.9 280C208.9 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="51" pathLength="1" d="M210 0C210 95.2 215 168 215 280C215 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="52" pathLength="1" d="M210 0C210 95.2 221.2 168 221.2 280C221.2 392 210 464.8 210 560"/><path class="fxc-strand fxc-heavy" data-i="53" pathLength="1" d="M210 0C210 95.2 227.4 168 227.4 280C227.4 392 210 464.8 210 560"/></g><g class="fxc-mark-g" aria-hidden="true"><path class="fxc-bracket" pathLength="1" d="M248.3 270v-6H255.6v6"/><path class="fxc-bracket" pathLength="1" d="M265.5 270v-6H272.9v6"/><path class="fxc-leader" pathLength="1" d="M252 262L352 100"/><path class="fxc-leader" pathLength="1" d="M269.2 262L352 164"/></g></svg>
+                            <svg class="fxc-only-m" viewBox="0 0 390 470" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fxc-grad-m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2779a8"/><stop offset="0.5" stop-color="#2a9d8f"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs><g class="fxc-hair-g"><path class="fxc-strand fxc-hair" data-i="0" pathLength="1" d="M31 0C31 79.9 42 141 42 235C42 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="1" pathLength="1" d="M31 0C31 79.9 46 141 46 235C46 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="2" pathLength="1" d="M31 0C31 79.9 50 141 50 235C50 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="3" pathLength="1" d="M31 0C31 79.9 54 141 54 235C54 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="4" pathLength="1" d="M31 0C31 79.9 58 141 58 235C58 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="5" pathLength="1" d="M31 0C31 79.9 62 141 62 235C62 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="6" pathLength="1" d="M31 0C31 79.9 65.9 141 65.9 235C65.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="7" pathLength="1" d="M31 0C31 79.9 69.9 141 69.9 235C69.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="8" pathLength="1" d="M31 0C31 79.9 73.9 141 73.9 235C73.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="9" pathLength="1" d="M31 0C31 79.9 77.9 141 77.9 235C77.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="10" pathLength="1" d="M31 0C31 79.9 81.9 141 81.9 235C81.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="11" pathLength="1" d="M31 0C31 79.9 85.9 141 85.9 235C85.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="12" pathLength="1" d="M31 0C31 79.9 89.9 141 89.9 235C89.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="13" pathLength="1" d="M31 0C31 79.9 93.9 141 93.9 235C93.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="14" pathLength="1" d="M31 0C31 79.9 97.9 141 97.9 235C97.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="15" pathLength="1" d="M31 0C31 79.9 101.9 141 101.9 235C101.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="16" pathLength="1" d="M31 0C31 79.9 105.8 141 105.8 235C105.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="17" pathLength="1" d="M31 0C31 79.9 109.8 141 109.8 235C109.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="18" pathLength="1" d="M31 0C31 79.9 113.8 141 113.8 235C113.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="19" pathLength="1" d="M31 0C31 79.9 117.8 141 117.8 235C117.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="28" pathLength="1" d="M31 0C31 79.9 178.5 141 178.5 235C178.5 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="29" pathLength="1" d="M31 0C31 79.9 182.5 141 182.5 235C182.5 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="30" pathLength="1" d="M31 0C31 79.9 188.4 141 188.4 235C188.4 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="31" pathLength="1" d="M31 0C31 79.9 191.8 141 191.8 235C191.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="32" pathLength="1" d="M31 0C31 79.9 197.8 141 197.8 235C197.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="33" pathLength="1" d="M31 0C31 79.9 201.8 141 201.8 235C201.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="34" pathLength="1" d="M31 0C31 79.9 207.8 141 207.8 235C207.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="35" pathLength="1" d="M31 0C31 79.9 211.2 141 211.2 235C211.2 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="36" pathLength="1" d="M31 0C31 79.9 217.2 141 217.2 235C217.2 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="37" pathLength="1" d="M31 0C31 79.9 221.2 141 221.2 235C221.2 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="38" pathLength="1" d="M31 0C31 79.9 225.1 141 225.1 235C225.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="39" pathLength="1" d="M31 0C31 79.9 229.1 141 229.1 235C229.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="40" pathLength="1" d="M31 0C31 79.9 233.1 141 233.1 235C233.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="41" pathLength="1" d="M31 0C31 79.9 237.1 141 237.1 235C237.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="42" pathLength="1" d="M31 0C31 79.9 241.1 141 241.1 235C241.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="43" pathLength="1" d="M31 0C31 79.9 245.1 141 245.1 235C245.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="44" pathLength="1" d="M31 0C31 79.9 249.1 141 249.1 235C249.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="45" pathLength="1" d="M31 0C31 79.9 253.1 141 253.1 235C253.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="46" pathLength="1" d="M31 0C31 79.9 257.1 141 257.1 235C257.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="47" pathLength="1" d="M31 0C31 79.9 261.1 141 261.1 235C261.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="48" pathLength="1" d="M31 0C31 79.9 265 141 265 235C265 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="49" pathLength="1" d="M31 0C31 79.9 269 141 269 235C269 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="50" pathLength="1" d="M31 0C31 79.9 273 141 273 235C273 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="51" pathLength="1" d="M31 0C31 79.9 277 141 277 235C277 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="52" pathLength="1" d="M31 0C31 79.9 281 141 281 235C281 329 31 390.1 31 470"/><path class="fxc-strand fxc-hair" data-i="53" pathLength="1" d="M31 0C31 79.9 285 141 285 235C285 329 31 390.1 31 470"/></g><g class="fxc-heavy-g" stroke="url(#fxc-grad-m)"><path class="fxc-strand fxc-heavy" data-i="20" pathLength="1" d="M31 0C31 79.9 125.8 141 125.8 235C125.8 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="21" pathLength="1" d="M31 0C31 79.9 132.2 141 132.2 235C132.2 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="22" pathLength="1" d="M31 0C31 79.9 138.6 141 138.6 235C138.6 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="23" pathLength="1" d="M31 0C31 79.9 144.9 141 144.9 235C144.9 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="24" pathLength="1" d="M31 0C31 79.9 151.3 141 151.3 235C151.3 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="25" pathLength="1" d="M31 0C31 79.9 157.7 141 157.7 235C157.7 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="26" pathLength="1" d="M31 0C31 79.9 164.1 141 164.1 235C164.1 329 31 390.1 31 470"/><path class="fxc-strand fxc-heavy" data-i="27" pathLength="1" d="M31 0C31 79.9 170.5 141 170.5 235C170.5 329 31 390.1 31 470"/></g><g class="fxc-mark-g" aria-hidden="true"><path class="fxc-bracket" pathLength="1" d="M186.2 225v-6H194v6"/><path class="fxc-bracket" pathLength="1" d="M205.6 225v-6H213.4v6"/><path class="fxc-leader" pathLength="1" d="M190.1 217L322 176"/><path class="fxc-leader" pathLength="1" d="M209.5 217L322 240"/></g></svg>
+                            <div class="fxc-tags" aria-hidden="true">
+                                <span class="fxc-tag fxc-tag-fl" data-i18n="factsC.tag_flights">Flüge ~2 %</span>
+                                <span class="fxc-tag fxc-tag-sh" data-i18n="factsC.tag_shipping">Schifffahrt ~2 %</span>
+                            </div>
+                        </div>
+                        <p class="fxc-cap" data-i18n="factsC.fan_cap">100 Stränge = alle globalen CO₂-Emissionen. Die schweren Kabel: bis zu acht — die Mode.</p>
+                        <span class="fxc-conn" aria-hidden="true"></span>
+                    </div>
+                    <div class="fxc-copy" data-lp-reveal>
+                        <p class="lp-stat-value"><span class="lp-stat-prefix">≤</span><span class="lp-stat-num" data-count="8">8</span><span class="lp-stat-unit">%</span></p>
+                        <p class="lp-stat-label" data-i18n="landing.stat3_label">der globalen CO₂-Emissionen entfallen auf die Modeindustrie</p>
+                        <p class="fxc-note" data-i18n="factsC.co2_note">Textilproduktion: ≈ 1,2 Mrd. t CO₂e pro Jahr — mehr als internationale Flüge (~2 %) und Schifffahrt (~2 %) zusammen. — EMF, 2017</p>
+                    </div>
                 </div>
-                <div class="lp-stat">
-                    <p class="lp-stat-kicker" data-i18n="landing.stat1_kicker">Zurück</p>
-                    <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num">1</span><span class="lp-stat-unit">%</span></p>
-                    <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+
+                <p class="fxc-kicker lp-stat-kicker"><span data-i18n="landing.stat2_kicker">Wegwerfen</span></p>
+                <div class="fxc-row fxc-st fxc-s2">
+                    <div class="fxc-rail">
+                        <span class="fxc-conn" aria-hidden="true"></span>
+                        <div class="fxc-stage fxc-rat-stage">
+                            <svg class="fxc-only-d" viewBox="0 0 420 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fxc-wfade-d" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.12" stop-color="#fff" stop-opacity="0"/><stop offset="0.4" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="fxc-wmask-d" maskUnits="userSpaceOnUse" x="14" y="14" width="392" height="158"><rect x="14" y="14" width="392" height="158" fill="url(#fxc-wfade-d)"/></mask></defs><path class="fxc-seg" pathLength="1" d="M210 0V14"/><path class="fxc-seg" pathLength="1" d="M210 172V200"/><rect class="fxc-frame" pathLength="1" x="14" y="14" width="392" height="158" rx="3"/><g mask="url(#fxc-wmask-d)"><g class="fxc-ratchet-g" data-step-w="24" data-step-h="8" data-rest="M44 40h24v8h24v8h24v8h24v8h24v8h24v8h24v8h24v8h24v8h24v8"><path class="fxc-steps" pathLength="1" d="M44 40h24v8h24v8h24v8h24v8h24v8h24v8h24v8h24v8h24v8h24v8"/></g></g><circle class="fxc-pen" cx="284" cy="120" r="3"/></svg>
+                            <svg class="fxc-only-m" viewBox="0 0 390 176" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fxc-wfade-m" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.12" stop-color="#fff" stop-opacity="0"/><stop offset="0.4" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="fxc-wmask-m" maskUnits="userSpaceOnUse" x="8" y="14" width="374" height="134"><rect x="8" y="14" width="374" height="134" fill="url(#fxc-wfade-m)"/></mask></defs><path class="fxc-seg" pathLength="1" d="M31 0V14"/><path class="fxc-seg" pathLength="1" d="M31 148V176"/><rect class="fxc-frame" pathLength="1" x="8" y="14" width="374" height="134" rx="3"/><g mask="url(#fxc-wmask-m)"><g class="fxc-ratchet-g" data-step-w="22" data-step-h="7.5" data-rest="M30 38h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5"><path class="fxc-steps" pathLength="1" d="M30 38h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5h22v7.5"/></g></g><circle class="fxc-pen" cx="250" cy="113" r="3"/></svg>
+                            <p class="fxc-live">
+                                <span class="fxc-live-top"><span class="fxc-live-dot" aria-hidden="true"></span><span data-i18n="ticker.live">Live</span> <span class="fxc-live-kg"><span class="tnum" data-ticker-kg>0</span> <span data-i18n="ticker.unit">kg</span></span></span>
+                                <span class="fxc-live-cap" data-i18n="ticker.cap_short">verbrannt oder vergraben · seit du hier bist</span>
+                            </p>
+                        </div>
+                        <p class="fxc-cap" data-i18n="factsC.ratchet_cap">1 Stufe = 1 Sekunde = 1 Lkw-Ladung</p>
+                        <span class="fxc-conn" aria-hidden="true"></span>
+                    </div>
+                    <div class="fxc-copy" data-lp-reveal>
+                        <p class="lp-stat-value"><span class="lp-stat-num" data-count="1">1</span></p>
+                        <p class="lp-stat-label" data-i18n="landing.stat2_label">Lkw-Ladung Textilien wird jede Sekunde deponiert oder verbrannt</p>
+                    </div>
+                </div>
+
+                <p class="fxc-kicker lp-stat-kicker"><span data-i18n="landing.stat1_kicker">Zurück</span></p>
+                <div class="fxc-st fxc-s3">
+                    <div class="fxc-s3-stage">
+                        <svg class="fxc-only-d" viewBox="0 0 1000 680" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fxc-rfade-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f8a9d" stop-opacity="0.6"/><stop offset="0.55" stop-color="#6f8a9d" stop-opacity="0.35"/><stop offset="0.92" stop-color="#6f8a9d" stop-opacity="0"/></linearGradient><linearGradient id="fxc-agrad-d" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2779a8"/><stop offset="0.55" stop-color="#2a9d8f"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs><path class="fxc-seg" pathLength="1" d="M170 0V36"/><path class="fxc-ribbon" pathLength="1" stroke="url(#fxc-rfade-d)" d="M170 36C170 82 126 132 126 204L126 680M170 36C170 82 126.9 132 126.9 204L126.9 680M170 36C170 82 127.8 132 127.8 204L127.8 680M170 36C170 82 128.7 132 128.7 204L128.7 680M170 36C170 82 129.6 132 129.6 204L129.6 680M170 36C170 82 130.5 132 130.5 204L130.5 680M170 36C170 82 131.4 132 131.4 204L131.4 680M170 36C170 82 132.3 132 132.3 204L132.3 680M170 36C170 82 133.2 132 133.2 204L133.2 680M170 36C170 82 134.1 132 134.1 204L134.1 680M170 36C170 82 135 132 135 204L135 680M170 36C170 82 135.9 132 135.9 204L135.9 680M170 36C170 82 136.8 132 136.8 204L136.8 680M170 36C170 82 137.7 132 137.7 204L137.7 680M170 36C170 82 138.6 132 138.6 204L138.6 680M170 36C170 82 139.5 132 139.5 204L139.5 680M170 36C170 82 140.4 132 140.4 204L140.4 680M170 36C170 82 141.3 132 141.3 204L141.3 680M170 36C170 82 142.2 132 142.2 204L142.2 680M170 36C170 82 143.1 132 143.1 204L143.1 680M170 36C170 82 144 132 144 204L144 680M170 36C170 82 144.9 132 144.9 204L144.9 680M170 36C170 82 145.8 132 145.8 204L145.8 680M170 36C170 82 146.7 132 146.7 204L146.7 680M170 36C170 82 147.6 132 147.6 204L147.6 680M170 36C170 82 148.4 132 148.4 204L148.4 680M170 36C170 82 149.3 132 149.3 204L149.3 680M170 36C170 82 150.2 132 150.2 204L150.2 680M170 36C170 82 151.1 132 151.1 204L151.1 680M170 36C170 82 152 132 152 204L152 680M170 36C170 82 152.9 132 152.9 204L152.9 680M170 36C170 82 153.8 132 153.8 204L153.8 680M170 36C170 82 154.7 132 154.7 204L154.7 680M170 36C170 82 155.6 132 155.6 204L155.6 680M170 36C170 82 156.5 132 156.5 204L156.5 680M170 36C170 82 157.4 132 157.4 204L157.4 680M170 36C170 82 158.3 132 158.3 204L158.3 680M170 36C170 82 159.2 132 159.2 204L159.2 680M170 36C170 82 160.1 132 160.1 204L160.1 680M170 36C170 82 161 132 161 204L161 680M170 36C170 82 161.9 132 161.9 204L161.9 680M170 36C170 82 162.8 132 162.8 204L162.8 680M170 36C170 82 163.7 132 163.7 204L163.7 680M170 36C170 82 164.6 132 164.6 204L164.6 680M170 36C170 82 165.5 132 165.5 204L165.5 680M170 36C170 82 166.4 132 166.4 204L166.4 680M170 36C170 82 167.3 132 167.3 204L167.3 680M170 36C170 82 168.2 132 168.2 204L168.2 680M170 36C170 82 169.1 132 169.1 204L169.1 680M170 36C170 82 170 132 170 204L170 680M170 36C170 82 170.9 132 170.9 204L170.9 680M170 36C170 82 171.8 132 171.8 204L171.8 680M170 36C170 82 172.7 132 172.7 204L172.7 680M170 36C170 82 173.6 132 173.6 204L173.6 680M170 36C170 82 174.5 132 174.5 204L174.5 680M170 36C170 82 175.4 132 175.4 204L175.4 680M170 36C170 82 176.3 132 176.3 204L176.3 680M170 36C170 82 177.2 132 177.2 204L177.2 680M170 36C170 82 178.1 132 178.1 204L178.1 680M170 36C170 82 179 132 179 204L179 680M170 36C170 82 179.9 132 179.9 204L179.9 680M170 36C170 82 180.8 132 180.8 204L180.8 680M170 36C170 82 181.7 132 181.7 204L181.7 680M170 36C170 82 182.6 132 182.6 204L182.6 680M170 36C170 82 183.5 132 183.5 204L183.5 680M170 36C170 82 184.4 132 184.4 204L184.4 680M170 36C170 82 185.3 132 185.3 204L185.3 680M170 36C170 82 186.2 132 186.2 204L186.2 680M170 36C170 82 187.1 132 187.1 204L187.1 680M170 36C170 82 188 132 188 204L188 680M170 36C170 82 188.9 132 188.9 204L188.9 680M170 36C170 82 189.8 132 189.8 204L189.8 680M170 36C170 82 190.7 132 190.7 204L190.7 680M170 36C170 82 191.6 132 191.6 204L191.6 680M170 36C170 82 192.4 132 192.4 204L192.4 680M170 36C170 82 193.3 132 193.3 204L193.3 680M170 36C170 82 194.2 132 194.2 204L194.2 680M170 36C170 82 195.1 132 195.1 204L195.1 680M170 36C170 82 196 132 196 204L196 680M170 36C170 82 196.9 132 196.9 204L196.9 680M170 36C170 82 197.8 132 197.8 204L197.8 680M170 36C170 82 198.7 132 198.7 204L198.7 680M170 36C170 82 199.6 132 199.6 204L199.6 680M170 36C170 82 200.5 132 200.5 204L200.5 680M170 36C170 82 201.4 132 201.4 204L201.4 680M170 36C170 82 202.3 132 202.3 204L202.3 680M170 36C170 82 203.2 132 203.2 204L203.2 680M170 36C170 82 204.1 132 204.1 204L204.1 680M170 36C170 82 205 132 205 204L205 680M170 36C170 82 205.9 132 205.9 204L205.9 680M170 36C170 82 206.8 132 206.8 204L206.8 680M170 36C170 82 207.7 132 207.7 204L207.7 680M170 36C170 82 208.6 132 208.6 204L208.6 680M170 36C170 82 209.5 132 209.5 204L209.5 680M170 36C170 82 210.4 132 210.4 204L210.4 680M170 36C170 82 211.3 132 211.3 204L211.3 680M170 36C170 82 212.2 132 212.2 204L212.2 680M170 36C170 82 213.1 132 213.1 204L213.1 680M170 36C170 82 214 132 214 204L214 680"/><path class="fxc-arcline" pathLength="1" stroke="url(#fxc-agrad-d)" stroke-width="2.75" d="M170 36C170 96 170 220 170 360A255 255 0 1 0 552.5 139.2"/><circle class="fxc-node" cx="170" cy="36" r="3"/><circle class="fxc-tip" cx="552.5" cy="139.2" r="4"/></svg>
+                        <svg class="fxc-only-m" viewBox="0 0 390 560" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false"><defs><linearGradient id="fxc-rfade-m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f8a9d" stop-opacity="0.6"/><stop offset="0.55" stop-color="#6f8a9d" stop-opacity="0.35"/><stop offset="0.92" stop-color="#6f8a9d" stop-opacity="0"/></linearGradient><linearGradient id="fxc-agrad-m" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2779a8"/><stop offset="0.55" stop-color="#2a9d8f"/><stop offset="1" stop-color="#64d6c4"/></linearGradient></defs><path class="fxc-seg" pathLength="1" d="M31 0V26"/><path class="fxc-ribbon" pathLength="1" stroke="url(#fxc-rfade-m)" d="M31 26C31 72 12 122 12 194L12 560M31 26C31 72 12.6 122 12.6 194L12.6 560M31 26C31 72 13.3 122 13.3 194L13.3 560M31 26C31 72 13.9 122 13.9 194L13.9 560M31 26C31 72 14.6 122 14.6 194L14.6 560M31 26C31 72 15.2 122 15.2 194L15.2 560M31 26C31 72 15.9 122 15.9 194L15.9 560M31 26C31 72 16.5 122 16.5 194L16.5 560M31 26C31 72 17.2 122 17.2 194L17.2 560M31 26C31 72 17.8 122 17.8 194L17.8 560M31 26C31 72 18.4 122 18.4 194L18.4 560M31 26C31 72 19.1 122 19.1 194L19.1 560M31 26C31 72 19.7 122 19.7 194L19.7 560M31 26C31 72 20.4 122 20.4 194L20.4 560M31 26C31 72 21 122 21 194L21 560M31 26C31 72 21.7 122 21.7 194L21.7 560M31 26C31 72 22.3 122 22.3 194L22.3 560M31 26C31 72 22.9 122 22.9 194L22.9 560M31 26C31 72 23.6 122 23.6 194L23.6 560M31 26C31 72 24.2 122 24.2 194L24.2 560M31 26C31 72 24.9 122 24.9 194L24.9 560M31 26C31 72 25.5 122 25.5 194L25.5 560M31 26C31 72 26.2 122 26.2 194L26.2 560M31 26C31 72 26.8 122 26.8 194L26.8 560M31 26C31 72 27.5 122 27.5 194L27.5 560M31 26C31 72 28.1 122 28.1 194L28.1 560M31 26C31 72 28.7 122 28.7 194L28.7 560M31 26C31 72 29.4 122 29.4 194L29.4 560M31 26C31 72 30 122 30 194L30 560M31 26C31 72 30.7 122 30.7 194L30.7 560M31 26C31 72 31.3 122 31.3 194L31.3 560M31 26C31 72 32 122 32 194L32 560M31 26C31 72 32.6 122 32.6 194L32.6 560M31 26C31 72 33.3 122 33.3 194L33.3 560M31 26C31 72 33.9 122 33.9 194L33.9 560M31 26C31 72 34.5 122 34.5 194L34.5 560M31 26C31 72 35.2 122 35.2 194L35.2 560M31 26C31 72 35.8 122 35.8 194L35.8 560M31 26C31 72 36.5 122 36.5 194L36.5 560M31 26C31 72 37.1 122 37.1 194L37.1 560M31 26C31 72 37.8 122 37.8 194L37.8 560M31 26C31 72 38.4 122 38.4 194L38.4 560M31 26C31 72 39.1 122 39.1 194L39.1 560M31 26C31 72 39.7 122 39.7 194L39.7 560M31 26C31 72 40.3 122 40.3 194L40.3 560M31 26C31 72 41 122 41 194L41 560M31 26C31 72 41.6 122 41.6 194L41.6 560M31 26C31 72 42.3 122 42.3 194L42.3 560M31 26C31 72 42.9 122 42.9 194L42.9 560M31 26C31 72 43.6 122 43.6 194L43.6 560M31 26C31 72 44.2 122 44.2 194L44.2 560M31 26C31 72 44.8 122 44.8 194L44.8 560M31 26C31 72 45.5 122 45.5 194L45.5 560M31 26C31 72 46.1 122 46.1 194L46.1 560M31 26C31 72 46.8 122 46.8 194L46.8 560M31 26C31 72 47.4 122 47.4 194L47.4 560M31 26C31 72 48.1 122 48.1 194L48.1 560M31 26C31 72 48.7 122 48.7 194L48.7 560M31 26C31 72 49.4 122 49.4 194L49.4 560M31 26C31 72 50 122 50 194L50 560"/><path class="fxc-arcline" pathLength="1" stroke="url(#fxc-agrad-m)" stroke-width="2.25" d="M31 26C31 86 31 110 31 250A140 140 0 1 0 241 128.8"/><circle class="fxc-node" cx="31" cy="26" r="3"/><circle class="fxc-tip" cx="241" cy="128.8" r="4"/></svg>
+                        <span class="fxc-tag fxc-tag99" aria-hidden="true" data-i18n="factsC.tag99">99 von 100 — immer weiter</span>
+                        <div class="fxc-s3-copy" data-lp-reveal>
+                            <p class="lp-stat-value"><span class="lp-stat-prefix">&lt;</span><span class="lp-stat-num" data-count="1">1</span><span class="lp-stat-unit">%</span></p>
+                            <p class="lp-stat-label" data-i18n="landing.stat1_label">der Kleidung wird zu neuer Kleidung recycelt</p>
+                            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fxc-row fxc-src">
+                    <div class="fxc-rail" aria-hidden="true"></div>
+                    <div class="fxc-copy">
+                        <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
+                    </div>
                 </div>
             </div>
-            <p class="lp-stats-coda" data-i18n="landing.facts_coda">Weniger als ein Prozent kehrt zurück. Die Linie kennt kein Zurück — sie kennt nur weiter.</p>
-            <p class="lp-stats-sources" data-i18n-html="landing.stats_src_html">Quellen: <a href="https://www.ellenmacarthurfoundation.org/a-new-textiles-economy" target="_blank" rel="noopener">Ellen MacArthur Foundation</a> · <a href="https://www.unep.org/news-and-stories/story/putting-brakes-fast-fashion" target="_blank" rel="noopener">UNEP</a></p>
         </section>
     </div>
 
