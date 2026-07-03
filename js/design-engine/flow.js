@@ -161,16 +161,68 @@ const DesignFlow = (() => {
     set("silhouette.fit", Math.min(1, Math.max(0, fit + (r2 - 0.5) * 0.3)));
     const fin = typeof g("fabric.finishWeight") === "number" ? g("fabric.finishWeight") : 0.4;
     set("fabric.finishWeight", Math.min(1, Math.max(0, fin + (r3 - 0.5) * 0.36)));
-    // Eine Variante wagt ein anderes Muster / eine andere Länge
+    // Eine Variante wagt ein anderes Muster / eine andere Länge — ABER ein vom
+    // User ENTSCHIEDENES "kein Muster" (conf ≥ 0.6; Inferenz stempelt nur bis
+    // 0.5) bleibt respektiert (roadmap §8.2): statt der Muster-Lotterie dreht
+    // diese Variante dann stärker an Farbton und Licht.
+    const keepClean = g("pattern.type") === "none" && DesignDNA.confidence(d, "pattern.type") >= 0.6;
     if (idx % 2 === 1 && r1 > 0.35) {
-      set("pattern.type", PATTERN_POOL[Math.floor(r2 * PATTERN_POOL.length) % PATTERN_POOL.length]);
-      set("pattern.scale", 0.25 + r3 * 0.6);
+      if (keepClean) {
+        const swung = (g("color.stops") || []).map((s) => shiftHex(s, (r2 - 0.5) * 44, (r3 - 0.5) * 0.12));
+        if (swung.length) set("color.stops", swung);
+      } else {
+        set("pattern.type", PATTERN_POOL[Math.floor(r2 * PATTERN_POOL.length) % PATTERN_POOL.length]);
+        set("pattern.scale", 0.25 + r3 * 0.6);
+      }
     }
     if (idx === 3 && r2 > 0.5) {
       const L = ["cropped", "regular", "long"]; const cur = Math.max(0, L.indexOf(g("length")));
       set("length", L[(cur + 1 + Math.floor(r3 * 2)) % 3]);
     }
     return d;
+  }
+
+  // ── Konzept-Namen aus dem Delta (roadmap §8.2) ─────────────────────────────
+  // Vier fast identische dunkle Kacheln lesen sich nicht — jede Richtung
+  // bekommt einen NAMEN aus dem, was sie tatsächlich verschiebt ("Wärmer ·
+  // Weiter"). Pure: (Basis-DNA, Varianten-DNA) → bis zu 2 i18n-Keys, der
+  // Aufrufer übersetzt. Unter Node testbar wie die anderen Helfer.
+  function hexHue(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+    if (!m) return null;
+    const r = parseInt(m[1].slice(0, 2), 16) / 255, g = parseInt(m[1].slice(2, 4), 16) / 255, b = parseInt(m[1].slice(4, 6), 16) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    if (!d) return null; // grau trägt keinen Farbton
+    let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h *= 60;
+    return h < 0 ? h + 360 : h;
+  }
+  // Distanz zum warmen Pol (30° Rot-Orange) auf dem Farbkreis — sinkt sie,
+  // wurde die Variante wärmer.
+  const warmDist = (h) => { const d = Math.abs(h - 30); return Math.min(d, 360 - d); };
+  function conceptDeltas(base, variant) {
+    const gb = (p) => DesignDNA.get(base, p);
+    const gv = (p) => DesignDNA.get(variant, p);
+    const cand = [];
+    const hb = hexHue((gb("color.stops") || [])[0]);
+    const hv = hexHue((gv("color.stops") || [])[0]);
+    if (hb != null && hv != null) {
+      const dw = warmDist(hv) - warmDist(hb);
+      if (Math.abs(dw) >= 10) cand.push({ k: dw < 0 ? "concept.warmer" : "concept.cooler", m: Math.abs(dw) / 180 + 0.1 });
+    }
+    const fb = gb("silhouette.fit"), fv = gv("silhouette.fit");
+    if (typeof fb === "number" && typeof fv === "number" && Math.abs(fv - fb) >= 0.06)
+      cand.push({ k: fv > fb ? "concept.wider" : "concept.slimmer", m: Math.abs(fv - fb) * 1.4 });
+    const nb = gb("fabric.finishWeight"), nv = gv("fabric.finishWeight");
+    if (typeof nb === "number" && typeof nv === "number" && Math.abs(nv - nb) >= 0.08)
+      cand.push({ k: nv > nb ? "concept.sheen" : "concept.matte", m: Math.abs(nv - nb) });
+    const pb = gb("pattern.type") || "none", pv = gv("pattern.type") || "none";
+    if (pb !== pv) cand.push({ k: pv === "none" ? "concept.cleaner" : "concept.pattern", m: 0.42 });
+    const lb = gb("length"), lv = gv("length");
+    if (lb !== lv && lv) cand.push({ k: "concept.len_" + lv, m: 0.4 });
+    cand.sort((a, b) => b.m - a.m);
+    const keys = cand.slice(0, 2).map((c) => c.k);
+    return keys.length ? keys : ["concept.subtle"];
   }
 
   // Honest progress: a calm orientation stepper over the journey's named phases
@@ -424,6 +476,28 @@ const DesignFlow = (() => {
       }, 150);
     }
 
+    // ── Ankunfts-Beat (roadmap §8.1): der Satz tippt sich in Mono auf ──────
+    // Die Maschinenstimme spricht das Design aus, EINEN Atemzug bevor die
+    // Optionen erscheinen (deren Eintritt verzögert .is-refine im CSS).
+    // Ohne fx / mit reduced-motion: sofort voller Text. Ein Re-Render bricht
+    // die laufende Animation sauber ab (cancelTypeOn).
+    let typeRaf = 0;
+    function cancelTypeOn() { if (typeRaf) { cancelAnimationFrame(typeRaf); typeRaf = 0; } }
+    function typeOn(el, text) {
+      cancelTypeOn();
+      if (!el) return;
+      if (!fxOn() || reduceMotion()) { el.textContent = text; return; }
+      el.classList.add("is-typing");
+      let i = 0;
+      const step = () => {
+        i = Math.min(text.length, i + 2);
+        el.textContent = text.slice(0, i);
+        if (i < text.length) typeRaf = requestAnimationFrame(step);
+        else { typeRaf = 0; el.classList.remove("is-typing"); }
+      };
+      typeRaf = requestAnimationFrame(step);
+    }
+
     // Phase interstitial: crossing A→B→…→F flashes the new chapter's mono
     // title on its permanently reserved line (no layout jump) and pulses the
     // stepper's current beat. Decorative (aria-hidden) — the stepper's
@@ -511,8 +585,10 @@ const DesignFlow = (() => {
       }
       // The live sentence only appears once it reads as a sentence — below
       // half maturity it would be a bare fragment ("Stück.", "Jacke.") that
-      // looks like debris under the controls (roadmap §3.1).
-      live.textContent = maturity() >= 0.5 ? DesignSummary.toSentence(dna, lang()) : "";
+      // looks like debris under the controls (roadmap §3.1). On the refine
+      // screen the typed-on summary IS the design's voice — the same sentence
+      // a second time under the controls was §8.4's duplicate; suppress it.
+      live.textContent = (!atRefine && maturity() >= 0.5) ? DesignSummary.toSentence(dna, lang()) : "";
     }
     // Orientation stepper: light the current phase, mark earlier ones done.
     // Label it for assistive tech with the current beat ("Design-Phase: Stoff").
@@ -599,6 +675,8 @@ const DesignFlow = (() => {
       if (!renderer) { console.warn("[DesignFlow] no modality:", node.modality); return renderRefine(); }
       swapBody(() => {
         lastRenderAt = nowMs(); // guard counts from the visible paint
+        cancelTypeOn();
+        body.classList.remove("is-refine"); // "Tiefer verfeinern" kehrt zur Frage zurück
         // Preview refresh (morph) starts WITH the new question's entrance —
         // one clean sequence: sink out → question staggers in while the
         // garment reshapes. (Running it during the leave starves the leave.)
@@ -658,9 +736,13 @@ const DesignFlow = (() => {
       swapBody(() => {
       lastRenderAt = nowMs(); // guard counts from the visible paint
       refreshChrome(); // realism crossfade starts with the refine screen's entrance
+      // Ankunfts-Beat (roadmap §8.1): .is-refine verzögert im CSS den Eintritt
+      // der Options-Sektionen, während der Satz sich in Mono auftippt — die
+      // finale Materialisierung der Vorschau läuft synchron (refreshChrome).
+      body.classList.add("is-refine");
       body.innerHTML = `
         <h2 class="de-question">${t("engine.refine_title")}</h2>
-        <p class="de-summary" id="de-refine-summary">${DesignSummary.toSentence(dna, l)}</p>
+        <p class="de-summary de-summary-type" id="de-refine-summary"></p>
         <div class="de-concepts">
           <p class="de-inferred-h">${t("engine.concepts_title")}</p>
           <div class="de-concept-grid" id="de-concept-grid"></div>
@@ -678,7 +760,8 @@ const DesignFlow = (() => {
           <button type="button" class="de-confirm de-generate" id="de-generate">${t("engine.generate")}</button>
         </div>`;
 
-      const reSummary = () => { body.querySelector("#de-refine-summary").textContent = DesignSummary.toSentence(dna, lang()); };
+      const reSummary = () => { cancelTypeOn(); const el = body.querySelector("#de-refine-summary"); el.classList.remove("is-typing"); el.textContent = DesignSummary.toSentence(dna, lang()); };
+      typeOn(body.querySelector("#de-refine-summary"), DesignSummary.toSentence(dna, l));
 
       // ── Concept-Studio: 4 Varianten der konvergierten DNA, jede mit EVOLVE
       // (Versionskette V1→V2→…) und „Wählen“. Wählen macht die Variante zur
@@ -706,15 +789,22 @@ const DesignFlow = (() => {
         if (!grid) return;
         grid.innerHTML = concepts.map((c, i) => {
           const cur = c.history[c.history.length - 1];
+          // Jede Richtung trägt ihren Namen aus dem eigenen Delta (§8.2):
+          // "Wärmer · Weiter" statt vier ununterscheidbarer dunkler Kacheln.
+          // Nur i18n-Wörter (kein User-Input) → sicher im Template.
+          const name = (i === 0 && c.version === 1)
+            ? t("engine.concept_original")
+            : conceptDeltas(baseDna, cur).map((k) => t(k)).join(" · ");
           return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
-            <button type="button" class="de-concept-pick" data-pick="${i}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}">
+            <button type="button" class="de-concept-pick" data-pick="${i}" aria-pressed="${i === selected}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}: ${name}">
               <span class="de-concept-stage">${tileSvg(cur)}</span>
-              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span>${i === 0 && c.version === 1 ? `<span class="de-concept-tag">${t("engine.concept_original")}</span>` : ""}</span>
+              <span class="de-concept-name">${name}</span>
+              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span></span>
             </button>
-            <div class="de-concept-actions">
+            ${i === selected ? `<div class="de-concept-actions">
               <button type="button" class="de-concept-evolve" data-evolve="${i}">${t("engine.evolve")}</button>
               ${c.history.length > 1 ? `<button type="button" class="de-concept-back" data-back="${i}" aria-label="${t("engine.evolve_back_aria")}">↩</button>` : ""}
-            </div>
+            </div>` : ""}
           </figure>`;
         }).join("");
         grid.querySelectorAll("[data-pick]").forEach((b) => b.addEventListener("click", () => {
@@ -919,7 +1009,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

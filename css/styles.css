@@ -5046,9 +5046,12 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 
 .de-refine-axes { margin: var(--space-6) 0; display: flex; flex-direction: column; gap: var(--space-3); }
 .de-axis { display: flex; align-items: center; gap: var(--space-3); }
-.de-axis-label { flex: 1; color: var(--text-dim); font-size: var(--text-sm); }
-.de-nudge { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out), background .2s var(--ease-out); }
-.de-nudge:hover { border-color: var(--accent); background: var(--gradient-dim); }
+.de-axis-label { flex: 1; color: var(--text); font-size: var(--text-sm); }
+/* §8.3: Akzent-Stepper statt grauer Form-Pillen — die Vorschau antwortet auf
+   jeden Klick sofort (updatePreview), der Knopf soll danach aussehen. */
+.de-nudge { border: 1px solid rgba(100, 214, 196, 0.38); background: rgba(42, 157, 143, 0.09); color: var(--text); border-radius: 999px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out), background .2s var(--ease-out), transform .15s var(--ease-out); }
+.de-nudge:hover { border-color: var(--accent-3); background: rgba(42, 157, 143, 0.22); }
+.de-nudge:active { transform: scale(0.96); }
 .de-refine-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-6); flex-wrap: wrap; }
 .de-refine-actions .de-confirm { margin-top: 0; }
 
@@ -5274,6 +5277,27 @@ html.fx .de-body.is-entering > *:nth-child(3) { animation-delay: 90ms; }
 html.fx .de-body.is-entering > *:nth-child(4) { animation-delay: 135ms; }
 html.fx .de-body.is-entering > *:nth-child(n+5) { animation-delay: 180ms; }
 @keyframes deStepIn { from { opacity: 0; transform: translateY(10px); } }
+
+/* §8 Refine-Crescendo · Ankunfts-Beat: der Satz tippt sich in Mono auf
+   (Maschinenstimme, JS-rAF), die Options-Sektionen treten EINEN Atemzug
+   später ein (spezifischere Regeln als .is-entering > * — sie gewinnen die
+   Kaskade und verschieben nur den Eintritt dieser Abschnitte nach hinten).
+   Ohne fx / mit reduced-motion: alles sofort, voller Text. */
+.de-summary-type { font-family: var(--font-mono); font-size: var(--text-sm); letter-spacing: 0.02em; line-height: 1.55; color: var(--accent-3); min-height: 3.1em; }
+.de-summary-type.is-typing::after { content: "▎"; color: var(--accent-3); animation: deCaret 0.7s steps(1) infinite; }
+@keyframes deCaret { 50% { opacity: 0; } }
+html.fx .de-body.is-refine .de-concepts { animation: deRefineIn 0.45s var(--ease-out) 380ms backwards; }
+html.fx .de-body.is-refine .de-inferred { animation: deRefineIn 0.45s var(--ease-out) 460ms backwards; }
+html.fx .de-body.is-refine .de-refine-axes { animation: deRefineIn 0.45s var(--ease-out) 530ms backwards; }
+html.fx .de-body.is-refine .de-freetext { animation: deRefineIn 0.45s var(--ease-out) 590ms backwards; }
+html.fx .de-body.is-refine .de-refine-actions { animation: deRefineIn 0.45s var(--ease-out) 650ms backwards; }
+@keyframes deRefineIn { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) {
+    .de-summary-type.is-typing::after { animation: none !important; content: none; }
+    html.fx .de-body.is-refine .de-concepts, html.fx .de-body.is-refine .de-inferred,
+    html.fx .de-body.is-refine .de-refine-axes, html.fx .de-body.is-refine .de-freetext,
+    html.fx .de-body.is-refine .de-refine-actions { animation: none !important; }
+}
 
 /* Phasen-Interstitial: fest reservierte Mono-Zeile zwischen Stepper und Frage
    (KEIN Layout-Sprung) — beim Kapitelwechsel blendet der neue Phasen-Titel
@@ -6133,9 +6157,12 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 
 /* Concept-Studio (Direktive Schritte 3+4): Varianten-Grid + EVOLVE-Kette */
 .de-concepts { margin: 18px 0 6px; }
-.de-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 10px; }
+/* §8 Refine-Crescendo: grössere Kacheln auf hellerer Bühne, jede Richtung mit
+   Namen aus ihrem Delta — Mutationen (Hue ±34°, Fit ±0.15) lesen sich sonst
+   auf 140px-Kacheln nicht. */
+.de-concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 14px; margin-top: 10px; }
 .de-concept { margin: 0; display: flex; flex-direction: column; gap: 6px; position: relative; }
-.de-concept-pick { position: relative; display: block; width: 100%; padding: 8px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg, #0a1622) 82%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out); }
+.de-concept-pick { position: relative; display: block; width: 100%; padding: 10px; border-radius: 14px; border: 1px solid var(--border, #25415a); background: radial-gradient(120% 90% at 50% 20%, #21384e, #101f31 84%); cursor: pointer; transition: border-color .2s var(--ease-out), transform .2s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out); }
 /* f05 · Karten gleiten gestaffelt herein (CSS-Animation greift automatisch,
    wenn flow.js das Varianten-Grid mountet — kein JS-Eingriff). */
 .de-concept { animation: urConceptIn .5s var(--ease-out) backwards; }
@@ -6163,8 +6190,9 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
   .de-concept { animation: none !important; }
   .de-concept.is-selected .de-concept-pick::after { animation: none !important; }
 }
-.de-concept-stage svg { width: 100%; height: 132px; display: block; }
-.de-concept-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.de-concept-stage svg { width: 100%; height: 164px; display: block; }
+.de-concept-name { display: block; margin-top: 8px; font-size: 0.84rem; line-height: 1.3; color: var(--text); text-align: left; min-height: 2.2em; }
+.de-concept-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .de-concept-v { color: var(--accent-3, #64d6c4); font-size: 0.7rem; letter-spacing: 0.12em; }
 .de-concept-tag { font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
 .de-concept-actions { display: flex; gap: 6px; }
