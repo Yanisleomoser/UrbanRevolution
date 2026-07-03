@@ -618,7 +618,6 @@ const DesignFlow = (() => {
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
-      const crossed = lastPhase !== null && lastPhase !== "F";
       lastPhase = "F";
       atRefine = true; // Phase F → crossfade the flat to the realism photo
       updateStepper("F"); // the arc is traversed; the user is refining/generating
@@ -746,7 +745,9 @@ const DesignFlow = (() => {
         const extra = ftEl && ftEl.value.trim() ? " " + ftEl.value.trim() : "";
         handoff(DesignSummary.toPrompt(dna, lang()) + extra, DesignDNA.get(dna, "category"), e.currentTarget);
       });
-      if (crossed) phaseFlash("F");
+      // No interstitial on the crossing INTO refine: the phase list has no F
+      // beat (it would clamp to "Details" — wrong word while arriving at
+      // "Dein Design"); the refine headline itself is the arrival marker.
       }); // end swapBody paint
 
       if (typeof options.onFinish === "function") {
