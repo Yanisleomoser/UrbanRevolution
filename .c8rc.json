@@ -8,10 +8,7 @@
     "js/flair.js",
     "js/animations.js",
     "js/landing.js",
-    "js/facts-lab.js",
-    "js/facts-a.js",
-    "js/facts-b.js",
-    "js/facts-c.js",
+    "js/facts-mass.js",
     "js/design-engine/modalities/**"
   ],
   "reporter": ["text-summary", "text"],

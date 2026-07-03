@@ -551,7 +551,7 @@
     let raf = 0;
     let running = false;
     const pointer = { x: -9999, y: -9999, active: false };
-    // Canvas-Rect fürs Pointer-Mapping gecacht (Muster wie facts-instruments.js) —
+    // Canvas-Rect fürs Pointer-Mapping gecacht (Invalidierung bei Resize/Scroll) —
     // sonst zwingt jede Mausbewegung ein synchrones Layout-Read.
     let canvasRect = null;
 

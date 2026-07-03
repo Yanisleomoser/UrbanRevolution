@@ -63,9 +63,10 @@ interactive data-instruments (PRs #306, #309, #311; cache fix #314):
    kg odometer (`ambient-ticker.js`, +2'918 kg/s); leading bar pulses each tick.
 3. **`≤8% CO₂` → a radial gauge.** An 8% arc sweeps in on reveal.
 
-Files: `js/facts-instruments.js` (classic IIFE module), markup in `index.html`,
-styles in `css/styles.css`. Live kg readout reuses `ambient-ticker.js` + `ticker.*`
-i18n keys.
+Files: historisch `js/facts-instruments.js` — **ersetzt durch `js/facts-mass.js`**
+(„Die Masse": drei Canvas-Partikel-Beats, gewählt aus dem Varianten-Labor PR #337);
+markup in `index.html`, styles in `css/styles.css`. Live kg readout reuses
+`ambient-ticker.js` + `ticker.*` i18n keys.
 
 ### Patterns established here — REUSE THESE for the next beats
 

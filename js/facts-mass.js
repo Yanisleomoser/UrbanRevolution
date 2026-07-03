@@ -1,5 +1,5 @@
 /**
- * Urban Revolution — #facts Variante B „Die Masse" (Controller)
+ * Urban Revolution — #facts „Die Masse" (Controller)
  *
  * Prozente lügen über Masse. Drei bühnenhohe Beats zeigen die physische
  * Masse hinter den drei Zahlen — eine gemeinsame Partikelsprache: fein,
@@ -22,12 +22,12 @@
  * Konvention wie ambient-ticker.js). rAF pausiert offscreen
  * (IntersectionObserver) und bei verstecktem Tab. DPR ≤ 2.
  *
- * Classic IIFE side-effect module (kein Global), wie facts-instruments.js.
+ * Classic IIFE side-effect module (kein Global), wie ambient-ticker.js.
  */
 (function () {
     if (typeof window === "undefined" || typeof document === "undefined") return;
-    if (window.__urFactsB) return;
-    window.__urFactsB = true;
+    if (window.__urFactsMass) return;
+    window.__urFactsMass = true;
 
     const doc = document;
 
@@ -503,8 +503,8 @@
     function init() {
         if (started) return;
         started = true;
-        const host = doc.getElementById("facts-b");
-        if (!host || host.hidden) return; // Slot nicht aktiv → sauberer No-op
+        const host = doc.getElementById("facts");
+        if (!host) return;
 
         startCo2(host);
 
