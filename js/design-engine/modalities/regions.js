@@ -98,12 +98,38 @@
     }
 
     // ── The board: flat + hotspots + one roaming micro-picker ───────────────
+    // Stage, hotspots and glow live inside a ZOOM WRAPPER: opening a picker
+    // drives a camera move onto the part (translate+scale keeps the tapped
+    // anchor as the FIXED POINT — and a region switch glides, because two
+    // translate+scale states interpolate; a transform-origin change would
+    // jump). The picker sits OUTSIDE the wrapper: unscaled, readable, and its
+    // anchor point doesn't move by construction.
     const board = V.el("div", { class: "de-regions" });
+    const zoomWrap = V.el("div", { class: "de-regions-zoom" });
     const stage = V.el("div", { class: "de-regions-stage", "aria-hidden": "true" });
-    board.appendChild(stage);
+    zoomWrap.appendChild(stage);
+    board.appendChild(zoomWrap);
+    const ZOOM = 1.28;
+    function zoomTo(a) {
+      const w = zoomWrap.offsetWidth, h = zoomWrap.offsetHeight; // layout size, transform-independent
+      if (!w || !h) return;
+      const ax = (a.x / VB) * w, ay = (a.y / VH) * h;
+      zoomWrap.style.transformOrigin = "0 0";
+      zoomWrap.style.transform = `translate(${((1 - ZOOM) * ax).toFixed(1)}px, ${((1 - ZOOM) * ay).toFixed(1)}px) scale(${ZOOM})`;
+      board.classList.add("is-zoomed");
+    }
+    function zoomOut() {
+      zoomWrap.style.transform = "none";
+      board.classList.remove("is-zoomed");
+    }
 
+    // The picker is a BOARD child (not inside the zoom wrapper): it stays
+    // unscaled and readable while the camera moves, and because the active
+    // anchor is the zoom's fixed point, its anchored position keeps holding.
+    // Tab order: hotspots → options → confirm (Escape returns to the spot).
     const picker = V.el("div", { class: "de-region-picker", role: "group" });
     picker.hidden = true;
+    board.appendChild(picker);
     let openRegion = null;
 
     const chosenLabel = (rg) => {
@@ -131,7 +157,7 @@
         else openPicker(rg);
       });
       spots.set(rg.id, { rg, spot, tag, val, label });
-      board.appendChild(spot);
+      zoomWrap.appendChild(spot);
     });
 
     const anchorOf = (anchors, rg) => anchors[rg.anchor || rg.id] || { x: VB / 2, y: VH * 0.4 };
@@ -221,7 +247,7 @@
       const glow = V.el("span", { class: "de-region-glow", "aria-hidden": "true" });
       glow.style.left = (a.x / VB * 100).toFixed(1) + "%";
       glow.style.top = (a.y / VH * 100).toFixed(1) + "%";
-      board.appendChild(glow);
+      zoomWrap.appendChild(glow);
       setTimeout(() => glow.remove(), 700);
     }
     function repaint() { paintPicked(); }
@@ -231,6 +257,7 @@
       const entry = spots.get(openRegion.id);
       picker.hidden = true;
       openRegion = null;
+      zoomOut(); // the camera pulls back with the panel
       if (entry) {
         entry.spot.setAttribute("aria-expanded", "false");
         if (refocus) entry.spot.focus();
@@ -263,7 +290,10 @@
         if (window.GarmentSVG.detailCrop) {
           const tp = window.DesignPreview.params(effectiveDna({ [rg.id]: c.id }));
           const thumb = V.el("span", { class: "de-region-opt-thumb", "aria-hidden": "true" });
-          thumb.innerHTML = window.GarmentSVG.detailCrop(tp.category, tp, rg.anchor || rg.id);
+          // Optional per-region crop window from the JSON (a sleeve cut needs
+          // shoulder + neck context to read raglan vs drop; a hem doesn't).
+          const cw = rg.crop && rg.crop.w, ch = rg.crop && rg.crop.h;
+          thumb.innerHTML = window.GarmentSVG.detailCrop(tp.category, tp, rg.anchor || rg.id, cw, ch);
           b.appendChild(thumb);
         }
         const lbl = V.el("span", { class: "de-region-opt-label" });
@@ -315,8 +345,10 @@
       picker.classList.remove("is-open");
       void picker.offsetWidth;
       picker.classList.add("is-open");
-      // DOM position right after the hotspot: Tab order = hotspot → options.
-      entry.spot.after(picker);
+      // Camera onto the part: the tapped anchor stays the fixed point; a
+      // direct switch to another region GLIDES (two translate+scale states
+      // interpolate — a transform-origin change would jump).
+      zoomTo(a);
       const first = picker.querySelector('[aria-pressed="true"]') || picker.querySelector(".de-region-opt");
       if (first) first.focus();
     }
