@@ -1147,9 +1147,9 @@
         }
         // gezupfter/schwingender Faden leuchtet kurz auf (steht unter Spannung).
         const pluck = d < 0 ? -d : d;
-        const glow = pluck > 1 ? (pluck < 44 ? pluck / 44 : 1) : 0;
-        ctx.globalAlpha = Math.min(0.6, th.alpha * dimm * (0.14 + 0.86 * (msum / (SEG + 1))) * (1 + glow * 3.2));
-        ctx.lineWidth = baseW + glow * 1.0;
+        const glow = pluck > 1 ? (pluck < 38 ? pluck / 38 : 1) : 0;
+        ctx.globalAlpha = Math.min(0.78, th.alpha * dimm * (0.14 + 0.86 * (msum / (SEG + 1))) * (1 + glow * 4.6));
+        ctx.lineWidth = baseW + glow * 1.4;
         ctx.beginPath();
         for (let s = 0; s <= SEG; s++) {
           const yy = (s / SEG) * h;
@@ -1216,7 +1216,7 @@
     function updateWarp(dt) {
       const dtf = Math.min(2.2, (dt || 16) / 16.67);
       const live = pointer.active && mode === "drift";
-      const reach = warp.length ? Math.min(72, (w / warp.length) * 0.85) : 60;
+      const reach = warp.length ? Math.min(132, (w / warp.length) * 1.5) : 96;
       for (let i = 0; i < warp.length; i++) {
         const th = warp[i];
         const grab = live && Math.abs(pointer.x - th.x) < reach && pointer.y > -60 && pointer.y < h + 60;
@@ -1229,7 +1229,7 @@
           th.v *= Math.pow(0.93, dtf);             // unterdämpft → sichtbares Nachschwingen
         }
         th.d += th.v * dtf;
-        if (th.d > 92) th.d = 92; else if (th.d < -92) th.d = -92;
+        if (th.d > 118) th.d = 118; else if (th.d < -118) th.d = -118;
       }
     }
 
