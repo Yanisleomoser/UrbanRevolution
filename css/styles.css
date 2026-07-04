@@ -2141,6 +2141,16 @@ input[aria-invalid="true"] {
     margin-bottom: var(--space-3);
 }
 
+/* Lange deutsche Komposita („Datenschutzerklärung") dürfen auf Phone-Breite
+   nicht überlaufen — trennen statt sprengen (greift nur bei Platznot). */
+.legal-page h1,
+.legal-page h2,
+.legal-page h3 {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
 .legal-page .legal-lead {
     color: var(--text-dim);
     font-size: var(--text-md);
