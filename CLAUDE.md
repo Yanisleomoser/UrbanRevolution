@@ -141,7 +141,9 @@ mobile; station dots sit ON the thread. It frames the user journey honestly, the
 never authors the design; `how.*` i18n keys, `[data-reveal]` entrance) → the mono
 handoff line → a magnetic circle CTA (the page's geometric conclusion).
 The **UR-Create studio**
-(`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it.
+(`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it —
+an orb/CTA click opens it through a **threshold portal** (`portalReveal`),
+deep-links and no-fx stay instant.
 The page closes with a
 **community sphere** — a WebGL globe (`js/community-sphere.js`) whose inner
 wall holds floating creations.
@@ -202,11 +204,14 @@ assets/
   story/                # Documentary photos (Acts I–IV) — see assets/story/CREDITS.md
 vercel.json             # Hosting config — no build, /api/ edge functions, headers (security + caching)
 docs/
-  VISUAL-ROADMAP.md     # Visual-upgrade roadmap & diagnosis (handoff note, read with CLAUDE.md)
+  VISUAL-ROADMAP.md     # Landing visual roadmap & diagnosis (handoff note, read with CLAUDE.md)
+  STUDIO-UX-ROADMAP.md  # Studio-journey UX roadmap — all 10 slices shipped; §12
+                        # (status + hard-won pitfalls) is REQUIRED reading before studio work
 SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·
-                        # build/QA: shoot*, build-image-library, gen-presets,
-                        # strip-hero-bg, audit*, verify-*, check-* (headless)
+                        # build/QA: shoot* (incl. shoot-journey.mjs, the studio walkthrough),
+                        # build-image-library, gen-presets, strip-hero-bg, audit*,
+                        # verify-* (permanent per-beat regression checks), check-* (headless)
 .github/workflows/      # CI: deno(test), test.yml(validate = build-no-op + npm test),
                         # validate-css, validate-html, validate-assets, e2e, coverage
                         # — see Deployment
@@ -243,12 +248,12 @@ not two stills (project rule).
 | `#facts` `.lp-stats`   | Cited fast-fashion evidence — „Die Masse": 3 full-height canvas-particle beats | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-mass.js` (`html.fxb-go`, `.is-live` je Beat) | count-up + live kg/CO₂ odometer + particle plume/mound/tracer (canvas, offscreen-paused) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
 | `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
-| `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | —           |
-| `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | —           |
+| `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | `aidr`      |
+| `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | `style`     |
 | `#how` `.lp-how`       | 4-step "So funktioniert's" arc               | static markup (`how.*` i18n) + `animations.js` (`[data-reveal]`)  | SVG-arc stroke-draw on scroll-in (horiz. desktop / vert. mobile) + staggered open stations | `how`       |
 | `.fil-seam` ×6         | „Der Faden" — Nähte zwischen den Akt-II-Sektionen | `js/faden.js` (Clip-Reveal-Scrub, `html.fil-go`)                | scroll-gezeichnete Naht + wanderndes Glint (rAF, IO-gegatet)   | —           |
-| CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet                          | —           |
-| `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | journey transitions + genesis preview   | `studio`    |
+| CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet; click opens the studio through the threshold portal | —           |
+| `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash` + threshold portal `portalReveal`/`shouldPortal`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | portal reveal → weave draw-in → choreographed question swaps (see Design-Engine section) | `studio`    |
 | `#ownership`           | Ownership moment (save/share/publish, VTO)   | `ur-create.js`; VTO via `api/try-on.js`                          | appears once a design exists            | —           |
 | `#measure`             | 9 body measurements + pose photo             | `measurements.js`, `pose.js` (MediaPipe, client-side)            | diagram lines per field                 | —           |
 | `#production` `.spec-sheet` | Printable production spec                | `app.js` `updateProductionPreview` → `spec-view.js`              | rebuilt on every state change           | —           |
@@ -267,6 +272,56 @@ landing timeline). Everything else uses the generic `[data-reveal]` /
 `[data-reveal-stagger]` IntersectionObserver in `animations.js`. Same idea,
 different attribute and owner — match the surrounding section's attribute when
 adding a revealed element.
+
+## Design Engine & studio journey (`js/design-engine/`)
+
+The studio's decision journey is **data-driven, not a hard-coded wizard**:
+`engine.js` picks the next question node by priority × information gain from
+the per-category JSON (`content/nodes/*.json` — `intent` + the six garment
+types); `dna.js` holds the growing, confidence-weighted design DNA;
+`inference.js` derives archetypes; `condition.js` evaluates `when` gates on
+nodes/regions; `flow.js` renders the journey into `#engine-host` and owns the
+experience choreography; `garment-svg.js` + `render-preview.js` draw the live
+parametric flat. Question surfaces are **modalities** (`modalities/`): cards,
+thisOrThat, slider, ranking, colorGradient, visuals, and `regions` — the
+"Detail-Atelier" hotspot board (anchors from `GarmentSVG.regionAnchors()`,
+per-option close-up thumbnails via `GarmentSVG.detailCrop()`, the value the
+piece already carries marked "aktuell"; ONE confirm commits the merged picks,
+untouched regions stay open for inference). New questions/choices/regions go
+into the JSON, never into code — `engine.js` needed zero changes for the
+`regions` modality.
+
+The **experience layer is staged, not form-like** (all motion `html.fx`-gated;
+`prefers-reduced-motion` gets a complete static experience): the CTA-orb click
+opens the studio through a **threshold portal** (`landing.js`
+`portalReveal`/`shouldPortal`, transitionend-synced disc); the first flat
+materialises via the **weave beat** (genesis nebula → outline draw → seams →
+panel fills; `gs-*` layer classes in `renderFlat`); question swaps are
+two-phase choreographed (`deStepOut`/`deStepIn`, commits blocked mid-swap,
+350 ms `isGuardedTap` double-tap guard); on ≤ 480 px a **docked mini-preview**
+mirrors every render/morph frame (hoisted to `<body>` — `position: fixed` is
+hijacked inside the revealed `#design`, see pitfalls); the refine screen is
+the crescendo (typed-on sentence, mutation directions named by their delta via
+`conceptDeltas`, one EVOLVE); the generate wait plays the **sewing handoff**
+(thread field returns as running stitches, name plate types on, Ownership
+slides in ~750 ms after). Measurements personalise the flat via
+`bodyFactors(measurements)` (±8 % shoulder/waist/hip multipliers through
+`renderInto` `opts.body`).
+
+**Verify studio changes at the real render:** `scripts/shoot-journey.mjs
+[viewport] [category]` walks any branch deterministically (every question
+screen + weave frames → `screenshots/journey/`, fails on page errors) — use
+it for every studio change, and walk **all six categories** for data-driven
+surfaces (chips/photos/flats/anchors are per-branch; "it's category-agnostic
+code" is a hypothesis, not a verification). The permanent
+`scripts/verify-*.mjs` checks (weave, threshold, refine, sewing, atelier,
+a11y-studio, …) guard the shipped beats — run the relevant one and extend it
+when you change its feature. Before touching the studio, read
+`docs/STUDIO-UX-ROADMAP.md`: all ten roadmap slices are shipped (§12 status
+table maps each beat to its PR), and its **hard-won pitfalls (§12)** — the
+~13-fps headless container (sample rAF curves, don't screenshot sub-300 ms
+motion), the hijacked `position: fixed`, tap-guard traps, deno-CDN CI flakes —
+cost real debugging time to rediscover.
 
 ## Module conventions
 
@@ -762,11 +817,13 @@ The tools are available — use them instead of delegating the lookup back:
   with `get_check_runs` / `get` / `get_diff`, etc.).
 - **Visual rendering:** the SessionStart hook installs headless Chromium.
   Fastest loop — **`npm run shoot`** boots its own static server and writes
-  desktop + mobile PNGs of every key section (`hero`, `how`, `facts`, `studio`,
-  `community`) to `screenshots/` (gitignored) in one command; it reveals the
-  studio via the `#design` deep-link and CDN-routes GSAP/three.js so animations
-  and the WebGL globe actually render. Scope it with
-  `npm run shoot -- hero,studio`. For an ad-hoc single URL against a server you
+  desktop + mobile PNGs of every key section (`hero`, `how`, `facts`, `pivot`,
+  `aidr`, `style`, `studio`, `community`) to `screenshots/` (gitignored) in one
+  command; it reveals the studio via the `#design` deep-link and CDN-routes
+  GSAP/three.js so animations and the WebGL globe actually render. Scope it with
+  `npm run shoot -- hero,studio`. For the studio journey itself use
+  `node scripts/shoot-journey.mjs [viewport] [category]` (walks every question
+  screen, fails on page errors). For an ad-hoc single URL against a server you
   already run, `node scripts/shoot.mjs <url> <prefix>` still works. Use these to
   self-check layout instead of asking for a screenshot.
 
