@@ -102,8 +102,12 @@ const Export = (() => {
     URL.revokeObjectURL(url);
   }
 
-  function downloadHTML(specData) {
-    const html = renderPrintableHTML(specData);
+  // drawingSvg: fertiges GarmentSVG-Markup der technischen Zeichnung (die
+  // Vorlage zeigt DAS Stück, nicht nur seine Daten). Nur Engine-Output hier
+  // hereinreichen — es wird bewusst unescaped eingebettet (hex-geklemmt an
+  // der Quelle, wie auf jeder anderen Fläche).
+  function downloadHTML(specData, drawingSvg) {
+    const html = renderPrintableHTML(specData, drawingSvg);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -115,7 +119,7 @@ const Export = (() => {
     URL.revokeObjectURL(url);
   }
 
-  function renderPrintableHTML(spec) {
+  function renderPrintableHTML(spec, drawingSvg) {
     const cc = (window.CONFIG && window.CONFIG.MEASUREMENT_CONSTRAINTS) || {};
     const unitFor = (k) => (cc[k] && cc[k].unit) || "cm"; // weight is kg, lengths cm
     const measurementsHTML = Object.entries(spec.measurements)
@@ -158,6 +162,14 @@ const Export = (() => {
     ul { padding-left: 20px; }
     li { margin-bottom: 6px; font-size: 14px; }
     .tag { background: #f4f4f5; padding: 3px 10px; border-radius: 100px; font-size: 11px; margin-right: 4px; display: inline-block; }
+    .drawing { background: #0a1622; border-radius: 10px; padding: 18px; margin: 8px 0 4px; }
+    .drawing svg { display: block; width: 100%; max-height: 380px; }
+    @media print {
+        /* Werkstatt-Tinte statt Bildschirm-Bühne: die helle Linienzeichnung
+           invertiert zu dunkel-auf-weiss, kein Vollflächen-Druck. */
+        .drawing { background: #fff; padding: 0; }
+        .drawing svg { filter: invert(1) hue-rotate(180deg); }
+    }
     .description { background: #fafafa; padding: 16px; border-left: 3px solid #2a9d8f; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
     .footer { margin-top: 60px; padding-top: 16px; border-top: 1px solid #eee; font-size: 11px; color: #999; text-align: center; }
 </style>
@@ -170,14 +182,18 @@ const Export = (() => {
         </div>
         <div class="id">
             ${esc(spec.metadata.designId)}<br>
-            ${fmtDate(spec.metadata.generatedAt)}
+            ${fmtDate(spec.metadata.generatedAt || new Date().toISOString())}
         </div>
     </div>
 
     <div class="description">"${esc(spec.design.description)}"</div>
+${drawingSvg ? `
+    <h2>${t("spec.drawing_h4")}</h2>
+    <div class="drawing">${drawingSvg}</div>` : ""}
 
+${spec.design.originalPrompt ? `
     <h2>${t("export.original_prompt")}</h2>
-    <p style="font-size: 14px; color: #444; font-style: italic;">"${esc(spec.design.originalPrompt)}"</p>
+    <p style="font-size: 14px; color: #444; font-style: italic;">"${esc(spec.design.originalPrompt)}"</p>` : ""}
 
     <h2>${t("export.tags")}</h2>
     <p>${tagsHTML || '<span class="tag">custom</span>'}</p>
