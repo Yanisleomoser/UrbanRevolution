@@ -40,10 +40,12 @@
         seams.forEach(function (seam, i) {
             const paths = Array.prototype.slice.call(seam.querySelectorAll(".fil-path"));
             if (!paths.length) return;
-            // Beide Breakpoint-Varianten scrubben (die verborgene ist harmlos) —
-            // so überlebt ein Resize über den 860px-Umbruch ohne Re-Init.
-            gs.fromTo(paths, { strokeDashoffset: 1 }, {
-                strokeDashoffset: 0,
+            // Clip-Reveal von oben nach unten (Dash-Draw bricht in Chromium
+            // bei extremer nicht-uniformer viewBox-Streckung mit Löchern) —
+            // ein Clip pro SVG deckt auch beide Breakpoint-Pfad-Varianten ab.
+            const svg = seam.querySelector("svg");
+            gs.fromTo(svg, { clipPath: "inset(0% -3% 102% -3%)" }, {
+                clipPath: "inset(0% -3% -3% -3%)",
                 ease: "none",
                 scrollTrigger: { trigger: seam, start: "top 88%", end: "bottom 52%", scrub: 0.5 },
             });

@@ -7163,6 +7163,13 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
 .fil-seam svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .fil-path { fill: none; stroke-width: 1.5; stroke-linecap: round; }
 .fil-seam[data-fil="1"] .fil-path { stroke: rgba(230, 237, 243, 0.30); }
+/* Ein-/Auslauffaden der Wende-Bühne: statische Verlängerungen der Linie
+   über die viewBox hinaus (overflow visible) — die Naht davor/danach
+   trifft die Bühne ohne totes Stück. Kein Eingriff in die gescrubbten
+   Pfade (#pivot-line/-arc, unit-getestet). */
+.lp-pivot-svg { overflow: visible; }
+.lp-pivot-thread-in { stroke: rgba(230, 237, 243, 0.28); stroke-width: 2; }
+.lp-pivot-thread-out { stroke: rgba(42, 157, 143, 0.5); stroke-width: 1.5; }
 .fil-seam[data-fil="2"] .fil-path { stroke: rgba(42, 157, 143, 0.55); }
 .fil-seam[data-fil="3"] .fil-path,
 .fil-seam[data-fil="4"] .fil-path,
@@ -7175,8 +7182,13 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
     .fil-seam .fil-d { display: none; }
     .fil-seam .fil-m { display: block; }
 }
-/* Startzustand NUR wenn das Skript wirklich scrubbt (Opt-in, wie fxb-go) */
-html.fil-go .fil-path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+/* Startzustand NUR wenn das Skript wirklich scrubbt (Opt-in, wie fxb-go).
+   Clip-Reveal statt Dash-Draw: stroke-dasharray + pathLength bricht in
+   Chromium bei extremer nicht-uniformer Streckung (100×240 → ~1440×198)
+   mit Löchern mitten im Pfad; ein vertikaler inset-Clip zeichnet die Naht
+   dagegen verlustfrei von oben nach unten (Glint-Punkt liegt ausserhalb
+   des SVG und bleibt unbeschnitten). */
+html.fil-go .fil-seam svg { clip-path: inset(0% -3% 102% -3%); }
 /* Glint — das Signal, das den lebenden Faden entlangwandert (js-positioniert;
    HTML-Punkt statt SVG-Kreis: preserveAspectRatio=none würde Kreise verzerren) */
 .fil-glint {
