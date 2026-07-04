@@ -559,18 +559,30 @@ strings** — the same URL-safe base64 format as `js/design-engine/share.js`,
   without Upstash env, GET returns `{ ok, items: null }` (client shows the
   **curated fallback** `content/gallery-curated.json`) and POST returns the
   neutral coded error.
-- **Hub wiring (`js/ur-create.js`):** fetches `/api/gallery`, renders each
-  item's DNA to a clean flat (`GarmentSVG`), offers type filters + VIEW/REMIX
-  (open the DNA in UR Create via the share URL). Save · Share · Publish live
-  in the Ownership-Moment, which appears once `StateManager.currentDesign`
-  exists.
+- **Publish (`js/ur-create.js`):** Save · Share · Publish live in the
+  Ownership-Moment (appears once `StateManager.currentDesign` exists).
+  Publish POSTs the DNA string to `/api/gallery` and fires a
+  `urev:published` CustomEvent — the sphere picks the piece up immediately
+  (the old tile-grid hub was retired; the sphere IS the community surface).
 - **Community sphere (`js/community-sphere.js`, ES module):** the WebGL globe
-  in `#community`. Photoreal creations float on the inner wall; drag/arrow
+  in `#community`. Creations float on the inner wall; drag/arrow
   keys rotate with Lenis-style easing; tap opens a detail overlay; the join
   flow is a CTA + overlay. Lazy-loads three.js/GSAP and images only when the
-  section scrolls into view. Data sources: `/api/gallery` items **with** an
-  `img` field first, topped up with `content/community-showcase.json` (36
-  engine renders). Scroll stays free (no wheel hijack; `touch-action: pan-y`).
+  section scrolls into view. Data sources: `/api/gallery` items with an
+  `img` field first, then **published DNA pieces rendered by the real engine
+  (`GarmentSVG` via the classic globals) as technical flats on dark
+  stage cards** — the studio's stage language inside the globe; without any
+  live DNA entries the **curated fallback** `content/gallery-curated.json`
+  steps in; topped up with `content/community-showcase.json` (36
+  engine renders). The detail overlay of a DNA piece shows the rendered
+  stage card and offers **REMIX** (share URL + full reload — the load-time
+  `DesignShare.read()` path, same as opening a shared link; the generic
+  create-CTA steps back). A piece published **after** the sphere booted
+  enters the wall where the viewer is looking, slightly in front of the
+  existing cards (own slot — slot recycling would hide it exactly behind
+  card 0 at full occupancy); published **before** boot it is queued and
+  mixed in at boot. Guarded by `scripts/verify-sphere-remix.mjs`.
+  Scroll stays free (no wheel hijack; `touch-action: pan-y`).
   Reduced-motion + coarse-pointer aware.
 
 ## Community join (Formspree) — `js/ur-create.js`
