@@ -7536,6 +7536,7 @@ html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out in
     text-transform: uppercase;
     color: var(--accent-3);
     margin-bottom: clamp(22px, 4vw, 36px);
+    text-wrap: balance;
 }
 .lp-handoff::before { content: "[ "; color: var(--text-muted); }
 .lp-handoff::after { content: " ]"; color: var(--text-muted); }

@@ -134,10 +134,10 @@ exported `pivotBendPath`, hinge sentence + mission statement) → **Act II THE
 CIRCLE** (pinned `#loop` vision with STATUS meta + Alle/KI/Du/KI station tags
 → `#ai-done-right` → `#your-style` centre beat) → a
 **4-step "So funktioniert's" arc** (`#how`: Du entwirfst → Du entscheidest →
-Deine Masse → Deine Vorlage — an SVG-arc seam with staggered cards, drawn via
+Deine Masse → Deine Vorlage — an SVG-arc seam with open type stations (no card boxes), drawn via
 `stroke-dashoffset`/`pathLength=1` on scroll-in: horizontal through the icon
 row on desktop, a vertical arc bowing toward the cards in the left gutter on
-mobile. It frames the user journey honestly, the user decides every step, AI
+mobile; station dots sit ON the thread. It frames the user journey honestly, the user decides every step, AI
 never authors the design; `how.*` i18n keys, `[data-reveal]` entrance) → the mono
 handoff line → a magnetic circle CTA (the page's geometric conclusion).
 The **UR-Create studio**
@@ -245,7 +245,8 @@ not two stills (project rule).
 | `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
 | `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | —           |
 | `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | —           |
-| `#how` `.lp-how`       | 4-step "So funktioniert's" arc               | static markup (`how.*` i18n) + `animations.js` (`[data-reveal]`)  | SVG-arc stroke-draw on scroll-in (horiz. desktop / vert. mobile) + staggered cards | `how`       |
+| `#how` `.lp-how`       | 4-step "So funktioniert's" arc               | static markup (`how.*` i18n) + `animations.js` (`[data-reveal]`)  | SVG-arc stroke-draw on scroll-in (horiz. desktop / vert. mobile) + staggered open stations | `how`       |
+| `.fil-seam` ×6         | „Der Faden" — Nähte zwischen den Akt-II-Sektionen | `js/faden.js` (Clip-Reveal-Scrub, `html.fil-go`)                | scroll-gezeichnete Naht + wanderndes Glint (rAF, IO-gegatet)   | —           |
 | CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet                          | —           |
 | `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | journey transitions + genesis preview   | `studio`    |
 | `#ownership`           | Ownership moment (save/share/publish, VTO)   | `ur-create.js`; VTO via `api/try-on.js`                          | appears once a design exists            | —           |
