@@ -271,16 +271,6 @@
     }
   }
 
-  function initColorPalette() {
-    document.querySelectorAll("button.color-swatch").forEach((swatch) => {
-      swatch.addEventListener("click", () => applyColor(swatch.dataset.color));
-    });
-    const customInput = document.getElementById("custom-color");
-    if (customInput) {
-      customInput.addEventListener("input", () => applyColor(customInput.value));
-    }
-  }
-
   // Defence-in-depth: clamp a <select> value to a known-good option, falling
   // back to a safe default. The allow-lists are sourced from CONFIG (the single
   // source of truth) — never hand-typed, so they can't drift from the real
@@ -294,82 +284,6 @@
   function normalizeLength(value) {
     const lengths = (window.CONFIG && window.CONFIG.LENGTHS) || ["cropped", "regular", "long"];
     return lengths.includes(value) ? value : "regular";
-  }
-
-  function normalizePattern(value) {
-    const patterns = (window.CONFIG && window.CONFIG.PATTERNS) || ["solid"];
-    return patterns.includes(value) ? value : "solid";
-  }
-
-  function initPatternSelector() {
-    const select = document.getElementById("pattern-select");
-    if (!select) return;
-    select.addEventListener("change", () => {
-      const design = S.get("currentDesign");
-      if (!design) return;
-      // Pattern lives on the design object (no dedicated state key); the spec
-      // sheet and design card read it, so refresh both.
-      design.pattern = normalizePattern(select.value);
-      renderDesignResult(design);
-      updateProductionPreview();
-    });
-  }
-
-  function initMaterialSelector() {
-    const select = document.getElementById("material-select");
-    if (!select) return;
-    select.addEventListener("change", () => {
-      const material = normalizeMaterial(select.value);
-      if (!S.set("currentMaterial", material)) return;
-      const design = S.get("currentDesign");
-      if (design) {
-        design.material = material;
-        updateProductionPreview();
-      }
-    });
-  }
-
-  function initFitSlider() {
-    const slider = document.getElementById("fit-slider");
-    if (!slider) return;
-    slider.addEventListener("input", () => {
-      const fit = slider.value / 100;
-      if (!S.set("currentFit", fit)) return;
-      const design = S.get("currentDesign");
-      if (design) {
-        design.fit = fit;
-        updateProductionPreview();
-      }
-    });
-  }
-
-  function initLengthSelector() {
-    const select = document.getElementById("length-select");
-    if (!select) return;
-    select.addEventListener("change", () => {
-      const length = normalizeLength(select.value);
-      if (!S.set("currentLength", length)) return;
-      const design = S.get("currentDesign");
-      if (design) {
-        design.length = length;
-        updateProductionPreview();
-      }
-    });
-  }
-
-  function initPrintInput() {
-    const input = document.getElementById("print-input");
-    if (!input) return;
-    input.addEventListener("input", () => {
-      // validatePrint sanitises (strips markup, caps length) and never throws,
-      // so S.set always succeeds; the 3D decal patches in via subscription.
-      S.set("currentPrint", input.value);
-      const design = S.get("currentDesign");
-      if (design) {
-        design.print = S.get("currentPrint");
-        updateProductionPreview();
-      }
-    });
   }
 
   function initGenerateButton() {
@@ -988,33 +902,11 @@
     S.set("measurements", measurements);
     updatePresetActive(measurements);
     updateSizeReadout(measurements);
-    updateModelInfo();
     updateProductionPreview();
   }
 
-  function updateModelInfo() {
-    const measurements = S.get("measurements");
-    if (!measurements) return;
-    const type = S.get("currentType");
-    const lengthKey = S.get("currentLength") || "regular";
-    const lengthFactors = (window.CONFIG && CONFIG.PRODUCTION_ESTIMATES.lengthFabricFactor) || {};
-    const lengthFactor = lengthFactors[lengthKey] || 1;
-    const fabric = Measurements.estimateFabric(measurements, type, lengthFactor);
-    const seams = Measurements.estimateSeams(measurements, type);
-    const size = Measurements.calculateSize(measurements);
-
-    const fabricEl = document.getElementById("info-fabric");
-    const seamsEl = document.getElementById("info-seams");
-    const sizeEl = document.getElementById("info-size");
-
-    if (fabricEl) fabricEl.textContent = `~ ${fabric} m²`;
-    if (seamsEl) seamsEl.textContent = `${seams} cm`;
-    if (sizeEl) sizeEl.textContent = size;
-  }
-
-  // The design-info panel inside the merged Ownership/try-on moment. Unlike
-  // updateModelInfo (production figures, needs measurements), this shows the
-  // design's identity (type/material/colour/fit/length) the moment a design
+  // The design-info panel inside the merged Ownership/try-on moment. It shows
+  // the design's identity (type/material/colour/fit/length) the moment a design
   // exists; size fills in once measurements are present, "—" until then.
   function updateOwnInfo() {
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -2119,33 +2011,6 @@
     });
   }
 
-  function initMobileNav() {
-    const toggle = document.getElementById("nav-toggle");
-    const links = document.getElementById("nav-links");
-    if (!toggle || !links) return;
-
-    const setOpen = (open) => {
-      links.classList.toggle("open", open);
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.setAttribute("aria-label", open ? t("nav.toggle_close") : t("nav.toggle_open"));
-    };
-
-    toggle.addEventListener("click", () => {
-      setOpen(!links.classList.contains("open"));
-    });
-
-    // Close after tapping a link (anchor navigation) or pressing Escape.
-    links.querySelectorAll("a").forEach((a) =>
-      a.addEventListener("click", () => setOpen(false))
-    );
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && links.classList.contains("open")) {
-        setOpen(false);
-        toggle.focus();
-      }
-    });
-  }
-
   // Reflect the active language on the DE / EN segmented control.
   function updateLangToggleState() {
     if (!window.I18N) return;
@@ -2177,7 +2042,6 @@
   function onLanguageChange() {
     updateLangToggleState();
     renderSuggestions();
-    updateModelInfo();
     updateProductionPreview();
     updateVtoButtonState();
     updateOwnInfo();
@@ -2203,29 +2067,13 @@
     // Refresh the library grid if its modal is currently open.
     const libModal = document.getElementById("library-modal");
     if (libModal && !libModal.hidden) renderLibraryGrid();
-    // Keep the hamburger aria-label in sync with its open state.
-    const navToggle = document.getElementById("nav-toggle");
-    const navLinks = document.getElementById("nav-links");
-    if (navToggle && navLinks) {
-      navToggle.setAttribute(
-        "aria-label",
-        navLinks.classList.contains("open") ? t("nav.toggle_close") : t("nav.toggle_open"),
-      );
-    }
   }
 
   function init() {
     initLangToggle();
     window.addEventListener("language:change", onLanguageChange);
-    initMobileNav();
     initSuggestions();
     initTypeSelector();
-    initColorPalette();
-    initMaterialSelector();
-    initPatternSelector();
-    initFitSlider();
-    initLengthSelector();
-    initPrintInput();
     initGenerateButton();
     initDesignJourney();
     initMeasurements();
