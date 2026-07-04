@@ -825,19 +825,17 @@
   // (updateOwnInfo hängt bereits an allen relevanten State-Keys). Designs vom
   // Freitext-Pfad tragen keine DNA — dann baut der State die Params direkt.
   // Ein VTO-Ergebnis ersetzt die Bühne wie bisher (das eigene Foto gewinnt).
-  function renderOwnStageFlat() {
-    const example = document.getElementById("vto-example");
-    if (!example || !window.GarmentSVG || !window.DesignPreview) return;
+  // EINE Quelle für „das aktuelle Stück als Flat-Params": Ownership-Bühne und
+  // Produktions-Zeichnung müssen dasselbe Teil zeigen — Journey-DNA mit
+  // Facade-Vorrang, sonst Params direkt aus dem State, immer inkl.
+  // Made-for-one-Proportionen aus den Massen.
+  function currentFlatParams() {
+    if (!window.DesignPreview) return null;
     const design = S.get("currentDesign");
-    let host = example.querySelector(".own-flat");
-    if (!design) {
-      if (host) { host.remove(); example.classList.remove("has-flat"); example.classList.add("has-image"); }
-      return;
-    }
-    const type = S.get("currentType") || design.type || "tshirt";
+    const type = S.get("currentType") || (design && design.type) || "tshirt";
     const color = S.get("currentColor");
     let p;
-    if (design.dna && window.DesignDNA) {
+    if (design && design.dna && window.DesignDNA) {
       const clone = JSON.parse(JSON.stringify(design.dna));
       const setD = (path, v) => window.DesignDNA.set(clone, path, v, 1);
       // Die Facade-Overrides (Weiter anpassen) gewinnen über die Journey-DNA —
@@ -875,7 +873,7 @@
         material: S.get("currentMaterial"),
         stops: color ? [color] : undefined,
         scheme: "mono",
-        pattern: PATTERN_TO_FLAT[design.pattern] || "none",
+        pattern: PATTERN_TO_FLAT[design && design.pattern] || "none",
         energy: 0.55,
       };
     }
@@ -883,6 +881,21 @@
       const body = window.DesignFlow.bodyFactors(S.get("measurements"));
       if (body) p.body = body;
     }
+    return p;
+  }
+
+  function renderOwnStageFlat() {
+    const example = document.getElementById("vto-example");
+    if (!example || !window.GarmentSVG || !window.DesignPreview) return;
+    const design = S.get("currentDesign");
+    let host = example.querySelector(".own-flat");
+    if (!design) {
+      if (host) { host.remove(); example.classList.remove("has-flat"); example.classList.add("has-image"); }
+      return;
+    }
+    const type = S.get("currentType") || design.type || "tshirt";
+    const p = currentFlatParams();
+    if (!p) return;
     if (!host) {
       host = document.createElement("div");
       host.className = "own-flat";
@@ -1098,6 +1111,15 @@
     const measurements = S.get("measurements");
     if (!measurements) return;
 
+    // Die Vorlage wird echt: die technische Zeichnung des Stücks (dieselben
+    // Flat-Params wie die Ownership-Bühne — eine Quelle, ein Teil) läuft im
+    // selben Funnel mit und folgt damit jeder State-Änderung.
+    const drawingHost = document.getElementById("spec-drawing");
+    if (drawingHost && window.GarmentSVG) {
+      const fp = currentFlatParams();
+      if (fp) drawingHost.innerHTML = window.GarmentSVG.build(fp.category || "tshirt", fp);
+    }
+
     const currentColor = S.get("currentColor");
     const currentMaterial = S.get("currentMaterial");
     const currentFit = S.get("currentFit");
@@ -1179,7 +1201,10 @@
     document.getElementById("download-html").addEventListener("click", () => {
       const spec = getCurrentSpecData();
       if (!spec) return;
-      Export.downloadHTML(spec);
+      // Die Zeichnung der Vorlage reist mit — exakt das SVG, das auf dem
+      // Spec-Sheet steht (eine Quelle; nur GarmentSVG-Output, hex-geklemmt).
+      const drawing = document.getElementById("spec-drawing");
+      Export.downloadHTML(spec, drawing ? drawing.innerHTML : "");
       showToast(t("toast.html_done"), "success");
     });
 

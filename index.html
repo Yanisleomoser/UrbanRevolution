@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260704-kleiderberg1">
+    <link rel="stylesheet" href="css/styles.css?v=20260704-spec-drawing2">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -1095,6 +1095,14 @@
                         <div class="spec-section">
                             <h4 data-i18n="spec.brief_h4">Design Brief</h4>
                             <p id="spec-brief">––</p>
+                        </div>
+
+                        <div class="spec-section spec-drawing-section">
+                            <h4 data-i18n="spec.drawing_h4">Technische Zeichnung — Vorderansicht</h4>
+                            <!-- Die Zeichnung ist dekorativ (aria-hidden): alle Werte stehen
+                                 maschinen- und AT-lesbar in den Tabellen darunter. -->
+                            <div class="spec-drawing" id="spec-drawing" aria-hidden="true"></div>
+                            <p class="spec-drawing-note" data-i18n="spec.drawing_note">Parametrische Zeichnung aus deinen Entscheidungen — die Proportionen folgen deinen Massen.</p>
                         </div>
 
                         <div class="spec-section">

@@ -2273,7 +2273,25 @@ html[lang="en"] [data-l="de"] { display: none; }
         width: 100%;
         box-shadow: none;
     }
+    /* Werkstatt-Tinte statt Bildschirm-Bühne: echte Drucker lassen
+       Hintergründe weg — ohne Tinten-Palette stünde helle Bildschirm-Schrift
+       auf weissem Papier (vorbestehender Fund dieser Runde). Das ganze Sheet
+       druckt dunkel-auf-weiss, die helle Linienzeichnung invertiert. */
+    .spec-sheet { background: #fff !important; color: #111 !important; border: none !important; }
+    .spec-sheet h3, .spec-sheet h4, .spec-sheet p, .spec-sheet td, .spec-sheet li, .spec-sheet span, .spec-sheet div { color: #111 !important; }
+    .spec-sheet .spec-table td { border-color: #ddd !important; }
+    .spec-sheet .spec-drawing-note { color: #555 !important; }
+    .spec-drawing { background: #fff !important; border: none !important; padding: 0 !important; }
+    .spec-drawing svg { filter: invert(1) hue-rotate(180deg); }
 }
+
+/* Die Vorlage wird echt: die technische Zeichnung des Stücks im Spec-Sheet —
+   dieselbe Studio-Bühnensprache wie Vorschau/Atelier/Ownership, gerendert aus
+   denselben Flat-Params (app.js currentFlatParams). */
+.spec-drawing { border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.08), rgba(150, 205, 228, 0) 60%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%); }
+.spec-drawing svg { display: block; width: 100%; max-height: 340px; }
+.spec-drawing:empty { display: none; }
+.spec-drawing-note { margin: 8px 0 0; font-size: var(--text-xs); color: var(--text-muted); }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {

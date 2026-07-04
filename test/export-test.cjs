@@ -143,5 +143,29 @@ const plannedHtml = Export.renderPrintableHTML(planned);
 assert(!/CHF\s*145/.test(plannedHtml) && !plannedHtml.includes("145 – 220"), "printable HTML has no firm CHF price range");
 assert(!/\b14\b\s*(Tage|days)/.test(plannedHtml), "printable HTML has no firm lead-time days");
 
+// ─── Die Vorlage trägt die technische Zeichnung (drawingSvg-Einbettung) ─────
+console.log("\n— renderPrintableHTML embeds the technical drawing (engine SVG only) —");
+{
+  const svg = '<svg class="de-garment" viewBox="0 0 240 340"><path d="M 1 1"/></svg>';
+  const withDrawing = Export.renderPrintableHTML(spec, svg);
+  assert(withDrawing.includes(svg), "the GarmentSVG markup is embedded verbatim (engine output, hex-clamped at source)");
+  assert(withDrawing.includes('class="drawing"'), "…inside the dedicated drawing section");
+  assert(withDrawing.indexOf('class="drawing"') < withDrawing.indexOf("spec.specs_h4") || withDrawing.indexOf("Spezifikationen") === -1 || withDrawing.indexOf('class="drawing"') < withDrawing.indexOf("Spezifikationen"),
+    "the drawing sits above the spec tables (the piece before its data)");
+  assert(withDrawing.includes("invert(1) hue-rotate(180deg)"), "the print path inverts the light-line drawing to workshop ink");
+  const without = Export.renderPrintableHTML(spec);
+  assert(!without.includes('class="drawing"'), "no drawing section without an SVG (no empty dark box in the export)");
+  // The XSS contract of the surrounding document is untouched by the embed.
+  assert(!withDrawing.includes(XSS) && withDrawing.includes("&lt;script&gt;alert"), "escaping of untrusted fields survives the drawing embed");
+  // Fehlende optionale Felder rendern NIE als "undefined" im Artefakt
+  // (Journey-Designs tragen keinen originalPrompt; ein Stub kein Datum).
+  const bare = JSON.parse(JSON.stringify(spec));
+  delete bare.design.originalPrompt;
+  delete bare.metadata.generatedAt;
+  const bareHtml = Export.renderPrintableHTML(bare, svg);
+  assert(!/undefined/.test(bareHtml), "missing prompt/date never print as 'undefined'");
+  assert(!bareHtml.includes("export.original_prompt"), "the prompt section disappears entirely without a prompt");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
