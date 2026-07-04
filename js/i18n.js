@@ -31,16 +31,8 @@ const I18N = (() => {
       // ── Navigation ──
       "nav.skip": "Zum Inhalt springen",
       "nav.aria": "Hauptnavigation",
-      "nav.toggle_open": "Menü öffnen",
-      "nav.toggle_close": "Menü schliessen",
-      "nav.mission": "Problem",
-      "nav.design": "Design",
-      "nav.measure": "Masse",
-      "nav.preview": "Vorschau",
       "nav.production": "Produktion",
-      "nav.faq": "FAQ",
       "nav.lang_aria": "Sprache wechseln",
-      "nav.create": "UR Create",
       "nav.community": "Community",
       "nav.enter": "UR Create starten",
 
@@ -80,12 +72,6 @@ const I18N = (() => {
       "gal.label": "[ COMMUNITY ]",
       "gal.h2": "Keine zwei Visionen sind gleich",
       "gal.intro": "Kreationen aus der Community — sieh sie an, lass dich inspirieren oder remixe sie als Start deiner eigenen Evolution.",
-      "gal.filter_all": "Alle",
-      "gal.filter_aria": "Kreationen nach Typ filtern",
-      "gal.view": "Ansehen",
-      "gal.remix": "Remixen",
-      "gal.empty": "Sei die erste Vision. Erschaffe ein Stück und zeig es hier.",
-      "gal.anon": "anonym",
       "sphere.canvas_aria": "Schwebende Community-Designs — ziehen oder Pfeiltasten zum Drehen, Tippen oder Enter öffnet",
       "sphere.hint": "Ziehen oder Pfeiltasten · Tippen oder Enter",
       "sphere.cta": "Werde Teil davon",
@@ -94,8 +80,9 @@ const I18N = (() => {
       "sphere.by": "von",
       "sphere.detail_line": "Einzelstück aus recycelter Kleidung — entworfen in UR Create.",
       "sphere.detail_cta": "Eigene Vision erschaffen",
+      "sphere.detail_remix": "Dieses Stück remixen",
+      "sphere.remix_confirm": "Du hast einen laufenden Entwurf. Diesen remixen und deinen aktuellen Stand verwerfen?",
       "sphere.detail_join": "Oder werde Teil der Community",
-      "join.label": "[ COMMUNITY ]",
       "join.h2": "Gemeinsam wird daraus eine Bewegung",
       "join.sub": "Werde Teil der Menschen, die Mode neu denken — gestalte mit, verfolge die Reise oder bring deine Ideen ein.",
       "join.legend": "Wie möchtest du teilnehmen?",
@@ -108,7 +95,6 @@ const I18N = (() => {
       "join.cta": "Urban Revolution beitreten",
       "join.consent": "Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.",
       "join.ok": "Willkommen in der Revolution. Wir melden uns.",
-      "join.already": "Du bist schon dabei — willkommen zurück.",
       "join.err_email": "Bitte gib eine gültige E-Mail-Adresse ein.",
       "join.err_consent": "Bitte bestätige die Einwilligung.",
       "join.err": "Etwas ging schief. Bitte später erneut versuchen.",
@@ -122,9 +108,7 @@ const I18N = (() => {
       // ── Manifesto (compact thesis after the hero) ──
 
       // ── Section labels (Ovyon-style [ NN / Titel ] kicker) ──
-      "sec.design": "[ 03 / Dein Entwurf ]",
       "sec.measure": "[ Deine Masse ]",
-      "sec.preview": "[ Fotorealistische Vorschau ]",
       "sec.production": "[ Produktion ]",
       "sec.faq": "[ FAQ ]",
 
@@ -139,7 +123,6 @@ const I18N = (() => {
       "ticker.source": "[ Quelle: UNEP · 92 Mio. t / Jahr ]",
 
       // ── Visual Scroll Story (6 acts) ──
-      "flair.egg": "✦ Revolution entdeckt.",
       // Live counter (acts I–IV)
 
       // ── The true cost (fast-fashion evidence band) ──
@@ -151,8 +134,6 @@ const I18N = (() => {
       // ── Workflow ──
 
       // ── Design-Sektion ──
-      "design.h2": "Triff ein paar Entscheidungen",
-      "design.intro": "Kein Formular. Du wählst, vergleichst, schiebst — wir lesen dein Stück aus deinen Entscheidungen ab. Worte nicht nötig.",
       "design.prompt_label": "Dein Prompt für die KI",
       "design.prompt_placeholder": "z.B.: Ein oversized Streetwear-Hoodie aus schwerem Bio-Baumwoll-Fleece, in einem dunklen Olivton mit graphischen Stickereien auf der Brust, weite Ärmel, mit Känguru-Tasche und gefüttert mit Kapuze...",
       "design.suggestions_inspiration": "Inspiration",
@@ -161,16 +142,6 @@ const I18N = (() => {
       "design.garment_label": "Kleidungstyp",
       "design.generate_btn": "Design generieren",
       "design.generate_loading": "Dein Entwurf entsteht...",
-      "design.output_placeholder": "Dein Entwurf erscheint hier",
-      "design.customize_h3": "Anpassungen",
-      "design.primary_color": "Primärfarbe",
-      "design.material_label": "Material",
-      "design.pattern_label": "Muster",
-      "design.fit_label": "Passform",
-      "design.length_label": "Länge",
-      "design.print_label": "Aufschrift",
-      "design.print_placeholder": "z. B. dein Name, ein Wort …",
-      "design.print_hint": "Erscheint vorne auf dem Stück · max. 24 Zeichen",
 
       // ── Kleidungstypen ──
       "type.tshirt": "T-Shirt",
@@ -226,7 +197,6 @@ const I18N = (() => {
       "engine.scheme_mono": "Uni",
       "engine.scheme_duo": "Verlauf",
       "engine.duo_hint": "Zwei Stoffe antippen — die Reihenfolge bestimmt den Verlauf.",
-      "engine.done_title": "Dein Design",
       "engine.generate": "Design generieren",
       "engine.generating": "Generiere …",
       "engine.regenerate": "Neu generieren — mehr individualisieren",
@@ -351,34 +321,11 @@ const I18N = (() => {
       "svg.height": "Körpergrösse",
 
       // ── 3D-Vorschau ──
-      "preview.h2": "Fotorealistische Vorschau",
-      "preview.intro": "Sieh dein Design auf einem echten Foto von dir — fotorealistisch generiert, nicht als Modell-Annäherung.",
       "preview.example_tag": "Beispiel",
-      "preview.example_label": "So sieht dein Design fotorealistisch an dir aus — lade unter „Masse“ ein Ganzkörperfoto hoch.",
-      "preview.model_info": "Stück-Info",
-      "preview.fabric": "Stoffmenge:",
-      "preview.seams": "Nähte:",
-      "preview.size": "Grösse:",
 
       // ── Entwurfs-Vorschau (KI-Studio-Render im Design-Schritt) ──
-      "dpreview.btn": "Entwurf visualisieren",
-      "dpreview.loading": "KI rendert deinen Entwurf …",
-      "dpreview.badge": "KI-RENDER",
-      "dpreview.caption": "Studio-Visualisierung deines Entwurfs — die finale Massanfertigung kann abweichen.",
-      "dpreview.img_alt": "KI-Studio-Render des Entwurfs",
-      "dpreview.regenerate": "Neu rendern",
-      "dpreview.hint_first": "Zeigt dein Design als Studio-Render — ohne Foto, {limit} pro Browser. Das Try-on mit deinem Foto kommt in Schritt 3.",
-      "dpreview.hint_remaining": "Noch {remaining} von {limit} Renders übrig.",
-      "dpreview.hint_limit": "Render-Limit erreicht ({limit}/{limit}).",
-      "dpreview.retry": "Erneut versuchen",
-      "dpreview.error_prefix": "Fehler: {msg}",
-      "dpreview.error_pending": "Render dauert länger als erwartet (>20 s). Bitte erneut versuchen.",
-      "dpreview.error_unexpected": "Unerwartete Antwort vom Server.",
-      "dpreview.error_network": "Netzwerkfehler: {msg}",
       "dpreview.fallback_badge": "STILVORSCHAU",
       "dpreview.genesis_badge": "ES ENTSTEHT …",
-      "dpreview.fallback_caption": "Kostenlose Stilvorschau aus deinem Entwurf — der fotorealistische Render ist gerade nicht verfügbar.",
-      "dpreview.fallback_retry": "Fotorealistisch versuchen",
 
       // ── Produktion ──
       "prod.h2": "Produktions-Vorlage",
@@ -455,13 +402,6 @@ const I18N = (() => {
       "footer.meta_fine": "Pre-Launch-Vision · DSGVO-konform · Foto-Auswertung 100 % clientseitig",
 
       // ── Design-Karte (dynamisch) ──
-      "card.eyebrow": "DEIN ENTWURF · {id}",
-      "card.fit_suffix": "Fit",
-      "card.tailor_notes": "Konstruktions-Notizen ({n})",
-      "card.your_wish": "Dein Wunsch",
-      "card.save": "Speichern",
-      "card.saved": "Gespeichert",
-      "card.save_aria": "Design speichern",
 
       // ── Farbnamen ──
       "color.#1a1a1a": "Schwarz",
@@ -523,8 +463,6 @@ const I18N = (() => {
       "toast.photo_failed": "Foto-Analyse fehlgeschlagen: {msg}",
       "toast.json_done": "JSON-Datei heruntergeladen",
       "toast.html_done": "Druckbare Vorlage heruntergeladen",
-      "toast.save_failed": "Speichern fehlgeschlagen",
-      "toast.saved_lib": '"{name}" in deiner Bibliothek gespeichert',
       "toast.not_found": "Design nicht gefunden",
       "toast.loaded": "„{name}“ geladen",
       "toast.deleted": "„{name}“ gelöscht",
@@ -579,12 +517,10 @@ const I18N = (() => {
       ],
 
       // ── Landing-Page (landing.html) — eigenständige Marken-Landing ──
-      "landing.head.title": "Urban Revolution — Autonome Kreislauf-Fabrik",
       "landing.eyebrow": "Autonome Kreislauf-Fabrik",
       "landing.h1_line1": "Made for one.",
       "landing.h1_line2": "Not for all.",
       "landing.sub": "Einzelstücke nach deinem Entwurf, nach Mass gefertigt — aus Kleidung, die schon existiert. Keine Überproduktion. Kein Abfall. Nur deins.",
-      "landing.cta_secondary": "Das Manifest",
       "landing.scroll": "Scrollen",
       // Akt I — Die Linie (Manifest + Zahlen sprechen die Maschinen-Stimme)
       "landing.manifesto_label": "Akt I — Die Linie",
@@ -675,16 +611,8 @@ const I18N = (() => {
       // ── Navigation ──
       "nav.skip": "Skip to content",
       "nav.aria": "Main navigation",
-      "nav.toggle_open": "Open menu",
-      "nav.toggle_close": "Close menu",
-      "nav.mission": "Problem",
-      "nav.design": "Design",
-      "nav.measure": "Measurements",
-      "nav.preview": "Preview",
       "nav.production": "Production",
-      "nav.faq": "FAQ",
       "nav.lang_aria": "Switch language",
-      "nav.create": "UR Create",
       "nav.community": "Community",
       "nav.enter": "Enter UR Create",
 
@@ -724,12 +652,6 @@ const I18N = (() => {
       "gal.label": "[ COMMUNITY ]",
       "gal.h2": "No two visions are the same",
       "gal.intro": "Creations from the community — view them, save them for inspiration, or remix one as the start of your own evolution.",
-      "gal.filter_all": "All",
-      "gal.filter_aria": "Filter creations by type",
-      "gal.view": "View",
-      "gal.remix": "Remix",
-      "gal.empty": "Be the first vision. Create a piece and show it here.",
-      "gal.anon": "anonymous",
       "sphere.canvas_aria": "Floating community designs — drag or use arrow keys to rotate, tap or press Enter to open",
       "sphere.hint": "Drag or arrow keys · Tap or Enter",
       "sphere.cta": "Become part of it",
@@ -738,8 +660,9 @@ const I18N = (() => {
       "sphere.by": "by",
       "sphere.detail_line": "A one-of-one from reclaimed cloth — designed in UR Create.",
       "sphere.detail_cta": "Create your own vision",
+      "sphere.detail_remix": "Remix this piece",
+      "sphere.remix_confirm": "You have a design in progress. Remix this piece and discard your current work?",
       "sphere.detail_join": "Or join the community",
-      "join.label": "[ COMMUNITY ]",
       "join.h2": "Together, this becomes a movement",
       "join.sub": "Join the people rethinking fashion — create alongside us, follow the journey, or bring your ideas.",
       "join.legend": "How would you like to take part?",
@@ -752,7 +675,6 @@ const I18N = (() => {
       "join.cta": "Join Urban Revolution",
       "join.consent": "I'd like to receive updates (unsubscribe anytime). The privacy policy applies.",
       "join.ok": "Welcome to the revolution. We'll be in touch.",
-      "join.already": "You're already in — welcome back.",
       "join.err_email": "Please enter a valid email address.",
       "join.err_consent": "Please confirm consent.",
       "join.err": "Something went wrong. Please try again later.",
@@ -766,9 +688,7 @@ const I18N = (() => {
       // ── Manifesto (compact thesis after the hero) ──
 
       // ── Section labels (Ovyon-style [ NN / Title ] kicker) ──
-      "sec.design": "[ 03 / Your Design ]",
       "sec.measure": "[ Your measurements ]",
-      "sec.preview": "[ Photoreal preview ]",
       "sec.production": "[ Production ]",
       "sec.faq": "[ FAQ ]",
 
@@ -783,7 +703,6 @@ const I18N = (() => {
       "ticker.source": "[ Source: UNEP · 92 M t / year ]",
 
       // ── Visual Scroll Story (6 acts) ──
-      "flair.egg": "✦ Revolution unlocked.",
       // Live counter (acts I–IV)
 
       // ── The true cost (fast-fashion evidence band) ──
@@ -795,8 +714,6 @@ const I18N = (() => {
       // ── Workflow ──
 
       // ── Design section ──
-      "design.h2": "Make a few choices",
-      "design.intro": "No form. You choose, compare, nudge — we read your piece from your decisions. No words needed.",
       "design.prompt_label": "Your prompt for the AI",
       "design.prompt_placeholder": "e.g.: An oversized streetwear hoodie in heavy organic cotton fleece, in a dark olive tone with graphic embroidery on the chest, wide sleeves, kangaroo pocket and a lined hood...",
       "design.suggestions_inspiration": "Inspiration",
@@ -805,16 +722,6 @@ const I18N = (() => {
       "design.garment_label": "Garment type",
       "design.generate_btn": "Generate design",
       "design.generate_loading": "Your design takes shape...",
-      "design.output_placeholder": "Your design appears here",
-      "design.customize_h3": "Customize",
-      "design.primary_color": "Primary color",
-      "design.material_label": "Material",
-      "design.pattern_label": "Pattern",
-      "design.fit_label": "Fit",
-      "design.length_label": "Length",
-      "design.print_label": "Print",
-      "design.print_placeholder": "e.g. your name, a word …",
-      "design.print_hint": "Appears on the front of the piece · max. 24 characters",
 
       // ── Garment types ──
       "type.tshirt": "T-Shirt",
@@ -870,7 +777,6 @@ const I18N = (() => {
       "engine.scheme_mono": "Solid",
       "engine.scheme_duo": "Gradient",
       "engine.duo_hint": "Tap two fabrics — the order sets the gradient.",
-      "engine.done_title": "Your design",
       "engine.generate": "Generate design",
       "engine.generating": "Generating …",
       "engine.regenerate": "Regenerate — more bespoke",
@@ -995,34 +901,11 @@ const I18N = (() => {
       "svg.height": "Height",
 
       // ── Photorealistic preview ──
-      "preview.h2": "Photorealistic preview",
-      "preview.intro": "See your design on a real photo of you — photorealistically generated, not a model approximation.",
       "preview.example_tag": "Example",
-      "preview.example_label": "This is how your design looks photorealistically on you — upload a full-body photo under “Measurements”.",
-      "preview.model_info": "Garment info",
-      "preview.fabric": "Fabric:",
-      "preview.seams": "Seams:",
-      "preview.size": "Size:",
 
       // ── Design preview (AI studio render in the design step) ──
-      "dpreview.btn": "Visualise the design",
-      "dpreview.loading": "AI is rendering your design …",
-      "dpreview.badge": "AI RENDER",
-      "dpreview.caption": "Studio visualisation of your concept — the final made-to-measure piece may differ.",
-      "dpreview.img_alt": "AI studio render of the design",
-      "dpreview.regenerate": "Re-render",
-      "dpreview.hint_first": "Shows your design as a studio render — no photo needed, {limit} per browser. The try-on with your photo comes in step 3.",
-      "dpreview.hint_remaining": "{remaining} of {limit} renders left.",
-      "dpreview.hint_limit": "Render limit reached ({limit}/{limit}).",
-      "dpreview.retry": "Try again",
-      "dpreview.error_prefix": "Error: {msg}",
-      "dpreview.error_pending": "Render is taking longer than expected (>20 s). Please try again.",
-      "dpreview.error_unexpected": "Unexpected response from the server.",
-      "dpreview.error_network": "Network error: {msg}",
       "dpreview.fallback_badge": "STYLE PREVIEW",
       "dpreview.genesis_badge": "TAKING SHAPE …",
-      "dpreview.fallback_caption": "Free style preview from your design — the photoreal render is unavailable right now.",
-      "dpreview.fallback_retry": "Try photoreal render",
 
       // ── Production ──
       "prod.h2": "Production spec",
@@ -1099,13 +982,6 @@ const I18N = (() => {
       "footer.meta_fine": "Pre-launch vision · GDPR-compliant · Photo analysis 100% client-side",
 
       // ── Design card (dynamic) ──
-      "card.eyebrow": "YOUR DESIGN · {id}",
-      "card.fit_suffix": "Fit",
-      "card.tailor_notes": "Construction notes ({n})",
-      "card.your_wish": "Your prompt",
-      "card.save": "Save",
-      "card.saved": "Saved",
-      "card.save_aria": "Save design",
 
       // ── Color names ──
       "color.#1a1a1a": "Black",
@@ -1167,8 +1043,6 @@ const I18N = (() => {
       "toast.photo_failed": "Photo analysis failed: {msg}",
       "toast.json_done": "JSON file downloaded",
       "toast.html_done": "Printable spec downloaded",
-      "toast.save_failed": "Save failed",
-      "toast.saved_lib": '"{name}" saved to your library',
       "toast.not_found": "Design not found",
       "toast.loaded": '"{name}" loaded',
       "toast.deleted": '"{name}" deleted',
@@ -1223,12 +1097,10 @@ const I18N = (() => {
       ],
 
       // ── Landing page (landing.html) — standalone brand landing ──
-      "landing.head.title": "Urban Revolution — Autonomous circular factory",
       "landing.eyebrow": "Autonomous Circular Factory",
       "landing.h1_line1": "Made for one.",
       "landing.h1_line2": "Not for all.",
       "landing.sub": "One-of-a-kind pieces of your own design, made to measure — from clothing that already exists. No overproduction. No waste. Only yours.",
-      "landing.cta_secondary": "The manifesto",
       "landing.scroll": "Scroll",
       // Act I — The Line (manifesto + numbers speak the machine voice)
       "landing.manifesto_label": "Act I — The Line",

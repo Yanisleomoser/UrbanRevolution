@@ -277,17 +277,27 @@
 
     const publish = $("#own-publish");
     if (publish) publish.addEventListener("click", async () => {
+      // Doppelklick-Guard: der await unten macht den Button ~200 ms träge, das
+      // lädt zum Nachtippen ein — jeder Extra-Klick wäre ein weiterer POST in
+      // den Redis-Ringpuffer und ein zweites urev:published-Event. Während der
+      // Handler läuft, ist der Button gesperrt.
+      if (publish.disabled) return;
       const dna = currentDna();
       if (!dna || !window.DesignShare) { flashButton(publish, "own.shared"); return; }
       const d = window.DesignShare.encode(dna);
       const design = window.StateManager && window.StateManager.get("currentDesign");
       const entry = { d, name: (design && design.name) || "", by: "", ts: Date.now() };
+      publish.disabled = true;
       try {
         await fetch("/api/gallery", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ d: entry.d, name: entry.name }),
         });
-      } catch (_e) { /* offline → best-effort, still confirm to the user */ }
+      } catch (_e) { /* offline → best-effort, still confirm to the user */
+      } finally { publish.disabled = false; }
+      // Der Kreis schließt sich: die Community-Kugel setzt das Stück sofort
+      // an ihre Innenwand (community-sphere.js hört auf dieses Event).
+      window.dispatchEvent(new CustomEvent("urev:published", { detail: { d: entry.d, name: entry.name } }));
       flashButton(publish, "own.published");
     });
 

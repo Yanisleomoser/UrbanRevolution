@@ -9,9 +9,16 @@
    touch-action: pan-y (vertikales Wischen scrollt die Seite).
 
    Lazy: three/gsap (CDN-Import-Map) + Bilder laden erst, wenn die
-   Sektion in Sichtweite scrollt. Datenquellen: /api/gallery-Items
-   MIT img-Feld (sobald der Publish-Flow Bilder speichert) zuerst,
-   aufgefüllt mit content/community-showcase.json (36 Engine-Renders).
+   Sektion in Sichtweite scrollt. Datenquellen: /api/gallery-Items mit
+   img-Feld (Foto-Renders) zuerst, dann VERÖFFENTLICHTE DNA-Stücke —
+   der Publish-Flow speichert nur den Share-String, das Stück wird hier
+   mit der echten Engine (GarmentSVG) als technisches Flat auf einer
+   dunklen Bühnen-Karte gerendert und schwebt mit; ohne Live-Einträge
+   springt der kuratierte Fallback (content/gallery-curated.json) ein.
+   Aufgefüllt mit content/community-showcase.json (36 Engine-Renders).
+   Ein frisch publiziertes Stück (urev:published aus ur-create.js)
+   erscheint sofort in der Kugel; im Detail-Overlay bietet jedes
+   DNA-Stück REMIX — die Share-URL öffnet es im Studio.
 
    ES-Modul (einziges neben /gallery/) — bewusst nicht IIFE-classic,
    weil three.js nur als ESM ausgeliefert wird und der dynamische
@@ -31,12 +38,22 @@ const t = (key) => (window.I18N && window.I18N.t ? window.I18N.t(key) : key);
 
 let lastTrigger = null;
 const trapReleases = new WeakMap(); // overlay el → FocusTrap release fn
+const closeTimers = new Map();      // overlay el → pending done()-Timeout
 const overlayOpen = () => Boolean(
     (detailEl && !detailEl.hidden) || (joinEl && !joinEl.hidden),
 );
 
 function openOverlay(el, trigger) {
     if (!el) return;
+    // Falle (vorbestehend, hier im berührten Overlay-Code gefixt): schließt
+    // der User und öffnet DASSELBE Overlay binnen 240 ms erneut (Esc→Enter per
+    // Tastatur), versteckte der noch anstehende done()-Timeout das frisch
+    // geöffnete Overlay wieder — state.open blieb true, die ganze Kugel war
+    // bis zum Reload tot. Den eigenen Timeout beim Öffnen abbrechen. Nur den
+    // EIGENEN (Map je Element), damit Detail→Join den Detail-Timeout laufen
+    // lässt (sonst bliebe das Detail-Overlay sichtbar).
+    const pending = closeTimers.get(el);
+    if (pending) { clearTimeout(pending); closeTimers.delete(el); }
     lastTrigger = trigger || document.activeElement;
     el.hidden = false;
     requestAnimationFrame(() => el.classList.add("is-open"));
@@ -54,15 +71,32 @@ function closeOverlay(el) {
     if (release) { release(); trapReleases.delete(el); }
     const done = () => {
         el.hidden = true;
+        closeTimers.delete(el);
         if (!overlayOpen()) document.documentElement.classList.remove("sphere-lock");
     };
     if (REDUCED) done();
-    else setTimeout(done, 240); // an die 0.22/0.24s-CSS-Transition gekoppelt
+    else {
+        const existing = closeTimers.get(el);
+        if (existing) clearTimeout(existing);
+        closeTimers.set(el, setTimeout(done, 240)); // an die 0.22/0.24s-CSS-Transition gekoppelt
+    }
     if (lastTrigger && document.contains(lastTrigger)) {
         lastTrigger.focus({ preventScroll: true });
     }
     lastTrigger = null;
     onOverlayClosed();
+}
+
+// Ungesicherte Studio-Arbeit? (Journey mit Antworten ODER ein Design im RAM,
+// das noch nicht in der Library liegt.) REMIX lädt die Seite neu und der Flow
+// überschreibt dann die Journey mit der fremden DNA — ohne diesen Guard wäre
+// das stiller Datenverlust direkt neben dem beworbenen Ein-Klick-CTA.
+function hasUnsavedWork() {
+    try {
+        const j = JSON.parse(localStorage.getItem("urev_journey_v1") || "null");
+        if (j && Array.isArray(j.answered) && j.answered.length) return true;
+    } catch (_e) { /* korrupter Blob zählt nicht als Arbeit */ }
+    return !!(window.StateManager && window.StateManager.get && window.StateManager.get("currentDesign"));
 }
 
 // Wird nach dem Boot mit der Szene verdrahtet (Karten ent-dimmen etc.).
@@ -85,6 +119,25 @@ if (section && canvas && detailEl && joinEl) {
     const detailCreate = document.getElementById("sphere-detail-create");
     if (detailCreate) detailCreate.addEventListener("click", () => closeOverlay(detailEl));
 
+    // REMIX trägt eine Share-URL (#dna=…). Der Flow liest sie beim Boot —
+    // voller Reload, exakt die Semantik eines geteilten Links.
+    const detailRemixBtn = document.getElementById("sphere-detail-remix");
+    if (detailRemixBtn) {
+        detailRemixBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // NUR den Hash übernehmen, den bestehenden location.search behalten:
+            // buildUrl() wirft die Query weg → mit einem ?utm_/?gclid/?fbclid in
+            // der URL wäre `location.href = …` eine Cross-Document-Navigation,
+            // die das direkt folgende reload() abbricht — die Seite lud die ALTE
+            // URL ohne #dna neu, der CTA tat für jeden Kampagnen-Besucher nichts.
+            const hash = new URL(detailRemixBtn.href).hash;
+            if (!hash) return;
+            if (hasUnsavedWork() && !window.confirm(t("sphere.remix_confirm"))) return;
+            location.hash = hash;   // Same-Document (nur Hash) → Query bleibt
+            location.reload();
+        });
+    }
+
     detailEl.querySelectorAll("[data-sphere-close]").forEach((b) =>
         b.addEventListener("click", () => closeOverlay(detailEl)));
     joinEl.querySelectorAll("[data-join-close]").forEach((b) =>
@@ -106,18 +159,121 @@ if (section && canvas && detailEl && joinEl) {
     lazy.observe(section);
 }
 
+/* ---------- DNA-Stücke → Bühnen-Karten ---------- */
+
+// Veröffentlichte Kreationen tragen nur ihren DNA-String (kein Foto, keine
+// PII). Sie werden mit den klassischen Engine-Globals als technisches Flat
+// auf einer dunklen Bühnen-Karte gerendert — dieselbe Bühnen-Sprache wie der
+// Ownership-Moment im Studio. Kartenmaß = Textur-Budget der Foto-Karten
+// (downscale: lange Seite 560px).
+const CARD_W = 440, CARD_H = 560;
+// /api/gallery-POSTs sind unauthentifiziert und validieren nur den Base64-
+// String, nicht den JSON-Inhalt — die Kategorie kann alles sein. Nur die
+// sechs echten Typen dürfen ins Label (sonst zeigte t("type.<müll>") den
+// rohen i18n-Key auf einer öffentlichen Fläche).
+const KNOWN_TYPES = new Set((window.CONFIG && window.CONFIG.GARMENT_TYPES) || ["tshirt", "hoodie", "shirt", "pants", "jacket", "dress"]);
+
+function decodeDnaItem(raw) {
+    if (!raw || typeof raw.d !== "string" || !raw.d) return null;
+    if (!window.DesignShare || !window.DesignPreview || !window.GarmentSVG) return null;
+    const dna = window.DesignShare.decode(raw.d);
+    if (!dna) return null;
+    const params = window.DesignPreview.params(dna);
+    const item = {
+        dna, d: raw.d, params,
+        name: raw.name || "—", by: raw.by || "",
+        type: KNOWN_TYPES.has(params.category) ? params.category : "", style: "",
+    };
+    // Renderbarkeit JETZT prüfen (nicht erst in addCard): eine DNA, die zwar
+    // dekodiert, aber nicht zeichenbar ist (z. B. category als Objekt),
+    // dürfte sonst als „echter" Eintrag den kuratierten Fallback unterdrücken
+    // UND einen der 36 Plätze fressen, ohne je eine Karte zu zeigen.
+    item._svg = stageCardSvg(item);
+    return item._svg ? item : null;
+}
+
+function stageCardSvg(item) {
+    let flat = "";
+    try {
+        flat = window.GarmentSVG.paint(window.GarmentSVG.model(item.params.category || "tshirt", item.params));
+    } catch (_e) { /* defekte DNA → Karte auslassen */ }
+    if (!flat) return null;
+    // Flat (viewBox 0 0 240 340) als nested <svg> mittig auf die Karte setzen.
+    const inner = flat.replace("<svg ", '<svg x="55" y="46" width="330" height="467.5" ');
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_W}" height="${CARD_H}" viewBox="0 0 ${CARD_W} ${CARD_H}">`
+        + '<defs><linearGradient id="stage-bg" x1="0" y1="0" x2="0" y2="1">'
+        + '<stop offset="0" stop-color="#102231"/><stop offset="0.62" stop-color="#0C1A28"/><stop offset="1" stop-color="#0A1622"/>'
+        + '</linearGradient><radialGradient id="stage-glow" cx="0.5" cy="0.34" r="0.62">'
+        + '<stop offset="0" stop-color="rgba(100,214,196,0.10)"/><stop offset="1" stop-color="rgba(100,214,196,0)"/>'
+        + '</radialGradient></defs>'
+        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-bg)" stroke="rgba(100,214,196,0.16)" stroke-width="2"/>`
+        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-glow)"/>`
+        + inner + "</svg>";
+}
+
+function rasterizeCard(svgString) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const c = document.createElement("canvas");
+            c.width = CARD_W;
+            c.height = CARD_H;
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            resolve(c);
+        };
+        img.onerror = reject;
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
+    });
+}
+
+// In dieser Sitzung publizierte Stücke: vor dem Boot gesammelt (und beim Boot
+// eingemischt), nach dem Boot live in die Kugel gesetzt (siehe boot()).
+const publishedQueue = [];
+let addLiveCard = null;
+// EIN Dedupe-Register über alle je platzierten DNA-Karten (d-String). Ein
+// Doppelklick auf Publish (Button wird nie disabled) feuert zwei identische
+// Events; ohne dieses Set schwebten zwei deckungsgleiche Karten (und beim
+// Pre-Boot-Pfad passierten beide den alten, nur gegen die API gebauten Filter).
+const liveKeys = new Set();
+const isNewKey = (d) => (liveKeys.has(d) ? false : (liveKeys.add(d), true));
+globalThis.addEventListener("urev:published", (e) => {
+    const d = e && e.detail && e.detail.d;
+    if (!d || typeof d !== "string") return;
+    const raw = { d, name: (e.detail.name || ""), by: "" };
+    if (addLiveCard) addLiveCard(raw);
+    else publishedQueue.push(raw);
+});
+
 /* ---------- Datenquellen ---------- */
 
 async function loadItems() {
-    // Zukunft: publizierte Community-Kreationen mit echtem Foto-Render.
-    let live = [];
+    let liveImg = [], liveDna = [];
     try {
         const res = await fetch("/api/gallery");
         const data = await res.json();
-        live = (Array.isArray(data.items) ? data.items : [])
+        const items = Array.isArray(data.items) ? data.items : [];
+        liveImg = items
             .filter((it) => it && typeof it.img === "string" && it.img.startsWith("/"))
             .map((it) => ({ img: it.img, name: it.name || "—", by: it.by || "", type: it.type || "", style: it.style || "" }));
-    } catch (_e) { /* offline/nicht konfiguriert → nur Showcase */ }
+        liveDna = items
+            .filter((it) => it && !(typeof it.img === "string" && it.img.startsWith("/")))
+            .map(decodeDnaItem).filter(Boolean).filter((it) => isNewKey(it.d));
+    } catch (_e) { /* offline/nicht konfiguriert → Fallback unten */ }
+
+    // Frisch publizierte Stücke dieser Sitzung sofort dabei — auch wenn
+    // /api/gallery (noch) nicht konfiguriert ist; Dubletten über das Register.
+    const local = publishedQueue.splice(0)
+        .map(decodeDnaItem).filter(Boolean).filter((it) => isNewKey(it.d));
+    liveDna = local.concat(liveDna);
+
+    // Kuratierter Fallback, solange es keine echten Veröffentlichungen gibt
+    // (die dokumentierte Bestimmung von content/gallery-curated.json).
+    if (!liveDna.length) {
+        try {
+            const res = await fetch("/js/design-engine/content/gallery-curated.json");
+            liveDna = (((await res.json()).items) || []).map(decodeDnaItem).filter(Boolean).filter((it) => isNewKey(it.d));
+        } catch (_e) { /* ohne Fallback bleibt es beim Showcase */ }
+    }
 
     let base = [];
     try {
@@ -125,7 +281,7 @@ async function loadItems() {
         base = (await res.json()).items || [];
     } catch (_e) { /* ohne Showcase bleibt die Sphäre leer, Seite läuft weiter */ }
 
-    return live.concat(base).slice(0, 36);
+    return liveImg.concat(liveDna).concat(base).slice(0, 36);
 }
 
 /* ---------- 3D-Boot ---------- */
@@ -236,33 +392,69 @@ async function boot() {
     };
 
     const loader = new THREE.ImageLoader();
-    items.forEach((item, i) => {
-        loader.load(item.img, (img) => {
-            const slot = slots[i % slots.length];
-            const tex = new THREE.CanvasTexture(downscale(img));
-            tex.colorSpace = THREE.SRGBColorSpace;
-            tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-            const aspect = Math.min(1.7, Math.max(0.62, img.width / img.height));
-            const h = (3.0 / Math.sqrt(aspect)) * slot.scale;
-            const w = h * aspect;
-            const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-                map: tex, transparent: true, toneMapped: false,
-            }));
-            const cp = Math.cos(slot.pitch);
-            mesh.position.set(
-                -Math.sin(slot.yaw) * cp * slot.radius,
-                Math.sin(slot.pitch) * slot.radius,
-                -Math.cos(slot.yaw) * cp * slot.radius,
-            );
-            mesh.lookAt(0, 0, 0);
-            mesh.userData = { item, w, h };
-            mesh.scale.set(0.001, 0.001, 1);
-            scene.add(mesh);
-            cards.push(mesh);
-            if (state.running) bloom(mesh);
-            else pendingBloom.push(mesh);
-        }, undefined, () => console.warn("[community-sphere] Bild fehlt:", item.img));
-    });
+    // Eine Karte auf ihren Slot setzen — Quelle ist entweder ein Foto-Render
+    // (item.img) oder ein DNA-Stück (item.dna → Bühnen-Karten-Canvas).
+    const placeCard = (item, slot, source, sw, sh) => {
+        const tex = new THREE.CanvasTexture(source);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        const aspect = Math.min(1.7, Math.max(0.62, sw / sh));
+        const h = (3.0 / Math.sqrt(aspect)) * slot.scale;
+        const w = h * aspect;
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+            map: tex, transparent: true, toneMapped: false,
+        }));
+        const cp = Math.cos(slot.pitch);
+        mesh.position.set(
+            -Math.sin(slot.yaw) * cp * slot.radius,
+            Math.sin(slot.pitch) * slot.radius,
+            -Math.cos(slot.yaw) * cp * slot.radius,
+        );
+        mesh.lookAt(0, 0, 0);
+        mesh.userData = { item, w, h };
+        mesh.scale.set(0.001, 0.001, 1);
+        scene.add(mesh);
+        cards.push(mesh);
+        if (state.running) bloom(mesh);
+        else pendingBloom.push(mesh);
+    };
+    const addCard = (item, slot) => {
+        if (item.img) {
+            loader.load(item.img, (img) => placeCard(item, slot, downscale(img), img.width, img.height),
+                undefined, () => console.warn("[community-sphere] Bild fehlt:", item.img));
+            return;
+        }
+        const svg = item._svg || (item.dna ? stageCardSvg(item) : null);
+        if (!svg) return;
+        rasterizeCard(svg).then((c) => {
+            item._canvas = c;
+            placeCard(item, slot, c, c.width, c.height);
+        }).catch(() => console.warn("[community-sphere] Flat-Karte fehlgeschlagen"));
+    };
+    items.forEach((item, i) => addCard(item, slots[i % slots.length]));
+    // Nach dem Boot publiziert: das Stück tritt dort in die Wand ein, wo der
+    // Blick gerade ruht, deutlich VOR den Bestandskarten — ein eigener Slot
+    // statt Slot-Recycling (bei vollen 36 Slots landete es sonst exakt
+    // hinter Karte 0 und blieb unsichtbar). Radius RADIUS-2.6 = 11.4 liegt
+    // garantiert vor den Wand-Slots (min. 12.8) → immer ≥ 1.4 Einheiten
+    // Abstand, auch bei exakt gleichem Blickwinkel.
+    addLiveCard = (raw) => {
+        const it = decodeDnaItem(raw);
+        if (!it || !isNewKey(it.d)) return;
+        addCard(it, {
+            yaw: rot.yaw + rand(-0.15, 0.15),
+            pitch: Math.min(0.45, Math.max(-0.45, rot.pitch + rand(-0.1, 0.1))),
+            radius: RADIUS - 2.6,
+            scale: 1.15,
+        });
+    };
+    // Race-Falle (Review): loadItems draint publishedQueue schon (Zeile ~262)
+    // BEVOR addLiveCard hier zugewiesen ist; ein Publish im Boot-Fenster
+    // (kalter three.js-CDN-Import dauert Sekunden) landete danach in der
+    // bereits geleerten Queue und wurde nie gezeichnet. Direkt nach der
+    // Zuweisung nachdrainen — was jetzt noch drin liegt, kam in genau dieser
+    // Lücke rein.
+    publishedQueue.splice(0).forEach(addLiveCard);
 
     function bloom(mesh) {
         const { w, h } = mesh.userData;
@@ -436,6 +628,8 @@ async function boot() {
     const detailImg = document.getElementById("sphere-detail-img");
     const detailName = document.getElementById("sphere-detail-name");
     const detailMeta = document.getElementById("sphere-detail-meta");
+    const detailRemix = document.getElementById("sphere-detail-remix");
+    const detailCreateCta = document.getElementById("sphere-detail-create");
     const camPush = { p: 0 };
     let pushDir = null;
 
@@ -445,7 +639,22 @@ async function boot() {
         activeCard = mesh;
         setHovered(null);
         const item = mesh.userData.item;
-        detailImg.src = item.img;
+        if (item.dna) {
+            // DNA-Stück: die gerenderte Bühnen-Karte selbst ist das Bild; die
+            // primäre Aktion ist REMIX (Share-URL → Studio, ersetzt den
+            // generischen Create-CTA — beide führen ins Studio).
+            if (!item._png && item._canvas) item._png = item._canvas.toDataURL("image/png");
+            detailImg.src = item._png || "";
+            if (detailRemix && window.DesignShare) {
+                detailRemix.href = window.DesignShare.buildUrl(item.dna);
+                detailRemix.hidden = false;
+            }
+            if (detailCreateCta) detailCreateCta.hidden = true;
+        } else {
+            detailImg.src = item.img;
+            if (detailRemix) detailRemix.hidden = true;
+            if (detailCreateCta) detailCreateCta.hidden = false;
+        }
         detailImg.alt = item.name;
         detailName.textContent = item.name;
         detailMeta.textContent = metaLine(item);
@@ -554,5 +763,5 @@ async function boot() {
     });
 
     // Mess-Haken für headless-Checks (keine UI-Funktion).
-    globalThis.__communitySphere = { state, cards, rot, target, camera, items, vel };
+    globalThis.__communitySphere = { state, cards, rot, target, camera, items, vel, openDetail };
 }

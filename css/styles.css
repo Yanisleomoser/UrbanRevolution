@@ -2153,6 +2153,16 @@ input[aria-invalid="true"] {
     margin-bottom: var(--space-3);
 }
 
+/* Lange deutsche Komposita („Datenschutzerklärung") dürfen auf Phone-Breite
+   nicht überlaufen — trennen statt sprengen (greift nur bei Platznot). */
+.legal-page h1,
+.legal-page h2,
+.legal-page h3 {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
 .legal-page .legal-lead {
     color: var(--text-dim);
     font-size: var(--text-md);
@@ -6329,7 +6339,8 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 /* Bugfix: [hidden] muss IMMER gewinnen — Klassen mit eigenem display
    (.manifesto-cta, .de-nav …) überstimmten sonst die UA-Regel, wodurch z. B.
    „Zeig die Alternative" schon bei Karte 1/4 sichtbar war (iPhone-Report). */
-.prob-controls [hidden], #ownership [hidden], .ownership-actions [hidden] { display: none !important; }
+.prob-controls [hidden], #ownership [hidden], .ownership-actions [hidden],
+.sphere-detail-actions [hidden] { display: none !important; }
 
 /* ─── UX-Scan-Feinschliff (präziser Audit) ─────────────────────────────────
    #4 Touch-Ziele werden über html.is-touch oben gelöst (Projekt-Muster). */
