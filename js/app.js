@@ -844,14 +844,30 @@
       // dieselbe Vorrang-Regel wie applyJourneyDesign in Gegenrichtung.
       if (color) {
         const stops = window.DesignDNA.get(clone, "color.stops");
-        if (Array.isArray(stops) && stops.length) { stops[0] = color; setD("color.stops", stops.slice()); }
-        else { setD("color.stops", [color]); setD("color.scheme", "mono"); }
+        const primary = Array.isArray(stops) && stops.length ? String(stops[0]).toLowerCase() : null;
+        // Nur eine AKTIVE Umfärbung (Facade-Wahl ≠ DNA-Primärfarbe) greift ein
+        // — und dann konsistent als Vollton, denn Karte und Prompt sprechen
+        // von EINER Farbe (Review-Fund: halber Alt-Verlauf log). Unverändert
+        // gespiegelte Farbe → die Journey-Farbwelt (inkl. Verlauf) bleibt.
+        if (!primary || primary !== String(color).toLowerCase()) {
+          setD("color.stops", [color]);
+          setD("color.scheme", "mono");
+        }
       }
       const material = S.get("currentMaterial"); if (material) setD("fabric.material", material);
       const fit = S.get("currentFit"); if (fit !== null && fit !== undefined) setD("silhouette.fit", fit);
       const length = S.get("currentLength"); if (length) setD("length", length);
+      // Auch der TYP folgt der Vorrang-Regel: wechselt der User die Kategorie
+      // im Studio, zeigt die Bühne nie weiter die alte DNA-Kategorie, während
+      // Karte + Spec schon die neue nennen (Review-Fund).
+      if (type && window.DesignDNA.get(clone, "category") !== type) setD("category", type);
       p = window.DesignPreview.params(clone);
     } else {
+      // CONFIG.PATTERNS und die GarmentSVG-Musterwelt sind zwei Vokabulare —
+      // ungemappt fiele z. B. "stripes_h" auf den Abstrakt-Default (Review-
+      // Fund: Streifen-Design bekäme Kringel). Flächen-Looks ohne Motiv
+      // (heather/gradient) tragen bewusst kein Muster.
+      const PATTERN_TO_FLAT = { stripes_h: "stripe", stripes_v: "stripe", dots: "graphic", plaid: "check", camo: "camo", floral: "abstract" };
       p = {
         category: type,
         fit: S.get("currentFit"),
@@ -859,7 +875,7 @@
         material: S.get("currentMaterial"),
         stops: color ? [color] : undefined,
         scheme: "mono",
-        pattern: design.pattern && design.pattern !== "solid" ? design.pattern : "none",
+        pattern: PATTERN_TO_FLAT[design.pattern] || "none",
         energy: 0.55,
       };
     }
@@ -1564,6 +1580,11 @@
       previewImageUrl: entry.previewImageUrl || null,
       measurements: entry.measurements || null,
     };
+    // Explizites Zurückholen ist KEIN In-Flight-Race: der gespeicherte Typ
+    // gewinnt. Erst currentType setzen, DANN applyDesignToState — dessen
+    // "State-gewinnt"-Regel würde sonst design.type auf den alten Selektor-
+    // Stand zurückzwingen (gespeicherte Jacke käme als T-Shirt zurück).
+    S.set("currentType", entry.type);
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
     setActiveType(entry.type);

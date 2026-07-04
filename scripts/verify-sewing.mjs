@@ -127,6 +127,12 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   await page.waitForTimeout(400);
   const after = await page.$eval("#vto-example .own-flat", (n) => n.innerHTML);
   check(before !== after, "a facade colour pick re-dyes the stage flat live");
+  // Typ-Vorrang (Review-Fund): switching the studio type must recut the stage
+  // flat too — never an old-category flat next to a card naming the new type.
+  await page.evaluate(() => window.StateManager.set("currentType", "dress"));
+  await page.waitForTimeout(400);
+  const asDress = await page.$eval("#vto-example .own-flat", (n) => n.innerHTML);
+  check(asDress !== after && asDress.length > 500, "a type switch recuts the stage flat (DNA category never wins over the live type)");
   check(errors.length === 0, `no page errors (${errors.join(" | ") || "clean"})`);
   await page.close();
 }
