@@ -288,6 +288,9 @@
           body: JSON.stringify({ d: entry.d, name: entry.name }),
         });
       } catch (_e) { /* offline → best-effort, still confirm to the user */ }
+      // Der Kreis schließt sich: die Community-Kugel setzt das Stück sofort
+      // an ihre Innenwand (community-sphere.js hört auf dieses Event).
+      window.dispatchEvent(new CustomEvent("urev:published", { detail: { d: entry.d, name: entry.name } }));
       flashButton(publish, "own.published");
     });
 

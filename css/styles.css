@@ -6327,7 +6327,8 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 /* Bugfix: [hidden] muss IMMER gewinnen — Klassen mit eigenem display
    (.manifesto-cta, .de-nav …) überstimmten sonst die UA-Regel, wodurch z. B.
    „Zeig die Alternative" schon bei Karte 1/4 sichtbar war (iPhone-Report). */
-.prob-controls [hidden], #ownership [hidden], .ownership-actions [hidden] { display: none !important; }
+.prob-controls [hidden], #ownership [hidden], .ownership-actions [hidden],
+.sphere-detail-actions [hidden] { display: none !important; }
 
 /* ─── UX-Scan-Feinschliff (präziser Audit) ─────────────────────────────────
    #4 Touch-Ziele werden über html.is-touch oben gelöst (Projekt-Muster). */

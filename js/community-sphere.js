@@ -9,9 +9,16 @@
    touch-action: pan-y (vertikales Wischen scrollt die Seite).
 
    Lazy: three/gsap (CDN-Import-Map) + Bilder laden erst, wenn die
-   Sektion in Sichtweite scrollt. Datenquellen: /api/gallery-Items
-   MIT img-Feld (sobald der Publish-Flow Bilder speichert) zuerst,
-   aufgefüllt mit content/community-showcase.json (36 Engine-Renders).
+   Sektion in Sichtweite scrollt. Datenquellen: /api/gallery-Items mit
+   img-Feld (Foto-Renders) zuerst, dann VERÖFFENTLICHTE DNA-Stücke —
+   der Publish-Flow speichert nur den Share-String, das Stück wird hier
+   mit der echten Engine (GarmentSVG) als technisches Flat auf einer
+   dunklen Bühnen-Karte gerendert und schwebt mit; ohne Live-Einträge
+   springt der kuratierte Fallback (content/gallery-curated.json) ein.
+   Aufgefüllt mit content/community-showcase.json (36 Engine-Renders).
+   Ein frisch publiziertes Stück (urev:published aus ur-create.js)
+   erscheint sofort in der Kugel; im Detail-Overlay bietet jedes
+   DNA-Stück REMIX — die Share-URL öffnet es im Studio.
 
    ES-Modul (einziges neben /gallery/) — bewusst nicht IIFE-classic,
    weil three.js nur als ESM ausgeliefert wird und der dynamische
@@ -85,6 +92,17 @@ if (section && canvas && detailEl && joinEl) {
     const detailCreate = document.getElementById("sphere-detail-create");
     if (detailCreate) detailCreate.addEventListener("click", () => closeOverlay(detailEl));
 
+    // REMIX trägt eine Share-URL (#dna=…). Der Flow liest sie beim Boot —
+    // voller Reload, exakt die Semantik eines geteilten Links.
+    const detailRemixBtn = document.getElementById("sphere-detail-remix");
+    if (detailRemixBtn) {
+        detailRemixBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            location.href = detailRemixBtn.href;
+            location.reload();
+        });
+    }
+
     detailEl.querySelectorAll("[data-sphere-close]").forEach((b) =>
         b.addEventListener("click", () => closeOverlay(detailEl)));
     joinEl.querySelectorAll("[data-join-close]").forEach((b) =>
@@ -106,18 +124,105 @@ if (section && canvas && detailEl && joinEl) {
     lazy.observe(section);
 }
 
+/* ---------- DNA-Stücke → Bühnen-Karten ---------- */
+
+// Veröffentlichte Kreationen tragen nur ihren DNA-String (kein Foto, keine
+// PII). Sie werden mit den klassischen Engine-Globals als technisches Flat
+// auf einer dunklen Bühnen-Karte gerendert — dieselbe Bühnen-Sprache wie der
+// Ownership-Moment im Studio. Kartenmaß = Textur-Budget der Foto-Karten
+// (downscale: lange Seite 560px).
+const CARD_W = 440, CARD_H = 560;
+
+function decodeDnaItem(raw) {
+    if (!raw || typeof raw.d !== "string" || !raw.d) return null;
+    if (!window.DesignShare || !window.DesignPreview || !window.GarmentSVG) return null;
+    const dna = window.DesignShare.decode(raw.d);
+    if (!dna) return null;
+    const params = window.DesignPreview.params(dna);
+    return {
+        dna, d: raw.d, params,
+        name: raw.name || "—", by: raw.by || "",
+        type: params.category || "", style: "",
+    };
+}
+
+function stageCardSvg(item) {
+    let flat = "";
+    try {
+        flat = window.GarmentSVG.paint(window.GarmentSVG.model(item.params.category || "tshirt", item.params));
+    } catch (_e) { /* defekte DNA → Karte auslassen */ }
+    if (!flat) return null;
+    // Flat (viewBox 0 0 240 340) als nested <svg> mittig auf die Karte setzen.
+    const inner = flat.replace("<svg ", '<svg x="55" y="46" width="330" height="467.5" ');
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_W}" height="${CARD_H}" viewBox="0 0 ${CARD_W} ${CARD_H}">`
+        + '<defs><linearGradient id="stage-bg" x1="0" y1="0" x2="0" y2="1">'
+        + '<stop offset="0" stop-color="#102231"/><stop offset="0.62" stop-color="#0C1A28"/><stop offset="1" stop-color="#0A1622"/>'
+        + '</linearGradient><radialGradient id="stage-glow" cx="0.5" cy="0.34" r="0.62">'
+        + '<stop offset="0" stop-color="rgba(100,214,196,0.10)"/><stop offset="1" stop-color="rgba(100,214,196,0)"/>'
+        + '</radialGradient></defs>'
+        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-bg)" stroke="rgba(100,214,196,0.16)" stroke-width="2"/>`
+        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-glow)"/>`
+        + inner + "</svg>";
+}
+
+function rasterizeCard(svgString) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const c = document.createElement("canvas");
+            c.width = CARD_W;
+            c.height = CARD_H;
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            resolve(c);
+        };
+        img.onerror = reject;
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
+    });
+}
+
+// In dieser Sitzung publizierte Stücke: vor dem Boot gesammelt (und beim Boot
+// eingemischt), nach dem Boot live in die Kugel gesetzt (siehe boot()).
+const publishedQueue = [];
+let addLiveCard = null;
+globalThis.addEventListener("urev:published", (e) => {
+    const d = e && e.detail && e.detail.d;
+    if (!d || typeof d !== "string") return;
+    const raw = { d, name: (e.detail.name || ""), by: "" };
+    if (addLiveCard) addLiveCard(raw);
+    else publishedQueue.push(raw);
+});
+
 /* ---------- Datenquellen ---------- */
 
 async function loadItems() {
-    // Zukunft: publizierte Community-Kreationen mit echtem Foto-Render.
-    let live = [];
+    let liveImg = [], liveDna = [];
     try {
         const res = await fetch("/api/gallery");
         const data = await res.json();
-        live = (Array.isArray(data.items) ? data.items : [])
+        const items = Array.isArray(data.items) ? data.items : [];
+        liveImg = items
             .filter((it) => it && typeof it.img === "string" && it.img.startsWith("/"))
             .map((it) => ({ img: it.img, name: it.name || "—", by: it.by || "", type: it.type || "", style: it.style || "" }));
-    } catch (_e) { /* offline/nicht konfiguriert → nur Showcase */ }
+        liveDna = items
+            .filter((it) => it && !(typeof it.img === "string" && it.img.startsWith("/")))
+            .map(decodeDnaItem).filter(Boolean);
+    } catch (_e) { /* offline/nicht konfiguriert → Fallback unten */ }
+
+    // Frisch publizierte Stücke dieser Sitzung sofort dabei — auch wenn
+    // /api/gallery (noch) nicht konfiguriert ist; Dubletten über den d-String.
+    const seen = new Set(liveDna.map((it) => it.d));
+    const local = publishedQueue.splice(0)
+        .map(decodeDnaItem).filter(Boolean).filter((it) => !seen.has(it.d));
+    liveDna = local.concat(liveDna);
+
+    // Kuratierter Fallback, solange es keine echten Veröffentlichungen gibt
+    // (die dokumentierte Bestimmung von content/gallery-curated.json).
+    if (!liveDna.length) {
+        try {
+            const res = await fetch("/js/design-engine/content/gallery-curated.json");
+            liveDna = (((await res.json()).items) || []).map(decodeDnaItem).filter(Boolean);
+        } catch (_e) { /* ohne Fallback bleibt es beim Showcase */ }
+    }
 
     let base = [];
     try {
@@ -125,7 +230,7 @@ async function loadItems() {
         base = (await res.json()).items || [];
     } catch (_e) { /* ohne Showcase bleibt die Sphäre leer, Seite läuft weiter */ }
 
-    return live.concat(base).slice(0, 36);
+    return liveImg.concat(liveDna).concat(base).slice(0, 36);
 }
 
 /* ---------- 3D-Boot ---------- */
@@ -236,33 +341,60 @@ async function boot() {
     };
 
     const loader = new THREE.ImageLoader();
-    items.forEach((item, i) => {
-        loader.load(item.img, (img) => {
-            const slot = slots[i % slots.length];
-            const tex = new THREE.CanvasTexture(downscale(img));
-            tex.colorSpace = THREE.SRGBColorSpace;
-            tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-            const aspect = Math.min(1.7, Math.max(0.62, img.width / img.height));
-            const h = (3.0 / Math.sqrt(aspect)) * slot.scale;
-            const w = h * aspect;
-            const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-                map: tex, transparent: true, toneMapped: false,
-            }));
-            const cp = Math.cos(slot.pitch);
-            mesh.position.set(
-                -Math.sin(slot.yaw) * cp * slot.radius,
-                Math.sin(slot.pitch) * slot.radius,
-                -Math.cos(slot.yaw) * cp * slot.radius,
-            );
-            mesh.lookAt(0, 0, 0);
-            mesh.userData = { item, w, h };
-            mesh.scale.set(0.001, 0.001, 1);
-            scene.add(mesh);
-            cards.push(mesh);
-            if (state.running) bloom(mesh);
-            else pendingBloom.push(mesh);
-        }, undefined, () => console.warn("[community-sphere] Bild fehlt:", item.img));
-    });
+    // Eine Karte auf ihren Slot setzen — Quelle ist entweder ein Foto-Render
+    // (item.img) oder ein DNA-Stück (item.dna → Bühnen-Karten-Canvas).
+    const placeCard = (item, slot, source, sw, sh) => {
+        const tex = new THREE.CanvasTexture(source);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        const aspect = Math.min(1.7, Math.max(0.62, sw / sh));
+        const h = (3.0 / Math.sqrt(aspect)) * slot.scale;
+        const w = h * aspect;
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+            map: tex, transparent: true, toneMapped: false,
+        }));
+        const cp = Math.cos(slot.pitch);
+        mesh.position.set(
+            -Math.sin(slot.yaw) * cp * slot.radius,
+            Math.sin(slot.pitch) * slot.radius,
+            -Math.cos(slot.yaw) * cp * slot.radius,
+        );
+        mesh.lookAt(0, 0, 0);
+        mesh.userData = { item, w, h };
+        mesh.scale.set(0.001, 0.001, 1);
+        scene.add(mesh);
+        cards.push(mesh);
+        if (state.running) bloom(mesh);
+        else pendingBloom.push(mesh);
+    };
+    const addCard = (item, slot) => {
+        if (item.img) {
+            loader.load(item.img, (img) => placeCard(item, slot, downscale(img), img.width, img.height),
+                undefined, () => console.warn("[community-sphere] Bild fehlt:", item.img));
+            return;
+        }
+        const svg = item.dna ? stageCardSvg(item) : null;
+        if (!svg) return;
+        rasterizeCard(svg).then((c) => {
+            item._canvas = c;
+            placeCard(item, slot, c, c.width, c.height);
+        }).catch(() => console.warn("[community-sphere] Flat-Karte fehlgeschlagen"));
+    };
+    items.forEach((item, i) => addCard(item, slots[i % slots.length]));
+    // Nach dem Boot publiziert: das Stück tritt dort in die Wand ein, wo der
+    // Blick gerade ruht, leicht VOR den Bestandskarten — ein eigener Slot
+    // statt Slot-Recycling (bei vollen 36 Slots landete es sonst exakt
+    // hinter Karte 0 und blieb unsichtbar).
+    addLiveCard = (raw) => {
+        const it = decodeDnaItem(raw);
+        if (!it) return;
+        addCard(it, {
+            yaw: rot.yaw + rand(-0.15, 0.15),
+            pitch: Math.min(0.45, Math.max(-0.45, rot.pitch + rand(-0.1, 0.1))),
+            radius: RADIUS - 1.8,
+            scale: 1.1,
+        });
+    };
 
     function bloom(mesh) {
         const { w, h } = mesh.userData;
@@ -436,6 +568,8 @@ async function boot() {
     const detailImg = document.getElementById("sphere-detail-img");
     const detailName = document.getElementById("sphere-detail-name");
     const detailMeta = document.getElementById("sphere-detail-meta");
+    const detailRemix = document.getElementById("sphere-detail-remix");
+    const detailCreateCta = document.getElementById("sphere-detail-create");
     const camPush = { p: 0 };
     let pushDir = null;
 
@@ -445,7 +579,22 @@ async function boot() {
         activeCard = mesh;
         setHovered(null);
         const item = mesh.userData.item;
-        detailImg.src = item.img;
+        if (item.dna) {
+            // DNA-Stück: die gerenderte Bühnen-Karte selbst ist das Bild; die
+            // primäre Aktion ist REMIX (Share-URL → Studio, ersetzt den
+            // generischen Create-CTA — beide führen ins Studio).
+            if (!item._png && item._canvas) item._png = item._canvas.toDataURL("image/png");
+            detailImg.src = item._png || "";
+            if (detailRemix && window.DesignShare) {
+                detailRemix.href = window.DesignShare.buildUrl(item.dna);
+                detailRemix.hidden = false;
+            }
+            if (detailCreateCta) detailCreateCta.hidden = true;
+        } else {
+            detailImg.src = item.img;
+            if (detailRemix) detailRemix.hidden = true;
+            if (detailCreateCta) detailCreateCta.hidden = false;
+        }
         detailImg.alt = item.name;
         detailName.textContent = item.name;
         detailMeta.textContent = metaLine(item);
@@ -554,5 +703,5 @@ async function boot() {
     });
 
     // Mess-Haken für headless-Checks (keine UI-Funktion).
-    globalThis.__communitySphere = { state, cards, rot, target, camera, items, vel };
+    globalThis.__communitySphere = { state, cards, rot, target, camera, items, vel, openDetail };
 }
