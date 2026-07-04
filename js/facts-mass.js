@@ -10,12 +10,19 @@
  *   2 · WEGWERFEN — jede echte Sekunde fällt EIN Kleidungsstück
  *       (Flach-Silhouette: T-Shirt/Hoodie/Hose/Kleid) und stapelt sich
  *       geschichtet auf die wachsende Halde: ein Berg aus Kleidern.
+ *       Der GANZE Berg besteht sichtbar aus Kleidern: eine Offscreen-
+ *       Textur (das „Gewebe") webt deterministisch viele Silhouetten in
+ *       Schichten — tief = dunkler und gepresster, nahe der Oberfläche
+ *       eine Spur heller; pro Frame kostet sie EIN geclipptes drawImage.
  *       Die Halde wächst, bis ihr Kamm die Oberkante des Beats — die
  *       Grenze zum CO₂-Beat darüber — berührt (~75 s), und ruht dann.
  *   3 · ZURÜCK — alle ~4,6 s starten 100 Tracer von der Halde; 99 fallen
- *       matt zurück. Der Eine ist ein ganzes KLEIDUNGSSTÜCK: es wird
- *       ruhig aus der Halde gehoben, glüht Aqua und verlässt die Bühne
- *       oben. Leise, fast feierlich.
+ *       matt zurück. Der Eine ist ein ganzes KLEIDUNGSSTÜCK: die Rettung
+ *       läuft als inszenierte Bergung in vier Phasen — FINDEN (Spotlight
+ *       atmet auf der Halde, das Stück löst sich) → DER FADEN (eine
+ *       haarfeine Aqua-Linie senkt sich von oben und dockt an) → HEBEN
+ *       (gedämpftes Pendel, wachsendes Glühen, Fünkchen rieseln nach) →
+ *       AUSTRITT (Nachglühen an der Oberkante). Leise, fast feierlich.
  *
  * Progressive Enhancement (tragend): CSS-Default = fertiger Ruhezustand
  * (Vignetten, statische Silhouetten, alle Texte). Bewegung ist Opt-in:
@@ -215,6 +222,116 @@
         ctx.restore();
     }
 
+    /* ── Das Gewebe — das Innere der Halde besteht aus Kleidern ──
+       Eine Offscreen-Textur pro Beat, deterministisch (prng) in
+       horizontalen Schichtbändern gewoben: viele Silhouetten, Ton in Ton
+       (Strata, kein Konfetti). Tiefe Bänder liegen flacher (weniger
+       Rotation, vertikal gestaucht) und sinken tonal Richtung --bg;
+       obere Bänder bleiben eine Spur heller. Pro Frame kostet die Textur
+       EIN drawImage, geclippt auf die aktuelle Halden-Silhouette — dazu
+       legt ein „Press-Schleier" (Verlauf ab dem aktuellen Kamm) die
+       Tiefe dynamisch nach: was die wachsende Halde freilegt, ist nahe
+       der Oberfläche frisch, weiter unten begraben. Gewoben wird lazy in
+       Bändern (nie pro Frame neu): grosszügig über den aktuellen Kamm
+       hinaus vorgewärmt; wächst der Berg darüber hinaus, werden weitere
+       Bänder nachgewoben (und bei Resize alles frisch). */
+    const BG_RGB = [10, 22, 34]; // --bg #0A1622
+    const TONE_RGB = GARMENT_TONES.map((s) => s.split(",").map(Number));
+    function sinkTone(rgb, f) {
+        // Ton Richtung Hintergrund absenken (f: 0 = Ton, 1 = --bg)
+        const r = Math.round(rgb[0] + (BG_RGB[0] - rgb[0]) * f);
+        const g = Math.round(rgb[1] + (BG_RGB[1] - rgb[1]) * f);
+        const bl = Math.round(rgb[2] + (BG_RGB[2] - rgb[2]) * f);
+        return r + "," + g + "," + bl;
+    }
+    function makeWeave(b, seed, dim) {
+        const rnd = prng(seed);
+        const dpr = Math.min(DPR_MAX, window.devicePixelRatio || 1);
+        const off = doc.createElement("canvas");
+        off.width = Math.max(1, Math.round(b.w * dpr));
+        off.height = Math.max(1, Math.round(b.h * dpr));
+        const octx = off.getContext("2d");
+        if (!octx) return null;
+        octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const bandH = b.mobile ? 24 : 28;
+        const baseSize = b.mobile ? 38 : 42; // mobil: weniger, grössere Teile
+        const weaveBand = (yc) => {
+            const sink = clamp01(yc / b.h);        // 1 = Boden (alt, gepresst)
+            const tilt = (rnd() - 0.5) * 0.14;     // leichte Schicht-Neigung
+            const step = baseSize * 0.58;
+            let x = -baseSize * 0.4 + rnd() * step;
+            while (x < b.w + baseSize * 0.4) {
+                const gi = (rnd() * GARMENTS.length) | 0;
+                const s = baseSize * (0.78 + rnd() * 0.5);
+                const y = yc + (rnd() - 0.5) * bandH * 0.8;
+                // tief = ruhiger (kleinere Rotations-Varianz) + gestaucht
+                const rot = tilt + (rnd() - 0.5) * (0.2 + (1 - sink) * 0.5);
+                const squash = 1 - 0.32 * sink;
+                // Der grünliche Ton bleibt selten (Strata, kein Konfetti)
+                const ti = rnd() < 0.85 ? (rnd() * 3) | 0 : 3;
+                const mixF = clamp01(0.24 + sink * 0.3 + dim + (ti === 3 ? 0.1 : 0) + (rnd() - 0.5) * 0.16);
+                octx.save();
+                octx.translate(x, y);
+                octx.scale(1, squash);
+                // Schattenkante darunter trennt die Silhouetten tonwertig
+                drawGarment(octx, gi, 0, 2.5, s, rot,
+                    "rgba(" + sinkTone(TONE_RGB[2], 0.75) + ",0.5)", 0);
+                drawGarment(octx, gi, 0, 0, s, rot,
+                    "rgba(" + sinkTone(TONE_RGB[ti], mixF) + ",0.92)",
+                    sink < 0.4 ? 0.05 : 0);
+                octx.restore();
+                x += step * (0.82 + rnd() * 0.5);
+            }
+        };
+        let frontier = b.h; // bis hier (von unten) ist gewoben
+        const ensure = (yTo) => {
+            let guard = 0;
+            while (frontier > Math.max(yTo, -bandH) && guard++ < 240) {
+                frontier -= bandH;
+                weaveBand(frontier + bandH * 0.5);
+            }
+        };
+        return { canvas: off, ensure };
+    }
+    // Press-Schleier: dunkelt das Gewebe unterhalb des aktuellen Kamms ab —
+    // die Tiefen-Graduierung wandert mit der wachsenden Oberfläche mit.
+    function makeVeil(b, peak) {
+        const g = b.ctx.createLinearGradient(0, b.h * (1 - peak), 0, b.h);
+        g.addColorStop(0, "rgba(10,22,34,0)");
+        g.addColorStop(0.45, "rgba(10,22,34,0.34)");
+        g.addColorStop(1, "rgba(10,22,34,0.64)");
+        return g;
+    }
+    // Gewebe + Schleier in die aktuelle Halden-Silhouette clippen —
+    // die eine Composite-Operation pro Frame, die den Berg zu Kleidern
+    // macht. yTop begrenzt sie auf das Band ab Kamm (alles darüber wäre
+    // ohnehin weggeclippt — gespartes Rastern).
+    function drawWeave(b, hm, weave, veil, alpha, yTop) {
+        if (!weave) return;
+        const ctx = b.ctx;
+        const y0 = Math.max(0, yTop || 0);
+        const bandH2 = b.h - y0;
+        if (bandH2 <= 0) return;
+        const dpr = weave.canvas.width / Math.max(1, b.w);
+        ctx.save();
+        ctx.beginPath();
+        crestPath(b, hm);
+        ctx.lineTo(b.w + 2, b.h + 2);
+        ctx.lineTo(-2, b.h + 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(weave.canvas,
+            0, y0 * dpr, weave.canvas.width, bandH2 * dpr,
+            0, y0, b.w, bandH2);
+        ctx.globalAlpha = 1;
+        if (veil) {
+            ctx.fillStyle = veil;
+            ctx.fillRect(0, y0, b.w, bandH2);
+        }
+        ctx.restore();
+    }
+
     /* ── Beat 2 · WEGWERFEN — die wachsende Halde ───────────── */
     function makeDump(b) {
         const rnd = prng(22);
@@ -241,6 +358,15 @@
         const perClump = b.mobile ? 9 : 16;
         const inc = b.mobile ? 0.0008 : 0.00045;
         b.moundFill = moundGradient(b, MAXH);
+        // Das Gewebe: der Berg ist schon bei Ankunft aus Kleidern —
+        // grosszügig über den Start-Kamm hinaus vorwärmen, damit das
+        // Wachstum bereits gewobene Masse freilegt.
+        const weave = makeWeave(b, 44, 0);
+        let peak0 = 0;
+        for (let i = 0; i < COLS; i++) if (hm[i] > peak0) peak0 = hm[i];
+        if (weave) weave.ensure(b.h * (1 - peak0) - 200);
+        let veil = makeVeil(b, peak0);
+        let weaveTop = b.h * (1 - peak0) - 6;
 
         const grow = (idx, headroomInc) => {
             const spreadTo = (j, f) => {
@@ -279,8 +405,14 @@
             if (acc >= 1) {
                 acc -= 1;
                 clump();
-                // Verlauf folgt dem wachsenden Berg (1×/s reicht, kein Flackern)
-                b.moundFill = moundGradient(b, Math.max.apply(null, hm));
+                // Verlauf + Schleier folgen dem wachsenden Berg (1×/s reicht,
+                // kein Flackern); das Gewebe webt lazy Bänder nach, bevor der
+                // Kamm sie freilegen kann.
+                const pk = Math.max.apply(null, hm);
+                b.moundFill = moundGradient(b, pk);
+                veil = makeVeil(b, pk);
+                weaveTop = b.h * (1 - pk) - 6;
+                if (weave) weave.ensure(b.h * (1 - pk) - 180);
             }
             // Unerbittliches Anwachsen der ganzen Halde: proportional zur
             // eigenen Silhouette (die Form bleibt, der Berg reckt sich),
@@ -351,10 +483,12 @@
                 ctx.fillStyle = "rgba(" + C_WHITE + "," + (0.3 * p.life * 2).toFixed(3) + ")";
                 ctx.fillRect(p.x, p.y, 1.4, 1.4);
             }
-            // Reihenfolge trägt die Erzählung: Masse-Füllung → gestapelte
-            // Kleider (jüngste oben, ältere versinken geschichtet) → das
+            // Reihenfolge trägt die Erzählung: Masse-Füllung → das Gewebe
+            // (der GANZE Berg aus Kleidern, geclippt + Press-Schleier) →
+            // gestapelte Kleider (die frischste Schicht obenauf) → das
             // fallende Stück → zuletzt das Kamm-Licht.
             drawMound(b, hm, false, b.moundFill);
+            drawWeave(b, hm, weave, veil, 0.9, weaveTop);
             const lastVisible = 26;
             for (let i = Math.max(0, landed.length - lastVisible); i < landed.length; i++) {
                 const g = landed[i];
@@ -377,12 +511,44 @@
         };
     }
 
-    /* ── Beat 3 · ZURÜCK — 99 fallen, einer steigt ──────────── */
+    /* ── Beat 3 · ZURÜCK — 99 fallen, EINES wird geborgen ─────
+       Der Ultra-Lift: die Rettung des Einen als inszenierte Bergung in
+       vier Phasen innerhalb des 4,6-s-Takts (BURST_EVERY):
+         1 FINDEN  (0,55 s) — ein Spotlight atmet auf einem Punkt der
+           Halde, das Stück löst sich ein paar Pixel von der Oberfläche.
+         2 FADEN   (0,65 s) — eine haarfeine Aqua-Linie (1 px, die
+           „Der Faden"-Sprache der Seite) senkt sich weich von der
+           Oberkante herab und dockt an.
+         3 HEBEN   (2,5 s)  — Faden + Stück steigen: sanftes Ease-in,
+           dann gleichmässig; gedämpftes Pendel (T ≈ 1,6 s, Winkel
+           klingt ab), Glüh-Bloom wächst mit der Höhe, 3 Fünkchen
+           rieseln nach.
+         4 AUSTRITT (0,45 s) — beide verlassen die Bühne oben, ein
+           Nachglühen am Austrittspunkt verklingt.
+       Gesamt ≈ 4,15 s, danach kurze Stille bis zum nächsten Versuch.
+       Die 99 bleiben unverändert abstrakte Fasern; der Umgebungsstaub
+       dimmt während der Bergung ~20 %, damit das Auge beim Einen ist. */
+    const T_FIND = 0.55, T_THREAD = 0.65, T_RISE = 2.5, T_GLOW = 0.45;
+    const T_LIFT = T_FIND + T_THREAD + T_RISE + T_GLOW;
+    const easeIO = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+    // Hub-Profil: weiches Anfahren (Anteil a), dann konstante Geschwindigkeit —
+    // gehoben, nie geschossen.
+    function riseS(u) {
+        const a = 0.4;
+        const s = u <= a ? (u * u) / (2 * a) : a / 2 + (u - a);
+        return s / (1 - a / 2);
+    }
     function makeReturn(b) {
         const rnd = prng(33);
         const hm = baseProfile(0.06, 0.075);
         const far = baseProfile(0.08, 0.075); // fernere Halde — Tiefenebene
         b.moundFill = moundGradient(b, 0.15);
+        // Auch diese Halde ist aus Kleidern gewoben — gedämpfter, weiter
+        // weg (dim), statisch: einmal bis knapp über den Kamm weben.
+        const weave = makeWeave(b, 55, 0.3);
+        const hmTop = Math.max.apply(null, hm);
+        if (weave) weave.ensure(b.h * (1 - hmTop) - 60);
+        const veil = makeVeil(b, hmTop);
         const tracers = [];
         const dust = [];
         const nDust = b.mobile ? 18 : 36;
@@ -391,59 +557,128 @@
         }
         let burstT = BURST_EVERY - 0.9; // erster Versuch kurz nach dem Eintritt
 
+        // Zustand der Bergung (der Eine) — pro Takt neu angestossen.
+        const size = b.mobile ? 24 : 32;
+        const swayL = b.mobile ? 26 : 42;
+        const L = { on: false, t: 0, x: 0, y0: 0, shed: 0 };
+        const sparks = [];
+        const SHED_AT = [0.18, 0.48, 0.76]; // Hub-Fortschritt der 3 Fünkchen
+
         const burst = () => {
+            // Die 99 Fasern (der Eine wird separat inszeniert — WINNER
+            // bleibt ausgespart, damit es ehrlich 99 sind).
             for (let i = 0; i < 100; i++) {
-                const win = i === WINNER;
-                const x = win
-                    ? b.w * (0.5 + (rnd() - 0.5) * 0.04)
-                    : b.w * (0.5 + (rnd() - 0.5) * 0.36);
-                const ang = -Math.PI / 2 + (win ? 0.02 : (rnd() - 0.5) * 0.62);
-                const sp = win ? 120 : 190 + rnd() * 110;
+                if (i === WINNER) continue;
+                const x = b.w * (0.5 + (rnd() - 0.5) * 0.36);
+                const ang = -Math.PI / 2 + (rnd() - 0.5) * 0.62;
+                const sp = 190 + rnd() * 110;
                 tracers.push({
                     x, y: surfaceY(b, hm, x) - 2,
                     px: x, py: surfaceY(b, hm, x) - 2,
                     vx: Math.cos(ang) * sp,
                     vy: Math.sin(ang) * sp,
-                    win,
                 });
             }
+            L.on = true;
+            L.t = 0;
+            L.shed = 0;
+            L.x = b.w * (0.5 + (rnd() - 0.5) * 0.16);
+            L.y0 = surfaceY(b, hm, L.x);
+        };
+
+        // Pose des Einen als reine Funktion der Phasenzeit: Ort, Faden-
+        // Spitze, Glüh-Anteil, Pendelwinkel.
+        const liftPose = () => {
+            const restY = L.y0 - size * 0.3; // im Kamm eingebettet
+            if (L.t < T_FIND) {
+                const u = easeIO(clamp01(L.t / T_FIND));
+                return { ph: 1, u, px: L.x, py: restY - u * 7, rot: 0, glow: u * 0.3, tipY: null };
+            }
+            const py1 = restY - 7;
+            if (L.t < T_FIND + T_THREAD) {
+                const u = easeIO(clamp01((L.t - T_FIND) / T_THREAD));
+                return {
+                    ph: 2, u, px: L.x, py: py1, rot: 0,
+                    glow: 0.3 + u * 0.3,
+                    tipY: -8 + (py1 - size * 0.45 + 8) * u,
+                };
+            }
+            if (L.t < T_FIND + T_THREAD + T_RISE) {
+                const u = clamp01((L.t - T_FIND - T_THREAD) / T_RISE);
+                const tt = u * T_RISE;
+                // Gedämpftes Pendel: Winkel klingt ab, Periode ~1,6 s;
+                // die Auslenkung blendet nach dem Andocken weich ein.
+                const th = 0.23 * Math.exp(-tt / 1.3) * Math.cos((Math.PI * 2 * tt) / 1.6);
+                const ramp = Math.min(1, tt / 0.5);
+                const py = py1 + (-size - py1) * riseS(u);
+                return {
+                    ph: 3, u, px: L.x + Math.sin(th) * swayL * ramp, py,
+                    rot: th * 0.85, glow: 0.6 + u * 0.4,
+                    tipY: null, thread: true,
+                };
+            }
+            const u = clamp01((L.t - T_FIND - T_THREAD - T_RISE) / T_GLOW);
+            return { ph: 4, u, px: L.x, py: -size, rot: 0, glow: 0, tipY: null };
         };
 
         b.step = (dt) => {
             burstT += dt;
             if (burstT >= BURST_EVERY) { burstT = 0; burst(); }
+            if (L.on) {
+                L.t += dt;
+                if (L.t >= T_LIFT) L.on = false;
+                // Fünkchen: beim Heben lösen sich 3 winzige Reste und
+                // rieseln hinter dem Stück nach unten.
+                const uR = (L.t - T_FIND - T_THREAD) / T_RISE;
+                while (L.shed < SHED_AT.length && uR >= SHED_AT[L.shed]) {
+                    const p = liftPose();
+                    sparks.push({
+                        x: p.px + (rnd() - 0.5) * size * 0.5,
+                        y: p.py + size * 0.3,
+                        vx: (rnd() - 0.5) * 10,
+                        vy: 22 + rnd() * 22,
+                        life: 1.1,
+                    });
+                    L.shed++;
+                }
+            }
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                const s = sparks[i];
+                s.life -= dt;
+                s.x += s.vx * dt;
+                s.y += s.vy * dt;
+                if (s.life <= 0) sparks.splice(i, 1);
+            }
             for (let i = tracers.length - 1; i >= 0; i--) {
                 const tr = tracers[i];
                 tr.px = tr.x; tr.py = tr.y;
-                if (tr.win) {
-                    tr.vy -= 60 * dt; // der Eine: zieht ruhig weiter nach oben
-                } else {
-                    tr.vy += 140 * dt; // die 99: Bogen, dann matt zurück
-                }
+                tr.vy += 140 * dt; // die 99: Bogen, dann matt zurück
                 tr.x += tr.vx * dt;
                 tr.y += tr.vy * dt;
-                const gone = tr.win
-                    ? tr.y < -24
-                    : (tr.vy > 0 && tr.y >= surfaceY(b, hm, tr.x) + 4);
-                if (gone) tracers.splice(i, 1);
+                if (tr.vy > 0 && tr.y >= surfaceY(b, hm, tr.x) + 4) tracers.splice(i, 1);
             }
         };
         b.draw = (t) => {
             const ctx = b.ctx;
             ctx.clearRect(0, 0, b.w, b.h);
+            // Staub dimmt während der Bergung ~20 % — Fokus auf den Einen.
+            const dustF = L.on && L.t < T_FIND + T_THREAD + T_RISE ? 0.8 : 1;
             for (let i = 0; i < dust.length; i++) {
                 const d = dust[i];
-                const a = d.a * (0.7 + Math.sin(t * 0.4 + d.ph) * 0.3);
+                const a = d.a * dustF * (0.7 + Math.sin(t * 0.4 + d.ph) * 0.3);
                 ctx.fillStyle = "rgba(" + C_WHITE + "," + a.toFixed(3) + ")";
                 ctx.fillRect(d.x * b.w, d.y * b.h, d.s, d.s);
             }
             drawMound(b, far, false, "rgba(" + C_DEEP + ",0.9)");
-            drawMound(b, hm, true, b.moundFill);
+            drawMound(b, hm, false, b.moundFill);
+            drawWeave(b, hm, weave, veil, 0.62, b.h * (1 - hmTop) - 6);
+            ctx.beginPath();
+            crestPath(b, hm);
+            ctx.strokeStyle = "rgba(" + C_AQUA + ",0.14)";
             ctx.lineWidth = 1;
-            let winner = null;
+            ctx.stroke();
             for (let i = 0; i < tracers.length; i++) {
                 const tr = tracers[i];
-                if (tr.win) { winner = tr; continue; }
                 // steigend: hell-matt · fallend: dunkelt ab — das Scheitern
                 const a = tr.vy < 0 ? 0.34 : Math.max(0.06, 0.18 - tr.vy * 0.0003);
                 ctx.strokeStyle = "rgba(" + C_WHITE + "," + a.toFixed(3) + ")";
@@ -452,29 +687,90 @@
                 ctx.lineTo(tr.x, tr.y);
                 ctx.stroke();
             }
-            if (winner) {
-                // Der Eine ist kein Punkt mehr: EIN Kleidungsstück wird aus
-                // der Halde gehoben — ruhig, glühend, leicht pendelnd. Die 99
-                // bleiben abstrakte Fasern: gerettet wird ein ganzes Stück.
-                const q = clamp01(1 - winner.y / b.h); // Aufhellen mit der Höhe
-                ctx.strokeStyle = "rgba(" + C_AQUA + "," + (0.22 + q * 0.4).toFixed(3) + ")";
-                ctx.lineWidth = 1.2;
-                ctx.beginPath();
-                ctx.moveTo(winner.px, winner.py);
-                ctx.lineTo(winner.x, winner.y);
-                ctx.stroke();
-                const r = 16 + q * 12;
-                const g = ctx.createRadialGradient(winner.x, winner.y, 0, winner.x, winner.y, r);
-                g.addColorStop(0, "rgba(" + C_AQUA + "," + (0.20 + q * 0.22).toFixed(3) + ")");
-                g.addColorStop(1, "rgba(" + C_AQUA + ",0)");
-                ctx.fillStyle = g;
-                ctx.beginPath();
-                ctx.arc(winner.x, winner.y, r, 0, Math.PI * 2);
-                ctx.fill();
-                drawGarment(ctx, 0, winner.x, winner.y, b.mobile ? 24 : 32,
-                    Math.sin(winner.y * 0.02) * 0.14,
-                    "rgba(" + C_AQUA + "," + (0.55 + q * 0.4).toFixed(3) + ")", 0);
+            for (let i = 0; i < sparks.length; i++) {
+                const s = sparks[i];
+                ctx.fillStyle = "rgba(" + C_AQUA + "," + (0.42 * clamp01(s.life)).toFixed(3) + ")";
+                ctx.fillRect(s.x, s.y, 1.4, 1.4);
             }
+            if (!L.on) return;
+            const p = liftPose();
+            const q = clamp01(1 - p.py / b.h); // Aufhellen mit der Höhe
+            // Phase 1+2 · Spotlight auf dem Fundpunkt: atmet einmal auf,
+            // trägt leise weiter und verklingt weich, sobald das Heben trägt.
+            if (p.ph <= 2 || (p.ph === 3 && p.u < 0.22)) {
+                const breathe = p.ph === 1
+                    ? Math.sin(p.u * Math.PI) * 0.14 + p.u * 0.12
+                    : (p.ph === 2 ? 0.12 + 0.03 * Math.sin(t * 6) : 0.13 * (1 - p.u / 0.22));
+                const sr = size * 1.6;
+                const sg = ctx.createRadialGradient(L.x, L.y0, 0, L.x, L.y0, sr);
+                sg.addColorStop(0, "rgba(" + C_AQUA + "," + breathe.toFixed(3) + ")");
+                sg.addColorStop(1, "rgba(" + C_AQUA + ",0)");
+                ctx.fillStyle = sg;
+                ctx.beginPath();
+                ctx.arc(L.x, L.y0, sr, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            // Phase 2 · Der Faden senkt sich: 1 px, nach oben verblassend.
+            if (p.tipY !== null) {
+                const tg = ctx.createLinearGradient(0, -8, 0, p.tipY);
+                tg.addColorStop(0, "rgba(" + C_AQUA + ",0)");
+                tg.addColorStop(0.55, "rgba(" + C_AQUA + ",0.3)");
+                tg.addColorStop(1, "rgba(" + C_AQUA + ",0.8)");
+                ctx.strokeStyle = tg;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(L.x, -8);
+                ctx.lineTo(L.x, p.tipY);
+                ctx.stroke();
+                // Andocken: ein kurzer, kleiner Lichtpunkt an der Spitze
+                if (p.u > 0.92) {
+                    ctx.fillStyle = "rgba(" + C_WHITE + "," + ((p.u - 0.92) * 6).toFixed(3) + ")";
+                    ctx.fillRect(L.x - 1, p.tipY - 1, 2, 2);
+                }
+            }
+            // Phase 3 · Heben: Faden folgt dem Pendel als weiche Kurve.
+            if (p.thread) {
+                const topA = p.py - size * 0.45;
+                const tg = ctx.createLinearGradient(0, -8, 0, topA);
+                tg.addColorStop(0, "rgba(" + C_AQUA + ",0)");
+                tg.addColorStop(0.5, "rgba(" + C_AQUA + "," + (0.26 + q * 0.2).toFixed(3) + ")");
+                tg.addColorStop(1, "rgba(" + C_AQUA + "," + (0.6 + q * 0.3).toFixed(3) + ")");
+                ctx.strokeStyle = tg;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(L.x, -8);
+                ctx.quadraticCurveTo(L.x, topA * 0.45, p.px, topA);
+                ctx.stroke();
+            }
+            // Phase 4 · Austritt: ein Nachglühen verklingt an der Oberkante.
+            if (p.ph === 4) {
+                const ga = (1 - p.u) * 0.4;
+                const gr = 9 + p.u * 10;
+                const eg = ctx.createRadialGradient(L.x, 3, 0, L.x, 3, gr);
+                eg.addColorStop(0, "rgba(" + C_AQUA + "," + ga.toFixed(3) + ")");
+                eg.addColorStop(1, "rgba(" + C_AQUA + ",0)");
+                ctx.fillStyle = eg;
+                ctx.beginPath();
+                ctx.arc(L.x, 3, gr, 0, Math.PI * 2);
+                ctx.fill();
+                return;
+            }
+            // Das Stück: Ton-Unterlage (noch Halde) blendet in Aqua um,
+            // der Bloom wächst mit der Höhe — gehoben, nie geschossen.
+            const r = 14 + p.glow * 10 + q * 12;
+            const g = ctx.createRadialGradient(p.px, p.py, 0, p.px, p.py, r);
+            g.addColorStop(0, "rgba(" + C_AQUA + "," + (p.glow * (0.16 + q * 0.2) + 0.05).toFixed(3) + ")");
+            g.addColorStop(1, "rgba(" + C_AQUA + ",0)");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(p.px, p.py, r, 0, Math.PI * 2);
+            ctx.fill();
+            if (p.glow < 1) {
+                drawGarment(ctx, 0, p.px, p.py, size, p.rot,
+                    "rgba(" + GARMENT_TONES[0] + "," + ((1 - p.glow) * 0.9).toFixed(3) + ")", 0);
+            }
+            drawGarment(ctx, 0, p.px, p.py, size, p.rot,
+                "rgba(" + C_AQUA + "," + (p.glow * (0.5 + q * 0.4)).toFixed(3) + ")", 0);
         };
     }
 
