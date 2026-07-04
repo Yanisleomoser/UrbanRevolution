@@ -76,6 +76,18 @@
     --duration-fast: 150ms;
     --duration-base: 240ms;
     --duration-slow: 420ms;
+
+    /* Akt I — „Die Linie": die gemeinsame Gossen-x, an der der eine graue
+       Maschinen-Faden durch Preloader → Hero → Manifest → #facts läuft.
+       Jedes Segment richtet sich hieran aus, damit das Auge EINE Linie liest.
+       Ash/grau wie #pivot-line + fil-seam[1] — Teal wird erst nach der Wende
+       ausgegeben (facts Beat 3 / #pivot). Safe-Area-bewusst. */
+    --act1-thread-x: calc(env(safe-area-inset-left, 0px) + clamp(18px, 4vw, 60px));
+    /* Act-I-Inhalt (Hero/Manifest) rückt garantiert rechts an der Linie vorbei —
+       links verankert, eine gemeinsame Spalte, nie auf der Linie. */
+    --act1-pad-l: calc(var(--act1-thread-x) + clamp(20px, 3vw, 46px));
+    --act1-thread: rgba(230, 237, 243, 0.30);
+    --act1-thread-dim: rgba(230, 237, 243, 0.16);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -6397,19 +6409,45 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
     :root { --vh100: calc(var(--svh, 1svh) * 100); }
 }
 
-/* ── Preloader ── */
+/* ── Preloader — die Nadel gebiert die Linie ──────────────────────────────
+   Statt eines zentrierten Logos steht die Nadel-Marke oben an der Gossen-x
+   und zieht EINEN geraden Faden nach unten — genau dort, wo gleich der Hero-
+   Faden steht (pixelgenaue Übergabe an --act1-thread-x). */
 .lp-loader {
     position: fixed;
     inset: 0;
     z-index: 150;
-    display: grid;
-    place-items: center;
     background: var(--bg);
     transition: opacity 0.5s var(--ease-out), visibility 0.5s;
+    --lp-mark-top: clamp(60px, 11vh, 124px);
 }
 .lp-loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
 html:not(.fx) .lp-loader { display: none; }
 .lp-mark { color: var(--text); display: block; width: clamp(96px, 22vw, 140px); height: auto; }
+/* die Marke sitzt oben, auf der Gossen-Linie zentriert (Nadel-Achse = Faden).
+   Zentrierung via margin (nicht translateX), damit der GSAP-scale-Ausklang
+   der Marke die Zentrierung nicht überschreibt. */
+.lp-loader .lp-mark {
+    position: absolute;
+    top: var(--lp-mark-top);
+    left: var(--act1-thread-x);
+    width: clamp(74px, 11vw, 100px);
+    margin-left: calc(-0.5 * clamp(74px, 11vw, 100px));
+}
+/* der gezogene Faden: von der Nadelspitze bis zum unteren Rand */
+.lp-loader-thread {
+    position: absolute;
+    left: var(--act1-thread-x);
+    top: calc(var(--lp-mark-top) + clamp(56px, 8vw, 82px));
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg,
+        var(--act1-thread) 0%,
+        var(--act1-thread) 86%,
+        rgba(230, 237, 243, 0) 100%);
+    transform-origin: top center;
+    will-change: transform;
+}
 .lp-mark-eye, .lp-loop-eye { fill: var(--bg); }
 
 /* ── Navbar im Landing-Stil (Nadel-Marke + Pill-Buttons) ── */
@@ -6498,11 +6536,14 @@ html:not(.fx) .lp-loader { display: none; }
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 1160px;
-    margin: 0 auto;
+    /* Links verankert an der Linie (gemeinsame Akt-I-Spalte), nicht zentriert —
+       so steht der Hero-Text konsequent RECHTS des Fadens, wie das Manifest. */
+    max-width: 1220px;
+    margin: 0;
     /* Unten bewusst viel Raum, damit der Scroll-Hinweis frei steht
        und nicht an den CTAs klebt. */
     padding: 96px clamp(20px, 5vw, 48px) clamp(120px, 18vh, 170px);
+    padding-left: var(--act1-pad-l);
 }
 /* Kurze Viewports (z. B. Laptop 1280×~600 mit Browser-Chrome): Hero-Polster
    straffen + den dekorativen Tipp ausblenden, damit die primäre CTA über der
@@ -6606,8 +6647,12 @@ html:not(.fx) .lp-loader { display: none; }
 .lp-label::before { content: "[ "; color: var(--text-muted); }
 .lp-label::after { content: " ]"; color: var(--text-muted); }
 
-/* ── Manifest ── */
-.lp-manifesto { max-width: 980px; margin: 0 auto; }
+/* ── Manifest — sitzt rechts an der Linie (Gossen-Spine) ──
+   Sektion VOLLE Breite, damit left:--act1-thread-x = Viewport-x ist und der
+   Manifest-Faden exakt unter dem Hero-Faden steht (EINE Linie). Inhalt ist
+   eine links verankerte redaktionelle Spalte rechts der Linie. */
+.lp-manifesto { position: relative; }
+.lp-manifesto-col { max-width: 920px; padding-left: var(--act1-pad-l); }
 .lp-manifesto-text {
     font-family: var(--font-display);
     font-size: clamp(26px, 4.6vw, 52px);
@@ -6616,17 +6661,155 @@ html:not(.fx) .lp-loader { display: none; }
     letter-spacing: -0.01em;
 }
 .lp-manifesto-text .w { display: inline-block; }
-/* Verben-Band — die Stationen der Linie (Maschinen-Stimme über der Förderband-Linie) */
+/* Verben-Band — drei Stationen der Linie, aufgefädelt auf den Gossen-Faden.
+   Die Knoten sitzen AUF der Linie (Gossen-x = Spalten-Anschlag), die Labels
+   in Maschinen-Stimme daneben. Ohne JS bleibt der reine i18n-String stehen. */
 .lp-verbs {
-    margin-top: clamp(28px, 5vw, 48px);
-    padding-top: 18px;
-    border-top: 1px solid var(--border);
+    list-style: none;
+    margin: clamp(34px, 6vw, 60px) 0 0;
+    padding: 0;
     font-family: var(--font-mono);
     font-size: clamp(11px, 1.4vw, 13px);
     font-weight: 500;
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     color: var(--text-muted);
+}
+/* aufgefädelt: die Liste rückt links auf die Gossen-Linie (Knoten AUF dem Faden) */
+.lp-verbs.is-stationed { margin-left: calc(var(--act1-thread-x) - var(--act1-pad-l)); }
+/* No-JS-Rückfall: der ungespaltete String liegt als ruhige Mono-Zeile (im Text-Padding) */
+.lp-verbs:not(.is-stationed) {
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+.lp-verb {
+    display: block;
+    position: relative;
+    padding: 15px 0 15px 28px;   /* Label 28px rechts der Linie */
+    line-height: 1.2;
+}
+.lp-verb + .lp-verb { border-top: 1px solid var(--act1-thread-dim); }
+/* der Stations-Knoten — exakt auf der Gossen-Linie (Listen-Anschlag = Faden),
+   Loop-Dot-Vokabular (bg-Füllung, Muted-Rand). */
+.lp-verb-knot {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--text-muted);
+    box-shadow: 0 0 0 3px var(--bg);
+}
+/* Index dimmer (muted), Label heller (dim) — Hierarchie, aber beide klar über
+   AA-Kontrast (der frühere --act1-thread-dim-Index fiel bei axe durch). */
+.lp-verb-index {
+    color: var(--text-muted);
+    margin-right: 10px;
+}
+.lp-verb-label { color: var(--text-dim); }
+/* die letzte Station (Wegwerfen) ist das Ende der Linie — am hellsten markiert */
+.lp-verb:last-child .lp-verb-label { color: var(--text); }
+
+/* ── Akt I · „Die Linie" — der eine graue Maschinen-Faden ──────────────────
+   Ein durchgehender Faden (ash/grau, bewusst OHNE Teal) läuft an
+   --act1-thread-x senkrecht durch Preloader → Hero → Manifest → in #facts.
+   Er ist TOT GERADE — genau das macht die Wende (#pivot) lesbar. Ruhezustand
+   (kein JS / reduced-motion) = fertig gezeichnet; nur GSAP setzt Startzustände
+   (scaleY 0) und zeichnet ihn ein. Farbe = fil-seam[1] / #pivot-line (die alte,
+   farblose Linie). Teal wird erst nach der Wende ausgegeben. */
+.lp-linie {
+    position: absolute;
+    left: var(--act1-thread-x);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    z-index: 0;
+    pointer-events: none;
+}
+.lp-linie-rail {
+    position: absolute;
+    inset: 0;
+    width: 1px;
+    background: linear-gradient(180deg,
+        rgba(230, 237, 243, 0) 0%,
+        var(--act1-thread) 6%,
+        var(--act1-thread) 94%,
+        rgba(230, 237, 243, 0) 100%);
+    transform-origin: top center;
+    will-change: transform;
+}
+/* Hero: von oben hart einsetzend (Übergabe aus dem Preloader-Faden),
+   unten ausklingend Richtung Manifest. */
+.lp-linie--hero .lp-linie-rail {
+    background: linear-gradient(180deg,
+        var(--act1-thread) 0%,
+        var(--act1-thread) 80%,
+        rgba(230, 237, 243, 0) 100%);
+}
+/* der Ruhe-Knoten: die Spitze des Fadens, kurz unter der Headline */
+.lp-linie-tip {
+    position: absolute;
+    left: 0;
+    top: clamp(320px, 62vh, 640px);
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: var(--act1-thread);
+    box-shadow: 0 0 0 3px var(--bg), 0 0 10px 1px rgba(230, 237, 243, 0.16);
+}
+/* Manifest-Faden klingt oben/unten weich aus (Segment einer Linie) */
+.lp-linie--mani .lp-linie-rail {
+    background: linear-gradient(180deg,
+        rgba(230, 237, 243, 0) 0%,
+        var(--act1-thread) 4%,
+        var(--act1-thread) 100%);
+}
+
+/* Übergabe in #facts — die eine Stelle, an der die Akt-I-Gossen-Linie EINMAL
+   sanft zur Mitte findet (dort liegt ab #facts/#pivot die zentrale Spine der
+   Seite). Bewusst eine ruhige Naht-Kurve wie „Der Faden" — NICHT die dramatische
+   Wende (#pivot bleibt die eigentliche Krümmung). Das SVG spannt exakt von der
+   Gosse (left:--act1-thread-x) bis zur Mitte (right:50%), preserveAspectRatio
+   none → x 0→100 bildet Gosse→Mitte über jede Breite ab (kein px-in-d nötig).
+   Ruhezustand = gezeichnet; fx enthüllt per Clip-Reveal (wie fil-seam). Liegt
+   zwischen den Sektionen, fasst #facts nicht an. */
+.lp-linie-seam {
+    position: relative;
+    height: clamp(112px, 17svh, 210px);
+    margin: clamp(-44px, -4vw, -24px) 0 0;
+    pointer-events: none;
+}
+.lp-linie-seam-svg {
+    position: absolute;
+    left: var(--act1-thread-x);
+    top: 0;
+    height: 100%;
+    /* exakt Gosse → Bildmitte (SVG ist ein ersetztes Element → Breite explizit) */
+    width: calc(50% - var(--act1-thread-x));
+    overflow: visible;
+}
+.lp-linie-seam-path {
+    fill: none;
+    stroke: var(--act1-thread);
+    stroke-width: 1;
+    stroke-linecap: round;
+}
+/* der Terminal-Knoten: mittig, genau über dem zentrierten Protokoll-Kopf */
+.lp-linie-seam-knot {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 9px;
+    height: 9px;
+    margin-left: -4.5px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--text-muted);
+    box-shadow: 0 0 0 4px var(--bg);
 }
 
 /* ── Der Kreislauf ── */
