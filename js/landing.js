@@ -411,11 +411,16 @@
       }
       line.style.opacity = String(1 - bend);
       arc.style.opacity = String(bend);
-      // Die Faser blendet ein, während ihre Spitze von oben in die Bühne
-      // sinkt (bend ≈ 0.18: die gebogene Figur passt erstmals in die viewBox;
-      // davor läge der Kopf im Clip) — sie kommt sichtbar von oben an, aus
-      // Richtung #facts, und beginnt zu ziehen.
-      if (comet) comet.style.opacity = String(clamp01((bend - 0.14) / 0.12));
+      // Die Faser blendet früh ein: seit die Bühnen-SVG overflow:visible
+      // trägt (Ein-/Auslauffäden), rendert die Pfad-Spitze auch OBERHALB der
+      // viewBox — die Faser erscheint in der Naht-Zone über der Bühne (aus
+      // Richtung #facts) und zieht von dort die Linie krumm. Auf ROHEM
+      // Pin-Fortschritt p gekeyt (bend ist kubisch geeast → bend-Schwellen
+      // liegen spät); Start 0.13: darunter springt die Pfad-Spitze noch
+      // diskontinuierlich von unten nach oben (gemessen p 0.08 → 0.12).
+      // Vorher: Fade ab bend 0.14 ≈ p 0.33 — die Faser fehlte im ersten
+      // Drittel des Pins.
+      if (comet) comet.style.opacity = String(clamp01((p - 0.13) / 0.10));
       // Frage raus 0.30–0.42, Antwort rein ab 0.44 — nur ein kurzer Atemzug
       // ohne Text (~4 % des Pins), kein leeres Loch in der Mitte.
       const qOut = clamp01((p - 0.30) / 0.12);
