@@ -9,6 +9,7 @@
     "js/animations.js",
     "js/landing.js",
     "js/facts-mass.js",
+    "js/faden.js",
     "js/design-engine/modalities/**"
   ],
   "reporter": ["text-summary", "text"],

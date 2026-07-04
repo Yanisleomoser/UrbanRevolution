@@ -194,6 +194,7 @@ js/
   ur-create.js          # Wires UR-Create sections (hero/ownership/community/join) to the engine
   ambient-ticker.js     # Live cited textile-waste counter (kg/sec, side effect)
   facts-mass.js         # #facts „Die Masse": 3 Canvas-Partikel-Beats + Live-CO₂-Zähler (side effect)
+  faden.js              # „Der Faden": 6 scroll-gezeichnete Nähte verbinden die Akt-II-Sektionen (side effect)
   community-sphere.js   # WebGL community globe (ES module — three.js + GSAP, lazy)
   design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
@@ -297,6 +298,7 @@ window.Foo = Foo;
 | `ur-create.js`    | (none — side effect)    | classic         |
 | `ambient-ticker.js`| (none — side effect)   | classic         |
 | `facts-mass.js`   | (none — side effect)    | classic         |
+| `faden.js`        | (none — side effect)    | classic         |
 | `community-sphere.js`| (none — side effect) | **ES module** (`type="module"`) |
 
 The **live garment preview** (inside the studio) is a **data-driven 2D
@@ -316,7 +318,7 @@ subscribe to its events). The bottom-of-body order is:
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → focus-trap → animations →
 design-engine/* (dna … flow) → spec-view → app → flair → ur-create → ambient-ticker →
-facts-mass → [importmap] → gsap + ScrollTrigger (CDN) → landing →
+facts-mass → faden → [importmap] → gsap + ScrollTrigger (CDN) → landing →
 community-sphere (module)
 ```
 
