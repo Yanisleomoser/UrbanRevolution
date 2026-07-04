@@ -9,8 +9,13 @@
  */
 import { chromium } from "playwright-core";
 import { mkdirSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { startServer } from "./static-server.mjs";
 import { routeCdnThroughNode } from "./cdn-route.mjs";
+
+const require = createRequire(import.meta.url);
+const DesignDNA = require("../js/design-engine/dna.js");
+const DesignShare = require("../js/design-engine/share.js");
 
 const OUT = "screenshots/verify-sphere";
 mkdirSync(OUT, { recursive: true });
@@ -19,6 +24,18 @@ mkdirSync(OUT, { recursive: true });
 const curated = JSON.parse(readFileSync("js/design-engine/content/gallery-curated.json", "utf8")).items;
 if (curated.length < 3) throw new Error("gallery-curated.json braucht ≥ 3 Items für diesen Check");
 const [DNA_A, DNA_B, DNA_PUB] = curated;
+
+// Bösartige/kaputte, aber base64-gültige DNA (unauth. POST validiert nur den
+// String): (a) unbekannte, aber renderbare Kategorie → Karte rendert (Fallback
+// tshirt), Typ-Label MUSS leer bleiben (kein roher i18n-Key); (b) nicht
+// renderbare Kategorie (Objekt) → MUSS lautlos rausfallen UND darf den
+// kuratierten Fallback NICHT unterdrücken.
+const unicorn = DesignDNA.create();
+DesignDNA.set(unicorn, "category", "unicorn", 1);
+const DNA_UNICORN = DesignShare.encode(unicorn);
+const broken = DesignDNA.create();
+broken.category = { a: 1 };
+const DNA_UNRENDERABLE = DesignShare.encode(broken);
 
 const server = await startServer();
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -138,6 +155,9 @@ const waitCards = (page, min) =>
   // Slot-Kollisions-Regression: bei vollen 36 Slots landete das Live-Stück
   // exakt hinter Karte 0 (36 % 36 = 0) und blieb unsichtbar. Es muss einen
   // eigenen Platz haben — sichtbar vor der Wand, von jeder Karte abgesetzt.
+  // Geometrie garantiert ≥ 1.4 Einheiten (live-Radius 11.4 vs. Wand ≥ 12.8),
+  // daher > 1.2 deterministisch — NICHT > 0.8 (die alte Schwelle konnte bei
+  // 0.6 garantiertem Abstand intermittierend flaken, siehe Review).
   const spacing = await page.evaluate(() => {
     const s = globalThis.__communitySphere;
     const mine = s.cards.find((c) => c.userData.item.name === "Mein Stück");
@@ -145,7 +165,62 @@ const waitCards = (page, min) =>
       .map((c) => c.position.distanceTo(mine.position)));
     return { minDist, radius: mine.position.length() };
   });
-  check(spacing.minDist > 0.8, `the live piece takes its OWN spot (nearest card ${spacing.minDist.toFixed(1)} units away, wall slightly behind it)`);
+  check(spacing.minDist > 1.2 && spacing.radius < 12, `the live piece takes its OWN spot in front of the wall (radius ${spacing.radius.toFixed(1)}, nearest card ${spacing.minDist.toFixed(1)} units away)`);
+
+  // Doppelklick-Dedupe-Regression: dasselbe Stück ein zweites Mal publizieren
+  // (identischer d-String) darf KEINE zweite Karte erzeugen.
+  const dupBefore = await page.evaluate(() =>
+    globalThis.__communitySphere.cards.filter((c) => c.userData.item.name === "Mein Stück").length);
+  await page.evaluate((d) => {
+    globalThis.dispatchEvent(new CustomEvent("urev:published", { detail: { d, name: "Mein Stück" } }));
+    globalThis.dispatchEvent(new CustomEvent("urev:published", { detail: { d, name: "Mein Stück" } }));
+  }, DNA_PUB.d);
+  await page.waitForTimeout(600);
+  const mineCount = await page.evaluate(() =>
+    globalThis.__communitySphere.cards.filter((c) => c.userData.item.name === "Mein Stück").length);
+  check(mineCount === dupBefore, `re-publishing the same DNA adds no duplicate card (${dupBefore} → ${mineCount})`);
+
+  // Inert-Kugel-Regression: Detail schließen und binnen 240 ms erneut öffnen
+  // (Esc→Enter) darf state.open NICHT klemmen lassen — sonst wäre die Kugel
+  // bis zum Reload tot.
+  await page.evaluate(() => {
+    const s = globalThis.__communitySphere;
+    s.openDetail(s.cards.find((c) => c.userData.item.dna));
+  });
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector("#sphere-detail .sphere-close").click());
+  await page.waitForTimeout(80); // < 240 ms: mitten im Ausblenden
+  await page.evaluate(() => {
+    const s = globalThis.__communitySphere;
+    s.openDetail(s.cards.find((c) => c.userData.item.dna));
+  });
+  await page.waitForTimeout(400);
+  const reopen = await page.evaluate(() => ({
+    open: globalThis.__communitySphere.state.open,
+    visible: !document.getElementById("sphere-detail").hidden,
+  }));
+  check(reopen.open && reopen.visible, "close+reopen within 240ms keeps the overlay live (sphere not inert)");
+  await page.evaluate(() => document.querySelector("#sphere-detail .sphere-close").click());
+  await page.waitForTimeout(400);
+  const afterClose = await page.evaluate(() => ({
+    open: globalThis.__communitySphere.state.open,
+    hidden: document.getElementById("sphere-detail").hidden,
+  }));
+  check(!afterClose.open && afterClose.hidden, "…and still closes cleanly afterwards");
+
+  // Fürs Auge: Kamera auf das frisch publizierte Stück richten, damit der
+  // Screenshot die Bühnen-Karte wirklich ZEIGT (nicht irgendeine Wandseite).
+  await page.evaluate(() => {
+    const s = globalThis.__communitySphere;
+    const m = s.cards.find((c) => c.userData.item.name === "Mein Stück");
+    const n = m.position.clone().normalize();
+    s.target.yaw = Math.atan2(-n.x, -n.z);
+    s.target.pitch = Math.asin(n.y);
+    s.rot.yaw = s.target.yaw;
+    s.rot.pitch = s.target.pitch;
+  });
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${OUT}/sphere-desktop.png` });
   // Fürs Auge: Kamera auf das frisch publizierte Stück richten, damit der
   // Screenshot die Bühnen-Karte wirklich ZEIGT (nicht irgendeine Wandseite).
   await page.evaluate(() => {
@@ -201,6 +276,118 @@ const waitCards = (page, min) =>
   });
   check(rm.count === 2 && rm.fullSize, "reduced-motion: DNA cards appear at full size, no bloom needed");
   check(errors.length === 0, `reduced-motion: no page errors (${errors.join(" | ") || "clean"})`);
+  await page.close();
+}
+
+{ // ── Kontext 4: REMIX behält den Query-String · unbekannte/kaputte DNA ────
+  // REMIX-Regression: ein Besucher mit ?utm_/?gclid darf nicht auf einer
+  // #dna-losen alten URL landen (reload() bricht sonst die Navigation ab).
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.route("**/api/gallery", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ ok: true, items: [
+      { d: DNA_A.d, name: DNA_A.name, ts: 1 },
+      { d: DNA_UNICORN, name: "Einhorn", ts: 2 },        // renderbar, Typ unbekannt
+      { d: DNA_UNRENDERABLE, name: "Kaputt", ts: 3 },    // nicht renderbar
+    ] }),
+  }));
+  await page.goto(base + "/?utm_source=test", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.$eval("#community", (n) => n.scrollIntoView());
+  await page.waitForFunction(() => globalThis.__communitySphere, { timeout: 25000 });
+  await waitCards(page, 5);
+  await page.waitForTimeout(1000);
+
+  const cats = await page.evaluate(() => {
+    const dna = globalThis.__communitySphere.cards.filter((c) => c.userData.item.dna);
+    return {
+      names: dna.map((c) => c.userData.item.name),
+      unicornType: (dna.find((c) => c.userData.item.name === "Einhorn") || { userData: { item: {} } }).userData.item.type,
+      hasBroken: dna.some((c) => c.userData.item.name === "Kaputt"),
+    };
+  });
+  check(cats.names.includes("Einhorn"), "an unknown-but-renderable category still renders a card (fallback silhouette)");
+  check(cats.unicornType === "", `…but its unknown type is suppressed, not shown as a raw i18n key (type="${cats.unicornType}")`);
+  check(!cats.hasBroken, "a decodable-but-unrenderable DNA is dropped silently");
+
+  // REMIX-Klick mit Query-String: das Stück MUSS im Studio landen (Flow liest
+  // #dna beim Boot und ruft dann clear() → Hash konsumiert, search bleibt).
+  // Der alte Code (location.href = buildUrl, das search verwarf) machte daraus
+  // eine Cross-Document-Navigation, die reload() abbrach → Reload auf die ALTE
+  // URL ohne #dna, das Studio öffnete nie. Prüfstein ist also das ERGEBNIS
+  // (Studio offen + Refine geladen), nicht der transiente Hash.
+  await page.evaluate(() => {
+    const s = globalThis.__communitySphere;
+    s.openDetail(s.cards.find((c) => c.userData.item.name === "Einhorn"));
+  });
+  await page.waitForTimeout(400);
+  await Promise.all([
+    page.waitForNavigation({ timeout: 12000 }).catch(() => {}),
+    page.click("#sphere-detail-remix"),
+  ]);
+  await page.waitForTimeout(2500);
+  const outcome = await page.evaluate(() => ({
+    search: location.search,
+    studioRevealed: document.getElementById("studio") ? !document.getElementById("studio").hidden : false,
+    refineLoaded: !!document.querySelector("#engine-host .de-summary, #de-body .de-summary-type"),
+  }));
+  check(outcome.search.includes("utm_source=test"), `REMIX preserves the query string (${outcome.search || "—"})`);
+  check(outcome.studioRevealed && outcome.refineLoaded,
+    `…and the remixed piece actually opens in the studio (revealed=${outcome.studioRevealed}, refine=${outcome.refineLoaded})`);
+  check(errors.length === 0, `context 4: no page errors (${errors.join(" | ") || "clean"})`);
+  await page.close();
+}
+
+{ // ── Kontext 4b: laufende Journey → REMIX fragt vor dem Verwerfen nach ─────
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await routeCdnThroughNode(page);
+  await page.route("**/api/gallery", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ ok: true, items: [{ d: DNA_A.d, name: DNA_A.name, ts: 1 }] }),
+  }));
+  await page.goto(base + "/", { waitUntil: "domcontentloaded", timeout: 30000 });
+  // Eine laufende Journey vortäuschen (Antworten vorhanden).
+  await page.evaluate(() => localStorage.setItem("urev_journey_v1", JSON.stringify({ dna: {}, answered: ["intent"] })));
+  await page.$eval("#community", (n) => n.scrollIntoView());
+  await page.waitForFunction(() => globalThis.__communitySphere, { timeout: 25000 });
+  await waitCards(page, 5);
+  await page.waitForTimeout(800);
+  await page.evaluate(() => {
+    const s = globalThis.__communitySphere;
+    s.openDetail(s.cards.find((c) => c.userData.item.dna));
+  });
+  await page.waitForTimeout(400);
+  // Confirm ABLEHNEN: die Seite darf NICHT navigieren, die Journey bleibt.
+  page.once("dialog", (d) => d.dismiss());
+  let navigated = false;
+  page.once("framenavigated", () => { navigated = true; });
+  await page.click("#sphere-detail-remix");
+  await page.waitForTimeout(700);
+  const kept = await page.evaluate(() => localStorage.getItem("urev_journey_v1"));
+  check(!navigated && kept && kept.includes("intent"), "REMIX with an in-progress journey asks first; dismiss keeps the work");
+  await page.close();
+}
+
+{ // ── Kontext 5: NUR kaputte DNA → kuratierter Fallback bleibt erhalten ─────
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await routeCdnThroughNode(page);
+  await page.route("**/api/gallery", (route) => route.fulfill({
+    contentType: "application/json",
+    body: JSON.stringify({ ok: true, items: [{ d: DNA_UNRENDERABLE, name: "Kaputt", ts: 1 }] }),
+  }));
+  await page.goto(base + "/", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.$eval("#community", (n) => n.scrollIntoView());
+  await page.waitForFunction(() => globalThis.__communitySphere, { timeout: 25000 });
+  await waitCards(page, 5);
+  await page.waitForTimeout(1000);
+  const fb = await page.evaluate(() =>
+    globalThis.__communitySphere.cards.filter((c) => c.userData.item.dna).map((c) => c.userData.item.name));
+  // Der kuratierte Fallback (Tide Runner etc.) muss trotz des "echten" (aber
+  // unrenderbaren) API-Eintrags einspringen — sonst zeigt die Kugel gar kein
+  // Community-Stück.
+  check(fb.includes(curated[0].name), `unrenderable API DNA does NOT suppress the curated fallback (${fb.length} curated pieces shown)`);
   await page.close();
 }
 

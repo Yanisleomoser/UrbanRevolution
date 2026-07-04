@@ -38,12 +38,22 @@ const t = (key) => (window.I18N && window.I18N.t ? window.I18N.t(key) : key);
 
 let lastTrigger = null;
 const trapReleases = new WeakMap(); // overlay el → FocusTrap release fn
+const closeTimers = new Map();      // overlay el → pending done()-Timeout
 const overlayOpen = () => Boolean(
     (detailEl && !detailEl.hidden) || (joinEl && !joinEl.hidden),
 );
 
 function openOverlay(el, trigger) {
     if (!el) return;
+    // Falle (vorbestehend, hier im berührten Overlay-Code gefixt): schließt
+    // der User und öffnet DASSELBE Overlay binnen 240 ms erneut (Esc→Enter per
+    // Tastatur), versteckte der noch anstehende done()-Timeout das frisch
+    // geöffnete Overlay wieder — state.open blieb true, die ganze Kugel war
+    // bis zum Reload tot. Den eigenen Timeout beim Öffnen abbrechen. Nur den
+    // EIGENEN (Map je Element), damit Detail→Join den Detail-Timeout laufen
+    // lässt (sonst bliebe das Detail-Overlay sichtbar).
+    const pending = closeTimers.get(el);
+    if (pending) { clearTimeout(pending); closeTimers.delete(el); }
     lastTrigger = trigger || document.activeElement;
     el.hidden = false;
     requestAnimationFrame(() => el.classList.add("is-open"));
@@ -61,15 +71,32 @@ function closeOverlay(el) {
     if (release) { release(); trapReleases.delete(el); }
     const done = () => {
         el.hidden = true;
+        closeTimers.delete(el);
         if (!overlayOpen()) document.documentElement.classList.remove("sphere-lock");
     };
     if (REDUCED) done();
-    else setTimeout(done, 240); // an die 0.22/0.24s-CSS-Transition gekoppelt
+    else {
+        const existing = closeTimers.get(el);
+        if (existing) clearTimeout(existing);
+        closeTimers.set(el, setTimeout(done, 240)); // an die 0.22/0.24s-CSS-Transition gekoppelt
+    }
     if (lastTrigger && document.contains(lastTrigger)) {
         lastTrigger.focus({ preventScroll: true });
     }
     lastTrigger = null;
     onOverlayClosed();
+}
+
+// Ungesicherte Studio-Arbeit? (Journey mit Antworten ODER ein Design im RAM,
+// das noch nicht in der Library liegt.) REMIX lädt die Seite neu und der Flow
+// überschreibt dann die Journey mit der fremden DNA — ohne diesen Guard wäre
+// das stiller Datenverlust direkt neben dem beworbenen Ein-Klick-CTA.
+function hasUnsavedWork() {
+    try {
+        const j = JSON.parse(localStorage.getItem("urev_journey_v1") || "null");
+        if (j && Array.isArray(j.answered) && j.answered.length) return true;
+    } catch (_e) { /* korrupter Blob zählt nicht als Arbeit */ }
+    return !!(window.StateManager && window.StateManager.get && window.StateManager.get("currentDesign"));
 }
 
 // Wird nach dem Boot mit der Szene verdrahtet (Karten ent-dimmen etc.).
@@ -98,7 +125,15 @@ if (section && canvas && detailEl && joinEl) {
     if (detailRemixBtn) {
         detailRemixBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            location.href = detailRemixBtn.href;
+            // NUR den Hash übernehmen, den bestehenden location.search behalten:
+            // buildUrl() wirft die Query weg → mit einem ?utm_/?gclid/?fbclid in
+            // der URL wäre `location.href = …` eine Cross-Document-Navigation,
+            // die das direkt folgende reload() abbricht — die Seite lud die ALTE
+            // URL ohne #dna neu, der CTA tat für jeden Kampagnen-Besucher nichts.
+            const hash = new URL(detailRemixBtn.href).hash;
+            if (!hash) return;
+            if (hasUnsavedWork() && !window.confirm(t("sphere.remix_confirm"))) return;
+            location.hash = hash;   // Same-Document (nur Hash) → Query bleibt
             location.reload();
         });
     }
@@ -132,6 +167,11 @@ if (section && canvas && detailEl && joinEl) {
 // Ownership-Moment im Studio. Kartenmaß = Textur-Budget der Foto-Karten
 // (downscale: lange Seite 560px).
 const CARD_W = 440, CARD_H = 560;
+// /api/gallery-POSTs sind unauthentifiziert und validieren nur den Base64-
+// String, nicht den JSON-Inhalt — die Kategorie kann alles sein. Nur die
+// sechs echten Typen dürfen ins Label (sonst zeigte t("type.<müll>") den
+// rohen i18n-Key auf einer öffentlichen Fläche).
+const KNOWN_TYPES = new Set((window.CONFIG && window.CONFIG.GARMENT_TYPES) || ["tshirt", "hoodie", "shirt", "pants", "jacket", "dress"]);
 
 function decodeDnaItem(raw) {
     if (!raw || typeof raw.d !== "string" || !raw.d) return null;
@@ -139,11 +179,17 @@ function decodeDnaItem(raw) {
     const dna = window.DesignShare.decode(raw.d);
     if (!dna) return null;
     const params = window.DesignPreview.params(dna);
-    return {
+    const item = {
         dna, d: raw.d, params,
         name: raw.name || "—", by: raw.by || "",
-        type: params.category || "", style: "",
+        type: KNOWN_TYPES.has(params.category) ? params.category : "", style: "",
     };
+    // Renderbarkeit JETZT prüfen (nicht erst in addCard): eine DNA, die zwar
+    // dekodiert, aber nicht zeichenbar ist (z. B. category als Objekt),
+    // dürfte sonst als „echter" Eintrag den kuratierten Fallback unterdrücken
+    // UND einen der 36 Plätze fressen, ohne je eine Karte zu zeigen.
+    item._svg = stageCardSvg(item);
+    return item._svg ? item : null;
 }
 
 function stageCardSvg(item) {
@@ -184,6 +230,12 @@ function rasterizeCard(svgString) {
 // eingemischt), nach dem Boot live in die Kugel gesetzt (siehe boot()).
 const publishedQueue = [];
 let addLiveCard = null;
+// EIN Dedupe-Register über alle je platzierten DNA-Karten (d-String). Ein
+// Doppelklick auf Publish (Button wird nie disabled) feuert zwei identische
+// Events; ohne dieses Set schwebten zwei deckungsgleiche Karten (und beim
+// Pre-Boot-Pfad passierten beide den alten, nur gegen die API gebauten Filter).
+const liveKeys = new Set();
+const isNewKey = (d) => (liveKeys.has(d) ? false : (liveKeys.add(d), true));
 globalThis.addEventListener("urev:published", (e) => {
     const d = e && e.detail && e.detail.d;
     if (!d || typeof d !== "string") return;
@@ -205,14 +257,13 @@ async function loadItems() {
             .map((it) => ({ img: it.img, name: it.name || "—", by: it.by || "", type: it.type || "", style: it.style || "" }));
         liveDna = items
             .filter((it) => it && !(typeof it.img === "string" && it.img.startsWith("/")))
-            .map(decodeDnaItem).filter(Boolean);
+            .map(decodeDnaItem).filter(Boolean).filter((it) => isNewKey(it.d));
     } catch (_e) { /* offline/nicht konfiguriert → Fallback unten */ }
 
     // Frisch publizierte Stücke dieser Sitzung sofort dabei — auch wenn
-    // /api/gallery (noch) nicht konfiguriert ist; Dubletten über den d-String.
-    const seen = new Set(liveDna.map((it) => it.d));
+    // /api/gallery (noch) nicht konfiguriert ist; Dubletten über das Register.
     const local = publishedQueue.splice(0)
-        .map(decodeDnaItem).filter(Boolean).filter((it) => !seen.has(it.d));
+        .map(decodeDnaItem).filter(Boolean).filter((it) => isNewKey(it.d));
     liveDna = local.concat(liveDna);
 
     // Kuratierter Fallback, solange es keine echten Veröffentlichungen gibt
@@ -220,7 +271,7 @@ async function loadItems() {
     if (!liveDna.length) {
         try {
             const res = await fetch("/js/design-engine/content/gallery-curated.json");
-            liveDna = (((await res.json()).items) || []).map(decodeDnaItem).filter(Boolean);
+            liveDna = (((await res.json()).items) || []).map(decodeDnaItem).filter(Boolean).filter((it) => isNewKey(it.d));
         } catch (_e) { /* ohne Fallback bleibt es beim Showcase */ }
     }
 
@@ -373,7 +424,7 @@ async function boot() {
                 undefined, () => console.warn("[community-sphere] Bild fehlt:", item.img));
             return;
         }
-        const svg = item.dna ? stageCardSvg(item) : null;
+        const svg = item._svg || (item.dna ? stageCardSvg(item) : null);
         if (!svg) return;
         rasterizeCard(svg).then((c) => {
             item._canvas = c;
@@ -382,19 +433,28 @@ async function boot() {
     };
     items.forEach((item, i) => addCard(item, slots[i % slots.length]));
     // Nach dem Boot publiziert: das Stück tritt dort in die Wand ein, wo der
-    // Blick gerade ruht, leicht VOR den Bestandskarten — ein eigener Slot
+    // Blick gerade ruht, deutlich VOR den Bestandskarten — ein eigener Slot
     // statt Slot-Recycling (bei vollen 36 Slots landete es sonst exakt
-    // hinter Karte 0 und blieb unsichtbar).
+    // hinter Karte 0 und blieb unsichtbar). Radius RADIUS-2.6 = 11.4 liegt
+    // garantiert vor den Wand-Slots (min. 12.8) → immer ≥ 1.4 Einheiten
+    // Abstand, auch bei exakt gleichem Blickwinkel.
     addLiveCard = (raw) => {
         const it = decodeDnaItem(raw);
-        if (!it) return;
+        if (!it || !isNewKey(it.d)) return;
         addCard(it, {
             yaw: rot.yaw + rand(-0.15, 0.15),
             pitch: Math.min(0.45, Math.max(-0.45, rot.pitch + rand(-0.1, 0.1))),
-            radius: RADIUS - 1.8,
-            scale: 1.1,
+            radius: RADIUS - 2.6,
+            scale: 1.15,
         });
     };
+    // Race-Falle (Review): loadItems draint publishedQueue schon (Zeile ~262)
+    // BEVOR addLiveCard hier zugewiesen ist; ein Publish im Boot-Fenster
+    // (kalter three.js-CDN-Import dauert Sekunden) landete danach in der
+    // bereits geleerten Queue und wurde nie gezeichnet. Direkt nach der
+    // Zuweisung nachdrainen — was jetzt noch drin liegt, kam in genau dieser
+    // Lücke rein.
+    publishedQueue.splice(0).forEach(addLiveCard);
 
     function bloom(mesh) {
         const { w, h } = mesh.userData;
