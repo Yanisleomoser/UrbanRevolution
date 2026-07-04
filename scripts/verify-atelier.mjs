@@ -78,8 +78,20 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   const dBefore = await outlineD(page);
   const sleeveSpot = await page.$('.de-hotspot[aria-label^="Ärmel"]');
   check(!!sleeveSpot, "sleeve hotspot present");
+  const preBox = await sleeveSpot.boundingBox();
   await sleeveSpot.click();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500); // camera settles
+  // Kamerafahrt: opening drives the camera onto the part; the tapped anchor
+  // is the transform's FIXED POINT, so the dot must not wander on screen.
+  check(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed")),
+    "opening the picker drives the camera onto the part");
+  const tf0 = await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform);
+  check(/^matrix\(1\.2[0-9]/.test(tf0), `camera scale applied (${tf0.slice(0, 30)}…)`);
+  const postBox = await (await page.$('.de-hotspot[aria-label^="Ärmel"]')).boundingBox();
+  const drift = Math.hypot(
+    (preBox.x + preBox.width / 2) - (postBox.x + postBox.width / 2),
+    (preBox.y + preBox.height / 2) - (postBox.y + postBox.height / 2));
+  check(drift <= 10, `the tapped anchor is the camera's fixed point (drift ${drift.toFixed(1)}px)`);
   const opts = await page.$$(".de-region-picker .de-region-opt");
   check(opts.length === 3, "sleeve micro-picker offers its three cuts");
   // Atelier-Lupe: every option carries a REAL close-up of the detail, and the
@@ -131,7 +143,7 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
         muts.forEach((m) => m.addedNodes.forEach((n) => {
           if (n.classList && n.classList.contains("de-region-glow")) window.__glow = true;
         }));
-      }).observe(document.querySelector(".de-regions"), { childList: true });
+      }).observe(document.querySelector(".de-regions"), { childList: true, subtree: true }); // glow lives in the zoom wrapper
     });
     await page.click('.de-hotspot[aria-label^="Saum"]');
     await page.waitForTimeout(300);
@@ -151,8 +163,22 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   check(marks.filter((x) => x.cur).length === 1 && marks[2].cur && marks[2].pressed === "true",
     "re-opened picker marks the carried value ('aktuell' on the picked drop cut)");
   await page.screenshot({ path: `${OUT}/picker-lupe.png` });
+  // A direct region switch GLIDES: still zoomed, new fixed point. Target the
+  // COLLAR spot — it sits above the sleeve panel; spots underneath an open
+  // panel are intentionally unreachable (the panel has priority, a stage tap
+  // closes it first).
+  const tfSleeve = await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform);
+  await page.click('.de-hotspot[aria-label^="Kragen"]');
+  await page.waitForTimeout(500);
+  const tfHem = await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform);
+  check(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed")) && tfHem !== tfSleeve,
+    "switching regions keeps the camera in — it glides to the new fixed point");
+  await page.screenshot({ path: `${OUT}/camera-on-hem.png` });
   await page.keyboard.press("Escape");
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(450);
+  check(await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform) === "none"
+    && !(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed"))),
+    "Escape pulls the camera back out");
   await page.screenshot({ path: `${OUT}/board-after-picks.png` });
   check(errors.length === 0, `no page errors (${errors.join(" | ") || "clean"})`);
   await page.close();
@@ -207,6 +233,8 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   await page.waitForTimeout(500);
   check(await page.$eval('.de-hotspot[aria-label^="Ärmel"]', (n) => n.getAttribute("aria-expanded")) === "true",
     "an offset tap (13px off the dot) still opens the picker (44px zone)");
+  check(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed")),
+    "the camera move also happens under touch");
   check((await outlineD(page)) === dBefore,
     "opening by TAP does not try anything on (focus-visible gate holds on touch)");
   // ONE tap on an option decides: pin set, picker closed, board updated.
@@ -218,6 +246,8 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   check(await page.$eval('.de-hotspot[aria-label^="Ärmel"]', (n) => n.classList.contains("is-set")),
     "ONE tap decides — the pin is set");
   check(await page.$eval(".de-region-picker", (n) => n.hidden), "…and the picker closed itself");
+  check(!(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed"))),
+    "…and the camera pulled back with it");
   check((await outlineD(page)) !== dBefore, "…and the board carries the pick");
   check(errors.length === 0, `no page errors on the touch path (${errors.join(" | ") || "clean"})`);
   await page.close();
