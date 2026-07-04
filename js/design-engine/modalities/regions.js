@@ -35,18 +35,31 @@
     const regions = (node.regions || []).filter((rg) =>
       !window.DesignCondition || window.DesignCondition.evaluate(rg.when, ctx.dna));
 
-    // Current garment params for the board flat: the live DNA plus the picks
-    // made so far — the SAME pipeline as the main preview, so the board IS the
-    // garment, not an icon of it.
-    const boardParams = () => {
+    // Effective DNA for the board: the live DNA plus the picks made so far
+    // (optionally with one region overridden — ghost try-ons and the picker's
+    // close-up thumbnails both build on this). SAME pipeline as the main
+    // preview, so the board IS the garment, not an icon of it.
+    const effectiveDna = (overrides) => {
       const clone = JSON.parse(JSON.stringify(ctx.dna));
       regions.forEach((rg) => {
-        const c = picks[rg.id] && (rg.choices || []).find((x) => x.id === picks[rg.id]);
+        const cid = overrides && overrides[rg.id] !== undefined ? overrides[rg.id] : picks[rg.id];
+        const c = cid && (rg.choices || []).find((x) => x.id === cid);
         if (c && c.effects && c.effects.set) {
           Object.entries(c.effects.set).forEach(([p, v]) => window.DesignDNA.set(clone, p, v, 1));
         }
       });
-      return window.DesignPreview.params(clone);
+      return clone;
+    };
+    const boardParams = () => window.DesignPreview.params(effectiveDna());
+    // A choice is "current" when EVERY value it would set already equals the
+    // effective DNA — decided earlier (subarchetype side-effects), inferred
+    // upstream, or picked here. The picker marks it so the user sees what the
+    // piece already carries before changing it.
+    const isCurrentChoice = (c) => {
+      const set = c.effects && c.effects.set;
+      if (!set) return false;
+      const dna = effectiveDna();
+      return Object.entries(set).every(([p, v]) => JSON.stringify(window.DesignDNA.get(dna, p)) === JSON.stringify(v));
     };
 
     const canBoard = !!(window.GarmentSVG && window.DesignPreview && window.DesignDNA &&
@@ -85,12 +98,38 @@
     }
 
     // ── The board: flat + hotspots + one roaming micro-picker ───────────────
+    // Stage, hotspots and glow live inside a ZOOM WRAPPER: opening a picker
+    // drives a camera move onto the part (translate+scale keeps the tapped
+    // anchor as the FIXED POINT — and a region switch glides, because two
+    // translate+scale states interpolate; a transform-origin change would
+    // jump). The picker sits OUTSIDE the wrapper: unscaled, readable, and its
+    // anchor point doesn't move by construction.
     const board = V.el("div", { class: "de-regions" });
+    const zoomWrap = V.el("div", { class: "de-regions-zoom" });
     const stage = V.el("div", { class: "de-regions-stage", "aria-hidden": "true" });
-    board.appendChild(stage);
+    zoomWrap.appendChild(stage);
+    board.appendChild(zoomWrap);
+    const ZOOM = 1.28;
+    function zoomTo(a) {
+      const w = zoomWrap.offsetWidth, h = zoomWrap.offsetHeight; // layout size, transform-independent
+      if (!w || !h) return;
+      const ax = (a.x / VB) * w, ay = (a.y / VH) * h;
+      zoomWrap.style.transformOrigin = "0 0";
+      zoomWrap.style.transform = `translate(${((1 - ZOOM) * ax).toFixed(1)}px, ${((1 - ZOOM) * ay).toFixed(1)}px) scale(${ZOOM})`;
+      board.classList.add("is-zoomed");
+    }
+    function zoomOut() {
+      zoomWrap.style.transform = "none";
+      board.classList.remove("is-zoomed");
+    }
 
+    // The picker is a BOARD child (not inside the zoom wrapper): it stays
+    // unscaled and readable while the camera moves, and because the active
+    // anchor is the zoom's fixed point, its anchored position keeps holding.
+    // Tab order: hotspots → options → confirm (Escape returns to the spot).
     const picker = V.el("div", { class: "de-region-picker", role: "group" });
     picker.hidden = true;
+    board.appendChild(picker);
     let openRegion = null;
 
     const chosenLabel = (rg) => {
@@ -118,7 +157,7 @@
         else openPicker(rg);
       });
       spots.set(rg.id, { rg, spot, tag, val, label });
-      board.appendChild(spot);
+      zoomWrap.appendChild(spot);
     });
 
     const anchorOf = (anchors, rg) => anchors[rg.anchor || rg.id] || { x: VB / 2, y: VH * 0.4 };
@@ -199,15 +238,7 @@
     // only — no DNA write, no commitment; leaving reverts to the picked state.
     function paintPicked() { paintParams(boardParams()); }
     function paintGhost(rg, choice) {
-      const clone = JSON.parse(JSON.stringify(ctx.dna));
-      regions.forEach((r) => {
-        const cid = r === rg ? choice.id : picks[r.id];
-        const c = cid && (r.choices || []).find((x) => x.id === cid);
-        if (c && c.effects && c.effects.set) {
-          Object.entries(c.effects.set).forEach(([p, v]) => window.DesignDNA.set(clone, p, v, 1));
-        }
-      });
-      paintParams(window.DesignPreview.params(clone));
+      paintParams(window.DesignPreview.params(effectiveDna({ [rg.id]: choice.id })));
     }
     // §6 preview reaction: a brief glow blooms on the part a pick just changed.
     function flashRegion(rg) {
@@ -216,7 +247,7 @@
       const glow = V.el("span", { class: "de-region-glow", "aria-hidden": "true" });
       glow.style.left = (a.x / VB * 100).toFixed(1) + "%";
       glow.style.top = (a.y / VH * 100).toFixed(1) + "%";
-      board.appendChild(glow);
+      zoomWrap.appendChild(glow);
       setTimeout(() => glow.remove(), 700);
     }
     function repaint() { paintPicked(); }
@@ -226,6 +257,7 @@
       const entry = spots.get(openRegion.id);
       picker.hidden = true;
       openRegion = null;
+      zoomOut(); // the camera pulls back with the panel
       if (entry) {
         entry.spot.setAttribute("aria-expanded", "false");
         if (refocus) entry.spot.focus();
@@ -251,7 +283,31 @@
       (rg.choices || []).forEach((c) => {
         const b = V.el("button", { type: "button", class: "de-region-opt" });
         b.setAttribute("aria-pressed", picks[rg.id] === c.id ? "true" : "false");
-        b.textContent = (c.label && c.label[lang]) || c.id;
+        const optLabel = (c.label && c.label[lang]) || c.id;
+        // Atelier-Lupe: every option is a REAL close-up of this detail with
+        // the option applied (cropped viewBox around the region's anchor) —
+        // touch users see what they choose without hover.
+        if (window.GarmentSVG.detailCrop) {
+          const tp = window.DesignPreview.params(effectiveDna({ [rg.id]: c.id }));
+          const thumb = V.el("span", { class: "de-region-opt-thumb", "aria-hidden": "true" });
+          // Optional per-region crop window from the JSON (a sleeve cut needs
+          // shoulder + neck context to read raglan vs drop; a hem doesn't).
+          const cw = rg.crop && rg.crop.w, ch = rg.crop && rg.crop.h;
+          thumb.innerHTML = window.GarmentSVG.detailCrop(tp.category, tp, rg.anchor || rg.id, cw, ch);
+          b.appendChild(thumb);
+        }
+        const lbl = V.el("span", { class: "de-region-opt-label" });
+        lbl.textContent = optLabel;
+        b.appendChild(lbl);
+        // Mark what the piece ALREADY carries (decided upstream or picked):
+        // a calm mono chip, announced to AT via the accessible name.
+        if (isCurrentChoice(c)) {
+          b.classList.add("is-current");
+          const cur = V.el("span", { class: "de-region-opt-cur", "aria-hidden": "true" });
+          cur.textContent = t("engine.region_current");
+          b.appendChild(cur);
+          b.setAttribute("aria-label", optLabel + " — " + t("engine.region_current"));
+        }
         // Try-on before choosing: pointer-over or keyboard focus previews the
         // option on the board (ghost — nothing committed), leaving reverts.
         // :focus-visible keeps the programmatic focus after a TAP from
@@ -289,8 +345,10 @@
       picker.classList.remove("is-open");
       void picker.offsetWidth;
       picker.classList.add("is-open");
-      // DOM position right after the hotspot: Tab order = hotspot → options.
-      entry.spot.after(picker);
+      // Camera onto the part: the tapped anchor stays the fixed point; a
+      // direct switch to another region GLIDES (two translate+scale states
+      // interpolate — a transform-origin change would jump).
+      zoomTo(a);
       const first = picker.querySelector('[aria-pressed="true"]') || picker.querySelector(".de-region-opt");
       if (first) first.focus();
     }

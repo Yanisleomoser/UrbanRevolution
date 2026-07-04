@@ -271,16 +271,6 @@
     }
   }
 
-  function initColorPalette() {
-    document.querySelectorAll("button.color-swatch").forEach((swatch) => {
-      swatch.addEventListener("click", () => applyColor(swatch.dataset.color));
-    });
-    const customInput = document.getElementById("custom-color");
-    if (customInput) {
-      customInput.addEventListener("input", () => applyColor(customInput.value));
-    }
-  }
-
   // Defence-in-depth: clamp a <select> value to a known-good option, falling
   // back to a safe default. The allow-lists are sourced from CONFIG (the single
   // source of truth) — never hand-typed, so they can't drift from the real
@@ -296,82 +286,6 @@
     return lengths.includes(value) ? value : "regular";
   }
 
-  function normalizePattern(value) {
-    const patterns = (window.CONFIG && window.CONFIG.PATTERNS) || ["solid"];
-    return patterns.includes(value) ? value : "solid";
-  }
-
-  function initPatternSelector() {
-    const select = document.getElementById("pattern-select");
-    if (!select) return;
-    select.addEventListener("change", () => {
-      const design = S.get("currentDesign");
-      if (!design) return;
-      // Pattern lives on the design object (no dedicated state key); the spec
-      // sheet and design card read it, so refresh both.
-      design.pattern = normalizePattern(select.value);
-      renderDesignResult(design);
-      updateProductionPreview();
-    });
-  }
-
-  function initMaterialSelector() {
-    const select = document.getElementById("material-select");
-    if (!select) return;
-    select.addEventListener("change", () => {
-      const material = normalizeMaterial(select.value);
-      if (!S.set("currentMaterial", material)) return;
-      const design = S.get("currentDesign");
-      if (design) {
-        design.material = material;
-        updateProductionPreview();
-      }
-    });
-  }
-
-  function initFitSlider() {
-    const slider = document.getElementById("fit-slider");
-    if (!slider) return;
-    slider.addEventListener("input", () => {
-      const fit = slider.value / 100;
-      if (!S.set("currentFit", fit)) return;
-      const design = S.get("currentDesign");
-      if (design) {
-        design.fit = fit;
-        updateProductionPreview();
-      }
-    });
-  }
-
-  function initLengthSelector() {
-    const select = document.getElementById("length-select");
-    if (!select) return;
-    select.addEventListener("change", () => {
-      const length = normalizeLength(select.value);
-      if (!S.set("currentLength", length)) return;
-      const design = S.get("currentDesign");
-      if (design) {
-        design.length = length;
-        updateProductionPreview();
-      }
-    });
-  }
-
-  function initPrintInput() {
-    const input = document.getElementById("print-input");
-    if (!input) return;
-    input.addEventListener("input", () => {
-      // validatePrint sanitises (strips markup, caps length) and never throws,
-      // so S.set always succeeds; the 3D decal patches in via subscription.
-      S.set("currentPrint", input.value);
-      const design = S.get("currentDesign");
-      if (design) {
-        design.print = S.get("currentPrint");
-        updateProductionPreview();
-      }
-    });
-  }
-
   function initGenerateButton() {
     const btn = document.getElementById("generate-btn");
     btn.addEventListener("click", async () => {
@@ -382,20 +296,18 @@
         return;
       }
 
-      const output = document.getElementById("ai-output");
       btn.classList.add("loading");
       btn.disabled = true;
       btn.querySelector(".btn-text").textContent = t("design.generate_loading");
-      if (output) output.setAttribute("aria-busy", "true");
 
       try {
         const design = await AI.generateDesign(prompt, S.get("currentType"));
         S.set("currentDesign", design);
         // Sync design.type to the live selector (in case it changed while the
-        // request was in flight) before rendering, so the card reflects the
-        // user's current choice instead of the stale click-time type.
+        // request was in flight) so state reflects the user's current choice
+        // instead of the stale click-time type; the spec sheet + Ownership
+        // moment then update from state.
         applyDesignToState(design);
-        renderDesignResult(design);
         updateProductionPreview();
         if (window.Preferences) {
           // Track preferences after the design has been applied to state so
@@ -415,16 +327,15 @@
         btn.classList.remove("loading");
         btn.disabled = false;
         btn.querySelector(".btn-text").textContent = t("design.generate_btn");
-        if (output) output.setAttribute("aria-busy", "false");
       }
     });
   }
 
-  // Mounts the adaptive Design Engine journey (the primary entry) and hands
-  // its finished design into the existing render pipeline. The journey already
-  // mirrors the user's concrete choices (type/colour/material/fit/length) into
-  // StateManager live, so we make those authoritative over anything the AI
-  // re-interpreted, then reuse renderDesignResult + updateProductionPreview.
+  // Takes the adaptive Design Engine journey's finished design and hands it
+  // into the shared pipeline. The journey already mirrors the user's concrete
+  // choices (type/colour/material/fit/length) into StateManager live, so we
+  // make those authoritative over anything the AI re-interpreted, then rebuild
+  // the spec sheet from state.
   function applyJourneyDesign(design) {
     if (!design) return;
     design.type = S.get("currentType") || design.type;
@@ -434,7 +345,6 @@
     const length = S.get("currentLength"); if (length) design.length = length;
     design.print = S.get("currentPrint") || "";
     S.set("currentDesign", design);
-    renderDesignResult(design);
     updateProductionPreview();
     if (window.Preferences) {
       window.Preferences.track("type", design.type);
@@ -443,8 +353,6 @@
       renderSuggestions();
     }
     showToast(t("toast.generated", { name: design.name }), "success");
-    const out = document.getElementById("ai-output");
-    if (out && out.scrollIntoView) out.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function initDesignJourney() {
@@ -494,11 +402,6 @@
     });
   }
 
-  // Localized fabric-pattern label (e.g. "Querstreifen" / "Horizontal stripes").
-  function patternLabelText(key) {
-    return window.I18N ? window.I18N.pattern(key) : key;
-  }
-
   function typeIconSvg(type, size = 56) {
     const d = TYPE_ICON_PATHS[type] || TYPE_ICON_PATHS.tshirt;
     return `<svg viewBox="0 0 64 64" width="${size}" height="${size}" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>`;
@@ -520,107 +423,6 @@
       /[&<>"']/g,
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
     );
-  }
-
-  function renderDesignResult(design) {
-    const output = document.getElementById("ai-output");
-    // The standalone "atelier" result card was retired — the morph engine is
-    // the design tool and the photoreal moment shows the design. If the card
-    // isn't in the DOM, there's nothing to render here.
-    if (!output) return;
-
-    const type = design.type || S.get("currentType");
-    const color = design.color || S.get("currentColor");
-    const material = design.material || S.get("currentMaterial");
-    const fit = design.fit !== undefined ? design.fit : S.get("currentFit");
-
-    const typeLabelText = typeLabel(type);
-    const materialLabel = typeMaterialLabel(material);
-    const fitText = fitLabel(fit);
-    const patternKey = design.pattern && design.pattern !== "solid" ? design.pattern : null;
-    const patternLabel = patternKey ? patternLabelText(patternKey) : null;
-
-    const tagsHtml = (design.tags && design.tags.length
-      ? design.tags
-      : ["custom"]
-    )
-      .slice(0, 6)
-      .map((t) => `<span class="design-tag">${escapeHtml(t)}</span>`)
-      .join("");
-
-    const notes = (design.constructionNotes || []).slice(0, 3);
-    const notesHtml = notes.length
-      ? `<details class="design-card-notes"><summary>${escapeHtml(t("card.tailor_notes", { n: notes.length }))}</summary><ul>${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul></details>`
-      : "";
-
-    const promptHtml = design.originalPrompt
-      ? `<blockquote class="design-card-prompt"><span class="design-card-prompt-label">${escapeHtml(t("card.your_wish"))}</span><p>“${escapeHtml(design.originalPrompt)}”</p></blockquote>`
-      : "";
-
-    const inLibrary = window.Library && window.Library.get(design.designId);
-
-    output.innerHTML = `
-      <article class="design-card">
-        <header class="design-card-head">
-          <div class="design-card-icon" style="color:${escapeHtml(color)}">${typeIconSvg(type, 56)}</div>
-          <div class="design-card-titles">
-            <span class="design-card-eyebrow">${escapeHtml(t("card.eyebrow", { id: design.designId || "––––––" }))}</span>
-            <h3>${escapeHtml(design.name || "Untitled")}</h3>
-            <p class="design-card-subtitle">${escapeHtml(typeLabelText)} · ${escapeHtml(materialLabel)} · ${escapeHtml(fitText)} ${escapeHtml(t("card.fit_suffix"))}</p>
-          </div>
-          <button id="design-save-btn" class="design-save-btn ${inLibrary ? "is-saved" : ""}" type="button" aria-label="${escapeHtml(t("card.save_aria"))}">
-            <span class="design-save-icon" aria-hidden="true">${inLibrary ? "✓" : "+"}</span>
-            <span class="design-save-text">${inLibrary ? escapeHtml(t("card.saved")) : escapeHtml(t("card.save"))}</span>
-          </button>
-        </header>
-
-        ${promptHtml}
-
-        <div class="design-card-preview" id="design-preview-slot"></div>
-
-        <div class="design-card-specs">
-          <div class="spec-pill spec-pill-color">
-            <span class="spec-swatch" style="background:${escapeHtml(color)}"></span>
-            <span>${escapeHtml(color)}</span>
-          </div>
-          <div class="spec-pill">${escapeHtml(materialLabel)}</div>
-          <div class="spec-pill">${escapeHtml(fitText)} ${escapeHtml(t("card.fit_suffix"))}</div>
-          ${patternLabel ? `<div class="spec-pill">${escapeHtml(patternLabel)}</div>` : ""}
-        </div>
-
-        ${tagsHtml ? `<div class="design-tags">${tagsHtml}</div>` : ""}
-
-        ${notesHtml}
-      </article>
-    `;
-
-    const saveBtn = document.getElementById("design-save-btn");
-    if (saveBtn) {
-      saveBtn.addEventListener("click", () => saveCurrentDesign());
-    }
-
-    renderPreviewSlot(design);
-
-    document.getElementById("customize-controls").style.display = "block";
-
-    syncColorPalette(color);
-
-    const matSelect = document.getElementById("material-select");
-    if (matSelect && design.material) matSelect.value = design.material;
-
-    const patSelect = document.getElementById("pattern-select");
-    if (patSelect) patSelect.value = design.pattern || "solid";
-
-    const fitSlider = document.getElementById("fit-slider");
-    if (fitSlider && design.fit !== undefined) {
-      fitSlider.value = Math.round(design.fit * 100);
-    }
-
-    const lengthSelect = document.getElementById("length-select");
-    if (lengthSelect) lengthSelect.value = design.length || "regular";
-
-    const printInput = document.getElementById("print-input");
-    if (printInput) printInput.value = design.print || "";
   }
 
   function applyDesignToState(design) {
@@ -988,33 +790,11 @@
     S.set("measurements", measurements);
     updatePresetActive(measurements);
     updateSizeReadout(measurements);
-    updateModelInfo();
     updateProductionPreview();
   }
 
-  function updateModelInfo() {
-    const measurements = S.get("measurements");
-    if (!measurements) return;
-    const type = S.get("currentType");
-    const lengthKey = S.get("currentLength") || "regular";
-    const lengthFactors = (window.CONFIG && CONFIG.PRODUCTION_ESTIMATES.lengthFabricFactor) || {};
-    const lengthFactor = lengthFactors[lengthKey] || 1;
-    const fabric = Measurements.estimateFabric(measurements, type, lengthFactor);
-    const seams = Measurements.estimateSeams(measurements, type);
-    const size = Measurements.calculateSize(measurements);
-
-    const fabricEl = document.getElementById("info-fabric");
-    const seamsEl = document.getElementById("info-seams");
-    const sizeEl = document.getElementById("info-size");
-
-    if (fabricEl) fabricEl.textContent = `~ ${fabric} m²`;
-    if (seamsEl) seamsEl.textContent = `${seams} cm`;
-    if (sizeEl) sizeEl.textContent = size;
-  }
-
-  // The design-info panel inside the merged Ownership/try-on moment. Unlike
-  // updateModelInfo (production figures, needs measurements), this shows the
-  // design's identity (type/material/colour/fit/length) the moment a design
+  // The design-info panel inside the merged Ownership/try-on moment. It shows
+  // the design's identity (type/material/colour/fit/length) the moment a design
   // exists; size fills in once measurements are present, "—" until then.
   function updateOwnInfo() {
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -1035,6 +815,87 @@
         ? `<span class="oi-swatch" style="background:${escapeHtml(color)}"></span>${escapeHtml(colorAdjective(color))}`
         : "—";
     }
+    renderOwnStageFlat();
+  }
+
+  // "Dein Stück" statt Beispielfoto (Ehrlichkeits-Regel: nie fremde Ware neben
+  // dem eigenen Entwurf): der Platzhalter der Anprobe-Bühne zeigt das ECHTE
+  // Teil — die parametrische Flat aus der Design-DNA, inkl. Made-for-one-
+  // Proportionen aus den Massen, live nachgeführt bei jeder Facade-Änderung
+  // (updateOwnInfo hängt bereits an allen relevanten State-Keys). Designs vom
+  // Freitext-Pfad tragen keine DNA — dann baut der State die Params direkt.
+  // Ein VTO-Ergebnis ersetzt die Bühne wie bisher (das eigene Foto gewinnt).
+  function renderOwnStageFlat() {
+    const example = document.getElementById("vto-example");
+    if (!example || !window.GarmentSVG || !window.DesignPreview) return;
+    const design = S.get("currentDesign");
+    let host = example.querySelector(".own-flat");
+    if (!design) {
+      if (host) { host.remove(); example.classList.remove("has-flat"); example.classList.add("has-image"); }
+      return;
+    }
+    const type = S.get("currentType") || design.type || "tshirt";
+    const color = S.get("currentColor");
+    let p;
+    if (design.dna && window.DesignDNA) {
+      const clone = JSON.parse(JSON.stringify(design.dna));
+      const setD = (path, v) => window.DesignDNA.set(clone, path, v, 1);
+      // Die Facade-Overrides (Weiter anpassen) gewinnen über die Journey-DNA —
+      // dieselbe Vorrang-Regel wie applyJourneyDesign in Gegenrichtung.
+      if (color) {
+        const stops = window.DesignDNA.get(clone, "color.stops");
+        const primary = Array.isArray(stops) && stops.length ? String(stops[0]).toLowerCase() : null;
+        // Nur eine AKTIVE Umfärbung (Facade-Wahl ≠ DNA-Primärfarbe) greift ein
+        // — und dann konsistent als Vollton, denn Karte und Prompt sprechen
+        // von EINER Farbe (Review-Fund: halber Alt-Verlauf log). Unverändert
+        // gespiegelte Farbe → die Journey-Farbwelt (inkl. Verlauf) bleibt.
+        if (!primary || primary !== String(color).toLowerCase()) {
+          setD("color.stops", [color]);
+          setD("color.scheme", "mono");
+        }
+      }
+      const material = S.get("currentMaterial"); if (material) setD("fabric.material", material);
+      const fit = S.get("currentFit"); if (fit !== null && fit !== undefined) setD("silhouette.fit", fit);
+      const length = S.get("currentLength"); if (length) setD("length", length);
+      // Auch der TYP folgt der Vorrang-Regel: wechselt der User die Kategorie
+      // im Studio, zeigt die Bühne nie weiter die alte DNA-Kategorie, während
+      // Karte + Spec schon die neue nennen (Review-Fund).
+      if (type && window.DesignDNA.get(clone, "category") !== type) setD("category", type);
+      p = window.DesignPreview.params(clone);
+    } else {
+      // CONFIG.PATTERNS und die GarmentSVG-Musterwelt sind zwei Vokabulare —
+      // ungemappt fiele z. B. "stripes_h" auf den Abstrakt-Default (Review-
+      // Fund: Streifen-Design bekäme Kringel). Flächen-Looks ohne Motiv
+      // (heather/gradient) tragen bewusst kein Muster.
+      const PATTERN_TO_FLAT = { stripes_h: "stripe", stripes_v: "stripe", dots: "graphic", plaid: "check", camo: "camo", floral: "abstract" };
+      p = {
+        category: type,
+        fit: S.get("currentFit"),
+        length: S.get("currentLength"),
+        material: S.get("currentMaterial"),
+        stops: color ? [color] : undefined,
+        scheme: "mono",
+        pattern: PATTERN_TO_FLAT[design.pattern] || "none",
+        energy: 0.55,
+      };
+    }
+    if (window.DesignFlow && window.DesignFlow.bodyFactors) {
+      const body = window.DesignFlow.bodyFactors(S.get("measurements"));
+      if (body) p.body = body;
+    }
+    if (!host) {
+      host = document.createElement("div");
+      host.className = "own-flat";
+      host.setAttribute("aria-hidden", "true");
+      example.prepend(host);
+    }
+    example.classList.add("has-flat");
+    example.classList.remove("has-image");
+    host.innerHTML = window.GarmentSVG.build(p.category || type, p);
+    // Das Badge sagt jetzt, WAS auf der Bühne liegt — dauerhaft sprachfest
+    // über den data-i18n-Key (Language-Switch re-hydriert das Attribut).
+    const tag = example.querySelector(".vto-example-tag");
+    if (tag) { tag.setAttribute("data-i18n", "own.stage_tag"); tag.textContent = t("own.stage_tag"); }
   }
 
   // "Wer trägt es?" — the chooser in the Ownership/try-on moment. Either the
@@ -1634,269 +1495,11 @@
     }
   }
 
-  // ───── Design preview (AI studio render — the cheap "do I like it?" gate) ─────
-  //
-  // A ghost-mannequin product render of the *garment* (no user photo) shown
-  // inline in the design card, so the user can judge the concept before
-  // spending a photo-based try-on run on themselves. Same client-side
-  // localStorage rate-limit pattern as the VTO, with its own (higher) cap
-  // since a render is text-only and cheaper to a brand than a wasted try-on.
-  const PREVIEW_LIMIT = 30;
-  const PREVIEW_STORAGE_KEY = "urev_preview_count";
-  // True while a render request is in flight. Lets a card rebuild (e.g. the
-  // pattern selector calls renderDesignResult mid-render) keep the loading
-  // state instead of snapping back to the button, and blocks a double-fire.
-  let previewGenerating = false;
-  // Which design the in-flight request belongs to — a global boolean isn't
-  // enough once the user can generate a new design while a previous one's
-  // preview is still loading: without this, the new design's card would
-  // wrongly show a spinner (previewGenerating is still true) and, worse, the
-  // old request's result would land in what is now the new design's slot.
-  let previewGeneratingDesignId = null;
-
-  function getPreviewCount() {
-    try {
-      const n = parseInt(localStorage.getItem(PREVIEW_STORAGE_KEY) || "0", 10);
-      return Number.isFinite(n) && n >= 0 ? n : 0;
-    } catch {
-      return 0;
-    }
-  }
-
-  function incrementPreviewCount() {
-    try {
-      localStorage.setItem(PREVIEW_STORAGE_KEY, String(getPreviewCount() + 1));
-    } catch {
-      // localStorage blocked — silently skip; the server stays the real cap.
-    }
-  }
-
-  function previewRemaining() {
-    return Math.max(0, PREVIEW_LIMIT - getPreviewCount());
-  }
-
-  function previewHintText() {
-    const remaining = previewRemaining();
-    if (remaining === 0) return t("dpreview.hint_limit", { limit: PREVIEW_LIMIT });
-    return getPreviewCount() === 0
-      ? t("dpreview.hint_first", { limit: PREVIEW_LIMIT })
-      : t("dpreview.hint_remaining", { remaining, limit: PREVIEW_LIMIT });
-  }
-
-  // Markup for the "no render yet" state (button + hint). Disabled at the cap.
-  function previewSlotPrompt(label) {
-    const atLimit = previewRemaining() === 0;
-    return `
-      <button id="design-preview-btn" class="design-preview-btn" type="button"${atLimit ? " disabled" : ""}>
-        <span class="design-preview-btn-icon" aria-hidden="true">✦</span>
-        <span>${escapeHtml(label || t("dpreview.btn"))}</span>
-      </button>
-      <p class="design-preview-hint">${escapeHtml(previewHintText())}</p>`;
-  }
-
-  // Render the preview slot for the given design. opts: { loading, error }.
-  function renderPreviewSlot(design, opts) {
-    const slot = document.getElementById("design-preview-slot");
-    if (!slot) return;
-    opts = opts || {};
-
-    // Keep the spinner up if a render is in flight but the card got rebuilt
-    // (the pattern selector re-renders the whole card), unless we already
-    // have a result or an explicit error to show.
-    if (opts.loading ||
-        (previewGenerating && design && previewGeneratingDesignId === design.designId &&
-          !opts.error && !opts.fallback && !design.previewImageUrl)) {
-      slot.innerHTML =
-        `<div class="design-preview-loading">` +
-        `<span class="design-preview-spinner" aria-hidden="true"></span>` +
-        `<p role="status" aria-live="polite">${escapeHtml(t("dpreview.loading"))}</p>` +
-        `</div>`;
-      return;
-    }
-
-    // Free $0 fallback: the paid photoreal render was unavailable, so show a
-    // client-side studio illustration instead of an error — the preview never
-    // dead-ends. A retry button still lets them re-attempt the photoreal one.
-    if (opts.fallback && window.PreviewFallback) {
-      const fallbackData = {
-        type: S.get("currentType"),
-        color: S.get("currentColor"),
-        material: S.get("currentMaterial"),
-        pattern: design && design.pattern,
-        name: design && design.name,
-      };
-
-      slot.textContent = "";
-      const figure = document.createElement("figure");
-      figure.className = "design-preview-figure design-preview-figure--fallback";
-
-      let hasPreviewGraphic = false;
-      if (typeof window.PreviewFallback.svgNode === "function") {
-        const svgNode = window.PreviewFallback.svgNode(fallbackData);
-        if (svgNode) {
-          figure.appendChild(svgNode);
-          hasPreviewGraphic = true;
-        }
-      }
-      if (!hasPreviewGraphic) {
-        const noPreview = document.createElement("p");
-        noPreview.className = "design-preview-error";
-        noPreview.setAttribute("role", "status");
-        noPreview.textContent = t("dpreview.retry");
-        figure.appendChild(noPreview);
-      }
-
-      const figcaption = document.createElement("figcaption");
-      figcaption.className = "design-preview-cap";
-      const badge = document.createElement("span");
-      badge.className = "design-preview-badge design-preview-badge--free";
-      badge.textContent = t("dpreview.fallback_badge");
-      figcaption.appendChild(badge);
-      figcaption.appendChild(document.createTextNode(t("dpreview.fallback_caption")));
-      figure.appendChild(figcaption);
-
-      slot.appendChild(figure);
-      slot.insertAdjacentHTML("beforeend", previewSlotPrompt(t("dpreview.fallback_retry")));
-      document.getElementById("design-preview-btn")
-        ?.addEventListener("click", generateDesignPreview);
-      return;
-    }
-
-    if (opts.error) {
-      slot.innerHTML =
-        `<p class="design-preview-error" role="status">${escapeHtml(opts.error)}</p>` +
-        previewSlotPrompt(t("dpreview.retry"));
-      document.getElementById("design-preview-btn")
-        ?.addEventListener("click", generateDesignPreview);
-      return;
-    }
-
-    if (design && design.previewImageUrl) {
-      slot.innerHTML = `
-        <figure class="design-preview-figure">
-          <img class="design-preview-img" src="${escapeHtml(design.previewImageUrl)}"
-               alt="${escapeHtml(t("dpreview.img_alt"))}" loading="lazy">
-          <figcaption class="design-preview-cap">
-            <span class="design-preview-badge">${escapeHtml(t("dpreview.badge"))}</span>
-            ${escapeHtml(t("dpreview.caption"))}
-          </figcaption>
-        </figure>`;
-      return;
-    }
-
-    slot.innerHTML = previewSlotPrompt();
-    document.getElementById("design-preview-btn")
-      ?.addEventListener("click", generateDesignPreview);
-  }
-
-  async function generateDesignPreview() {
-    const design = S.get("currentDesign");
-    if (!design) return;
-    if (previewGenerating) return; // already rendering — ignore re-clicks
-    if (getPreviewCount() >= PREVIEW_LIMIT) return; // belt-and-suspenders
-
-    previewGenerating = true;
-    previewGeneratingDesignId = design.designId;
-
-    try {
-      // Inside the try so the finally below always clears previewGenerating —
-      // if the loading render or prompt build ever throws, the flag must not
-      // stay stuck true, which would brick the preview button until reload.
-      renderPreviewSlot(design, { loading: true });
-
-      // The garment description is identical to what the VTO sends — it's the
-      // garment, just without the "keep this person" instruction.
-      const designPrompt = buildVtoPrompt(design);
-
-      const res = await fetch("/api/preview-design", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ designPrompt }),
-      });
-      const body = await res.json().catch(() => ({}));
-
-      // The user may have generated a different design while this request
-      // was in flight — don't paint a stale result into what is now a
-      // different design's slot (#design-preview-slot is looked up by id,
-      // not tied to a specific design).
-      if (S.get("currentDesign")?.designId !== design.designId) return;
-
-      if (!res.ok) {
-        renderPreviewSlot(design, window.PreviewFallback
-          ? { fallback: true }
-          : { error: codedErrorMessage(body) || t("dpreview.error_prefix", { msg: body.error || res.statusText }) });
-        return;
-      }
-      if (body.pending) {
-        renderPreviewSlot(design, window.PreviewFallback
-          ? { fallback: true }
-          : { error: t("dpreview.error_pending") });
-        return;
-      }
-      if (body.imageUrl && CONFIG.isSafeImageUrl(body.imageUrl)) {
-        // Cache on the live design object so re-renders are free, and persist
-        // to the library if this design is saved (the tile then shows it).
-        // Validated as https:// first, so only a safe URL is ever stored/shown.
-        design.previewImageUrl = body.imageUrl;
-        const current = S.get("currentDesign");
-        if (current && current.designId === design.designId) {
-          current.previewImageUrl = body.imageUrl;
-        }
-        if (window.Library && design.designId && window.Library.get(design.designId)) {
-          window.Library.setPreviewImage(design.designId, body.imageUrl);
-        }
-        incrementPreviewCount();
-        renderPreviewSlot(design);
-      } else {
-        renderPreviewSlot(design, window.PreviewFallback
-          ? { fallback: true }
-          : { error: t("dpreview.error_unexpected") });
-      }
-    } catch (err) {
-      if (window.Sentry) window.Sentry.captureException(err, { tags: { area: "preview" } });
-      renderPreviewSlot(design, window.PreviewFallback
-        ? { fallback: true }
-        : { error: t("dpreview.error_network", { msg: err.message }) });
-    } finally {
-      previewGenerating = false;
-      previewGeneratingDesignId = null;
-    }
-  }
-
   // ───── Saved Designs Library ─────
 
   let libraryEscHandler = null;
   let libraryFocusReturnEl = null;
   let libraryTrapRelease = null;
-
-  function saveCurrentDesign() {
-    if (!window.Library) return;
-    const design = S.get("currentDesign");
-    if (!design) {
-      showToast(t("toast.need_design"), "error");
-      return;
-    }
-    const entry = window.Library.add(design, {
-      type: S.get("currentType"),
-      color: S.get("currentColor"),
-      material: S.get("currentMaterial"),
-      fit: S.get("currentFit"),
-      vtoImageUrl: vtoLastImageUrl,
-    });
-    if (!entry) {
-      showToast(t("toast.save_failed"), "error");
-      return;
-    }
-    // Update save button to "saved" state
-    const btn = document.getElementById("design-save-btn");
-    if (btn) {
-      btn.classList.add("is-saved");
-      btn.querySelector(".design-save-icon").textContent = "✓";
-      btn.querySelector(".design-save-text").textContent = t("card.saved");
-    }
-    showToast(t("toast.saved_lib", { name: entry.name }), "success");
-    updateLibraryCount();
-  }
 
   function updateLibraryCount() {
     if (!window.Library) return;
@@ -1977,15 +1580,18 @@
       previewImageUrl: entry.previewImageUrl || null,
       measurements: entry.measurements || null,
     };
+    // Explizites Zurückholen ist KEIN In-Flight-Race: der gespeicherte Typ
+    // gewinnt. Erst currentType setzen, DANN applyDesignToState — dessen
+    // "State-gewinnt"-Regel würde sonst design.type auf den alten Selektor-
+    // Stand zurückzwingen (gespeicherte Jacke käme als T-Shirt zurück).
+    S.set("currentType", entry.type);
     S.set("currentDesign", design);
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
     setActiveType(entry.type);
-    renderDesignResult(design);
     applyDesignToState(design);
     updateProductionPreview();
     closeLibraryModal();
     showToast(t("toast.loaded", { name: entry.name }), "success");
-    document.getElementById("ai-output")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function deleteDesignFromLibrary(id) {
@@ -1995,16 +1601,6 @@
     renderLibraryGrid();
     updateLibraryCount();
     if (entry) showToast(t("toast.deleted", { name: entry.name }), "info");
-    // If current design was the deleted one, refresh save button state
-    const current = S.get("currentDesign");
-    if (current && current.designId === id) {
-      const btn = document.getElementById("design-save-btn");
-      if (btn) {
-        btn.classList.remove("is-saved");
-        btn.querySelector(".design-save-icon").textContent = "+";
-        btn.querySelector(".design-save-text").textContent = t("card.save");
-      }
-    }
   }
 
   function openLibraryModal() {
@@ -2054,33 +1650,6 @@
     });
   }
 
-  function initMobileNav() {
-    const toggle = document.getElementById("nav-toggle");
-    const links = document.getElementById("nav-links");
-    if (!toggle || !links) return;
-
-    const setOpen = (open) => {
-      links.classList.toggle("open", open);
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.setAttribute("aria-label", open ? t("nav.toggle_close") : t("nav.toggle_open"));
-    };
-
-    toggle.addEventListener("click", () => {
-      setOpen(!links.classList.contains("open"));
-    });
-
-    // Close after tapping a link (anchor navigation) or pressing Escape.
-    links.querySelectorAll("a").forEach((a) =>
-      a.addEventListener("click", () => setOpen(false))
-    );
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && links.classList.contains("open")) {
-        setOpen(false);
-        toggle.focus();
-      }
-    });
-  }
-
   // Reflect the active language on the DE / EN segmented control.
   function updateLangToggleState() {
     if (!window.I18N) return;
@@ -2112,7 +1681,6 @@
   function onLanguageChange() {
     updateLangToggleState();
     renderSuggestions();
-    updateModelInfo();
     updateProductionPreview();
     updateVtoButtonState();
     updateOwnInfo();
@@ -2130,37 +1698,16 @@
         if (input) validateMeasurementField(input);
       });
     }
-    // Re-render the design card with the new language if one is showing.
-    const design = S.get("currentDesign");
-    if (design && document.querySelector(".design-card")) {
-      renderDesignResult(design);
-    }
     // Refresh the library grid if its modal is currently open.
     const libModal = document.getElementById("library-modal");
     if (libModal && !libModal.hidden) renderLibraryGrid();
-    // Keep the hamburger aria-label in sync with its open state.
-    const navToggle = document.getElementById("nav-toggle");
-    const navLinks = document.getElementById("nav-links");
-    if (navToggle && navLinks) {
-      navToggle.setAttribute(
-        "aria-label",
-        navLinks.classList.contains("open") ? t("nav.toggle_close") : t("nav.toggle_open"),
-      );
-    }
   }
 
   function init() {
     initLangToggle();
     window.addEventListener("language:change", onLanguageChange);
-    initMobileNav();
     initSuggestions();
     initTypeSelector();
-    initColorPalette();
-    initMaterialSelector();
-    initPatternSelector();
-    initFitSlider();
-    initLengthSelector();
-    initPrintInput();
     initGenerateButton();
     initDesignJourney();
     initMeasurements();

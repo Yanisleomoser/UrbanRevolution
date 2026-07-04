@@ -128,6 +128,7 @@
         {
           "id": "sleeve",
           "label": { "de": "Ärmel", "en": "Sleeve" },
+          "crop": { "w": 158, "h": 122 },
           "choices": [
             { "id": "set-in", "label": { "de": "Eingesetzt", "en": "Set-in" }, "effects": { "set": { "construction.sleeve": "set-in" }, "weight": { "softCouture": 0.1 } } },
             { "id": "raglan", "label": { "de": "Raglan", "en": "Raglan" }, "effects": { "set": { "construction.sleeve": "raglan" }, "weight": { "sport": 0.15 } } },

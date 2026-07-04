@@ -78,10 +78,28 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   const dBefore = await outlineD(page);
   const sleeveSpot = await page.$('.de-hotspot[aria-label^="Ärmel"]');
   check(!!sleeveSpot, "sleeve hotspot present");
+  const preBox = await sleeveSpot.boundingBox();
   await sleeveSpot.click();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500); // camera settles
+  // Kamerafahrt: opening drives the camera onto the part; the tapped anchor
+  // is the transform's FIXED POINT, so the dot must not wander on screen.
+  check(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed")),
+    "opening the picker drives the camera onto the part");
+  const tf0 = await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform);
+  check(/^matrix\(1\.2[0-9]/.test(tf0), `camera scale applied (${tf0.slice(0, 30)}…)`);
+  const postBox = await (await page.$('.de-hotspot[aria-label^="Ärmel"]')).boundingBox();
+  const drift = Math.hypot(
+    (preBox.x + preBox.width / 2) - (postBox.x + postBox.width / 2),
+    (preBox.y + preBox.height / 2) - (postBox.y + postBox.height / 2));
+  check(drift <= 10, `the tapped anchor is the camera's fixed point (drift ${drift.toFixed(1)}px)`);
   const opts = await page.$$(".de-region-picker .de-region-opt");
   check(opts.length === 3, "sleeve micro-picker offers its three cuts");
+  // Atelier-Lupe: every option carries a REAL close-up of the detail, and the
+  // close-ups actually differ between options (no decorative placeholders).
+  const thumbs = await page.$$eval(".de-region-picker .de-region-opt-thumb svg", (els) =>
+    els.map((el) => ({ vb: el.getAttribute("viewBox"), html: el.innerHTML.length })));
+  check(thumbs.length === opts.length, "every option carries a close-up thumbnail");
+  check(thumbs.every((th) => th.vb && th.vb !== "0 0 240 340"), `thumbnails are CROPPED views (${thumbs[0] && thumbs[0].vb})`);
   await opts[opts.length - 1].hover(); // Drop-Shoulder
   await page.waitForTimeout(600);
   const dGhost = await outlineD(page);
@@ -125,7 +143,7 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
         muts.forEach((m) => m.addedNodes.forEach((n) => {
           if (n.classList && n.classList.contains("de-region-glow")) window.__glow = true;
         }));
-      }).observe(document.querySelector(".de-regions"), { childList: true });
+      }).observe(document.querySelector(".de-regions"), { childList: true, subtree: true }); // glow lives in the zoom wrapper
     });
     await page.click('.de-hotspot[aria-label^="Saum"]');
     await page.waitForTimeout(300);
@@ -136,6 +154,31 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   } else {
     check(true, "a pick blooms a glow on the changed part (§6 reaction)");
   }
+  // Re-opening a decided region: the picker marks what the piece carries.
+  await page.click('.de-hotspot[aria-label^="Ärmel"]');
+  await page.waitForTimeout(300);
+  const marks = await page.$$eval(".de-region-picker .de-region-opt", (els) => els.map((el) => ({
+    cur: el.classList.contains("is-current"), pressed: el.getAttribute("aria-pressed"),
+  })));
+  check(marks.filter((x) => x.cur).length === 1 && marks[2].cur && marks[2].pressed === "true",
+    "re-opened picker marks the carried value ('aktuell' on the picked drop cut)");
+  await page.screenshot({ path: `${OUT}/picker-lupe.png` });
+  // A direct region switch GLIDES: still zoomed, new fixed point. Target the
+  // COLLAR spot — it sits above the sleeve panel; spots underneath an open
+  // panel are intentionally unreachable (the panel has priority, a stage tap
+  // closes it first).
+  const tfSleeve = await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform);
+  await page.click('.de-hotspot[aria-label^="Kragen"]');
+  await page.waitForTimeout(500);
+  const tfHem = await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform);
+  check(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed")) && tfHem !== tfSleeve,
+    "switching regions keeps the camera in — it glides to the new fixed point");
+  await page.screenshot({ path: `${OUT}/camera-on-hem.png` });
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(450);
+  check(await page.$eval(".de-regions-zoom", (n) => getComputedStyle(n).transform) === "none"
+    && !(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed"))),
+    "Escape pulls the camera back out");
   await page.screenshot({ path: `${OUT}/board-after-picks.png` });
   check(errors.length === 0, `no page errors (${errors.join(" | ") || "clean"})`);
   await page.close();
@@ -168,6 +211,45 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   check((await outlineD(page)) !== d0, "…and the pick still lands (board updated)");
   check(!(await page.$(".de-region-glow")), "reduced-motion: no glow spawns");
   check(errors.length === 0, `no page errors on the reduced path (${errors.join(" | ") || "clean"})`);
+  await page.close();
+}
+
+// ── 3) Touch semantics (the tap-feel contract, headless part) ──────────────
+// What a real thumb must get: an offset tap still hits (44px zone), opening
+// the picker NEVER tries an option on uninvited (the :focus-visible gate),
+// and ONE tap on an option decides — picker closes, pin set.
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  check(await walkToBoard(page), "touch walk reaches the atelier");
+  await page.waitForTimeout(600);
+  const spot = await page.$('.de-hotspot[aria-label^="Ärmel"]');
+  const box = await spot.boundingBox();
+  const dBefore = await outlineD(page);
+  // Tap 13px off the visible dot centre — inside the 44px zone, must hit.
+  await page.touchscreen.tap(box.x + box.width / 2 + 13, box.y + box.height / 2 - 10);
+  await page.waitForTimeout(500);
+  check(await page.$eval('.de-hotspot[aria-label^="Ärmel"]', (n) => n.getAttribute("aria-expanded")) === "true",
+    "an offset tap (13px off the dot) still opens the picker (44px zone)");
+  check(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed")),
+    "the camera move also happens under touch");
+  check((await outlineD(page)) === dBefore,
+    "opening by TAP does not try anything on (focus-visible gate holds on touch)");
+  // ONE tap on an option decides: pin set, picker closed, board updated.
+  const opt = (await page.$$(".de-region-picker .de-region-opt"))[2];
+  const ob = await opt.boundingBox();
+  check(ob.height >= 40, `option rows are thumb-sized (${Math.round(ob.height)}px)`);
+  await page.touchscreen.tap(ob.x + ob.width / 2, ob.y + ob.height / 2);
+  await page.waitForTimeout(900);
+  check(await page.$eval('.de-hotspot[aria-label^="Ärmel"]', (n) => n.classList.contains("is-set")),
+    "ONE tap decides — the pin is set");
+  check(await page.$eval(".de-region-picker", (n) => n.hidden), "…and the picker closed itself");
+  check(!(await page.$eval(".de-regions", (n) => n.classList.contains("is-zoomed"))),
+    "…and the camera pulled back with it");
+  check((await outlineD(page)) !== dBefore, "…and the board carries the pick");
+  check(errors.length === 0, `no page errors on the touch path (${errors.join(" | ") || "clean"})`);
   await page.close();
 }
 

@@ -2729,6 +2729,22 @@ html[lang="en"] [data-l="de"] { display: none; }
 }
 #vto-example.has-image .vto-example-label { display: none; }
 
+/* "Dein Stück" auf der Anprobe-Bühne: statt des Beispielfotos liegt die echte
+   Flat des Entwurfs im Studio-Licht (dieselbe Bühnensprache wie Vorschau und
+   Atelier); das Badge nennt es, die Unterzeile lädt zur Anprobe ein. */
+#vto-example.has-flat {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    padding: 24px 16px 16px;
+    justify-content: center;
+    background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.1), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%);
+}
+#vto-example.has-flat .own-flat { flex: 1; min-height: 0; width: min(300px, 82%); display: flex; align-items: center; }
+#vto-example.has-flat .own-flat svg { width: 100%; height: 100%; max-height: 520px; display: block; }
+#vto-example.has-flat .vto-example-tag { position: absolute; top: 14px; left: 14px; }
+#vto-example.has-flat .vto-example-label { font-size: var(--text-sm); max-width: 320px; }
+
 .vto-result-actions[hidden] { display: none; }
 
 .vto-result-actions {
@@ -5100,6 +5116,15 @@ html.fx .de-hotspot.is-just-set .de-hotspot-dot { animation: deSpotPop 0.28s var
 @keyframes deRegionGlow { from { opacity: 0; transform: scale(0.5); } 35% { opacity: 1; } to { opacity: 0; transform: scale(1.25); } }
 html.fx .de-region-picker.is-open { animation: dePickerIn 0.18s var(--ease-out); }
 @keyframes dePickerIn { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
+/* Kamerafahrt: Picker öffnen = die Kamera fährt aufs Teil (translate+scale
+   aus JS, der getippte Anker bleibt Fixpunkt); die übrigen Nadeln treten
+   zurück, die Beschriftung der aktiven Nadel weicht dem Panel. Der Zoom-
+   ZUSTAND gilt auch unter reduced-motion (Zustand, nicht Bewegung) — nur die
+   Fahrt entfällt (globaler Transition-Reset). */
+.de-regions-zoom { position: relative; transition: transform 0.24s var(--ease-out); }
+.de-regions.is-zoomed .de-hotspot:not([aria-expanded="true"]) { opacity: 0.28; transition: opacity 0.2s var(--ease-out); }
+.de-regions.is-zoomed .de-hotspot[aria-expanded="true"] .de-hotspot-tag,
+.de-regions.is-zoomed .de-hotspot[aria-expanded="true"] .de-hotspot-val { opacity: 0; transition: opacity 0.15s var(--ease-out); }
 .de-hotspot { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; padding: 0; background: none; border: 0; cursor: pointer; z-index: 2; }
 .de-hotspot-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent-3); background: rgba(10, 22, 34, 0.72); box-shadow: 0 0 0 3px rgba(100, 214, 196, 0.14); transition: background .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s ease-in-out infinite; }
@@ -5115,7 +5140,7 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 .de-hotspot[data-side="l"] .de-hotspot-val { top: calc(50% + 6px); left: auto; right: calc(50% + 13px); transform: none; }
 .de-hotspot[data-side="r"] .de-hotspot-tag { top: auto; bottom: calc(50% - 4px); left: calc(50% + 13px); right: auto; transform: none; }
 .de-hotspot[data-side="r"] .de-hotspot-val { top: calc(50% + 6px); left: calc(50% + 13px); right: auto; transform: none; }
-.de-region-picker { position: absolute; z-index: 4; min-width: 172px; max-width: min(236px, 96%); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; gap: var(--space-2); }
+.de-region-picker { position: absolute; z-index: 4; min-width: 208px; max-width: min(262px, 96%); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; gap: var(--space-2); }
 /* display:flex würde sonst das UA-[hidden]{display:none} überstimmen — der
    „geschlossene" Picker bliebe sichtbar und finge Taps ab. */
 .de-region-picker[hidden] { display: none; }
@@ -5123,9 +5148,16 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 .de-region-picker-h { margin: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); }
 .de-region-close { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: 1px solid var(--border); border-radius: 50%; color: var(--text-dim); font-size: 12px; cursor: pointer; transition: border-color .2s var(--ease-out); }
 .de-region-close:hover { border-color: var(--accent); color: var(--text); }
-.de-region-opt { display: block; width: 100%; text-align: left; padding: var(--space-2) var(--space-3); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out); }
+.de-region-opt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; text-align: left; padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out); }
 .de-region-opt:hover { border-color: var(--accent); }
 .de-region-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+/* Atelier-Lupe: jede Option ist eine echte Nahaufnahme GENAU dieses Details
+   (zugeschnittene viewBox am Anker) — Touch sieht, was es wählt, ohne Hover. */
+.de-region-opt-thumb { flex: none; width: 54px; height: 40px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(37, 65, 90, 0.8); background: radial-gradient(120% 100% at 50% 20%, #16293b, #0c1a2b 85%); }
+.de-region-opt-thumb svg { width: 100%; height: 100%; display: block; }
+.de-region-opt-label { flex: 1; min-width: 0; }
+.de-region-opt-cur { flex: none; margin-left: auto; font-family: var(--font-mono); font-size: 8.5px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--accent-3); border: 1px solid rgba(100, 214, 196, 0.35); border-radius: 999px; padding: 2px 7px; }
+html.is-touch .de-region-opt { min-height: 48px; }
 /* No-Board-Fallback (kein SVG/keine Kategorie): Regions als schlichte Gruppen */
 .de-regions-list { display: flex; flex-direction: column; gap: var(--space-4); }
 .de-region-group .de-region-opt { display: inline-block; width: auto; margin: var(--space-1) var(--space-1) 0 0; }

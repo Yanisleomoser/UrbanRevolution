@@ -102,6 +102,42 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   // the result surface; its name line must carry the piece's name.
   const ownName = await page.$eval("#own-name", (n) => n.textContent).catch(() => "");
   check(ownName.includes("Circuit One"), `ownership carries the piece's name (${JSON.stringify(ownName)})`);
+  // "Dein Stück": the try-on stage shows the REAL piece (parametric flat from
+  // the design DNA), never an unrelated example photo next to your design.
+  const stage = await page.evaluate(() => {
+    const ex = document.getElementById("vto-example");
+    const svg = ex && ex.querySelector(".own-flat svg");
+    const tag = ex && ex.querySelector(".vto-example-tag");
+    return ex ? {
+      hasFlat: ex.classList.contains("has-flat"),
+      hasImage: ex.classList.contains("has-image"),
+      svg: !!svg, tag: tag ? tag.textContent : "",
+      fillTeal: svg ? svg.outerHTML.includes("#2a9d8f") : false,
+    } : null;
+  });
+  check(!!stage && stage.hasFlat && !stage.hasImage && stage.svg,
+    "the try-on stage shows YOUR piece (flat), not the example photo");
+  check(!!stage && /dein stück|your piece/i.test(stage.tag), `the badge names it (${stage && stage.tag})`);
+  check(!!stage && stage.fillTeal, "…in the design's own colour (teal stops reach the stage flat)");
+  // Facade live-follow: picking another colour in "Weiter anpassen" re-dyes
+  // the stage flat immediately (updateOwnInfo subscription).
+  // uid-frei messen (Review-Fund: frische Gradient-uids machen JEDEN Rebuild
+  // verschieden — innerHTML-Vergleiche wären vakuös): der Farb-Check fordert
+  // den KONKRETEN Hex der geklickten Swatch, der Typ-Check die uid-freie
+  // Outline-Geometrie.
+  await page.$eval(".own-edit", (n) => { n.open = true; });
+  const pickedHex = await page.$eval("#oe-colors .oe-color:nth-child(3)", (n) => n.dataset.color.toLowerCase());
+  await page.click("#oe-colors .oe-color:nth-child(3)");
+  await page.waitForTimeout(400);
+  const after = await page.$eval("#vto-example .own-flat", (n) => n.innerHTML.toLowerCase());
+  check(after.includes(pickedHex), `a facade colour pick re-dyes the stage flat live (${pickedHex} reaches the markup)`);
+  // Typ-Vorrang (Review-Fund): switching the studio type must recut the stage
+  // flat too — never an old-category flat next to a card naming the new type.
+  const outlineBefore = await page.$eval("#vto-example .own-flat .gs-outline", (n) => n.getAttribute("d"));
+  await page.evaluate(() => window.StateManager.set("currentType", "dress"));
+  await page.waitForTimeout(400);
+  const outlineAfter = await page.$eval("#vto-example .own-flat .gs-outline", (n) => n.getAttribute("d"));
+  check(outlineBefore !== outlineAfter, "a type switch recuts the stage flat's GEOMETRY (DNA category never wins over the live type)");
   check(errors.length === 0, `no page errors (${errors.join(" | ") || "clean"})`);
   await page.close();
 }
