@@ -970,16 +970,38 @@ const GarmentSVG = (() => {
     const limbX = (lerp(g.shoulderHalf, g.coX, 0.32) + lerp(g.chestHalf, g.ciX, 0.32)) / 2;
     a.sleeve = cl(CX + (g.sleeveless ? g.chestHalf : limbX), lerp(g.shoulderY, g.wristY, 0.32));
     a.cuffs = cl(CX - (g.coX + g.ciX) / 2, g.wristY - 8);
-    // Chest pockets (shirt/tee) sit up left; body pockets (jacket/hoodie) low
-    // right — where the respective choices actually draw on the flat.
-    a.pockets = (m.cat === "shirt" || m.cat === "tshirt")
-      ? cl(CX - g.chestHalf * 0.55, g.armpitY + 18)
+    // The pocket marker sits where the CHOSEN pocket actually draws (honest
+    // position): chest patch up left, kangaroo low centre, everything else on
+    // the low body. Without a value: shirt/tee default to the chest position,
+    // jacket/hoodie to the body position.
+    const pv = m.p && m.p.pockets;
+    if (pv === "chest") a.pockets = cl(CX - g.chestHalf * 0.55, g.armpitY + 16);
+    else if (pv === "kangaroo") a.pockets = cl(CX + g.chestHalf * 0.45, g.hemY - 36);
+    else if (pv === "side") a.pockets = cl(CX + g.waistHalf - 4, Math.max(g.armpitY + 16, g.hemY - 44));
+    else if (pv === "flap" || pv === "cargo") a.pockets = cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));
+    else a.pockets = (m.cat === "shirt" || m.cat === "tshirt")
+      ? cl(CX - g.chestHalf * 0.55, g.armpitY + 16)
       : cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));
     a.hem = cl(CX, g.hemY - 6);
     return a;
   }
 
-  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  // ---- detail close-up (Atelier-Lupe) --------------------------------------
+  // A cropped view of the flat, centred on a region's anchor — the micro-
+  // picker shows every option as a REAL close-up of exactly that detail (a
+  // 48px thumbnail of the whole garment can't distinguish cuffs). Same paint,
+  // just a tighter viewBox; clamped so edge regions (hem, waistband) never
+  // crop outside the canvas. Pure string in/out → unit-testable.
+  function detailCrop(category, params, regionId, w, h) {
+    const cw = clamp(num(w, 110), 40, VB);
+    const ch = clamp(num(h, 88), 40, VH);
+    const a = regionAnchors(category, params)[regionId] || { x: CX, y: VH * 0.4 };
+    const x = r(clamp(a.x - cw / 2, 0, VB - cw));
+    const y = r(clamp(a.y - ch / 2, 0, VH - ch));
+    return build(category, params).replace(`viewBox="0 0 ${VB} ${VH}"`, `viewBox="${x} ${y} ${r(cw)} ${r(ch)}"`);
+  }
+
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;
