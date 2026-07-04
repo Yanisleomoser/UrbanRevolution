@@ -293,6 +293,8 @@
       .from(".lp-hero-eyebrow", { opacity: 0, y: 14, duration: 0.7 }, 0.25)
       .from(".lp-hero-sub", { opacity: 0, y: 18, duration: 0.7 }, 0.55)
       .from(".lp-hero-ctas", { opacity: 0, y: 18, duration: 0.7 }, 0.7)
+      // Die Faden-Spitze (aus dem Preloader übergeben) setzt sich als Ruhe-Knoten.
+      .from(".lp-linie-tip", { opacity: 0, duration: 0.9 }, 0.2)
       .from(".lp-scroll-cue", { opacity: 0, duration: 0.8 }, 1.0);
   }
 
@@ -315,13 +317,19 @@
     const arc = loader.querySelector(".lp-mark-arc");
     const dashes = loader.querySelector(".lp-mark-dashes");
     const needle = loader.querySelector(".lp-mark-needle");
+    const thread = loader.querySelector(".lp-loader-thread");
     const len = arc.getTotalLength();
     gsap.set(arc, { strokeDasharray: len, strokeDashoffset: len });
-    gsap.timeline({ onComplete: done })
-      .to(arc, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, 0)
+    if (thread) gsap.set(thread, { scaleY: 0 });
+    const tl = gsap.timeline({ onComplete: done });
+    tl.to(arc, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut" }, 0)
       .from(needle, { opacity: 0, y: -14, duration: 0.5, ease: "power2.out" }, 0.25)
-      .from(dashes, { opacity: 0, duration: 0.4 }, 0.55)
-      .to(loader.querySelector(".lp-mark"), { scale: 0.92, opacity: 0, duration: 0.35, ease: "power2.in" }, 1.15);
+      .from(dashes, { opacity: 0, duration: 0.4 }, 0.55);
+    // Die Nadel zieht die eine Linie: der Faden wird nach unten gezeichnet
+    // (scaleY 0→1) — er überlebt den Loader und wird an den Hero übergeben.
+    if (thread) tl.to(thread, { scaleY: 1, duration: 0.6, ease: "power2.inOut" }, 0.72);
+    // Die Marke tritt zurück; der gezogene Faden bleibt (verblasst erst mit dem Loader).
+    tl.to(loader.querySelector(".lp-mark"), { scale: 0.92, opacity: 0, duration: 0.4, ease: "power2.in" }, 1.3);
     // Sicherheitsnetz: Loader darf die Seite nie dauerhaft blockieren.
     setTimeout(() => { if (!loader.classList.contains("is-done")) done(); }, 3000);
   }
@@ -363,6 +371,71 @@
         },
       },
     );
+  }
+
+  /* ── Verben-Band: drei Stationen auf der Linie ────────────── */
+
+  // Fädelt den i18n-String „Produzieren — Tragen — Wegwerfen" (DE/EN, beide mit
+  // „ — ") zu drei Knoten-Stationen auf dem Gossen-Faden auf. Rein additiv,
+  // datengetrieben aus EINEM Key. Nach jedem I18N.apply() steht wieder der reine
+  // String → neu auffädeln (wie buildManifesto). Ohne diese Funktion bleibt die
+  // Mono-Zeile als vollständiger Ruhezustand stehen (Progressive Enhancement).
+  function buildVerbs() {
+    const el = document.getElementById("manifesto-verbs");
+    if (!el) return;
+    const parts = el.textContent.split(/\s*—\s*/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length < 2) { el.classList.remove("is-stationed"); return; }
+    el.textContent = "";
+    parts.forEach((label, i) => {
+      const item = document.createElement("span");
+      item.className = "lp-verb";
+      const knot = document.createElement("span");
+      knot.className = "lp-verb-knot";
+      knot.setAttribute("aria-hidden", "true");
+      const idx = document.createElement("span");
+      idx.className = "lp-verb-index";
+      idx.setAttribute("aria-hidden", "true");
+      idx.textContent = "0" + (i + 1);
+      const lab = document.createElement("span");
+      lab.className = "lp-verb-label";
+      lab.textContent = label;
+      item.append(knot, idx, lab);
+      el.appendChild(item);
+    });
+    el.classList.add("is-stationed");
+  }
+
+  /* ── Akt I: die eine Linie zeichnet sich ein (fx) ─────────── */
+
+  // Manifest-Faden + Übergabe-Naht scrubben beim Scrollen von oben nach unten
+  // (scaleY 0→1, transform-origin top). Ruhezustand (kein fx) = CSS-Default
+  // (fertig gezeichnet). Muster wie initPivot/initLoop: !fx → sofort raus.
+  function initActOneThread() {
+    if (!fx) return;
+    const mani = document.querySelector(".lp-linie--mani .lp-linie-rail");
+    if (mani) {
+      gsap.fromTo(mani, { scaleY: 0 }, {
+        scaleY: 1, ease: "none",
+        scrollTrigger: { trigger: "#manifesto", start: "top 82%", end: "bottom 55%", scrub: 0.5 },
+      });
+    }
+    // Übergabe-Naht: Clip-Reveal von oben nach unten (wie fil-seam — dash-offset
+    // bricht bei nicht-uniformer SVG-Streckung; ein inset-Clip zeichnet sauber).
+    const seamSvg = document.querySelector(".lp-linie-seam-svg");
+    const seamKnot = document.querySelector(".lp-linie-seam-knot");
+    const seamEl = document.querySelector(".lp-linie-seam");
+    if (seamSvg && seamEl) {
+      gsap.fromTo(seamSvg, { clipPath: "inset(0% 0% 100% 0%)" }, {
+        clipPath: "inset(0% 0% 0% 0%)", ease: "none",
+        scrollTrigger: { trigger: seamEl, start: "top 96%", end: "bottom 80%", scrub: 0.5 },
+      });
+      if (seamKnot) {
+        gsap.fromTo(seamKnot, { opacity: 0, scale: 0.4 }, {
+          opacity: 1, scale: 1, ease: "power2.out",
+          scrollTrigger: { trigger: seamEl, start: "bottom 86%", toggleActions: "play none none reverse" },
+        });
+      }
+    }
   }
 
   /* ── Die Wende (#pivot): die Linie biegt sich zum Kreis ──── */
@@ -663,22 +736,20 @@
     const ctx = canvas.getContext("2d");
     const COLORS = ["#2779a8", "#2a9d8f", "#64d6c4"];
     const TAU = Math.PI * 2;
-    const LINK_DIST = 84;
-    const LINK_DIST_SQ = LINK_DIST * LINK_DIST;
-    const NB = 5;                            // Alpha-Stufen der Web-Fäden (Distanz × Maske)
-    const BUCKET_ALPHA = [0.025, 0.045, 0.07, 0.095, 0.115];
-    const LINK_STROKE = BUCKET_ALPHA.map((a) => `rgba(100, 214, 196, ${a})`);
-    const DOT_ALPHA = 0.5;                   // Grund-Deckkraft der Web-Punkte
-    const FORM_DIM = 0.45;                   // Web tritt beim Formen zurück (nicht aus)
+    const WRAP = 84;                         // Rand fürs Torus-Wrap + Masken-PAD
+    const DOT_ALPHA = 0.3;                   // Grund-Deckkraft der Staub-Punkte (ruhiger Lint)
+    const FORM_DIM = 0.4;                    // Feld tritt beim Formen zurück (nicht aus)
     const MASK_CELL = 22, FEATHER = 84;      // Headline-Schutzmaske: Auflösung + weiche Kante
     let mobile = false;
-    // Spatial-Hash-Gitter für O(n)-Nachbarsuche (Arrays werden wiederverwendet).
-    let gCols = 1, gRows = 1, cellHead = null, cellNext = null;
-    let buckets = null, bucketCap = 0, bucketLen = null;
+    // Warp — die senkrechten Kett-Fäden von Akt I („Die Linie" als Masse, „für
+    // alle"): ruhig schwingende graue Fäden statt eines Konstellations-Webs.
+    // Unabhängig von den Partikeln — die bleiben fürs Tap-Formen erhalten.
+    let warp = [];
+    let clockT = 0;                          // Zeit-Referenz fürs Schwingen (aus loop)
     // Headline-Maske als vorberechnetes Low-Res-Feld (O(1)-Lookup).
     let maskGrid = null, mCols = 1, mRows = 1;
     // FPS-Wächter — stuft die Felddichte herunter, BEVOR Frames fallen.
-    let emaDt = 16, slowFrames = 0, degradeLvl = 0, linksOn = true;
+    let emaDt = 16, slowFrames = 0, degradeLvl = 0;
     let w = 0, h = 0, dpr = 1;
     let particles = [];
     let raf = 0;
@@ -945,9 +1016,7 @@
       emaDt = 16;
       slowFrames = 0;
       degradeLvl = 0;
-      linksOn = true;
       seed();
-      allocGrid();
       computeMask();
       if (reduceMotion) {
         // Standbild: Positionen einmalig berechnen, genau einmal zeichnen.
@@ -960,7 +1029,9 @@
 
     function seed() {
       mobile = Math.min(w, h) <= 480;
-      // Tausende Punkte füllen die ganze Fläche; nach Fläche/Gerät skaliert.
+      // Dichte wie zuvor — nötig, damit das Tap-Formen genug Punkte auf die
+      // Kontur bekommt (klare Silhouette). Als ruhiger Staub gezeichnet (kein Web),
+      // deshalb niedrige Deckkraft (DOT_ALPHA) statt weniger Punkte.
       const count = mobile
         ? Math.min(720, Math.max(340, Math.round((w * h) / 1700)))
         : Math.min(2000, Math.max(500, Math.round((w * h) / 1200)));
@@ -988,21 +1059,20 @@
           seamDist: 0,     // Position entlang der Naht
         };
       });
+      seedWarp();
     }
 
-    // Gitter-/Bucket-/Masken-Arrays (re)allozieren — nur wenn sie wachsen müssen.
-    function allocGrid() {
-      gCols = Math.max(1, ((w / LINK_DIST) | 0) + 1);
-      gRows = Math.max(1, ((h / LINK_DIST) | 0) + 1);
-      const nCells = gCols * gRows;
-      if (!cellHead || cellHead.length < nCells) cellHead = new Int32Array(nCells);
-      if (!cellNext || cellNext.length < particles.length) cellNext = new Int32Array(particles.length);
-      const cap = mobile ? 1600 : 2600; // max Faden-Paare je Bucket
-      if (!buckets || bucketCap < cap) {
-        buckets = Array.from({ length: NB }, () => new Float32Array(cap * 4));
-        bucketCap = cap;
-      }
-      if (!bucketLen) bucketLen = new Int32Array(NB);
+    // Warp aufsetzen: gleichmäßig verteilte, senkrechte Kett-Fäden mit eigener
+    // Amplitude/Phase/Tempo — deterministisch, günstig (eine Path pro Faden).
+    function seedWarp() {
+      const n = mobile ? 14 : Math.max(18, Math.min(30, Math.round(w / 54)));
+      warp = Array.from({ length: n }, (_, i) => ({
+        x: ((i + 0.5) / n) * w,
+        amp: (mobile ? 3 : 4) + Math.random() * (mobile ? 6 : 11),
+        phase: Math.random() * TAU,
+        speed: 0.00016 + Math.random() * 0.0004,
+        alpha: 0.058 + Math.random() * 0.072,
+      }));
     }
 
     // Headline-Schutzmaske: dünnt das Web rund um die SICHTBARE Schrift auf ~0
@@ -1013,7 +1083,7 @@
       const boxes = [];
       const add = (rc, pad) => { if (rc && rc.width > 1 && rc.height > 1) boxes.push([rc.left - cr.left - pad, rc.top - cr.top - pad, rc.right - cr.left + pad, rc.bottom - cr.top + pad]); };
       const tight = (el, pad) => { try { const rg = document.createRange(); rg.selectNodeContents(el); add(rg.getBoundingClientRect(), pad); } catch (_) { add(el.getBoundingClientRect(), pad); } };
-      const PAD = 0.5 * LINK_DIST;
+      const PAD = 0.5 * WRAP;
       if (heroEl) {
         heroEl.querySelectorAll(".lp-hero-eyebrow, .lp-hero-line, .lp-hero-sub, .lp-hero-hint").forEach((el) => tight(el, PAD));
         const cta = heroEl.querySelector(".lp-hero-ctas"); if (cta) add(cta.getBoundingClientRect(), PAD);
@@ -1050,76 +1120,47 @@
       return maskGrid[gy * mCols + gx];
     }
 
-    // Einen Faden ggf. in seinen Distanz/Masken-Bucket legen (O(1)).
-    function addLink(ax, ay, b, cap4) {
-      const dx = ax - b.x, dy = ay - b.y;
-      const d2 = dx * dx + dy * dy;
-      if (d2 >= LINK_DIST_SQ) return;
-      const eff = (1 - d2 / LINK_DIST_SQ) * maskAt((ax + b.x) * 0.5, (ay + b.y) * 0.5);
-      if (eff < 0.04) return;
-      let bi = (eff * NB) | 0; if (bi >= NB) bi = NB - 1;
-      const len = bucketLen[bi];
-      if (len + 4 > cap4) return;
-      const arr = buckets[bi];
-      arr[len] = ax; arr[len + 1] = ay; arr[len + 2] = b.x; arr[len + 3] = b.y;
-      bucketLen[bi] = len + 4;
-    }
-
-    // Das Ambient-Web zeichnen: O(n)-Gitter, ≤5 gebündelte Faden-Strokes +
-    // 3 gebündelte Punkt-Fills. dimm < 1 lässt das Web beim Formen zurücktreten.
+    // Das Feld zeichnen: die senkrechten Warp-Fäden (die „Linie" als Masse) +
+    // feiner farbloser Staub (die Partikel, die fürs Tap-Formen bleiben).
+    // dimm < 1 lässt das Feld beim Formen zurücktreten (statt zu verschwinden).
     function drawField(dimm) {
+      // 1) Warp — ruhig schwingende, senkrechte Kett-Fäden (grau/ash, KEIN Teal:
+      //    die farblose Maschinen-Linie; Farbe kommt erst nach der Wende). Hinter
+      //    der Headline über die Durchschnitts-Maske gedämpft (Lesbarkeit).
+      const SEG = mobile ? 9 : 11;
+      ctx.lineWidth = mobile ? 0.8 : 0.9;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#9fb6c6";
+      for (let wi = 0; wi < warp.length; wi++) {
+        const th = warp[wi];
+        let msum = 0;
+        for (let s = 0; s <= SEG; s++) {
+          const yy = (s / SEG) * h;
+          msum += maskAt(th.x + Math.sin(th.phase + clockT * th.speed + yy * 0.004) * th.amp, yy);
+        }
+        ctx.globalAlpha = th.alpha * dimm * (0.14 + 0.86 * (msum / (SEG + 1)));
+        ctx.beginPath();
+        for (let s = 0; s <= SEG; s++) {
+          const yy = (s / SEG) * h;
+          const xx = th.x + Math.sin(th.phase + clockT * th.speed + yy * 0.004) * th.amp;
+          if (s) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy);
+        }
+        ctx.stroke();
+      }
+
+      // 2) Staub — die treibenden Partikel als feiner, farbloser Lint (Headline
+      //    ausgespart). Gebündelt in einem Path2D-Fill (billig).
       const n = particles.length;
-      cellHead.fill(-1);
-      for (let i = 0; i < n; i++) {
-        const p = particles[i];
-        if (p.forming) continue; // forming-Punkte sind das Stück, nicht das Web
-        let cx = (p.x / LINK_DIST) | 0; if (cx < 0) cx = 0; else if (cx >= gCols) cx = gCols - 1;
-        let cy = (p.y / LINK_DIST) | 0; if (cy < 0) cy = 0; else if (cy >= gRows) cy = gRows - 1;
-        const c = cx + cy * gCols;
-        cellNext[i] = cellHead[c];
-        cellHead[c] = i;
-      }
-      if (linksOn) {
-        for (let b = 0; b < NB; b++) bucketLen[b] = 0;
-        const cap4 = bucketCap * 4;
-        for (let cy = 0; cy < gRows; cy++) {
-          for (let cx = 0; cx < gCols; cx++) {
-            for (let i = cellHead[cx + cy * gCols]; i !== -1; i = cellNext[i]) {
-              const a = particles[i], ax = a.x, ay = a.y;
-              for (let j = cellNext[i]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
-              // nur 4 VORWÄRTS-Nachbarn → jedes Paar genau einmal (Dedup gratis)
-              if (cx + 1 < gCols) for (let j = cellHead[(cx + 1) + cy * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
-              if (cy + 1 < gRows) {
-                if (cx > 0) for (let j = cellHead[(cx - 1) + (cy + 1) * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
-                for (let j = cellHead[cx + (cy + 1) * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
-                if (cx + 1 < gCols) for (let j = cellHead[(cx + 1) + (cy + 1) * gCols]; j !== -1; j = cellNext[j]) addLink(ax, ay, particles[j], cap4);
-              }
-            }
-          }
-        }
-        ctx.lineWidth = mobile ? 0.6 : 0.7;
-        ctx.lineCap = "butt";
-        ctx.globalAlpha = dimm;
-        for (let b = 0; b < NB; b++) {
-          const len = bucketLen[b];
-          if (!len) continue;
-          const arr = buckets[b];
-          const path = new Path2D();
-          for (let k = 0; k < len; k += 4) { path.moveTo(arr[k], arr[k + 1]); path.lineTo(arr[k + 2], arr[k + 3]); }
-          ctx.strokeStyle = LINK_STROKE[b];
-          ctx.stroke(path);
-        }
-      }
-      // Punkte gebündelt (3 Farb-Fills), Headline-Zone ausgespart.
-      const paths = [new Path2D(), new Path2D(), new Path2D()];
+      const dust = new Path2D();
       for (let i = 0; i < n; i++) {
         const p = particles[i];
         if (p.forming || maskAt(p.x, p.y) < 0.5) continue;
         const r = p.size;
-        paths[p.colorIdx].rect(p.x - r, p.y - r, r + r, r + r);
+        dust.rect(p.x - r, p.y - r, r + r, r + r);
       }
       ctx.globalAlpha = DOT_ALPHA * dimm;
-      for (let c = 0; c < 3; c++) { ctx.fillStyle = COLORS[c]; ctx.fill(paths[c]); }
+      ctx.fillStyle = "#8ba2b5";
+      ctx.fill(dust);
       ctx.globalAlpha = 1;
     }
 
@@ -1138,8 +1179,9 @@
     function driftStep(p, dt) {
       p.phase += 0.0006 * dt;
       p.x += p.vx * dt;
-      p.y += (p.vy + Math.sin(p.phase) * 0.006) * dt;
-      const M = LINK_DIST;
+      // leichte Abwärts-Tendenz: der Staub sinkt wie die Linie („nur weiter").
+      p.y += (p.vy + 0.004 + Math.sin(p.phase) * 0.006) * dt;
+      const M = WRAP;
       if (p.x < -M) p.x += w + 2 * M; else if (p.x > w + M) p.x -= w + 2 * M;
       if (p.y < -M) p.y += h + 2 * M; else if (p.y > h + M) p.y -= h + 2 * M;
       if (pointer.active && mode === "drift") {
@@ -1304,6 +1346,7 @@
       if (!running) return;
       const dt = Math.min(50, t - last || 16);
       last = t;
+      clockT = t;   // Zeit-Referenz fürs Warp-Schwingen
       if (mode === "form" && t - formStart > FORM_HOLD) releaseForm();
       if (mode === "form") computeForm(); else fNeedle = -1;
       const t0 = performance.now();
@@ -1318,7 +1361,7 @@
 
     function degradeField() {
       if (degradeLvl === 0) { particles.length = Math.max(120, Math.floor(particles.length * 0.75)); degradeLvl = 1; }
-      else if (degradeLvl === 1) { linksOn = false; degradeLvl = 2; }
+      else if (degradeLvl === 1) { warp.length = Math.max(6, Math.floor(warp.length * 0.6)); degradeLvl = 2; }
     }
 
     function start() {
@@ -1378,15 +1421,18 @@
     initStudioReveal();
     initLoader();
     buildManifesto();
+    buildVerbs();
+    initActOneThread();
     initPivot();
     initLoop();
     initReveals();
     initCounters();
     initOrb();
     initWeave();
-    // Sprachwechsel (app.js bedient den Toggle): Manifest-Spans neu aufbauen.
+    // Sprachwechsel (app.js bedient den Toggle): Manifest-Spans + Verben-Stationen neu aufbauen.
     window.addEventListener("language:change", () => {
       buildManifesto();
+      buildVerbs();
       if (fx) ScrollTrigger.refresh();
     });
     // Nach dem Font-Swap verschieben sich Layout-Höhen — Trigger neu messen.

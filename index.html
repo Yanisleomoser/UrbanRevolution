@@ -87,7 +87,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260704-spec-drawing2">
+    <link rel="stylesheet" href="css/styles.css?v=20260704-linie1">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -279,6 +279,8 @@
                 <rect class="lp-mark-eye" x="97.5" y="20" width="5" height="30" rx="2.5"/>
             </g>
         </svg>
+        <!-- Der gezogene Faden: die Nadel gebiert die eine Linie (fx-only). -->
+        <span class="lp-loader-thread"></span>
     </div>
     <nav class="navbar lp-nav" data-i18n-aria-label="nav.aria" aria-label="Hauptnavigation"><div class="nav-shell">
         <div class="nav-container">
@@ -313,6 +315,12 @@
          Die CTAs öffnen das UR-Create-Studio (#studio, unten). -->
     <section class="lp-hero" id="top">
         <canvas class="lp-hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
+        <!-- Die eine Linie — der graue Maschinen-Faden, aus dem Preloader übergeben,
+             läuft in der Gosse hinter der Headline weiter (fx zeichnet ihn ein). -->
+        <div class="lp-linie lp-linie--hero" aria-hidden="true">
+            <span class="lp-linie-rail"></span>
+            <span class="lp-linie-tip"></span>
+        </div>
         <div class="lp-hero-inner">
             <p class="lp-hero-eyebrow" data-i18n="landing.eyebrow">Autonome Kreislauf-Fabrik</p>
             <h1 class="lp-hero-title">
@@ -335,10 +343,25 @@
     <!-- ── AKT I · DIE LINIE ─ Manifest-These (Wort-Scrub) + Verben-Band.
          Die Maschinen-Stimme (Mono) trägt Akt I; der Kreis antwortet in #pivot. ── -->
     <section class="lp-manifesto lp-block" id="manifesto">
-        <p class="lp-label" data-i18n="landing.manifesto_label">Akt I — Die Linie</p>
-        <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden. Produzieren, tragen, wegwerfen — eine Richtung, ein Ende. Die Linie ist schnell. Die Linie ist billig. Und die Linie fertigt für alle — nur nie für dich.</p>
-        <p class="lp-verbs" data-lp-reveal data-i18n="landing.verbs">Produzieren — Tragen — Wegwerfen</p>
+        <!-- Die Linie läuft weiter durch das Manifest (gleiche Gossen-x wie im Hero). -->
+        <div class="lp-linie lp-linie--mani" aria-hidden="true"><span class="lp-linie-rail"></span></div>
+        <div class="lp-manifesto-col">
+            <p class="lp-label" data-i18n="landing.manifesto_label">Akt I — Die Linie</p>
+            <p class="lp-manifesto-text" id="manifesto-text" data-i18n="landing.manifesto">Mode ist eine Linie geworden. Produzieren, tragen, wegwerfen — eine Richtung, ein Ende. Die Linie ist schnell. Die Linie ist billig. Und die Linie fertigt für alle — nur nie für dich.</p>
+            <!-- Verben-Band: JS fädelt den i18n-String zu drei Stationen auf der Linie
+                 auf (buildVerbs, .is-stationed). Ohne JS bleibt die Mono-Zeile stehen. -->
+            <div class="lp-verbs" id="manifesto-verbs" data-lp-reveal data-i18n="landing.verbs">Produzieren — Tragen — Wegwerfen</div>
+        </div>
     </section>
+
+    <!-- Übergabe: die Gossen-Linie findet einmal sanft zur Mitte und erreicht
+         das Protokoll (Naht-Kurve wie „Der Faden"; fx zeichnet sie per Clip-Reveal). -->
+    <div class="lp-linie-seam" aria-hidden="true">
+        <svg class="lp-linie-seam-svg" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+            <path class="lp-linie-seam-path" d="M0 0 C0 60, 100 52, 100 100" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <span class="lp-linie-seam-knot"></span>
+    </div>
 
     <!-- Protokoll der Linie — „Die Masse" (Akt I, das Beweisband).
          Drei cineastische Full-Height-Beats mit Canvas-Partikeln: die absolute
