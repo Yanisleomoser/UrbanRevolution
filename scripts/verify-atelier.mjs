@@ -82,6 +82,12 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   await page.waitForTimeout(300);
   const opts = await page.$$(".de-region-picker .de-region-opt");
   check(opts.length === 3, "sleeve micro-picker offers its three cuts");
+  // Atelier-Lupe: every option carries a REAL close-up of the detail, and the
+  // close-ups actually differ between options (no decorative placeholders).
+  const thumbs = await page.$$eval(".de-region-picker .de-region-opt-thumb svg", (els) =>
+    els.map((el) => ({ vb: el.getAttribute("viewBox"), html: el.innerHTML.length })));
+  check(thumbs.length === opts.length, "every option carries a close-up thumbnail");
+  check(thumbs.every((th) => th.vb && th.vb !== "0 0 240 340"), `thumbnails are CROPPED views (${thumbs[0] && thumbs[0].vb})`);
   await opts[opts.length - 1].hover(); // Drop-Shoulder
   await page.waitForTimeout(600);
   const dGhost = await outlineD(page);
@@ -136,6 +142,17 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   } else {
     check(true, "a pick blooms a glow on the changed part (§6 reaction)");
   }
+  // Re-opening a decided region: the picker marks what the piece carries.
+  await page.click('.de-hotspot[aria-label^="Ärmel"]');
+  await page.waitForTimeout(300);
+  const marks = await page.$$eval(".de-region-picker .de-region-opt", (els) => els.map((el) => ({
+    cur: el.classList.contains("is-current"), pressed: el.getAttribute("aria-pressed"),
+  })));
+  check(marks.filter((x) => x.cur).length === 1 && marks[2].cur && marks[2].pressed === "true",
+    "re-opened picker marks the carried value ('aktuell' on the picked drop cut)");
+  await page.screenshot({ path: `${OUT}/picker-lupe.png` });
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(200);
   await page.screenshot({ path: `${OUT}/board-after-picks.png` });
   check(errors.length === 0, `no page errors (${errors.join(" | ") || "clean"})`);
   await page.close();
@@ -168,6 +185,41 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   check((await outlineD(page)) !== d0, "…and the pick still lands (board updated)");
   check(!(await page.$(".de-region-glow")), "reduced-motion: no glow spawns");
   check(errors.length === 0, `no page errors on the reduced path (${errors.join(" | ") || "clean"})`);
+  await page.close();
+}
+
+// ── 3) Touch semantics (the tap-feel contract, headless part) ──────────────
+// What a real thumb must get: an offset tap still hits (44px zone), opening
+// the picker NEVER tries an option on uninvited (the :focus-visible gate),
+// and ONE tap on an option decides — picker closes, pin set.
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  check(await walkToBoard(page), "touch walk reaches the atelier");
+  await page.waitForTimeout(600);
+  const spot = await page.$('.de-hotspot[aria-label^="Ärmel"]');
+  const box = await spot.boundingBox();
+  const dBefore = await outlineD(page);
+  // Tap 13px off the visible dot centre — inside the 44px zone, must hit.
+  await page.touchscreen.tap(box.x + box.width / 2 + 13, box.y + box.height / 2 - 10);
+  await page.waitForTimeout(500);
+  check(await page.$eval('.de-hotspot[aria-label^="Ärmel"]', (n) => n.getAttribute("aria-expanded")) === "true",
+    "an offset tap (13px off the dot) still opens the picker (44px zone)");
+  check((await outlineD(page)) === dBefore,
+    "opening by TAP does not try anything on (focus-visible gate holds on touch)");
+  // ONE tap on an option decides: pin set, picker closed, board updated.
+  const opt = (await page.$$(".de-region-picker .de-region-opt"))[2];
+  const ob = await opt.boundingBox();
+  check(ob.height >= 40, `option rows are thumb-sized (${Math.round(ob.height)}px)`);
+  await page.touchscreen.tap(ob.x + ob.width / 2, ob.y + ob.height / 2);
+  await page.waitForTimeout(900);
+  check(await page.$eval('.de-hotspot[aria-label^="Ärmel"]', (n) => n.classList.contains("is-set")),
+    "ONE tap decides — the pin is set");
+  check(await page.$eval(".de-region-picker", (n) => n.hidden), "…and the picker closed itself");
+  check((await outlineD(page)) !== dBefore, "…and the board carries the pick");
+  check(errors.length === 0, `no page errors on the touch path (${errors.join(" | ") || "clean"})`);
   await page.close();
 }
 

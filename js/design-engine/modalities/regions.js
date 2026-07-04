@@ -35,18 +35,31 @@
     const regions = (node.regions || []).filter((rg) =>
       !window.DesignCondition || window.DesignCondition.evaluate(rg.when, ctx.dna));
 
-    // Current garment params for the board flat: the live DNA plus the picks
-    // made so far — the SAME pipeline as the main preview, so the board IS the
-    // garment, not an icon of it.
-    const boardParams = () => {
+    // Effective DNA for the board: the live DNA plus the picks made so far
+    // (optionally with one region overridden — ghost try-ons and the picker's
+    // close-up thumbnails both build on this). SAME pipeline as the main
+    // preview, so the board IS the garment, not an icon of it.
+    const effectiveDna = (overrides) => {
       const clone = JSON.parse(JSON.stringify(ctx.dna));
       regions.forEach((rg) => {
-        const c = picks[rg.id] && (rg.choices || []).find((x) => x.id === picks[rg.id]);
+        const cid = overrides && overrides[rg.id] !== undefined ? overrides[rg.id] : picks[rg.id];
+        const c = cid && (rg.choices || []).find((x) => x.id === cid);
         if (c && c.effects && c.effects.set) {
           Object.entries(c.effects.set).forEach(([p, v]) => window.DesignDNA.set(clone, p, v, 1));
         }
       });
-      return window.DesignPreview.params(clone);
+      return clone;
+    };
+    const boardParams = () => window.DesignPreview.params(effectiveDna());
+    // A choice is "current" when EVERY value it would set already equals the
+    // effective DNA — decided earlier (subarchetype side-effects), inferred
+    // upstream, or picked here. The picker marks it so the user sees what the
+    // piece already carries before changing it.
+    const isCurrentChoice = (c) => {
+      const set = c.effects && c.effects.set;
+      if (!set) return false;
+      const dna = effectiveDna();
+      return Object.entries(set).every(([p, v]) => JSON.stringify(window.DesignDNA.get(dna, p)) === JSON.stringify(v));
     };
 
     const canBoard = !!(window.GarmentSVG && window.DesignPreview && window.DesignDNA &&
@@ -199,15 +212,7 @@
     // only — no DNA write, no commitment; leaving reverts to the picked state.
     function paintPicked() { paintParams(boardParams()); }
     function paintGhost(rg, choice) {
-      const clone = JSON.parse(JSON.stringify(ctx.dna));
-      regions.forEach((r) => {
-        const cid = r === rg ? choice.id : picks[r.id];
-        const c = cid && (r.choices || []).find((x) => x.id === cid);
-        if (c && c.effects && c.effects.set) {
-          Object.entries(c.effects.set).forEach(([p, v]) => window.DesignDNA.set(clone, p, v, 1));
-        }
-      });
-      paintParams(window.DesignPreview.params(clone));
+      paintParams(window.DesignPreview.params(effectiveDna({ [rg.id]: choice.id })));
     }
     // §6 preview reaction: a brief glow blooms on the part a pick just changed.
     function flashRegion(rg) {
@@ -251,7 +256,28 @@
       (rg.choices || []).forEach((c) => {
         const b = V.el("button", { type: "button", class: "de-region-opt" });
         b.setAttribute("aria-pressed", picks[rg.id] === c.id ? "true" : "false");
-        b.textContent = (c.label && c.label[lang]) || c.id;
+        const optLabel = (c.label && c.label[lang]) || c.id;
+        // Atelier-Lupe: every option is a REAL close-up of this detail with
+        // the option applied (cropped viewBox around the region's anchor) —
+        // touch users see what they choose without hover.
+        if (window.GarmentSVG.detailCrop) {
+          const tp = window.DesignPreview.params(effectiveDna({ [rg.id]: c.id }));
+          const thumb = V.el("span", { class: "de-region-opt-thumb", "aria-hidden": "true" });
+          thumb.innerHTML = window.GarmentSVG.detailCrop(tp.category, tp, rg.anchor || rg.id);
+          b.appendChild(thumb);
+        }
+        const lbl = V.el("span", { class: "de-region-opt-label" });
+        lbl.textContent = optLabel;
+        b.appendChild(lbl);
+        // Mark what the piece ALREADY carries (decided upstream or picked):
+        // a calm mono chip, announced to AT via the accessible name.
+        if (isCurrentChoice(c)) {
+          b.classList.add("is-current");
+          const cur = V.el("span", { class: "de-region-opt-cur", "aria-hidden": "true" });
+          cur.textContent = t("engine.region_current");
+          b.appendChild(cur);
+          b.setAttribute("aria-label", optLabel + " — " + t("engine.region_current"));
+        }
         // Try-on before choosing: pointer-over or keyboard focus previews the
         // option on the board (ghost — nothing committed), leaving reverts.
         // :focus-visible keeps the programmatic focus after a TAP from

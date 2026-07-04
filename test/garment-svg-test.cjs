@@ -299,5 +299,30 @@ console.log("\n— p.body re-proportions the flat, clamped, invariants intact �
     "no body → identical flat geometry (generic silhouette preserved)");
 }
 
+// ─── detailCrop + value-aware pocket anchor (Atelier-Lupe) ──────────────────
+console.log("\n— detailCrop() frames the region; pocket anchor follows its VALUE —");
+{
+  const crop = GarmentSVG.detailCrop("jacket", { fit: 0.5, length: "regular" }, "hem");
+  const m = /viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/.exec(crop);
+  assert(!!m, "crop emits a numeric viewBox");
+  const [x, y, w, h] = m.slice(1).map(Number);
+  assert(w === 110 && h === 88, "default crop window is 110×88");
+  assert(x >= 0 && y >= 0 && x + w <= 240 && y + h <= 340, "edge region (hem) clamps inside the canvas");
+  const a = GarmentSVG.regionAnchors("jacket", { fit: 0.5, length: "regular" }).hem;
+  assert(Math.abs((x + w / 2) - a.x) <= 56 && Math.abs((y + h / 2) - a.y) <= 56, "crop is centred on (or clamped near) the anchor");
+  const zipCrop = GarmentSVG.detailCrop("jacket", { closure: "zip" }, "closure");
+  const btnCrop = GarmentSVG.detailCrop("jacket", { closure: "button" }, "closure");
+  assert(zipCrop !== btnCrop && !/NaN|undefined/.test(zipCrop + btnCrop), "different choices yield different, clean close-ups");
+  assert(GarmentSVG.detailCrop("jacket", {}, "ghost-region").includes("viewBox="), "unknown region falls back gracefully");
+
+  // Honest position: the marker sits where the chosen pocket actually draws.
+  const chest = GarmentSVG.regionAnchors("jacket", { pockets: "chest" }).pockets;
+  const cargo = GarmentSVG.regionAnchors("jacket", { pockets: "cargo" }).pockets;
+  const kang = GarmentSVG.regionAnchors("hoodie", { pockets: "kangaroo" }).pockets;
+  assert(chest.y < cargo.y, "chest pocket anchors high, cargo low");
+  assert(chest.x < 120 && cargo.x > 120, "chest sits left, body pockets right");
+  assert(kang.y > 200, "kangaroo anchors on the low body");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
