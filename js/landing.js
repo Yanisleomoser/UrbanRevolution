@@ -1072,6 +1072,9 @@
         phase: Math.random() * TAU,
         speed: 0.00016 + Math.random() * 0.0004,
         alpha: 0.058 + Math.random() * 0.072,
+        d: 0,    // aktuelle Zupf-Auslenkung (px, signiert)
+        v: 0,    // Auslenkungs-Geschwindigkeit (Feder)
+        py: 0,   // Zupf-Punkt (y) — die Spitze der Dreiecks-Auslenkung
       }));
     }
 
@@ -1128,21 +1131,31 @@
       //    die farblose Maschinen-Linie; Farbe kommt erst nach der Wende). Hinter
       //    der Headline über die Durchschnitts-Maske gedämpft (Lesbarkeit).
       const SEG = mobile ? 9 : 11;
-      ctx.lineWidth = mobile ? 0.8 : 0.9;
+      const baseW = mobile ? 0.8 : 0.9;
+      const H = h || 1;
       ctx.lineCap = "round";
       ctx.strokeStyle = "#9fb6c6";
       for (let wi = 0; wi < warp.length; wi++) {
         const th = warp[wi];
+        const d = th.d;
+        // Zupf-Spitze in [8, H-8] klemmen, damit das Dreieck nicht entartet.
+        const py = th.py < 8 ? 8 : (th.py > H - 8 ? H - 8 : th.py);
         let msum = 0;
         for (let s = 0; s <= SEG; s++) {
           const yy = (s / SEG) * h;
           msum += maskAt(th.x + Math.sin(th.phase + clockT * th.speed + yy * 0.004) * th.amp, yy);
         }
-        ctx.globalAlpha = th.alpha * dimm * (0.14 + 0.86 * (msum / (SEG + 1)));
+        // gezupfter/schwingender Faden leuchtet kurz auf (steht unter Spannung).
+        const pluck = d < 0 ? -d : d;
+        const glow = pluck > 1 ? (pluck < 44 ? pluck / 44 : 1) : 0;
+        ctx.globalAlpha = Math.min(0.6, th.alpha * dimm * (0.14 + 0.86 * (msum / (SEG + 1))) * (1 + glow * 3.2));
+        ctx.lineWidth = baseW + glow * 1.0;
         ctx.beginPath();
         for (let s = 0; s <= SEG; s++) {
           const yy = (s / SEG) * h;
-          const xx = th.x + Math.sin(th.phase + clockT * th.speed + yy * 0.004) * th.amp;
+          // Dreiecks-Auslenkung: 0 an beiden Enden (fixiert), Spitze = d bei py.
+          const shape = d ? (yy <= py ? yy / py : (H - yy) / (H - py)) : 0;
+          const xx = th.x + Math.sin(th.phase + clockT * th.speed + yy * 0.004) * th.amp + d * shape;
           if (s) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy);
         }
         ctx.stroke();
@@ -1194,6 +1207,29 @@
           p.x += (dx / d) * f;
           p.y += (dy / d) * f;
         }
+      }
+    }
+
+    // Warp-Saiten am Zeiger: nahe Fäden „heften" sich an den Cursor (wie
+    // gezupfte Saiten), beim Loslassen schwingen sie gedämpft zurück (Nach-
+    // schwingen). Feder-Modell pro Faden, grob framerate-unabhängig (dtf).
+    function updateWarp(dt) {
+      const dtf = Math.min(2.2, (dt || 16) / 16.67);
+      const live = pointer.active && mode === "drift";
+      const reach = warp.length ? Math.min(72, (w / warp.length) * 0.85) : 60;
+      for (let i = 0; i < warp.length; i++) {
+        const th = warp[i];
+        const grab = live && Math.abs(pointer.x - th.x) < reach && pointer.y > -60 && pointer.y < h + 60;
+        if (grab) {
+          th.py = pointer.y;                       // Zupf-Spitze folgt dem Cursor …
+          th.v += ((pointer.x - th.x) - th.d) * 0.30 * dtf;
+          th.v *= Math.pow(0.55, dtf);             // straff angeheftet, wenig Überschwingen
+        } else {
+          th.v += (0 - th.d) * 0.055 * dtf;        // Rückstellkraft zur Ruhelage
+          th.v *= Math.pow(0.93, dtf);             // unterdämpft → sichtbares Nachschwingen
+        }
+        th.d += th.v * dtf;
+        if (th.d > 92) th.d = 92; else if (th.d < -92) th.d = -92;
       }
     }
 
@@ -1351,6 +1387,7 @@
       if (mode === "form") computeForm(); else fNeedle = -1;
       const t0 = performance.now();
       step(dt);
+      updateWarp(dt);
       frame();
       // FPS-Wächter: stuft die Felddichte herunter, falls Frames zu lang werden.
       emaDt = emaDt * 0.9 + (performance.now() - t0) * 0.1;
@@ -1393,6 +1430,9 @@
       pointer.active = true;
     }, { passive: true });
     hero.addEventListener("pointerleave", () => { pointer.active = false; });
+    // Loslassen (v. a. Touch: kein pointerleave) → die gehaltene Saite fährt zurück.
+    hero.addEventListener("pointerup", () => { pointer.active = false; }, { passive: true });
+    hero.addEventListener("pointercancel", () => { pointer.active = false; }, { passive: true });
 
     // Tap/Klick irgendwo im Hero (außer auf Links/Buttons): die Punkte
     // verbinden sich zur Silhouette des nächsten Kleidungsstücks.
