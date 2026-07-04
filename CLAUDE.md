@@ -421,9 +421,10 @@ grouping (`1'234'567`), bilingual via `ticker.*` i18n keys.
 **`js/facts-mass.js`** stages the three numbers as „Die Masse" — three
 full-height canvas-particle beats (one shared ash-like particle language):
 a never-ending CO₂ plume behind the ≤8 % with a live "≈ +38 t seit du hier
-bist" counter (1.2 Gt/yr ÷ seconds, always marked ≈), a waste mound that
-grows by one truckload-clump per real second beside the kg odometer, and
-100 tracers of which exactly one escapes (= the <1 %). Classic IIFE
+bist" counter (1.2 Gt/yr ÷ seconds, always marked ≈), a waste mound onto
+which one garment silhouette falls and stacks per real second (a mountain
+of clothes) beside the kg odometer, and 100 tracers of which exactly one
+— a single glowing piece of clothing, lifted out — escapes (= the <1 %). Classic IIFE
 side-effect module (no global), mirrors ambient-ticker.js. Progressive
 enhancement is load-bearing: canvases are `aria-hidden` (the meaning lives
 in the adjacent real-text number + caption), the default CSS/SVG state is
