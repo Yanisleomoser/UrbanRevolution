@@ -2729,6 +2729,22 @@ html[lang="en"] [data-l="de"] { display: none; }
 }
 #vto-example.has-image .vto-example-label { display: none; }
 
+/* "Dein Stück" auf der Anprobe-Bühne: statt des Beispielfotos liegt die echte
+   Flat des Entwurfs im Studio-Licht (dieselbe Bühnensprache wie Vorschau und
+   Atelier); das Badge nennt es, die Unterzeile lädt zur Anprobe ein. */
+#vto-example.has-flat {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    padding: 24px 16px 16px;
+    justify-content: center;
+    background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.1), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%);
+}
+#vto-example.has-flat .own-flat { flex: 1; min-height: 0; width: min(300px, 82%); display: flex; align-items: center; }
+#vto-example.has-flat .own-flat svg { width: 100%; height: 100%; max-height: 520px; display: block; }
+#vto-example.has-flat .vto-example-tag { position: absolute; top: 14px; left: 14px; }
+#vto-example.has-flat .vto-example-label { font-size: var(--text-sm); max-width: 320px; }
+
 .vto-result-actions[hidden] { display: none; }
 
 .vto-result-actions {

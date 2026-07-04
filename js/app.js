@@ -1035,6 +1035,71 @@
         ? `<span class="oi-swatch" style="background:${escapeHtml(color)}"></span>${escapeHtml(colorAdjective(color))}`
         : "—";
     }
+    renderOwnStageFlat();
+  }
+
+  // "Dein Stück" statt Beispielfoto (Ehrlichkeits-Regel: nie fremde Ware neben
+  // dem eigenen Entwurf): der Platzhalter der Anprobe-Bühne zeigt das ECHTE
+  // Teil — die parametrische Flat aus der Design-DNA, inkl. Made-for-one-
+  // Proportionen aus den Massen, live nachgeführt bei jeder Facade-Änderung
+  // (updateOwnInfo hängt bereits an allen relevanten State-Keys). Designs vom
+  // Freitext-Pfad tragen keine DNA — dann baut der State die Params direkt.
+  // Ein VTO-Ergebnis ersetzt die Bühne wie bisher (das eigene Foto gewinnt).
+  function renderOwnStageFlat() {
+    const example = document.getElementById("vto-example");
+    if (!example || !window.GarmentSVG || !window.DesignPreview) return;
+    const design = S.get("currentDesign");
+    let host = example.querySelector(".own-flat");
+    if (!design) {
+      if (host) { host.remove(); example.classList.remove("has-flat"); example.classList.add("has-image"); }
+      return;
+    }
+    const type = S.get("currentType") || design.type || "tshirt";
+    const color = S.get("currentColor");
+    let p;
+    if (design.dna && window.DesignDNA) {
+      const clone = JSON.parse(JSON.stringify(design.dna));
+      const setD = (path, v) => window.DesignDNA.set(clone, path, v, 1);
+      // Die Facade-Overrides (Weiter anpassen) gewinnen über die Journey-DNA —
+      // dieselbe Vorrang-Regel wie applyJourneyDesign in Gegenrichtung.
+      if (color) {
+        const stops = window.DesignDNA.get(clone, "color.stops");
+        if (Array.isArray(stops) && stops.length) { stops[0] = color; setD("color.stops", stops.slice()); }
+        else { setD("color.stops", [color]); setD("color.scheme", "mono"); }
+      }
+      const material = S.get("currentMaterial"); if (material) setD("fabric.material", material);
+      const fit = S.get("currentFit"); if (fit !== null && fit !== undefined) setD("silhouette.fit", fit);
+      const length = S.get("currentLength"); if (length) setD("length", length);
+      p = window.DesignPreview.params(clone);
+    } else {
+      p = {
+        category: type,
+        fit: S.get("currentFit"),
+        length: S.get("currentLength"),
+        material: S.get("currentMaterial"),
+        stops: color ? [color] : undefined,
+        scheme: "mono",
+        pattern: design.pattern && design.pattern !== "solid" ? design.pattern : "none",
+        energy: 0.55,
+      };
+    }
+    if (window.DesignFlow && window.DesignFlow.bodyFactors) {
+      const body = window.DesignFlow.bodyFactors(S.get("measurements"));
+      if (body) p.body = body;
+    }
+    if (!host) {
+      host = document.createElement("div");
+      host.className = "own-flat";
+      host.setAttribute("aria-hidden", "true");
+      example.prepend(host);
+    }
+    example.classList.add("has-flat");
+    example.classList.remove("has-image");
+    host.innerHTML = window.GarmentSVG.build(p.category || type, p);
+    // Das Badge sagt jetzt, WAS auf der Bühne liegt — dauerhaft sprachfest
+    // über den data-i18n-Key (Language-Switch re-hydriert das Attribut).
+    const tag = example.querySelector(".vto-example-tag");
+    if (tag) { tag.setAttribute("data-i18n", "own.stage_tag"); tag.textContent = t("own.stage_tag"); }
   }
 
   // "Wer trägt es?" — the chooser in the Ownership/try-on moment. Either the

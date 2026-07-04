@@ -102,6 +102,31 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   // the result surface; its name line must carry the piece's name.
   const ownName = await page.$eval("#own-name", (n) => n.textContent).catch(() => "");
   check(ownName.includes("Circuit One"), `ownership carries the piece's name (${JSON.stringify(ownName)})`);
+  // "Dein Stück": the try-on stage shows the REAL piece (parametric flat from
+  // the design DNA), never an unrelated example photo next to your design.
+  const stage = await page.evaluate(() => {
+    const ex = document.getElementById("vto-example");
+    const svg = ex && ex.querySelector(".own-flat svg");
+    const tag = ex && ex.querySelector(".vto-example-tag");
+    return ex ? {
+      hasFlat: ex.classList.contains("has-flat"),
+      hasImage: ex.classList.contains("has-image"),
+      svg: !!svg, tag: tag ? tag.textContent : "",
+      fillTeal: svg ? svg.outerHTML.includes("#2a9d8f") : false,
+    } : null;
+  });
+  check(!!stage && stage.hasFlat && !stage.hasImage && stage.svg,
+    "the try-on stage shows YOUR piece (flat), not the example photo");
+  check(!!stage && /dein stück|your piece/i.test(stage.tag), `the badge names it (${stage && stage.tag})`);
+  check(!!stage && stage.fillTeal, "…in the design's own colour (teal stops reach the stage flat)");
+  // Facade live-follow: picking another colour in "Weiter anpassen" re-dyes
+  // the stage flat immediately (updateOwnInfo subscription).
+  await page.$eval(".own-edit", (n) => { n.open = true; });
+  const before = await page.$eval("#vto-example .own-flat", (n) => n.innerHTML);
+  await page.click("#oe-colors .oe-color:nth-child(3)");
+  await page.waitForTimeout(400);
+  const after = await page.$eval("#vto-example .own-flat", (n) => n.innerHTML);
+  check(before !== after, "a facade colour pick re-dyes the stage flat live");
   check(errors.length === 0, `no page errors (${errors.join(" | ") || "clean"})`);
   await page.close();
 }
