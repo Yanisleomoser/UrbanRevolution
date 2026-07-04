@@ -126,9 +126,15 @@ a printable production spec sheet that drives the autonomous factory.
 
 The **landing experience** (`js/landing.js`, GSAP) is the front door, told as
 a **two-act dramaturgy ("Die Linie und der Kreis")**: preloader logo-draw →
-hero with a thread-particle field → **Act I THE LINE** (manifesto word-scrub
+hero with a **warp thread-field** (`initWeave`, `#weave-canvas`) that responds
+to the cursor like **plucked strings** (nearby threads pin to the pointer and
+damp-oscillate back on release) → **Act I THE LINE** (manifesto word-scrub
 thesis + mono verbs band → counted-up stats as the line's protocol, kickers
-Produzieren/Wegwerfen/Zurück + coda) → the pinned **`#pivot` turn** (the one
+Produzieren/Wegwerfen/Zurück + coda). A **single continuous machine thread**
+(`initActOneThread`, the `.lp-linie` rail) is born in the preloader and
+physically carries the eye through Preloader → Hero → Manifesto → `#facts`,
+handing over with a clip-drawn seam + knot (`.lp-linie-seam*`) → the pinned
+**`#pivot` turn** (the one
 big question; a straight line scroll-scrubs into a circle via `initPivot` /
 exported `pivotBendPath`, hinge sentence + mission statement) → **Act II THE
 CIRCLE** (pinned `#loop` vision with STATUS meta + Alle/KI/Du/KI station tags
@@ -243,11 +249,11 @@ not two stills (project rule).
 | Anchor / id            | What it is                                   | Driven by                                                        | Motion                                  | `shoot`     |
 | ---------------------- | -------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------- | ----------- |
 | `#loader` `.lp-loader` | Preloader logo-draw                          | `landing.js` `initLoader` (`.lp-mark-arc/-dashes/-needle`)        | GSAP stroke-draw (transient)            | —           |
-| `#top` `.lp-hero`      | Hero: thread-particle field + headline       | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`)          | GSAP intro + canvas particle weave      | `hero`      |
+| `#top` `.lp-hero`      | Hero: warp thread-field + headline (plucked-string cursor) | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`); Act I rail via `initActOneThread` (`.lp-linie`) | GSAP intro + canvas warp weave (cursor pins/plucks threads) | `hero`      |
 | `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
 | `#facts` `.lp-stats`   | Cited fast-fashion evidence — „Die Masse": 3 full-height canvas-particle beats | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-mass.js` (`html.fxb-go`, `.is-live` je Beat) | count-up + live kg/CO₂ odometer + particle plume/mound/tracer (canvas, offscreen-paused) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
-| `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`)  | GSAP ScrollTrigger pin + needle sweep   | —           |
+| `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`) + `initLoopMotes` (`.lp-loop-canvas` orbiting motes) | GSAP ScrollTrigger pin + needle sweep + orbiting motes (canvas) | —           |
 | `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | `aidr`      |
 | `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | `style`     |
 | `#how` `.lp-how`       | 4-step "So funktioniert's" arc               | static markup (`how.*` i18n) + `animations.js` (`[data-reveal]`)  | SVG-arc stroke-draw on scroll-in (horiz. desktop / vert. mobile) + staggered open stations | `how`       |
