@@ -45,10 +45,20 @@ function validateInput(payload) {
 // Pull the design JSON out of the model's free-text reply (it may wrap the
 // object in prose). Returns the parsed design, or null if nothing parseable.
 function extractDesign(text) {
-    const jsonMatch = String(text || "").match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
+    const s = String(text || "");
+    const start = s.indexOf("{");
+    if (start === -1) return null;
+    // Balance braces from the first "{" so trailing prose containing its own
+    // "{"/"}" (e.g. a stray emoticon) can't extend the match past the object.
+    let depth = 0;
+    let end = -1;
+    for (let i = start; i < s.length; i++) {
+        if (s[i] === "{") depth++;
+        else if (s[i] === "}" && --depth === 0) { end = i; break; }
+    }
+    if (end === -1) return null;
     try {
-        return JSON.parse(jsonMatch[0]);
+        return JSON.parse(s.slice(start, end + 1));
     } catch {
         return null;
     }

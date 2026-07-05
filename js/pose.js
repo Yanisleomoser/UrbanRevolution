@@ -44,6 +44,11 @@ const Pose = (() => {
             });
             return landmarker;
         })();
+        // A transient network/CDN failure must not permanently break pose
+        // detection for the rest of the session — clear the cached promise on
+        // rejection so the next init() call retries instead of re-returning
+        // the same rejected promise.
+        loadingPromise.catch(() => { loadingPromise = null; });
         return loadingPromise;
     }
 

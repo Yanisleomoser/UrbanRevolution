@@ -1614,6 +1614,13 @@
     document.getElementById("ai-prompt").value = entry.originalPrompt || "";
     setActiveType(entry.type);
     applyDesignToState(design);
+    // Restore the design's own measurement snapshot (library.js keeps one per
+    // entry) — otherwise the recalled design silently inherits whatever
+    // measurements are currently in the form/state from a different design.
+    if (entry.measurements) {
+      Measurements.write(entry.measurements);
+      updateMeasurements();
+    }
     updateProductionPreview();
     closeLibraryModal();
     showToast(t("toast.loaded", { name: entry.name }), "success");

@@ -283,7 +283,12 @@
       // Handler läuft, ist der Button gesperrt.
       if (publish.disabled) return;
       const dna = currentDna();
-      if (!dna || !window.DesignShare) { flashButton(publish, "own.shared"); return; }
+      if (!dna || !window.DesignShare) {
+        // Nothing to publish (e.g. a classic prompt-based design with no DNA) —
+        // don't flash the Share button's success copy, that would lie to the user.
+        console.warn("[ur-create] Publish skipped: no DNA design to publish yet.");
+        return;
+      }
       const d = window.DesignShare.encode(dna);
       const design = window.StateManager && window.StateManager.get("currentDesign");
       const entry = { d, name: (design && design.name) || "", by: "", ts: Date.now() };
