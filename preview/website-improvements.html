@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a1622">
+    <meta name="color-scheme" content="dark">
+    <meta name="robots" content="noindex">
+    <title>Website-Improvements — Live-Vorschau · Urban Revolution</title>
+
+    <!-- Freeze a stable --svh (mirrors index.html) so nothing jumps on mobile. -->
+    <script>
+      (function () {
+        try {
+          var de = document.documentElement, lastW = -1;
+          function setSVH() { de.style.setProperty("--svh", (window.innerHeight * 0.01) + "px"); lastW = window.innerWidth; }
+          setSVH();
+          window.addEventListener("resize", function () { if (window.innerWidth !== lastW) setSVH(); });
+          if (navigator.maxTouchPoints > 0 || "ontouchstart" in window) de.classList.add("is-touch");
+        } catch (e) { /* no-op */ }
+      })();
+    </script>
+
+    <!-- Reuse the REAL brand system so these mockups look exactly like the site. -->
+    <link rel="stylesheet" href="/css/styles.css?v=20260704-linie2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/fraunces-400-700-normal-latin.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/poppins-400-normal-latin.woff2">
+    <link rel="stylesheet" href="/assets/fonts/fonts.css">
+
+    <style>
+      /* ── Preview-only chrome (never ships; grounded in :root tokens) ──────── */
+      body { background: var(--bg); color: var(--text); margin: 0; }
+
+      .pv-top {
+        position: sticky; top: 0; z-index: 40;
+        display: flex; align-items: center; gap: var(--space-4);
+        padding: 12px clamp(16px, 4vw, 40px);
+        background: rgba(10, 22, 34, 0.82);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
+      }
+      .pv-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--gradient); flex: none;
+        display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 11px; color: var(--bg); }
+      .pv-top-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin: 0; }
+      .pv-top-title b { color: var(--text); font-weight: 600; }
+      .pv-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+        padding: 4px 10px; border-radius: 100px; border: 1px solid var(--accent-warm); color: var(--accent-warm); }
+      .pv-spacer { flex: 1; }
+      .pv-lang { display: inline-flex; border: 1px solid var(--border); border-radius: 100px; overflow: hidden; }
+      .pv-lang button { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; padding: 6px 12px;
+        background: transparent; color: var(--text-dim); border: 0; cursor: pointer; }
+      .pv-lang button[aria-pressed="true"] { background: var(--gradient); color: var(--bg); }
+
+      .pv-wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+      .pv-hero { padding: clamp(40px, 8vw, 88px) 0 clamp(24px, 5vw, 56px); text-align: center; }
+      .pv-hero h1 { font-family: var(--font-display); font-size: var(--text-3xl); line-height: 1.08; margin: 12px 0 0; letter-spacing: -0.01em; }
+      .pv-hero h1 em { font-style: italic; background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .pv-lead { color: var(--text-dim); font-size: var(--text-md); line-height: 1.6; max-width: 62ch; margin: 18px auto 0; }
+      .pv-doclink { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; font-family: var(--font-mono);
+        font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-3); text-decoration: none; border-bottom: 1px solid transparent; }
+      .pv-doclink:hover { border-bottom-color: var(--accent-3); }
+
+      .pv-section { padding: clamp(36px, 6vw, 72px) 0; border-top: 1px solid var(--border); }
+      .pv-sec-head { max-width: 72ch; }
+      .pv-kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-3); margin: 0; }
+      .pv-sec-head h2 { font-family: var(--font-display); font-size: var(--text-2xl); line-height: 1.15; margin: 10px 0 0; }
+      .pv-sec-head p { color: var(--text-dim); font-size: var(--text-base); line-height: 1.6; margin: 14px 0 0; }
+
+      /* Before / after split */
+      .pv-ba { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 28px); margin-top: clamp(24px, 4vw, 40px); align-items: stretch; }
+      @media (max-width: 760px) { .pv-ba { grid-template-columns: 1fr; } }
+      .pv-panel { position: relative; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: clamp(18px, 3vw, 28px); display: flex; flex-direction: column; min-height: 340px; }
+      .pv-panel.is-after { border-color: rgba(100, 214, 196, 0.4); box-shadow: 0 0 0 1px rgba(100, 214, 196, 0.12), 0 24px 60px -30px rgba(100, 214, 196, 0.25); }
+      .pv-tag { position: absolute; top: 14px; left: 14px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em;
+        text-transform: uppercase; padding: 4px 9px; border-radius: 100px; }
+      .pv-tag.before { color: var(--text-muted); border: 1px solid var(--border); }
+      .pv-tag.after { color: var(--bg); background: var(--gradient); }
+      .pv-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 26px; }
+
+      /* ── 01 · Cold-start "before": abstract mood pair ─────────────────────── */
+      .pv-mood { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .pv-mood-tile { aspect-ratio: 3 / 4; border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; position: relative; }
+      .pv-mood-tile.a { background: linear-gradient(160deg, #16303f, #0d2130 60%, #14283b); }
+      .pv-mood-tile.b { background: linear-gradient(160deg, #123b3a, #0f2a2c 55%, #14283b); }
+      .pv-mood-q { text-align: center; font-family: var(--font-display); font-size: var(--text-lg); margin: 16px 0 0; color: var(--text); }
+      .pv-cold-note { text-align: center; color: var(--text-muted); font-size: var(--text-sm); margin: 8px 0 0; }
+
+      /* ── 01 · Intro card "after" (revives showIntro) ──────────────────────── */
+      .pv-intro { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+      .pv-intro .mono-label { color: var(--accent-3); }
+      .pv-intro-title { font-family: var(--font-display); font-size: var(--text-2xl); line-height: 1.1; margin: 0; }
+      .pv-intro-sub { color: var(--text-dim); font-size: var(--text-base); line-height: 1.6; max-width: 46ch; margin: 0; }
+      .pv-intro-meta { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-family: var(--font-mono);
+        font-size: 11px; letter-spacing: 0.06em; color: var(--text-muted); text-transform: uppercase; }
+      .pv-intro-meta b { color: var(--accent-3); font-weight: 600; }
+
+      /* Tap-counter stepper — extends the real .de-step rail with an honest count */
+      .pv-rail { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 8px;
+        padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 100px; }
+      .pv-count { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.12em; color: var(--text); white-space: nowrap; }
+      .pv-count b { color: var(--accent-3); font-weight: 700; }
+      .pv-count span { color: var(--text-muted); }
+      .pv-rail-mock { min-height: 0 !important; }
+
+      /* First-question reveal after "Begin" */
+      .pv-q { text-align: center; }
+      .pv-q-title { font-family: var(--font-display); font-size: var(--text-xl); margin: 0 0 18px; }
+      .pv-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      @media (max-width: 480px) { .pv-cards { grid-template-columns: 1fr 1fr; } }
+      .pv-card { padding: 16px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card);
+        color: var(--text-dim); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out); }
+      .pv-card[aria-pressed="true"] { border-color: var(--accent-3); color: var(--text); box-shadow: 0 0 0 3px rgba(100,214,196,0.12); }
+      .pv-confirm-row { margin-top: 16px; }
+
+      /* Commit-pattern note */
+      .pv-commit { margin-top: clamp(24px, 4vw, 40px); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 640px) { .pv-commit { grid-template-columns: 1fr; } }
+      .pv-commit-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; background: var(--bg-elevated); }
+      .pv-commit-card h4 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 10px; }
+      .pv-commit-card.old h4 { color: var(--text-muted); }
+      .pv-commit-card.new h4 { color: var(--accent-3); }
+      .pv-commit-card p { color: var(--text-dim); font-size: var(--text-sm); line-height: 1.55; margin: 0; }
+      .pv-commit-card code { font-family: var(--font-mono); font-size: 0.85em; color: var(--accent-warm); }
+
+      /* ── 02 · Ownership "before" actions ──────────────────────────────────── */
+      .pv-own-before { display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; }
+      .pv-own-flat { width: 150px; }
+      .pv-own-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+      .pv-missing { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+      .pv-missing::before { content: "↑ "; color: var(--accent-warm); }
+
+      /* ── 02 · Reserve-this-piece card "after" ─────────────────────────────── */
+      .pv-reserve { display: grid; grid-template-columns: 118px 1fr; gap: 20px; align-items: center;
+        border: 1px solid rgba(100,214,196,0.4); border-radius: var(--radius); padding: 20px;
+        background: linear-gradient(150deg, rgba(100,214,196,0.06), rgba(39,121,168,0.05)); }
+      @media (max-width: 460px) { .pv-reserve { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+      .pv-reserve-flat { width: 118px; }
+      .pv-reserve-body .mono-label { color: var(--accent-3); margin: 0 0 6px; }
+      .pv-reserve-h { font-family: var(--font-display); font-size: var(--text-lg); margin: 0 0 6px; }
+      .pv-reserve-p { color: var(--text-dim); font-size: var(--text-sm); line-height: 1.5; margin: 0 0 14px; }
+      .pv-reserve-form { display: flex; flex-wrap: wrap; gap: 10px; }
+      .pv-reserve-form input[type="email"] { flex: 1 1 200px; padding: 0.75rem 1rem; border-radius: 100px; border: 1px solid var(--border);
+        background: var(--bg-elevated); color: var(--text); font: inherit; }
+      .pv-reserve-form input[type="email"]:focus { outline: none; border-color: var(--accent); }
+      .pv-reserve-consent { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 0; font-size: 0.78rem; color: var(--text-muted); text-align: left; }
+      .pv-reserve-status { margin: 12px 0 0; min-height: 1.3em; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--accent-3); }
+      .pv-dna-note { margin: 10px 0 0; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--text-muted); }
+      .pv-dna-note code { color: var(--accent-warm); }
+
+      /* ── 03 · Non-visual note ─────────────────────────────────────────────── */
+      .pv-nonvisual { border: 1px dashed var(--border); border-radius: var(--radius); padding: clamp(20px, 3vw, 30px); margin-top: 28px; background: var(--bg-elevated); }
+      .pv-nonvisual ul { margin: 14px 0 0; padding-left: 20px; color: var(--text-dim); font-size: var(--text-sm); line-height: 1.7; }
+      .pv-nonvisual code { font-family: var(--font-mono); font-size: 0.85em; color: var(--accent-warm); }
+
+      .pv-foot { padding: 48px 0 80px; text-align: center; color: var(--text-muted); font-size: var(--text-sm); line-height: 1.7; border-top: 1px solid var(--border); }
+      .pv-foot code { font-family: var(--font-mono); color: var(--text-dim); }
+
+      html:not(.pv-en) [data-en] { display: none; }
+      html.pv-en [data-de] { display: none; }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .pv-fade { animation: pvFade 0.5s var(--ease-out, ease) both; }
+        @keyframes pvFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      }
+    </style>
+</head>
+<body>
+    <div class="pv-top">
+        <span class="pv-mark">UR</span>
+        <p class="pv-top-title"><b>Website-Improvements</b> · <span data-de>Live-Vorschau</span><span data-en>Live preview</span></p>
+        <span class="pv-pill">Experiment</span>
+        <span class="pv-spacer"></span>
+        <div class="pv-lang" role="group" aria-label="Sprache / Language">
+            <button type="button" id="lang-de" aria-pressed="true">DE</button>
+            <button type="button" id="lang-en" aria-pressed="false">EN</button>
+        </div>
+    </div>
+
+    <div class="pv-wrap">
+        <header class="pv-hero">
+            <p class="mono-label" style="color:var(--accent-3)">[ <span data-de>PROTOTYP · NICHT LIVE</span><span data-en>PROTOTYPE · NOT LIVE</span> ]</p>
+            <h1>
+                <span data-de>Drei Verbesserungen, <em>zum Anfassen.</em></span>
+                <span data-en>Three upgrades, <em>you can touch.</em></span>
+            </h1>
+            <p class="pv-lead">
+                <span data-de>Vorschau der in <code style="font-family:var(--font-mono);color:var(--accent-warm)">docs/WEBSITE-IMPROVEMENTS.md</code> vorgeschlagenen Änderungen — in der echten Ocean-Depths-Sprache der Seite gerendert, aber komplett getrennt von der Live-Seite. Nichts hier ist verdrahtet oder final; es ist zum Anschauen und Fühlen, bevor irgendetwas ins Produkt wandert.</span>
+                <span data-en>A preview of the changes proposed in <code style="font-family:var(--font-mono);color:var(--accent-warm)">docs/WEBSITE-IMPROVEMENTS.md</code> — rendered in the site's real Ocean-Depths language, but fully separate from the live site. Nothing here is wired or final; it's here to look at and feel before anything moves into the product.</span>
+            </p>
+            <a class="pv-doclink" href="https://github.com/yanisleomoser/urbanrevolution/blob/main/docs/WEBSITE-IMPROVEMENTS.md" target="_blank" rel="noopener">
+                <span data-de>Die Analyse lesen</span><span data-en>Read the analysis</span> ↗
+            </a>
+        </header>
+
+        <!-- ════════════════════════════ 01 ════════════════════════════ -->
+        <section class="pv-section">
+            <div class="pv-sec-head">
+                <p class="pv-kicker">01 · <span data-de>Die Eingangstür zum Studio</span><span data-en>The studio's front door</span></p>
+                <h2><span data-de>Wärme empfangen, nicht kalt reinwerfen.</span><span data-en>Welcome them in — don't drop them in cold.</span></h2>
+                <p>
+                    <span data-de>Heute landet ein Erstbesucher direkt auf einer abstrakten Stimmungsfrage — zwei Landschaftsfotos, ohne zu erklären, dass er ein Kleidungsstück entwirft, wie lange es dauert oder dass die Idee seine bleibt. Der Vorschlag: eine ruhige Intro-Karte, eine ehrliche Schritt-Anzeige und ein einziges Bestätigungs-Muster.</span>
+                    <span data-en>Today a first-time visitor lands straight on an abstract mood question — two landscape photos, nothing explaining they're designing a garment, how long it takes, or that the idea stays theirs. The proposal: one quiet intro card, an honest step counter, and a single commit pattern.</span>
+                </p>
+            </div>
+
+            <div class="pv-ba">
+                <!-- BEFORE -->
+                <div class="pv-panel">
+                    <span class="pv-tag before"><span data-de>Heute</span><span data-en>Today</span></span>
+                    <div class="pv-stage">
+                        <div class="pv-mood">
+                            <div class="pv-mood-tile a"></div>
+                            <div class="pv-mood-tile b"></div>
+                        </div>
+                        <p class="pv-mood-q"><span data-de>Was zieht dich mehr an?</span><span data-en>What draws you more?</span></p>
+                        <p class="pv-cold-note"><span data-de>Kein Rahmen. Keine Dauer. Kein „das bleibt deine Idee".</span><span data-en>No framing. No duration. No "the idea stays yours."</span></p>
+                    </div>
+                </div>
+
+                <!-- AFTER -->
+                <div class="pv-panel is-after" id="pv-intro-panel">
+                    <span class="pv-tag after"><span data-de>Vorschlag</span><span data-en>Proposal</span></span>
+                    <div class="pv-stage">
+                        <div class="pv-intro" id="pv-intro">
+                            <p class="mono-label">[ <span data-de>DEIN ATELIER</span><span data-en>YOUR STUDIO</span> ]</p>
+                            <h3 class="pv-intro-title"><span data-de>Du entwirfst. Wir fertigen.</span><span data-en>You design. We make it.</span></h3>
+                            <p class="pv-intro-sub">
+                                <span data-de>Ein paar ruhige Fragen — Gefühl, Form, Stoff, Farbe, Details. In etwa zehn Schritten steht dein Einzelstück.</span>
+                                <span data-en>A few quiet questions — feeling, form, fabric, colour, details. In about ten steps your one-off piece takes shape.</span>
+                            </p>
+                            <div class="pv-intro-meta">
+                                <span><span data-de>Deine Idee,</span><span data-en>Your idea,</span> <b><span data-de>von Anfang bis Ende</span><span data-en>start to finish</span></b></span>
+                                <span>·</span>
+                                <span><b>~10</b> <span data-de>Schritte</span><span data-en>steps</span></span>
+                            </div>
+                            <button type="button" class="de-confirm manifesto-cta" id="pv-begin">
+                                <span data-de>Beginnen</span><span data-en>Begin</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- The tap-counter rail (revealed together with the first question) -->
+                    <div id="pv-rail-slot"></div>
+                </div>
+            </div>
+
+            <div class="pv-commit">
+                <div class="pv-commit-card old">
+                    <h4><span data-de>Heute · zwei Muster</span><span data-en>Today · two patterns</span></h4>
+                    <p>
+                        <span data-de>Einfach-Karten committen beim Tippen; Slider, Farbe, Ranking und Regionen brauchen ein extra „Bestätigen". Diese Uneinheitlichkeit erzwang den <code>350&nbsp;ms isGuardedTap</code> Doppeltipp-Schutz — ein Pflaster über einer echten Naht.</span>
+                        <span data-en>Single-select cards commit on tap; slider, colour, ranking and regions need an explicit confirm. That inconsistency forced the <code>350&nbsp;ms isGuardedTap</code> double-tap guard — a band-aid over a real seam.</span>
+                    </p>
+                </div>
+                <div class="pv-commit-card new">
+                    <h4><span data-de>Vorschlag · ein Muster</span><span data-en>Proposal · one pattern</span></h4>
+                    <p>
+                        <span data-de>Ein einziges, explizites „Bestätigen" überall. Der Tap-Guard wird gelöscht, die Reise fühlt sich bewusst an statt zappelig — und eine dokumentierte Naht wird stillgelegt statt gepflegt.</span>
+                        <span data-en>A single explicit confirm everywhere. The tap-guard is deleted, the journey feels deliberate instead of twitchy — and a documented seam is retired instead of maintained.</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════════════════ 02 ════════════════════════════ -->
+        <section class="pv-section">
+            <div class="pv-sec-head">
+                <p class="pv-kicker">02 · <span data-de>Am Höhepunkt gewinnen</span><span data-en>Convert at the peak</span></p>
+                <h2><span data-de>Das Design, das sie gemacht haben, wird der Grund wiederzukommen.</span><span data-en>The design they made becomes the reason to come back.</span></h2>
+                <p>
+                    <span data-de>Am „Dieses Design existiert, weil du es erschaffen hast"-Moment gibt es heute nur Speichern, Teilen, Veröffentlichen — kein „sei dabei". Der Vorschlag: eine Reservieren-Karte, die die E-Mail an genau dieses Design bindet (die <code>DesignShare</code>-DNA wandert mit).</span>
+                    <span data-en>At the "this design exists because you made it" moment there's only Save, Share, Publish today — no "be first." The proposal: a reserve card that ties the email to this exact design (the <code>DesignShare</code> DNA travels with it).</span>
+                </p>
+            </div>
+
+            <div class="pv-ba">
+                <!-- BEFORE -->
+                <div class="pv-panel">
+                    <span class="pv-tag before"><span data-de>Heute</span><span data-en>Today</span></span>
+                    <div class="pv-stage">
+                        <div class="pv-own-before">
+                            <div class="pv-own-flat" data-flat></div>
+                            <div class="pv-own-actions">
+                                <button type="button" class="manifesto-cta" disabled><span data-de>Meine Kreation speichern</span><span data-en>Save my creation</span></button>
+                                <button type="button" class="btn-ghost" disabled><span data-de>Teilen</span><span data-en>Share</span></button>
+                                <button type="button" class="btn-ghost" disabled><span data-de>In der Galerie zeigen</span><span data-en>Show in gallery</span></button>
+                            </div>
+                            <p class="pv-missing"><span data-de>Kein „sei dabei". Speichern endet in localStorage — geräte­gebunden.</span><span data-en>No "be first." Save ends in localStorage — device-bound.</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AFTER -->
+                <div class="pv-panel is-after">
+                    <span class="pv-tag after"><span data-de>Vorschlag</span><span data-en>Proposal</span></span>
+                    <div class="pv-stage">
+                        <div class="pv-reserve">
+                            <div class="pv-reserve-flat" data-flat></div>
+                            <div class="pv-reserve-body">
+                                <p class="mono-label">[ <span data-de>SEI ALS ERSTES DABEI</span><span data-en>BE FIRST</span> ]</p>
+                                <h3 class="pv-reserve-h"><span data-de>Reserviere dieses Stück.</span><span data-en>Reserve this piece.</span></h3>
+                                <p class="pv-reserve-p"><span data-de>Das Design, das du gemacht hast, ist genau das, wofür du zuerst in der Reihe stehst.</span><span data-en>The design you made is exactly what you're first in line for.</span></p>
+                                <form class="pv-reserve-form" id="pv-reserve-form" novalidate>
+                                    <input type="email" id="pv-reserve-email" placeholder="deine@email.ch" autocomplete="email" aria-label="E-Mail">
+                                    <button type="submit" class="manifesto-cta"><span data-de>Platz sichern</span><span data-en>Claim my spot</span></button>
+                                </form>
+                                <label class="pv-reserve-consent"><input type="checkbox" id="pv-reserve-consent"> <span data-de>Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span><span data-en>I'd like updates (unsubscribe any time). The privacy policy applies.</span></label>
+                                <p class="pv-reserve-status" id="pv-reserve-status" aria-live="polite"></p>
+                                <p class="pv-dna-note"><span data-de>Sendet mit:</span><span data-en>Sent with it:</span> <code>{ email, consent, dna:&nbsp;"eyJ0…", interests }</code> → Formspree</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════════════════ 03 ════════════════════════════ -->
+        <section class="pv-section">
+            <div class="pv-sec-head">
+                <p class="pv-kicker">03 · <span data-de>Auslieferungs-Feinschliff</span><span data-en>Delivery polish</span></p>
+                <h2><span data-de>Nichts zu sehen — und genau das ist der Punkt.</span><span data-en>Nothing to see — and that's the point.</span></h2>
+                <p>
+                    <span data-de>Diese Stufe ist rein nicht-visuell: schneller, leichter, identisch aussehend. Es gibt bewusst keine Vorschau dafür — der Beleg ist eine grüne CI und weniger Kilobytes, nicht ein Screenshot.</span>
+                    <span data-en>This tier is purely non-visual: faster, lighter, pixel-identical. There's deliberately no preview for it — the proof is green CI and fewer kilobytes, not a screenshot.</span>
+                </p>
+            </div>
+            <div class="pv-nonvisual">
+                <ul>
+                    <li><span data-de><b>AVIF verdrahten:</b> <code>assets/story/</code> liefert bereits <code>.avif</code>/<code>-sm</code>-Varianten, aber die Galerie serviert nur <code>.jpg</code> — ~1,7&nbsp;MB fertige Ersparnis liegt brach. Lösung: <code>&lt;picture&gt;</code> + <code>srcset</code>, null neue Assets.</span><span data-en><b>Wire AVIF:</b> <code>assets/story/</code> already ships <code>.avif</code>/<code>-sm</code> variants, but the gallery serves only <code>.jpg</code> — ~1.7&nbsp;MB of ready-made savings unrealised. Fix: <code>&lt;picture&gt;</code> + <code>srcset</code>, zero new assets.</span></li>
+                    <li><span data-de><b>GSAP doppelt:</b> 3.15.0 eifrig fürs Landing, 3.13.0 lazy für die Sphäre — doppelte Abhängigkeit <em>und</em> Versions-Mismatch. Auf eine Version konsolidieren.</span><span data-en><b>GSAP loaded twice:</b> 3.15.0 eagerly for the landing, 3.13.0 lazily for the sphere — duplicate dependency <em>and</em> version mismatch. Consolidate to one.</span></li>
+                    <li><span data-de><b>Minify-Pass:</b> 36 unminifizierte Skripte (~3,5&nbsp;MB), unter dem bestehenden <code>?v=</code>-Immutable-Cache-Muster ausgeliefert — kein Bundler, „drop it on any host" bleibt.</span><span data-en><b>Minify pass:</b> 36 unminified scripts (~3.5&nbsp;MB), served under the existing <code>?v=</code> immutable-cache pattern — no bundler, "drop it on any host" stays.</span></li>
+                </ul>
+            </div>
+        </section>
+
+        <footer class="pv-foot">
+            <p>
+                <span data-de>Dies ist eine eigenständige Prototyp-Seite unter <code>preview/website-improvements.html</code>. Sie fasst weder <code>index.html</code> noch den echten Studio-Flow an — reines Experiment für die Vorschau. Die Interaktionen sind Mock-ups (kein Netzwerk, kein echter Formspree-Post).</span>
+                <span data-en>This is a standalone prototype page at <code>preview/website-improvements.html</code>. It touches neither <code>index.html</code> nor the real studio flow — a pure preview experiment. The interactions are mock-ups (no network, no real Formspree post).</span>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Reusable technical-flat mock (brand stroke language), cloned into slots -->
+    <template id="pv-flat-tpl">
+        <svg viewBox="0 0 200 250" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" aria-hidden="true">
+            <defs>
+                <linearGradient id="pvPanel" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#14283b"/>
+                    <stop offset="1" stop-color="#0f1e2e"/>
+                </linearGradient>
+                <linearGradient id="pvStroke" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#2779a8"/>
+                    <stop offset="0.5" stop-color="#2a9d8f"/>
+                    <stop offset="1" stop-color="#64d6c4"/>
+                </linearGradient>
+            </defs>
+            <!-- body -->
+            <path d="M64 44 L58 30 40 46 22 92 44 106 50 96 50 214 Q50 224 60 224 L140 224 Q150 224 150 214 L150 96 156 106 178 92 160 46 142 30 136 44 Q100 66 64 44 Z"
+                  fill="url(#pvPanel)" stroke="url(#pvStroke)" stroke-width="2.2" stroke-linejoin="round"/>
+            <!-- collar -->
+            <path d="M64 44 Q100 66 136 44" fill="none" stroke="url(#pvStroke)" stroke-width="2.2"/>
+            <!-- centre seam -->
+            <path d="M100 62 L100 218" stroke="#2a9d8f" stroke-width="1" stroke-dasharray="3 5" opacity="0.6"/>
+        </svg>
+    </template>
+
+    <script>
+      (function () {
+        var html = document.documentElement;
+        var deBtn = document.getElementById("lang-de");
+        var enBtn = document.getElementById("lang-en");
+        function setLang(en) {
+          html.classList.toggle("pv-en", en);
+          html.lang = en ? "en" : "de";
+          deBtn.setAttribute("aria-pressed", String(!en));
+          enBtn.setAttribute("aria-pressed", String(en));
+        }
+        deBtn.addEventListener("click", function () { setLang(false); });
+        enBtn.addEventListener("click", function () { setLang(true); });
+
+        // Clone the flat mock into every slot
+        var tpl = document.getElementById("pv-flat-tpl");
+        document.querySelectorAll("[data-flat]").forEach(function (slot) {
+          slot.appendChild(tpl.content.cloneNode(true));
+        });
+
+        // ── 01 · "Begin" reveals the first question + honest tap counter ──────
+        var begin = document.getElementById("pv-begin");
+        var intro = document.getElementById("pv-intro");
+        var railSlot = document.getElementById("pv-rail-slot");
+        var railHTML =
+          '<div class="pv-rail pv-fade" role="group" aria-label="Fortschritt">' +
+            '<span class="de-step is-cur"><span class="de-step-dot"></span>' + labels().feeling + '</span>' +
+            '<span class="de-step-bar"></span>' +
+            '<span class="de-step is-todo"><span class="de-step-dot"></span>' + labels().form + '</span>' +
+            '<span class="de-step-bar"></span>' +
+            '<span class="de-step is-todo"><span class="de-step-dot"></span>' + labels().fabric + '</span>' +
+            '<span class="de-step-bar"></span>' +
+            '<span class="de-step is-todo"><span class="de-step-dot"></span>' + labels().color + '</span>' +
+            '<span class="de-step-bar"></span>' +
+            '<span class="de-step is-todo"><span class="de-step-dot"></span>' + labels().details + '</span>' +
+            '<span class="pv-count"><b>1</b> <span>· ~10</span></span>' +
+          '</div>';
+        var qHTML =
+          '<div class="pv-q pv-fade">' +
+            '<p class="pv-q-title">' + labels().q + '</p>' +
+            '<div class="pv-cards" role="group">' +
+              '<button type="button" class="pv-card" aria-pressed="false">' + labels().o1 + '</button>' +
+              '<button type="button" class="pv-card" aria-pressed="false">' + labels().o2 + '</button>' +
+              '<button type="button" class="pv-card" aria-pressed="false">' + labels().o3 + '</button>' +
+            '</div>' +
+            '<div class="pv-confirm-row"><button type="button" class="manifesto-cta" id="pv-q-confirm" disabled>' + labels().confirm + '</button></div>' +
+          '</div>';
+
+        function labels() {
+          var en = html.classList.contains("pv-en");
+          return en ? {
+            feeling: "FEELING", form: "FORM", fabric: "FABRIC", color: "COLOUR", details: "DETAILS",
+            q: "What should it feel like?", o1: "Calm", o2: "Bold", o3: "Raw",
+            confirm: "Confirm", confirmActive: "Confirm — next"
+          } : {
+            feeling: "GEFÜHL", form: "FORM", fabric: "STOFF", color: "FARBE", details: "DETAILS",
+            q: "Wie soll es sich anfühlen?", o1: "Ruhig", o2: "Mutig", o3: "Roh",
+            confirm: "Bestätigen", confirmActive: "Bestätigen — weiter"
+          };
+        }
+
+        begin.addEventListener("click", function () {
+          intro.style.display = "none";
+          railSlot.innerHTML = railHTML;
+          var stage = intro.closest(".pv-stage");
+          var q = document.createElement("div");
+          q.innerHTML = qHTML;
+          stage.appendChild(q.firstElementChild);
+          wireQuestion();
+        });
+
+        // Single-confirm commit demo: tap selects, ONE confirm commits (no auto-commit)
+        function wireQuestion() {
+          var cards = document.querySelectorAll("#pv-intro-panel .pv-card");
+          var confirm = document.getElementById("pv-q-confirm");
+          cards.forEach(function (c) {
+            c.addEventListener("click", function () {
+              cards.forEach(function (o) { o.setAttribute("aria-pressed", "false"); });
+              c.setAttribute("aria-pressed", "true");
+              confirm.disabled = false;
+              confirm.textContent = labels().confirmActive;
+            });
+          });
+          confirm.addEventListener("click", function () {
+            if (confirm.disabled) return;
+            var cur = document.querySelector("#pv-intro-panel .de-step.is-cur");
+            if (cur) { cur.classList.remove("is-cur"); cur.classList.add("is-done"); }
+            var steps = document.querySelectorAll("#pv-intro-panel .de-step");
+            var next = null;
+            for (var i = 0; i < steps.length; i++) { if (steps[i].classList.contains("is-todo")) { next = steps[i]; break; } }
+            if (next) { next.classList.remove("is-todo"); next.classList.add("is-cur"); }
+            var count = document.querySelector("#pv-intro-panel .pv-count b");
+            if (count) count.textContent = Math.min(10, (parseInt(count.textContent, 10) || 1) + 2);
+            confirm.disabled = true;
+            confirm.textContent = labels().confirm;
+            document.querySelectorAll("#pv-intro-panel .pv-card").forEach(function (o) { o.setAttribute("aria-pressed", "false"); });
+          });
+        }
+
+        // ── 02 · Reserve card — honest, no-network mock confirmation ──────────
+        var form = document.getElementById("pv-reserve-form");
+        var status = document.getElementById("pv-reserve-status");
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var en = html.classList.contains("pv-en");
+          var email = document.getElementById("pv-reserve-email").value.trim();
+          var consent = document.getElementById("pv-reserve-consent").checked;
+          if (!email || email.indexOf("@") < 1) { status.style.color = "var(--accent-warm)"; status.textContent = en ? "Add your email." : "E-Mail eintragen."; return; }
+          if (!consent) { status.style.color = "var(--accent-warm)"; status.textContent = en ? "Tick consent to continue." : "Bitte Einwilligung bestätigen."; return; }
+          status.style.color = "var(--accent-3)";
+          status.textContent = en ? "✓ You're in — your design is saved to your spot." : "✓ Du bist dabei — dein Design ist deinem Platz zugeordnet.";
+        });
+      })();
+    </script>
+</body>
+</html>
