@@ -90,7 +90,7 @@ export default async function handler(request) {
   }
   // Short server-side poll within the edge budget (token never leaves Vercel).
   let tries = 0;
-  while (pred.status !== "succeeded" && pred.status !== "failed" && tries++ < 3) {
+  while (pred.status !== "succeeded" && pred.status !== "failed" && pred.status !== "canceled" && tries++ < 3) {
     await sleep(2000);
     try {
       const poll = await fetch(pred.urls.get, { headers: { Authorization: `Bearer ${apiKey}` } });

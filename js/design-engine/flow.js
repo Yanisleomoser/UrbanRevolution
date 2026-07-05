@@ -843,7 +843,9 @@ const DesignFlow = (() => {
           const c = concepts[i];
           c.version += 1;
           c.history.push(mutateDna(c.history[c.history.length - 1], i, c.version));
-          if (c.history.length > 8) c.history.shift();
+          // Drop the oldest *mutation*, never index 0 — that's baseDna, which
+          // must survive per the "nichts geht verloren" guarantee above.
+          if (c.history.length > 8) c.history.splice(1, 1);
           selected = i; applySelected(); renderConcepts();
           T("concept_evolve", { i, v: c.version });
           flash("✓ " + t("engine.evolved", { v: c.version }));

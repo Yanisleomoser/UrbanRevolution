@@ -1397,8 +1397,16 @@
     }
 
     function degradeField() {
-      if (degradeLvl === 0) { particles.length = Math.max(120, Math.floor(particles.length * 0.75)); degradeLvl = 1; }
-      else if (degradeLvl === 1) { warp.length = Math.max(6, Math.floor(warp.length * 0.6)); degradeLvl = 2; }
+      if (degradeLvl === 0) {
+        const target = Math.max(120, Math.floor(particles.length * 0.75));
+        // Trim idle particles only — truncating the array from the end could
+        // otherwise drop a particle mid-formGarment() stitch (p.forming),
+        // making an already-placed dot vanish from the canvas.
+        for (let i = particles.length - 1; i >= 0 && particles.length > target; i--) {
+          if (!particles[i].forming) particles.splice(i, 1);
+        }
+        degradeLvl = 1;
+      } else if (degradeLvl === 1) { warp.length = Math.max(6, Math.floor(warp.length * 0.6)); degradeLvl = 2; }
     }
 
     function start() {

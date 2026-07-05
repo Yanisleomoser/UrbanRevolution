@@ -299,7 +299,7 @@ const GarmentSVG = (() => {
     // The personal waist factor stays capped AT the chest (no bell torso).
     const waistHalf = Math.min(chestHalf, chestHalf * lerp(0.74, 1.0, fit) * bodyK(p, "waist"));
     // hem never wider than the chest (no bell). slim tapers in; oversized = column.
-    const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.82, 1.0, fit)) + (vol > 0 ? 4 : 0);
+    const hemHalf = Math.min(chestHalf, chestHalf * lerp(0.82, 1.0, fit) + (vol > 0 ? 4 : 0));
     return { shoulderHalf, chestHalf, waistHalf, hemHalf, fit, vol, drop };
   }
 

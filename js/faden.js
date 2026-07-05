@@ -63,6 +63,7 @@
                 const g = glints.find(function (x) { return x.seam === e.target; });
                 if (g) g.seen = e.isIntersecting;
             });
+            wake();
         }, { rootMargin: "10% 0px" });
         glints.forEach(function (g) { io.observe(g.seam); });
 
@@ -82,26 +83,34 @@
         }, { passive: true });
 
         // Glint-Wanderung: weiches Ein-/Ausblenden an den Enden, Ease über die Mitte.
+        // rAF läuft nur, solange mind. eine Naht sichtbar ist, und pausiert bei
+        // verstecktem Tab (wie facts-mass.js frame/wake) — kein Dauer-Loop.
+        let rafId = 0;
+        function anySeen() { return glints.some(function (g) { return g.seen; }); }
         function frame(now) {
-            if (!document.hidden) {
-                glints.forEach(function (g) {
-                    if (!g.seen || !g.path || !g.len) { g.dot.style.opacity = "0"; return; }
-                    const u = ((now + g.t0) % GLINT_PERIOD) / GLINT_PERIOD;
-                    if (u > 0.62) { g.dot.style.opacity = "0"; return; } // Pause zwischen Impulsen
-                    const t = u / 0.62;
-                    const eased = t * t * (3 - 2 * t); // smoothstep
-                    const pt = g.path.getPointAtLength(eased * g.len);
-                    // viewBox-Koordinaten (100×240, gestreckt) → Pixel der Naht
-                    const w = g.seam.clientWidth;
-                    const hh = g.seam.clientHeight;
-                    const fade = Math.min(1, Math.min(t, 1 - t) * 6);
-                    g.dot.style.transform = "translate(" + (pt.x / 100 * w - 1.5) + "px," + (pt.y / 240 * hh - 1.5) + "px)";
-                    g.dot.style.opacity = String(0.9 * fade);
-                });
-            }
-            window.requestAnimationFrame(frame);
+            rafId = 0;
+            if (document.hidden) return;
+            glints.forEach(function (g) {
+                if (!g.seen || !g.path || !g.len) { g.dot.style.opacity = "0"; return; }
+                const u = ((now + g.t0) % GLINT_PERIOD) / GLINT_PERIOD;
+                if (u > 0.62) { g.dot.style.opacity = "0"; return; } // Pause zwischen Impulsen
+                const t = u / 0.62;
+                const eased = t * t * (3 - 2 * t); // smoothstep
+                const pt = g.path.getPointAtLength(eased * g.len);
+                // viewBox-Koordinaten (100×240, gestreckt) → Pixel der Naht
+                const w = g.seam.clientWidth;
+                const hh = g.seam.clientHeight;
+                const fade = Math.min(1, Math.min(t, 1 - t) * 6);
+                g.dot.style.transform = "translate(" + (pt.x / 100 * w - 1.5) + "px," + (pt.y / 240 * hh - 1.5) + "px)";
+                g.dot.style.opacity = String(0.9 * fade);
+            });
+            if (anySeen()) rafId = window.requestAnimationFrame(frame);
         }
-        window.requestAnimationFrame(frame);
+        function wake() {
+            if (!rafId && anySeen() && !document.hidden) rafId = window.requestAnimationFrame(frame);
+        }
+        document.addEventListener("visibilitychange", wake);
+        wake();
     }
 
     document.addEventListener("DOMContentLoaded", init);
