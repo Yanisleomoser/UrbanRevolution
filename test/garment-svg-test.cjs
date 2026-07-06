@@ -67,6 +67,18 @@ const bare = GarmentSVG.model("tshirt", { fit: 0.5, sleeveLength: "sleeveless" }
 assert(bare.sleeveless === true && bare.coX === bare.chestHalf,
   "sleeveless → limb collapses onto the chest line (tank silhouette)");
 
+console.log("\n— hoodie sleeve construction actually reshapes the body (not stuck on drop) —");
+{
+  const setIn = GarmentSVG.model("hoodie", { fit: 0.5, sleeve: "set-in" }).g;
+  const raglan = GarmentSVG.model("hoodie", { fit: 0.5, sleeve: "raglan" }).g;
+  const drop = GarmentSVG.model("hoodie", { fit: 0.5, sleeve: "drop" }).g;
+  const noAnswer = GarmentSVG.model("hoodie", { fit: 0.5 }).g;
+  assert(setIn.shoulderHalf < drop.shoulderHalf, "set-in hoodie is narrower at the shoulder than drop");
+  assert(raglan.shoulderHalf < drop.shoulderHalf, "raglan hoodie is narrower at the shoulder than drop");
+  assert(setIn.shoulderHalf === raglan.shoulderHalf, "set-in and raglan share the same (non-drop) frame");
+  assert(noAnswer.shoulderHalf === drop.shoulderHalf, "before the user answers, hoodie still defaults to drop");
+}
+
 console.log("\n— unknown category degrades to a real garment (tshirt), never blank —");
 assert(GarmentSVG.model("banana").cat === "tshirt", "unknown top category → tshirt model");
 assert(GarmentSVG.build("banana", { fit: 0.5 }).startsWith("<svg"), "unknown category still renders SVG");

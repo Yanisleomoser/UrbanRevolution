@@ -190,10 +190,20 @@
   // ── 2 · Ownership-Moment ───────────────────────────────────────────────────
   function flashButton(btn, key) {
     if (!btn) return;
-    const prev = btn.textContent;
+    // Repeated clicks inside the 2200ms window must not stack: keep the ONE
+    // true original label (not an already-flashed one) and reset the pending
+    // restore timer each time, or a fast double-click permanently freezes the
+    // button on its confirmation text.
+    if (btn._flashTimer) clearTimeout(btn._flashTimer);
+    if (btn.dataset.flashOrig === undefined) btn.dataset.flashOrig = btn.textContent;
     btn.textContent = t(key);
     btn.classList.add("is-done");
-    setTimeout(() => { btn.textContent = prev; btn.classList.remove("is-done"); }, 2200);
+    btn._flashTimer = setTimeout(() => {
+      btn.textContent = btn.dataset.flashOrig;
+      delete btn.dataset.flashOrig;
+      btn.classList.remove("is-done");
+      btn._flashTimer = null;
+    }, 2200);
   }
 
   function ownership() {

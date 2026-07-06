@@ -50,11 +50,24 @@ function extractDesign(text) {
     if (start === -1) return null;
     // Balance braces from the first "{" so trailing prose containing its own
     // "{"/"}" (e.g. a stray emoticon) can't extend the match past the object.
+    // Braces inside quoted string VALUES don't count — the model's prompt
+    // input is echoed into fields like description/tags, and a user prompt
+    // containing a literal "{" would otherwise close the object early.
     let depth = 0;
     let end = -1;
+    let inString = false;
+    let escaped = false;
     for (let i = start; i < s.length; i++) {
-        if (s[i] === "{") depth++;
-        else if (s[i] === "}" && --depth === 0) { end = i; break; }
+        const c = s[i];
+        if (inString) {
+            if (escaped) escaped = false;
+            else if (c === "\\") escaped = true;
+            else if (c === '"') inString = false;
+            continue;
+        }
+        if (c === '"') inString = true;
+        else if (c === "{") depth++;
+        else if (c === "}" && --depth === 0) { end = i; break; }
     }
     if (end === -1) return null;
     try {
@@ -75,7 +88,10 @@ export default async function handler(request) {
         // browser (same neutral-error pattern as try-on.js / preview-design.js).
         // The client falls back to its local keyword generator on any non-OK.
         console.error("[generate-design] ANTHROPIC_API_KEY not configured — set it in Vercel → Project Settings → Environment Variables.");
-        return jsonError(503, "Design service unavailable", "service_unavailable");
+        // Distinct code (not "service_unavailable") so js/ai.js can tell this
+        // expected, quiet no-key-on-server case apart from a genuine upstream
+        // failure — see generateWithServer's ai-fallback gating.
+        return jsonError(503, "Design service not configured", "not_configured");
     }
 
     let payload;

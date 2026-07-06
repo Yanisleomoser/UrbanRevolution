@@ -1598,6 +1598,8 @@
       fit: entry.fit,
       tags: entry.tags || [],
       pattern: entry.pattern || "solid",
+      length: entry.length || "regular",
+      print: entry.print || "",
       originalPrompt: entry.originalPrompt || "",
       constructionNotes: entry.constructionNotes || [],
       description: t("lib.loaded_desc"),

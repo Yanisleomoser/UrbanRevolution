@@ -138,6 +138,10 @@ assert(eq(extractDesign('prose before {"name":"X","fit":0.3} prose after'), { na
 assert(extractDesign("no json at all") === null, "no braces → null");
 assert(extractDesign("{ not valid json }") === null, "malformed JSON → null (no throw)");
 assert(extractDesign(null) === null, "null text → null");
+assert(
+  eq(extractDesign('{"name":"X","description":"hoodie mit {oversized} silhouette"}'), { name: "X", description: "hoodie mit {oversized} silhouette" }),
+  "literal braces inside a string value don't unbalance the match",
+);
 
 console.log("\n— gen-image.validateRequest (auth gate ordering + prompt rules) —");
 {

@@ -619,10 +619,15 @@ const DesignFlow = (() => {
     // Orientation stepper: light the current phase, mark earlier ones done.
     // Label it for assistive tech with the current beat ("Design-Phase: Stoff").
     function updateStepper(phase) {
-      const ci = PHASE_ORDER.indexOf(String(phase || "A").toUpperCase());
+      const p = String(phase || "A").toUpperCase();
+      const ci = PHASE_ORDER.indexOf(p);
       const beat = PHASE_BEATS[ci < 0 ? 0 : Math.min(ci, PHASE_BEATS.length - 1)];
+      // Phase F (refine/generate) has no beat of its own — clamping to E's
+      // "Details" would announce the wrong word right as the user arrives at
+      // the refine screen (same trap phaseFlash's comment calls out above).
+      const label = p === "F" ? t("engine.refine_title") : t(beat.key);
       stepperEl.innerHTML = phaseStepper(phase, (k) => t(k));
-      stepperEl.setAttribute("aria-label", t("engine.phase_aria") + ": " + t(beat.key));
+      stepperEl.setAttribute("aria-label", t("engine.phase_aria") + ": " + label);
     }
     function refreshChrome() {
       const m = maturity();
