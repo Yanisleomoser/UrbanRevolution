@@ -276,6 +276,16 @@
       // §5.1: mit erlaubter Bewegung und noch geschlossenem Studio wird der
       // Klick zur Schwelle — der Kreis wächst aus dem berührten Element.
       if (portalReveal(a, href, modified)) { e.preventDefault(); return; }
+      // No portal (reduced-motion / no GSAP / already open): revealStudio()
+      // reads location.hash synchronously to pick its focus target, but the
+      // native fragment navigation for this click hasn't happened yet — it
+      // only runs after this handler returns. Set the hash ourselves first
+      // (mirrors portalReveal's phase2) so the correct anchor gets focus
+      // instead of always falling back to #design (WCAG 2.4.3).
+      if (!modified) {
+        e.preventDefault();
+        if (href && location.hash !== href) location.hash = href;
+      }
       revealStudio();
     });
     // Share-Links (#dna=…) und Studio-Anker öffnen das Studio direkt.

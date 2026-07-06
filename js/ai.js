@@ -264,8 +264,8 @@ const AI = (() => {
     }
 
     const reason = body && body.error ? body.error : `HTTP ${response.status}`;
-    // "not configured" is an expected, quiet fallback (no key on server).
-    if (!/not configured/i.test(reason)) {
+    // code "not_configured" is an expected, quiet fallback (no key on server).
+    if (!(body && body.code === "not_configured")) {
       // Report the real upstream failure (Replicate/Anthropic proxy) to Sentry —
       // only the coded reason + HTTP status, never the prompt (no PII).
       if (window.Sentry) {

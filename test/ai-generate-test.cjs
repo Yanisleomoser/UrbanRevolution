@@ -108,6 +108,41 @@ const ID = /^UR-[0-9A-Z]+-[0-9A-Z]{6}$/;
   assert(HEX.test(sJunk.secondaryColor) && sJunk.secondaryColor !== BROWN,
     "no real 2nd colour → a stable default contrast, not garbage");
 
+  // Regression: generateWithServer must stay quiet (no Sentry report, no
+  // toast) when the server proxy is simply unconfigured (no ANTHROPIC_API_KEY
+  // on a fresh deploy) but surface a real upstream failure via ai-fallback.
+  // It used to distinguish these by regex-matching "not configured" in the
+  // error MESSAGE text, which the server never actually sent — every failure
+  // (including the expected no-key case) fired ai-fallback. Gate on the
+  // dedicated `code` field instead.
+  console.log("\n— generateWithServer's ai-fallback gating (code, not message text) —");
+  {
+    const origFetch = global.fetch;
+    const origDispatch = window.dispatchEvent;
+    const events = [];
+    window.dispatchEvent = (e) => { events.push(e); };
+    try {
+      global.fetch = async () => ({
+        ok: false, status: 503,
+        json: async () => ({ error: "Design service not configured", code: "not_configured" }),
+      });
+      events.length = 0;
+      await AI.generateDesign("ein hoodie", "hoodie");
+      assert(!events.some((e) => e.type === "ai-fallback"), "code 'not_configured' → no ai-fallback event (quiet, expected)");
+
+      global.fetch = async () => ({
+        ok: false, status: 502,
+        json: async () => ({ error: "Generation failed", code: "failed" }),
+      });
+      events.length = 0;
+      await AI.generateDesign("ein hoodie", "hoodie");
+      assert(events.some((e) => e.type === "ai-fallback"), "a real upstream failure → ai-fallback event (surfaced)");
+    } finally {
+      global.fetch = origFetch;
+      window.dispatchEvent = origDispatch;
+    }
+  }
+
   console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
   process.exit(failures ? 1 : 0);
 })();

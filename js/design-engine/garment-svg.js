@@ -285,7 +285,10 @@ const GarmentSVG = (() => {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
     const structure = clamp(num(p.structure, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
-    const drop = p.sleeve === "drop" || cfg.drop;
+    // cfg.drop (hoodie) is only a PRE-ANSWER default — once the user picks a
+    // sleeve construction, "set-in"/"raglan" must actually narrow the frame
+    // again, not stay stuck at the drop-shoulder default forever.
+    const drop = p.sleeve === "drop" || (cfg.drop && p.sleeve == null);
     // Shoulder is the widest point. Tuned narrower than before so tops read at
     // garment proportions (~40–60 % of frame, matching the photoreal renders)
     // instead of filling the box like a boxy slab — while keeping a clear

@@ -62,6 +62,8 @@ const Library = (() => {
       fit: design.fit !== undefined ? design.fit : (ex.fit !== undefined ? ex.fit : 0.5),
       tags: Array.isArray(design.tags) ? design.tags.slice(0, 8) : [],
       pattern: design.pattern || "solid",
+      length: design.length || "regular",
+      print: design.print || "",
       originalPrompt: design.originalPrompt || "",
       constructionNotes: Array.isArray(design.constructionNotes)
         ? design.constructionNotes.slice(0, 6)
