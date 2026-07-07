@@ -46,6 +46,12 @@ const GarmentSVG = (() => {
   const HEX_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
   const safeHex = (v, fallback) =>
     (typeof v === "string" && HEX_RE.test(v.trim())) ? v.trim() : fallback;
+  // Same attacker-controlled-DNA hazard as safeHex above, but for plain object
+  // lookups: a key like "constructor"/"toString" resolves to a truthy/non-null
+  // Object.prototype member instead of missing, so a `[key] || fallback` guard
+  // silently passes through a function where a data object was expected and
+  // every downstream numeric read turns into NaN. Always check ownership first.
+  const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
   // Per-category construction constants (brief §4). sleeveLen is the limb's own
   // length so cropped bodies keep full sleeves; hem maps the length attribute.
@@ -121,7 +127,7 @@ const GarmentSVG = (() => {
     // roughness DOWN (glossier), finish<0.5 the reverse (more matte). finish
     // stays the same lever the user already turns — it just now moves a
     // physically-meaningful (spec, rough) pair instead of one opaque scalar.
-    const opt = MATERIAL_OPTICS[p.material] || DEFAULT_OPTICS;
+    const opt = hasOwn(MATERIAL_OPTICS, p.material) ? MATERIAL_OPTICS[p.material] : DEFAULT_OPTICS;
     const fAdj = (finish - 0.5) * 2;                              // -1..1
     const spec = clamp(opt.spec + fAdj * 0.30, 0.02, 0.98);      // specular intensity
     const rough = clamp(opt.rough - fAdj * 0.28, 0.04, 0.99);    // surface roughness
@@ -476,7 +482,7 @@ const GarmentSVG = (() => {
   // constant (#06101c shadow / #fff highlight) → XSS-safe like the seams.
   const DRAPE = { silk: 0.95, fleece: 0.82, wool: 0.70, cotton: 0.55, linen: 0.64, polyester: 0.42, denim: 0.30 };
   function drapeFor(p) {
-    const base = DRAPE[p && p.material] != null ? DRAPE[p.material] : 0.5;
+    const base = (p && hasOwn(DRAPE, p.material)) ? DRAPE[p.material] : 0.5;
     const structure = clamp(num(p && p.structure, 0.5), 0, 1);
     return clamp(base * lerp(1.12, 0.62, structure), 0.16, 1);
   }
@@ -533,7 +539,7 @@ const GarmentSVG = (() => {
     return renderFlat(p, [outline(g)], seams(g, p, cfg), topFolds(g, p), { y: g.hemY, half: Math.max(g.hemHalf, g.shoulderHalf * 0.66) });
   }
   function topFlat(category, p) {
-    const cfg = CFG[category] || CFG.jacket;
+    const cfg = hasOwn(CFG, category) ? CFG[category] : CFG.jacket;
     return paintTop(p, cfg, geometry(p, cfg));
   }
 
@@ -910,7 +916,7 @@ const GarmentSVG = (() => {
     const cat = (category || "jacket").toLowerCase();
     if (cat === "pants") return { cat, kind: "pants", p, g: pantsGeom(p) };
     if (cat === "dress") return { cat, kind: "dress", p, g: dressGeom(p) };
-    const realCat = CFG[cat] ? cat : "tshirt";
+    const realCat = hasOwn(CFG, cat) ? cat : "tshirt";
     const cfg = CFG[realCat];
     return { cat: realCat, kind: "top", p, cfg, g: geometry(p, cfg) };
   }

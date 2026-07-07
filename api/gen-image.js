@@ -68,6 +68,9 @@ export default async function handler(request) {
   try {
     res = await fetch(MODEL_ENDPOINT, {
       method: "POST",
+      // Bound the call so a slow/black-holed upstream can't hang the (billed)
+      // function past the wait window — matches try-on.js/preview-design.js.
+      signal: AbortSignal.timeout(25000),
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", Prefer: "wait=20" },
       body: JSON.stringify({ input: { prompt, aspect_ratio: aspect, output_format: "jpg", output_quality: 90, prompt_upsampling: false, safety_tolerance: 2 } }),
     });
