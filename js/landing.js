@@ -1081,7 +1081,9 @@
         amp: (mobile ? 3 : 4) + Math.random() * (mobile ? 6 : 11),
         phase: Math.random() * TAU,
         speed: 0.00016 + Math.random() * 0.0004,
-        alpha: 0.058 + Math.random() * 0.072,
+        // Am Phone sind die dünnen, hellgrauen Kett-Fäden bei Desktop-Deckkraft
+        // fast unsichtbar → für Mobil deutlich anheben (sonst „leerer" Hero).
+        alpha: mobile ? 0.13 + Math.random() * 0.11 : 0.058 + Math.random() * 0.072,
         d: 0,    // aktuelle Zupf-Auslenkung (px, signiert)
         v: 0,    // Auslenkungs-Geschwindigkeit (Feder)
         py: 0,   // Zupf-Punkt (y) — die Spitze der Dreiecks-Auslenkung
@@ -1141,7 +1143,7 @@
       //    die farblose Maschinen-Linie; Farbe kommt erst nach der Wende). Hinter
       //    der Headline über die Durchschnitts-Maske gedämpft (Lesbarkeit).
       const SEG = mobile ? 9 : 11;
-      const baseW = mobile ? 0.8 : 0.9;
+      const baseW = mobile ? 1.1 : 0.9;
       const H = h || 1;
       ctx.lineCap = "round";
       ctx.strokeStyle = "#9fb6c6";
@@ -1441,23 +1443,45 @@
       else if (hero.getBoundingClientRect().bottom > 0) start();
     });
 
+    // Touch: unterscheidet ziehen (Fäden zupfen wie der Desktop-Cursor) vom
+    // Tippen (Stück formen). Am Phone gibt es kein Hover — ohne diese Trennung
+    // verschluckt der sofort formende pointerdown jede Faden-Reaktion.
+    let tap = null;
     hero.addEventListener("pointermove", (e) => {
       if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
       pointer.x = e.clientX - canvasRect.left;
       pointer.y = e.clientY - canvasRect.top;
       pointer.active = true;
+      // Ein spürbarer Zug ist kein Tap mehr → formt nicht beim Loslassen.
+      if (tap && Math.hypot(pointer.x - tap.x, pointer.y - tap.y) > 12) tap.moved = true;
     }, { passive: true });
     hero.addEventListener("pointerleave", () => { pointer.active = false; });
     // Loslassen (v. a. Touch: kein pointerleave) → die gehaltene Saite fährt zurück.
-    hero.addEventListener("pointerup", () => { pointer.active = false; }, { passive: true });
-    hero.addEventListener("pointercancel", () => { pointer.active = false; }, { passive: true });
+    hero.addEventListener("pointerup", (e) => {
+      // Touch-Tap (kaum bewegt, kurz) formt das nächste Stück — ein Zug hat
+      // stattdessen die Fäden gezupft und formt bewusst nicht.
+      if (tap && !tap.moved && performance.now() - tap.t < 500
+          && !(e.target.closest && e.target.closest("a, button"))) {
+        formGarment(tap.x, tap.y);
+      }
+      tap = null;
+      pointer.active = false;
+    }, { passive: true });
+    hero.addEventListener("pointercancel", () => { tap = null; pointer.active = false; }, { passive: true });
 
     // Tap/Klick irgendwo im Hero (außer auf Links/Buttons): die Punkte
-    // verbinden sich zur Silhouette des nächsten Kleidungsstücks.
+    // verbinden sich zur Silhouette des nächsten Kleidungsstücks. Maus/Pen
+    // formen sofort; Touch reagiert erst auf die Fäden und formt beim Tap-Up.
     hero.addEventListener("pointerdown", (e) => {
       if (e.target.closest && e.target.closest("a, button")) return;
       if (!canvasRect) canvasRect = canvas.getBoundingClientRect();
-      formGarment(e.clientX - canvasRect.left, e.clientY - canvasRect.top);
+      const x = e.clientX - canvasRect.left, y = e.clientY - canvasRect.top;
+      if (e.pointerType === "touch") {
+        pointer.x = x; pointer.y = y; pointer.active = true;   // Fäden zupfen sofort
+        tap = { x, y, t: performance.now(), moved: false };
+      } else {
+        formGarment(x, y);
+      }
     }, { passive: true });
 
     window.addEventListener("resize", resize, { passive: true });
