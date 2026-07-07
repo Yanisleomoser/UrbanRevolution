@@ -113,10 +113,19 @@ const StateManager = (() => {
     }
 
     function reset() {
+        // Mirror set()'s event contract per key (not just the blanket
+        // state:reset) so subscribers like app.js's updateOwnInfo/
+        // syncOwnEditor/updateVtoButtonState — wired only to `${key}:change`
+        // — actually pick up the reverted values instead of showing stale DOM.
         Object.keys(DEFAULT_STATE).forEach((key) => {
-            state[key] = DEFAULT_STATE[key];
+            const oldValue = state[key];
+            const newValue = DEFAULT_STATE[key];
+            if (oldValue === newValue) return;
+            state[key] = newValue;
+            emit(`${key}:change`, { oldValue, newValue });
+            emit('state:change', { key, oldValue, newValue });
         });
-        
+
         emit('state:reset', {});
     }
 

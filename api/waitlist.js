@@ -79,7 +79,9 @@ export default async function handler(request) {
     try {
         payload = await request.json();
     } catch {
-        return jsonError(400, "Body must be JSON", "invalid_email");
+        // A malformed body isn't an email problem — don't mistag it
+        // "invalid_email" (validateSignup's actual code for that case).
+        return jsonError(400, "Body must be JSON");
     }
 
     const check = validateSignup(payload);

@@ -74,6 +74,15 @@ const DesignSummary = (() => {
       belt: { de: "Gürtelschlaufen", en: "belt loops" }, drawcord: { de: "Kordelzug-Bund", en: "drawcord waist" },
       elastic: { de: "elastischem Bund", en: "elastic waist" },
     },
+    hem: {
+      straight: { de: "geradem Saum", en: "straight hem" }, curved: { de: "rundem Saum", en: "curved hem" },
+      ribbed: { de: "Rippbund-Saum", en: "ribbed hem" }, drawcord: { de: "Kordelzug-Saum", en: "drawcord hem" },
+      cuffed: { de: "Umschlag-Saum", en: "cuffed hem" }, elastic: { de: "elastischem Saum", en: "elastic hem" },
+    },
+    waist: {
+      fitted: { de: "betonter Taille", en: "fitted waist" }, natural: { de: "natürlicher Taille", en: "natural waist" },
+      relaxed: { de: "fliessender Taille", en: "relaxed waist" },
+    },
     signature: {
       "asymmetric-zip": { de: "asymmetrischem Zip", en: "asymmetric zip" },
       "contrast-stitch": { de: "Kontrastnähten", en: "contrast stitching" },
@@ -128,7 +137,15 @@ const DesignSummary = (() => {
     // German adjective agrees with the material's gender (dative): feminine
     // "aus matter Wolle", masculine/neuter "aus mattem Denim/Leinen".
     const fem = !!(matEntry && matEntry.f);
-    const finish = (g("fabric.finish") === "sheen")
+    // Prefer the numeric "Matt↔Glänzend" slider (fabric.finishWeight, same
+    // field the flat itself renders from) over the stale fabric.finish string,
+    // which only ever gets set once by a material choice/archetype default and
+    // never updates when the user drags the slider afterwards.
+    const finishWeight = g("fabric.finishWeight");
+    const finishVal = typeof finishWeight === "number"
+      ? finishWeight
+      : ({ sheen: 0.8, glossy: 0.85, matte: 0.15 }[g("fabric.finish")] ?? 0.15);
+    const finish = finishVal > 0.5
       ? (lang === "en" ? "sheen" : fem ? "glänzender" : "glänzendem")
       : (lang === "en" ? "matte" : fem ? "matter" : "mattem");
 
@@ -145,11 +162,13 @@ const DesignSummary = (() => {
     const closure = pick(lang, W.closure[g("construction.closure")], null);
     const pockets = pick(lang, W.pockets[g("construction.pockets")], null);
     const waistband = pick(lang, W.waistband[g("construction.waistband")], null);
+    const hem = pick(lang, W.hem[g("construction.hem")], null);
+    const waist = pick(lang, W.waist[g("construction.waist")], null);
     const hw = pick(lang, W.hardware[g("hardware.finish")], null);
     const pat = pick(lang, W.pattern[g("pattern.type")], null);
     const sig = (Array.isArray(g("signature")) ? g("signature") : [])
       .map((s) => pick(lang, W.signature[s], null)).filter(Boolean).join(lang === "en" ? " and " : " und ") || null;
-    [collar, sleeves, closure, pockets, waistband, hw, pat, sig].forEach((d) => d && details.push(d));
+    [collar, sleeves, closure, pockets, waistband, hem, waist, hw, pat, sig].forEach((d) => d && details.push(d));
     return { out, details };
   }
 

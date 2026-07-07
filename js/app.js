@@ -762,10 +762,15 @@
 
         previewWrap.hidden = false;
         window.Pose.drawPoseOverlay(canvas, img, landmarks);
+        // Report the values actually applied to the inputs, not the raw pose
+        // estimate — Measurements.write() silently keeps the old value for any
+        // field validateMeasurement rejects (out-of-range), so echoing the raw
+        // estimate here would show a number the spec sheet never received.
+        const applied = Measurements.read();
         setStatus(t("measure.status_result", {
-          chest: measurements.chest,
-          waist: measurements.waist,
-          hips: measurements.hips,
+          chest: applied.chest,
+          waist: applied.waist,
+          hips: applied.hips,
         }));
         showToast(
           personalized ? t("toast.photo_skin") : t("toast.photo_only"),
