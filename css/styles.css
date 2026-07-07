@@ -82,7 +82,10 @@
        Jedes Segment richtet sich hieran aus, damit das Auge EINE Linie liest.
        Ash/grau wie #pivot-line + fil-seam[1] — Teal wird erst nach der Wende
        ausgegeben (facts Beat 3 / #pivot). Safe-Area-bewusst. */
-    --act1-thread-x: calc(env(safe-area-inset-left, 0px) + clamp(18px, 4vw, 60px));
+    /* Min-Gutter 28px: die zentrierte Preloader-Nadel-Marke (74px, Kreis ~25px
+       links der Nadel-Achse) darf am schmalen Phone-Rand nicht anschneiden.
+       Loader- UND Hero-Faden reiten auf dieser Variable → bleiben pixelgenau. */
+    --act1-thread-x: calc(env(safe-area-inset-left, 0px) + clamp(28px, 4vw, 60px));
     /* Act-I-Inhalt (Hero/Manifest) rückt garantiert rechts an der Linie vorbei —
        links verankert, eine gemeinsame Spalte, nie auf der Linie. */
     --act1-pad-l: calc(var(--act1-thread-x) + clamp(20px, 3vw, 46px));
