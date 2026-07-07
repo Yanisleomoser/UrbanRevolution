@@ -394,19 +394,54 @@
     // sticky CTA never un-hid — a silently-dead conversion affordance.
     const hero = $(".lp-hero");
     if (!cta || !hero) return;
-    const onScroll = () => {
-      const past = window.scrollY > hero.offsetHeight * 0.8;
-      const inView = (el) => {
-        if (!el) return false;
-        const r = el.getBoundingClientRect();
-        return r.top < window.innerHeight && r.bottom > 0;
-      };
+    const design = $("#design");
+    const community = $("#community");
+    // Der Pill erscheint nur mobil (CSS: `.sticky-create { display:none }` ab
+    // 861px). Diese Media-Query spiegelt exakt diesen Breakpoint, damit der
+    // Scroll-Handler auf Desktop GAR KEIN Layout misst — vorher las er dort 2–3
+    // erzwungene Reflows (offsetHeight + getBoundingClientRect) pro Scroll-Event,
+    // obwohl der Button nie sichtbar ist: eine echte Scroll-Ruckel-Quelle.
+    const mobileMq = window.matchMedia("(max-width: 860px)");
+    // Hero-Höhe für den Schwellwert cachen — nur bei Resize neu messen, nicht
+    // synchron in jedem Scroll-Frame.
+    let heroH = hero.offsetHeight;
+    // Sichtbarkeit von #design/#community per IntersectionObserver verfolgen,
+    // statt in jedem Scroll-Frame getBoundingClientRect() zu lesen (erzwungenes
+    // Reflow). So misst der Scroll-Handler NULL Layout — er liest nur scrollY.
+    let designInView = false;
+    let communityInView = false;
+    let scheduled = false;
+    const update = () => {
+      scheduled = false;
+      if (!mobileMq.matches) { if (!cta.hidden) cta.hidden = true; return; }
+      const past = window.scrollY > heroH * 0.8;
       // In UR Create und in der Community-Sphäre hat der Moment eigene CTAs —
       // dort tritt der Sticky-Button zurück.
-      cta.hidden = !past || inView($("#design")) || inView($("#community"));
+      cta.hidden = !past || designInView || communityInView;
     };
+    // Scroll-Events zu EINEM Read pro Frame zusammenfassen (rAF-Throttle);
+    // der rohe Handler las bei jedem Event synchron Layout und thrashte so.
+    const onScroll = () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(update);
+    };
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.target === design) designInView = e.isIntersecting;
+          else if (e.target === community) communityInView = e.isIntersecting;
+        });
+        onScroll();
+      });
+      if (design) io.observe(design);
+      if (community) io.observe(community);
+    }
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    window.addEventListener("resize", () => { heroH = hero.offsetHeight; onScroll(); }, { passive: true });
+    if (mobileMq.addEventListener) mobileMq.addEventListener("change", update);
+    else if (mobileMq.addListener) mobileMq.addListener(update);
+    update();
   }
 
   // ── 8 · make-real aufklappen (Maße/Vorschau/Produktion/FAQ) ────────────────
