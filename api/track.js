@@ -19,6 +19,11 @@ export const config = { runtime: "edge" };
 
 const EVENTS_KEY = "urev:tel:events";
 const NODES_KEY = "urev:tel:nodes";
+// sanitiseId bounds each id's length but not the number of *distinct* ids —
+// without a cap, a caller posting a fresh random id on every request grows
+// urev:tel:nodes without bound (unbounded Redis storage/cost, unlike
+// gallery.js's LTRIM-bounded list or waitlist.js's legitimately-unbounded set).
+const MAX_NODE_FIELDS = 500;
 export const ALLOWED = new Set([
   "node_shown", "node_choice", "node_skip", "node_back",
   "journey_refine", "generate", "generate_ok", "generate_fail", "abandon",
@@ -71,6 +76,18 @@ export default async function handler(request) {
     const payload = await request.json();
     const cmds = buildCommands(payload);
     if (cmds.length === 0) return new Response(null, { status: 204 });
+    // Node ids are data-driven (content/nodes/*.json), so there's no static
+    // allow-list to validate against here — instead cap the *distinct* field
+    // count once a new (never-seen) id would be added, so known ids keep
+    // incrementing freely but a flood of fresh ids can't grow the hash forever.
+    if (cmds.length > 1) {
+      const field = cmds[1][2];
+      const [exists] = await pipeline(url, token, [["HEXISTS", NODES_KEY, field]]);
+      if (!exists) {
+        const [len] = await pipeline(url, token, [["HLEN", NODES_KEY]]);
+        if (Number(len) >= MAX_NODE_FIELDS) cmds.pop();
+      }
+    }
     await pipeline(url, token, cmds);
   } catch (err) {
     console.error(`[track] write failed: ${err.message}`);

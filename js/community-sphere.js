@@ -708,13 +708,21 @@ async function boot() {
         camera.rotation.set(rot.pitch, rot.yaw, 0);
         if (pushDir) camera.position.copy(pushDir).multiplyScalar(camPush.p * 2.4);
 
-        if (!state.open && !state.dragging && pointer.inside && FINE_POINTER) {
-            setHovered(pick(pointer.x, pointer.y));
-        } else if (!state.open && !state.dragging && document.activeElement === canvas) {
-            // Keyboard focus: surface the centred card (name + scale-up) so the
-            // user knows what Enter will open as they arrow the globe around.
-            setHovered(centeredCard());
-        } else if ((state.dragging || state.open) && hovered) {
+        if (!state.open && !state.dragging) {
+            if (pointer.inside && FINE_POINTER) {
+                setHovered(pick(pointer.x, pointer.y));
+            } else if (document.activeElement === canvas) {
+                // Keyboard focus: surface the centred card (name + scale-up) so the
+                // user knows what Enter will open as they arrow the globe around.
+                setHovered(centeredCard());
+            } else if (hovered) {
+                // Neither pointer-over nor keyboard-focused (e.g. the pointer just
+                // left the canvas) — clear a stale hover instead of leaving the
+                // enlarged card + label frozen (there is no other branch that
+                // covers this transition; see pointerleave above).
+                setHovered(null);
+            }
+        } else if (hovered) {
             setHovered(null);
         }
 

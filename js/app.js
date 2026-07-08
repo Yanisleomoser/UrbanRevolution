@@ -443,6 +443,20 @@
     // state-wins rule for the same race).
     const liveType = S.get("currentType");
     if (liveType && design.type !== liveType) design.type = liveType;
+    // Reconcile back: when S.set above rejected an out-of-schema color/
+    // material/fit (validation failure swallowed above), `design.*` would
+    // otherwise keep holding the invalid raw AI value forever. Export.js
+    // reads design.color/material/fit directly (unvalidated) for the
+    // downloadable/printable spec sheet, while the on-screen preview reads
+    // the validated state — without this, the two would silently diverge
+    // (e.g. the spec sheet showing the raw "material.Baumwolle" i18n
+    // fallback while the studio still shows the last-good material).
+    const liveColor = S.get("currentColor");
+    if (liveColor !== undefined && design.color !== liveColor) design.color = liveColor;
+    const liveMaterial = S.get("currentMaterial");
+    if (liveMaterial !== undefined && design.material !== liveMaterial) design.material = liveMaterial;
+    const liveFit = S.get("currentFit");
+    if (liveFit !== undefined && design.fit !== liveFit) design.fit = liveFit;
   }
 
   // Flag an out-of-range measurement so the user sees/hears it, instead of
