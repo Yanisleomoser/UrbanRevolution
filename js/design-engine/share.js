@@ -20,13 +20,27 @@ const DesignShare = (() => {
   // Everything else in the DNA is numeric/enum, only ever used as a number or
   // an object-lookup key — never interpolated into markup.
   const HEX_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+  // Collapse every accepted hex to the 6-digit #RRGGBB form. HEX_RE (correctly)
+  // admits #RGB / #RGBA / #RRGGBBAA, but CONFIG.validateColor — the gate on
+  // StateManager.currentColor — accepts ONLY #RRGGBB. A shorthand/alpha stop
+  // therefore renders fine in the live flat yet is REJECTED when flow.js mirrors
+  // it into state, so the Ownership colour chip and the exported spec sheet would
+  // silently show a different colour than the piece on screen. Normalising at the
+  // trust boundary keeps the two stores in agreement (6-digit values pass through
+  // untouched, so shared links round-trip unchanged).
+  function normalizeHex(hex) {
+    const h = hex.slice(1);
+    if (h.length === 3 || h.length === 4) return "#" + h.slice(0, 3).replace(/./g, "$&$&");
+    if (h.length === 8) return "#" + h.slice(0, 6);
+    return hex;
+  }
   function sanitize(dna) {
     if (!dna || typeof dna !== "object") return dna;
     const stops = dna.color && dna.color.stops;
     if (Array.isArray(stops)) {
       dna.color.stops = stops
         .filter((s) => typeof s === "string" && HEX_RE.test(s.trim()))
-        .map((s) => s.trim());
+        .map((s) => normalizeHex(s.trim()));
     }
     return dna;
   }

@@ -661,7 +661,12 @@ const DesignFlow = (() => {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return null;
         const o = JSON.parse(raw);
+        // Both fields must be well-formed: resume reads o.dna.archetypeWeights
+        // straight away, so a truncated/hand-edited blob with a missing or
+        // non-object dna would throw a TypeError that dead-ends the journey on
+        // `engine.load_fail` (and logs a console error). Treat it as no save.
         if (!o || !Array.isArray(o.answered)) return null;
+        if (!o.dna || typeof o.dna !== "object") return null;
         return o;
       } catch (_e) { return null; }
     }

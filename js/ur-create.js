@@ -303,17 +303,25 @@
       const design = window.StateManager && window.StateManager.get("currentDesign");
       const entry = { d, name: (design && design.name) || "", by: "", ts: Date.now() };
       publish.disabled = true;
+      let ok = false;
       try {
-        await fetch("/api/gallery", {
+        const res = await fetch("/api/gallery", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ d: entry.d, name: entry.name }),
         });
-      } catch (_e) { /* offline → best-effort, still confirm to the user */
+        ok = !!(res && res.ok);
+      } catch (_e) { /* offline / network error → ok stays false */
       } finally { publish.disabled = false; }
-      // Der Kreis schließt sich: die Community-Kugel setzt das Stück sofort
-      // an ihre Innenwand (community-sphere.js hört auf dieses Event).
-      window.dispatchEvent(new CustomEvent("urev:published", { detail: { d: entry.d, name: entry.name } }));
-      flashButton(publish, "own.published");
+      if (ok) {
+        // Der Kreis schließt sich: die Community-Kugel setzt das Stück sofort
+        // an ihre Innenwand (community-sphere.js hört auf dieses Event).
+        window.dispatchEvent(new CustomEvent("urev:published", { detail: { d: entry.d, name: entry.name } }));
+        flashButton(publish, "own.published");
+      } else {
+        // Nichts wurde serverseitig gespeichert — dem Nutzer keinen Erfolg
+        // vorgaukeln (Projekt-Regel: keine geschönten „grün"-Meldungen).
+        flashButton(publish, "own.publish_retry");
+      }
     });
 
     const makeReal = $("#own-makereal");

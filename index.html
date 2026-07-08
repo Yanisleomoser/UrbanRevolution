@@ -29,6 +29,7 @@
     <meta name="twitter:title" content="Erschaffe die Zukunft der Mode — Urban Revolution">
     <meta name="twitter:description" content="Eine Vision für Mode ohne Überproduktion: dein Entwurf, eines Tages autonom gefertigt aus recycelter Kleidung. Werde Teil der Bewegung.">
     <meta name="twitter:image" content="https://revolveurban.com/assets/og-image.png">
+    <meta name="twitter:image:alt" content="Urban Revolution — Vision einer vollautonomen Kreislauf-Fabrik für massgeschneiderte Mode">
 
     <link rel="canonical" href="https://revolveurban.com/">
     <link rel="manifest" href="/manifest.webmanifest">
@@ -87,7 +88,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260707-thread-gutter">
+    <link rel="stylesheet" href="css/styles.css?v=20260708-audit-fixes">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -254,7 +255,7 @@
         {
           "@type": "Question",
           "name": "Wo wird gefertigt?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Urban Revolution ist heute eine Vision, noch keine laufende Produktion. Das Ziel: eine vollautonome Kreislauf-Fabrik, die weggeworfene Textilien sortiert und daraus dein Einzelstück fertigt. Trag dich ein — du erfährst als Erstes, wann und wie es so weit ist." }
+          "acceptedAnswer": { "@type": "Answer", "text": "In der geplanten vollautonomen Kreislauf-Fabrik, die weggeworfene Textilien sortiert und daraus dein Einzelstück fertigt. Trag dich ein — du erfährst als Erstes, wann und wo es so weit ist." }
         },
         {
           "@type": "Question",
@@ -875,7 +876,7 @@
 
                 <div class="own-side-col">
                     <div class="own-info">
-                        <h4 class="own-side-title" data-i18n="own.info_title">Dein Design</h4>
+                        <h3 class="own-side-title" data-i18n="own.info_title">Dein Design</h3>
                         <dl class="own-info-grid">
                             <div><dt data-i18n="own.info_type">Typ</dt><dd id="oi-type">—</dd></div>
                             <div><dt data-i18n="own.info_material">Material</dt><dd id="oi-material">—</dd></div>
@@ -974,7 +975,7 @@
                 <div class="measure-form">
                     <div class="photo-upload-card">
                         <div class="photo-upload-text">
-                            <h4 data-i18n="measure.photo_h4">Masse aus Foto</h4>
+                            <h3 data-i18n="measure.photo_h4">Masse aus Foto</h3>
                             <p data-i18n="measure.photo_body">Lade ein Ganzkörperfoto hoch (gerade stehend, T-Pose oder Arme leicht zur Seite). MediaPipe analysiert die Pose und schätzt deine Masse automatisch.</p>
                             <p class="photo-privacy" data-i18n="measure.photo_privacy">100% clientseitig — dein Bild verlässt nie dein Gerät.</p>
                         </div>
@@ -1047,7 +1048,7 @@
                 </div>
 
                 <div class="body-diagram">
-                    <svg viewBox="0 0 1152 1728" xmlns="http://www.w3.org/2000/svg" data-i18n-aria-label="svg.body_aria" aria-label="Massdiagramm Körper" class="measure-figure-svg">
+                    <svg viewBox="0 0 1152 1728" xmlns="http://www.w3.org/2000/svg" role="img" data-i18n-aria-label="svg.body_aria" aria-label="Massdiagramm Körper" class="measure-figure-svg">
                         <defs>
                             <clipPath id="figClip"><rect x="0" y="0" width="1152" height="1728" rx="40"/></clipPath>
                         </defs>
@@ -1391,7 +1392,7 @@
     <script defer src="js/spec-view.js"></script>
     <script defer src="js/app.js"></script>
     <script defer src="js/flair.js"></script>
-    <script defer src="js/ur-create.js?v=20260707-stickyscroll"></script>
+    <script defer src="js/ur-create.js?v=20260708-audit-fixes"></script>
     <script defer src="js/ambient-ticker.js"></script>
     <script defer src="js/facts-mass.js?v=20260704-kleider2"></script>
     <script defer src="js/faden.js"></script>
