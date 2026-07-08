@@ -592,7 +592,10 @@ async function boot() {
     function metaLine(item) {
         const parts = [];
         if (item.by) parts.push(`${t("sphere.by")} ${item.by}`);
-        if (item.type) parts.push(t("type." + item.type));
+        // Only the six real garment types have a `type.*` key; an unknown value
+        // from liveImg / showcase data would otherwise print the raw key
+        // ("type.coat") on this public surface. Same guard as KNOWN_TYPES above.
+        if (item.type && KNOWN_TYPES.has(item.type)) parts.push(t("type." + item.type));
         if (item.style) parts.push(item.style);
         return parts.join(" · ");
     }
