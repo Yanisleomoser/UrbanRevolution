@@ -436,22 +436,30 @@ const GarmentSVG = (() => {
       s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0 + 1)} L ${L(6)} ${Y(cy0 + 22)} L ${L(g.neckHalf + 13)} ${Y(cy0 + 30)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
       s.push(`<path d="M ${R(g.neckHalf)} ${Y(cy0 + 1)} L ${R(6)} ${Y(cy0 + 22)} L ${R(g.neckHalf + 13)} ${Y(cy0 + 30)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
     }
-    // Camp collar (open one-piece revere): two soft lapels flaring off the neck
-    // to a point, open at the centre — the UR flat's camp/overshirt collar.
+    // Camp collar (open one-piece revere): a back-neck band joins two BROAD
+    // open lapels (quadrilaterals, not needles) with an inner roll line — reads
+    // as one continuous open collar, clearly distinct from the point collar.
     if (g.collar === "camp") {
-      s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0)} L ${L(g.neckHalf + 15)} ${Y(cy0 + 26)} L ${L(g.neckHalf - 2)} ${Y(cy0 + 20)} Z" fill="rgba(255,255,255,0.03)" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
-      s.push(`<path d="M ${R(g.neckHalf)} ${Y(cy0)} L ${R(g.neckHalf + 15)} ${Y(cy0 + 26)} L ${R(g.neckHalf - 2)} ${Y(cy0 + 20)} Z" fill="rgba(255,255,255,0.03)" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+      s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0)} Q ${CX} ${Y(cy0 - 6)} ${R(g.neckHalf)} ${Y(cy0)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+      for (const dir of [-1, 1]) {
+        const X = dir < 0 ? L : R;
+        s.push(`<path d="M ${X(g.neckHalf)} ${Y(cy0)} L ${X(g.neckHalf + 9)} ${Y(cy0 - 3)} L ${X(g.neckHalf + 19)} ${Y(cy0 + 30)} L ${X(g.neckHalf + 2)} ${Y(cy0 + 24)} Z" fill="rgba(255,255,255,0.03)" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+        s.push(`<path d="M ${X(g.neckHalf + 8)} ${Y(cy0 + 1)} L ${X(g.neckHalf + 13)} ${Y(cy0 + 26)}" fill="none" stroke="${SEAM}" stroke-width="1.2" opacity="0.6"/>`);
+      }
     }
     if (g.collar === "hood") {
-      // A tall rounded hood rising over the neck (not a thin ring), with an
-      // inner opening line and a drawcord ending in two aglets — the UR flat's
-      // hood detail. Peaks high but clamped inside the canvas top.
-      const peakY = Math.max(6, cy0 - 54);
+      // A rounded hood DOME springing continuously from the neckline (closed at
+      // its base so it attaches to the neck, not a wide balloon floating above
+      // it), kept well inside the shoulders. Inner face-opening line + a
+      // drawcord through two front eyelets ending in aglets — the UR hood.
+      const peakY = Math.max(8, cy0 - 52);
       const midY = (cy0 + peakY) / 2;
-      s.push(`<path d="M ${L(g.neckHalf + 2)} ${Y(cy0 + 5)} C ${L(g.shoulderHalf + 4)} ${Y(midY + 6)} ${L(g.shoulderHalf - 10)} ${Y(peakY + 2)} ${CX} ${Y(peakY)} C ${R(g.shoulderHalf - 10)} ${Y(peakY + 2)} ${R(g.shoulderHalf + 4)} ${Y(midY + 6)} ${R(g.neckHalf + 2)} ${Y(cy0 + 5)}" fill="rgba(255,255,255,0.05)" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>`);
-      s.push(`<path d="M ${L(g.neckHalf + 5)} ${Y(cy0 + 2)} C ${L(g.shoulderHalf - 6)} ${Y(midY + 10)} ${L(g.shoulderHalf - 16)} ${Y(peakY + 12)} ${CX} ${Y(peakY + 10)} C ${R(g.shoulderHalf - 16)} ${Y(peakY + 12)} ${R(g.shoulderHalf - 6)} ${Y(midY + 10)} ${R(g.neckHalf + 5)} ${Y(cy0 + 2)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.65"/>`);
-      // drawcord + aglets
-      line(`M ${L(6)} ${Y(cy0 + 16)} L ${L(5)} ${Y(cy0 + 40)} M ${R(6)} ${Y(cy0 + 16)} L ${R(5)} ${Y(cy0 + 40)}`, 1.8);
+      const baseX = g.neckHalf + 8, bellyX = g.neckHalf + 14;
+      s.push(`<path d="M ${L(baseX)} ${Y(cy0 + 3)} C ${L(bellyX)} ${Y(midY + 4)} ${L(bellyX - 6)} ${Y(peakY + 3)} ${CX} ${Y(peakY)} C ${R(bellyX - 6)} ${Y(peakY + 3)} ${R(bellyX)} ${Y(midY + 4)} ${R(baseX)} ${Y(cy0 + 3)} Z" fill="rgba(255,255,255,0.05)" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>`);
+      s.push(`<path d="M ${L(baseX - 3)} ${Y(cy0 + 1)} C ${L(bellyX - 5)} ${Y(midY + 7)} ${L(bellyX - 10)} ${Y(peakY + 13)} ${CX} ${Y(peakY + 10)} C ${R(bellyX - 10)} ${Y(peakY + 13)} ${R(bellyX - 5)} ${Y(midY + 7)} ${R(baseX - 3)} ${Y(cy0 + 1)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+      // front eyelets → drawcord → aglets
+      s.push(`<circle cx="${L(6)}" cy="${Y(cy0 + 13)}" r="1.4" fill="none" stroke="${SEAM}" stroke-width="1"/><circle cx="${R(6)}" cy="${Y(cy0 + 13)}" r="1.4" fill="none" stroke="${SEAM}" stroke-width="1"/>`);
+      line(`M ${L(6)} ${Y(cy0 + 15)} L ${L(5)} ${Y(cy0 + 40)} M ${R(6)} ${Y(cy0 + 15)} L ${R(5)} ${Y(cy0 + 40)}`, 1.8);
       const agFill = p.hardware === "metal" ? INK : "none";
       s.push(`<rect x="${L(6.4)}" y="${Y(cy0 + 40)}" width="2.8" height="6" rx="1.2" fill="${agFill}" stroke="${INK}" stroke-width="1.2"/>`);
       s.push(`<rect x="${R(6.4) - 2.8}" y="${Y(cy0 + 40)}" width="2.8" height="6" rx="1.2" fill="${agFill}" stroke="${INK}" stroke-width="1.2"/>`);
@@ -489,16 +497,32 @@ const GarmentSVG = (() => {
       }
       return m;
     };
-    if (p.pockets === "kangaroo" || (g.collar === "hood" && !p.pockets)) {
+    // A full-length front zip splits the pouch: an open front can't carry a
+    // centred kangaroo OVER the zip, so a zip hoodie gets two diagonal
+    // hand-warmer welt pockets flanking the closure (as on the UR zip hoodie).
+    const fullZip = p.closure === "zip" || (cfg.closure === "zip" && p.closure == null);
+    if ((p.pockets === "kangaroo" || (g.collar === "hood" && !p.pockets)) && fullZip) {
+      const wy = py + 6, inX = clamp(g.chestHalf * 0.34, 8, 40), outX = clamp(g.chestHalf - 6, 18, 52);
+      for (const dir of [-1, 1]) {
+        const X = dir < 0 ? L : R;
+        s.push(`<path d="M ${X(inX)} ${Y(wy)} L ${X(outX)} ${Y(wy + 16)}" fill="none" stroke="${SEAM}" stroke-width="1.8" stroke-linecap="round"/>`);
+        s.push(topstitch(`M ${X(inX - 1)} ${Y(wy + 2.5)} L ${X(outX - 1)} ${Y(wy + 18.5)}`, 0.5));
+        s.push(`<path d="M ${X(inX)} ${Y(wy - 2)} L ${X(inX)} ${Y(wy + 3.5)} M ${X(outX)} ${Y(wy + 13)} L ${X(outX)} ${Y(wy + 18.5)}" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`);
+      }
+    } else if (p.pockets === "kangaroo" || (g.collar === "hood" && !p.pockets)) {
       // Centre muff (kangaroo) pocket: a compact pouch whose angled top corners
-      // are the two hand openings — one clean shape, well clear of the hem.
-      const kb = clamp(g.chestHalf - 6, 22, 50), kt = clamp(g.chestHalf - 16, 14, 42);
+      // are the two hand openings — kept well inside the side seams and clear of
+      // the hem.
+      const kb = clamp(g.chestHalf * 0.72, 20, 42), kt = clamp(g.chestHalf * 0.54, 14, 32);
       const ky0 = py + 2, ky1 = py + 30, kyk = ky0 + 10;
       s.push(`<path d="M ${L(kb)} ${Y(ky1)} L ${L(kb)} ${Y(kyk)} L ${L(kt)} ${Y(ky0)} L ${R(kt)} ${Y(ky0)} L ${R(kb)} ${Y(kyk)} L ${R(kb)} ${Y(ky1)} Z" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`);
       line(`M ${L(kt)} ${Y(ky0)} L ${L(kt - 7)} ${Y(ky0 + 13)} M ${R(kt)} ${Y(ky0)} L ${R(kt - 7)} ${Y(ky0 + 13)}`, 1.4, 0.7);
     }
-    if (p.pockets === "flap") { s.push(patch(CX - (g.chestHalf - 12), py + 4, 26, 15, true)); s.push(patch(CX + (g.chestHalf - 12), py + 4, 26, 15, true)); }
-    if (p.pockets === "cargo") { s.push(patch(CX - (g.chestHalf - 11), py, 28, 24, true)); s.push(patch(CX + (g.chestHalf - 11), py, 28, 24, true)); }
+    // Flap = two chest patch pockets flanking the placket (kept inboard of the
+    // side seam so they never overshoot the torso / overlap the sleeve).
+    if (p.pockets === "flap") { s.push(patch(CX - g.chestHalf * 0.5, g.armpitY + 16, 22, 15, true)); s.push(patch(CX + g.chestHalf * 0.5, g.armpitY + 16, 22, 15, true)); }
+    // Cargo = larger utility patch pockets low on the body, also kept inboard.
+    if (p.pockets === "cargo") { s.push(patch(CX - g.chestHalf * 0.5, py, 24, 22, true)); s.push(patch(CX + g.chestHalf * 0.5, py, 24, 22, true)); }
     if (p.pockets === "side") line(`M ${L(g.waistHalf - 4)} ${Y(py + 4)} l 18 5 M ${R(g.waistHalf - 4)} ${Y(py + 4)} l -18 5`, 1.8);
     if (p.pockets === "chest") s.push(patch(CX - (g.chestHalf - 8), g.armpitY + 12, 18, 16, false));
 
@@ -508,6 +532,14 @@ const GarmentSVG = (() => {
         s.push(ribBand(L(g.coX), L(g.ciX), g.wristY - 12, g.wristY - 1, 0.8));
         s.push(ribBand(R(g.coX), R(g.ciX), g.wristY - 12, g.wristY - 1, 0.8));
       } else if (p.cuffs === "button") { s.push(`<circle cx="${L((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/><circle cx="${R((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 7)}" r="1.6" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`); }
+      else if (cfg.closure === "button" && !p.cuffs && g.wristY - g.shoulderY > 90) {
+        // Shirt category, long sleeve, no explicit cuff → a default barrel cuff
+        // (a cuff-band seam + a button) so a dress shirt isn't bare at the wrist.
+        for (const X of [L, R]) {
+          line(`M ${X(g.coX)} ${Y(g.wristY - 12)} L ${X(g.ciX)} ${Y(g.wristY - 12)}`, 1.6, 0.75);
+          s.push(`<circle cx="${X((g.coX + g.ciX) / 2)}" cy="${Y(g.wristY - 6)}" r="1.4" fill="none" stroke="${SEAM}" stroke-width="1.3"/>`);
+        }
+      }
     }
 
     // Hem treatment. Ribbed = a knit waistband; plain hems carry a topstitch.
@@ -707,12 +739,13 @@ const GarmentSVG = (() => {
       line(`M ${R(thighHalf * 0.5)} ${Y(topY + 22)} L ${R(ankleHalf * 0.7)} ${Y(hemY - 4)}`, 1.1, 0.45);
     }
     if (p.pockets === "cargo") {
-      // patch cargo pockets on the thighs with a flap + button + topstitch —
-      // clearly different from slash pockets.
-      const py = crotchY + 14, pw = r(thighHalf * 0.9), ph = 30;
+      // patch cargo pockets centred on each thigh (not clustered at the crotch)
+      // with a flap + button + topstitch — clearly different from slash pockets.
+      const py = crotchY + 14, pw = r(clamp(thighHalf * 0.72, 16, 26)), ph = 30;
+      const legMid = clamp(thighHalf * 0.82, 15, 27);   // outboard leg centre
       for (const dir of [-1, 1]) {
-        const x0 = dir < 0 ? L(thighHalf - 2) : R(thighHalf - 2) - pw;
-        const xc = r(x0 + pw / 2);
+        const xc = r(CX + dir * legMid);
+        const x0 = r(xc - pw / 2);
         seam.push(`<rect x="${x0}" y="${Y(py)}" width="${pw}" height="${ph}" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`);
         seam.push(`<rect x="${r(x0 + 3)}" y="${Y(py + 3)}" width="${r(pw - 6)}" height="${r(ph - 6)}" rx="1.5" fill="none" stroke="${INK}" stroke-width="0.8" stroke-dasharray="2.2 2" opacity="0.5"/>`);
         seam.push(`<path d="M ${x0} ${Y(py)} L ${x0} ${Y(py - 5)} L ${r(x0 + pw)} ${Y(py - 5)} L ${r(x0 + pw)} ${Y(py)}" fill="none" stroke="${SEAM}" stroke-width="1.5"/>`);

@@ -297,6 +297,27 @@ assert(!/<img|onerror/i.test(hostileDetail) && !/NaN/.test(hostileDetail), "upgr
 assert(GarmentSVG.model("tshirt", { fit: 0.9 }).g.shoulderHalf > GarmentSVG.model("tshirt", { fit: 0.2 }).g.shoulderHalf + 8,
   "tee shoulder spreads visibly wider from slim → oversized (reference proportions)");
 
+console.log("\n— pocket honesty + shirt cuff (construction-review fixes) —");
+// A zip hoodie must NOT carry a centred kangaroo pouch over the open zip: the
+// pouch trapezoid (its unique tall side segment 'L .. Z') is gone, replaced by
+// two flanking welts. Compare the kangaroo pouch signature vs a pullover.
+const zipHood = GarmentSVG.build("hoodie", { closure: "zip", cuffs: "ribbed" });
+const pullHood = GarmentSVG.build("hoodie", { cuffs: "ribbed" });
+const pouchSig = (s) => (s.match(/ Z" fill="none" stroke="#CFCFD8" stroke-width="1\.8"/g) || []).length;
+assert(pouchSig(pullHood) >= 1, "pullover hoodie keeps its centred kangaroo pouch");
+assert(pouchSig(zipHood) === 0, "zip hoodie drops the centred pouch (no kangaroo over the open zip)");
+// Camp collar carries a connected back-neck band (a Q arc across the neckline).
+const campC = GarmentSVG.build("shirt", { collar: "camp" });
+assert(/Q 120 [0-9.]+ 13[0-9]/.test(campC) || campC.includes("Q 120"), "camp collar joins its lapels with a back-neck band");
+// A long-sleeve shirt gets a default barrel cuff (button near each wrist).
+const shirtLong = GarmentSVG.build("shirt", { collar: "shirt", sleeveLength: "long" });
+const shirtBare = GarmentSVG.model("shirt", { sleeveLength: "sleeveless" }).g;
+assert(shirtLong.includes("<circle") && !/NaN/.test(shirtLong), "long-sleeve shirt renders a default cuff button, clean");
+assert(shirtBare.sleeveless === true, "a sleeveless shirt has no sleeve to cuff");
+// Flap pockets sit on the chest (above the hem) and stay inside the body.
+const flapA = GarmentSVG.regionAnchors("jacket", { pockets: "flap" });
+assert(flapA.pockets.x >= 14 && flapA.pockets.x <= 226, "flap pocket anchor stays in-box after the placement fix");
+
 // ─── regionAnchors — hotspot geometry for the detail atelier (roadmap §7) ───
 console.log("\n— regionAnchors() places hotspots on the resolved geometry —");
 const inBox = (a) => a && a.x >= 14 && a.x <= 226 && a.y >= 14 && a.y <= 326;
