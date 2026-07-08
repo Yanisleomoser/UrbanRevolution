@@ -27,6 +27,18 @@ function jsonError(status, message, code) {
   return Response.json(code ? { error: message, code } : { error: message }, { status });
 }
 
+// Constant-time string compare so a wrong IMAGE_GEN_KEY guess can't be
+// narrowed down via response-time side-channel (standard `!==` short-circuits
+// on the first differing byte). Equal-length inputs only compare in constant
+// time; a length mismatch still exits early — same limitation as Node's
+// crypto.timingSafeEqual, which also requires equal-length buffers.
+function timingSafeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 // Pure gate + input validator. Returns a decision object (no Response) so the
 // offline suite can pin the SECURITY-CRITICAL ordering: the auth gate is
 // checked BEFORE the Replicate-config state, so an unauthorised caller can
@@ -34,7 +46,7 @@ function jsonError(status, message, code) {
 function validateRequest(payload, env) {
   const p = payload || {};
   // Gate first — never reveal whether Replicate is configured to an unauthorised caller.
-  if (!env.gateKey || typeof p.key !== "string" || p.key !== env.gateKey) {
+  if (!env.gateKey || typeof p.key !== "string" || !timingSafeEqual(p.key, env.gateKey)) {
     return { ok: false, status: 403, message: "Forbidden", code: "forbidden" };
   }
   if (!env.apiKey) {
@@ -64,13 +76,24 @@ export default async function handler(request) {
   }
   const { prompt, aspect } = valid;
 
+  // Edge functions get ~25 s total; unlike try-on.js/preview-design.js this
+  // route then *also* polls, so a fixed 25 s abort on the initial request
+  // left no room for the poll loop below and could run the whole handler
+  // past the platform timeout (raw 500 instead of any jsonError path).
+  // Track one deadline for the whole handler and leave margin to build +
+  // return the response.
+  const EDGE_BUDGET_MS = 25000;
+  const MARGIN_MS = 3000;
+  const startedAt = Date.now();
+  const remaining = () => EDGE_BUDGET_MS - MARGIN_MS - (Date.now() - startedAt);
+
   let res;
   try {
     res = await fetch(MODEL_ENDPOINT, {
       method: "POST",
       // Bound the call so a slow/black-holed upstream can't hang the (billed)
-      // function past the wait window — matches try-on.js/preview-design.js.
-      signal: AbortSignal.timeout(25000),
+      // function past the wait window.
+      signal: AbortSignal.timeout(Math.max(1000, remaining())),
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", Prefer: "wait=20" },
       body: JSON.stringify({ input: { prompt, aspect_ratio: aspect, output_format: "jpg", output_quality: 90, prompt_upsampling: false, safety_tolerance: 2 } }),
     });
@@ -92,11 +115,14 @@ export default async function handler(request) {
     return jsonError(502, "Generation failed", "service_unavailable");
   }
   // Short server-side poll within the edge budget (token never leaves Vercel).
+  // Only start another 2 s sleep + poll round-trip if it can plausibly finish
+  // before the deadline, so this loop can't be the thing that tips the
+  // handler over the platform's hard timeout.
   let tries = 0;
-  while (pred.status !== "succeeded" && pred.status !== "failed" && pred.status !== "canceled" && tries++ < 3) {
+  while (pred.status !== "succeeded" && pred.status !== "failed" && pred.status !== "canceled" && tries++ < 3 && remaining() > 2500) {
     await sleep(2000);
     try {
-      const poll = await fetch(pred.urls.get, { headers: { Authorization: `Bearer ${apiKey}` } });
+      const poll = await fetch(pred.urls.get, { headers: { Authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(Math.max(500, remaining())) });
       pred = await poll.json();
     } catch { break; }
   }

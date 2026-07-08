@@ -60,7 +60,10 @@ const Preferences = (() => {
   function track(category, value) {
     if (!value || !TRACKED_CATEGORIES.includes(category)) return;
     const prefs = load();
-    prefs[category][value] = (prefs[category][value] || 0) + 1;
+    // Number(...) guards against a corrupt/hand-edited count that's a string:
+    // plain `|| 0` only catches falsy values, so a string count would
+    // otherwise string-concatenate ("3" + 1 → "31") instead of incrementing.
+    prefs[category][value] = (Number(prefs[category][value]) || 0) + 1;
     save(prefs);
   }
 

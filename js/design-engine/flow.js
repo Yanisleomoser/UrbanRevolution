@@ -353,6 +353,11 @@ const DesignFlow = (() => {
     const history = [];
     let content = null;
     let currentNode = null;
+    // Pre-live snapshot of any path a slider/live modality mutates via ctx.live()
+    // before the user commits — { path: { value, confidence } }, captured lazily
+    // on first live() write per node so Skip can discard unconfirmed edits
+    // instead of baking them into the DNA (see skipBtn handler below).
+    let pendingLive = null;
     let generated = false;
     // Stamped on every question/refine render; commits within COMMIT_GUARD_MS
     // of it are ignored (double-tap protection, see isGuardedTap above).
@@ -670,7 +675,13 @@ const DesignFlow = (() => {
       t,
       live(payload) {
         const { eff } = resolveEffects(currentNode, payload);
-        if (eff && eff.set) Object.entries(eff.set).forEach(([p, v]) => DesignDNA.set(dna, p, v, 0));
+        if (eff && eff.set) {
+          if (!pendingLive) pendingLive = {};
+          Object.entries(eff.set).forEach(([p, v]) => {
+            if (!(p in pendingLive)) pendingLive[p] = { value: DesignDNA.get(dna, p), confidence: DesignDNA.confidence(dna, p) };
+            DesignDNA.set(dna, p, v, 0);
+          });
+        }
         mirror(dna, content.attributes);
         updatePreview();
       },
@@ -682,6 +693,7 @@ const DesignFlow = (() => {
         flash("✓ " + changeLabel(currentNode, payload, lang()));
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
         mirror(dna, content.attributes);
+        pendingLive = null;
         persist();
         renderNext();
       },
@@ -690,6 +702,7 @@ const DesignFlow = (() => {
     function renderModality(node) {
       atRefine = false; // back to the morphing flat for any question
       currentNode = node;
+      pendingLive = null;
       updateStepper(node.phase);
       const crossed = lastPhase !== null && node.phase !== lastPhase;
       lastPhase = node.phase;
@@ -1048,7 +1061,15 @@ const DesignFlow = (() => {
       renderNext();
     });
     skipBtn.addEventListener("click", () => {
-      if (currentNode) { T("node_skip", { id: currentNode.id }); snapshot(); answered.add(currentNode.id); persist(); }
+      if (currentNode) {
+        // Discard any unconfirmed live() edits (e.g. a dragged-then-abandoned
+        // slider) instead of baking them into the DNA at confidence 0.
+        if (pendingLive) {
+          Object.entries(pendingLive).forEach(([p, prev]) => DesignDNA.set(dna, p, prev.value, prev.confidence));
+          pendingLive = null;
+        }
+        T("node_skip", { id: currentNode.id }); snapshot(); answered.add(currentNode.id); persist();
+      }
       renderNext();
     });
     restartBtn.addEventListener("click", resetJourney);

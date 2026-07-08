@@ -21,8 +21,12 @@
 const DesignCondition = (() => {
   function tokenize(src) {
     const tokens = [];
+    // Numbers accept an optional leading '-' (unary sign): the grammar has no
+    // subtraction operator, so a '-' can only ever be a sign prefix here —
+    // without it, any `when` string with a negative bound (e.g. "x > -0.2")
+    // hit an unmatched character and failed closed (node silently never shown).
     const re =
-      /\s*(?:(\d+(?:\.\d+)?)|'([^']*)'|(==|!=|<=|>=|&&|\|\||[<>()])|([A-Za-z_][A-Za-z0-9_.]*))/g;
+      /\s*(?:(-?\d+(?:\.\d+)?)|'([^']*)'|(==|!=|<=|>=|&&|\|\||[<>()])|([A-Za-z_][A-Za-z0-9_.]*))/g;
     let m;
     let last = 0;
     while ((m = re.exec(src)) !== null) {

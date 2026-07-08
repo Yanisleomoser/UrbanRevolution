@@ -61,6 +61,24 @@ export default async function handler(req) {
     if (!res.ok) throw new Error(`upstash ${res.status}`);
     return (await res.json()).result;
   };
+  // Multi-command pipeline (single round-trip) — used for LPUSH+LTRIM so two
+  // concurrent POSTs can't interleave (push-A, push-B, trim-A, trim-B), which
+  // could let the ring buffer briefly exceed MAX_ITEMS or let one request's
+  // trim evict an entry a concurrent request just pushed.
+  const redisPipeline = async (cmds) => {
+    const res = await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(cmds),
+    });
+    if (!res.ok) throw new Error(`upstash ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("Unexpected pipeline response");
+    return data.map((entry) => {
+      if (entry && entry.error) throw new Error(entry.error);
+      return entry ? entry.result : null;
+    });
+  };
 
   try {
     if (req.method === "GET") {
@@ -82,8 +100,7 @@ export default async function handler(req) {
       const name = clampField(body.name, MAX_NAME);
       const by = clampField(body.by, MAX_BY);
       const item = JSON.stringify({ d, name, by, ts: Date.now() });
-      await redis(["LPUSH", KEY, item]);
-      await redis(["LTRIM", KEY, "0", String(MAX_ITEMS - 1)]);
+      await redisPipeline([["LPUSH", KEY, item], ["LTRIM", KEY, "0", String(MAX_ITEMS - 1)]]);
       return Response.json({ ok: true });
     }
 

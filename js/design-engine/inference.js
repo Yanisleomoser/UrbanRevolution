@@ -57,8 +57,13 @@ const DesignInference = (() => {
   };
 
   // ── colour helpers ───────────────────────────────────────────────
+  // Shared DNA can carry shorthand hex (#0af, #0af8 with alpha) from
+  // share.js/garment-svg.js's HEX_RE — expand to 6+ digits before parsing so
+  // a 3/4-digit value doesn't yield NaN channels (which then poison mixHex/
+  // saturate and get written back into the DNA at confidence 0.85).
   const toRgb = (hex) => {
-    const c = String(hex).replace("#", "");
+    let c = String(hex).replace("#", "");
+    if (c.length === 3 || c.length === 4) c = c.split("").map((ch) => ch + ch).join("");
     return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)];
   };
   const toHex = (rgb) => "#" + rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
