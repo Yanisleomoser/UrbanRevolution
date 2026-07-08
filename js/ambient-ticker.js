@@ -34,8 +34,13 @@
 
     const t0 = Date.now();
 
-    const t = (key, fallback) =>
-        (window.I18N && typeof I18N.t === "function" ? I18N.t(key) : null) || fallback;
+    // I18N.t() echoes the key back on a miss (a truthy string), so a bare
+    // `|| fallback` never fires. Guard on "did we get a real translation?" so a
+    // genuinely missing key renders the intended default, not the raw key.
+    const t = (key, fallback) => {
+        const v = window.I18N && typeof I18N.t === "function" ? I18N.t(key) : null;
+        return v && v !== key ? v : fallback;
+    };
 
     // Build the compact "A" badge (used beside non-facts section numbers).
     function makeBadge() {

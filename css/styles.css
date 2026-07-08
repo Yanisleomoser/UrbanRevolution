@@ -2124,7 +2124,9 @@ input[aria-invalid="true"] {
     font-size: 14px;
     transform: translateY(100px);
     opacity: 0;
-    transition: all 0.3s;
+    /* Explicit props (not `all`) at ≤250ms — honours the no-layout-jump /
+       transition-budget rule; these are exactly what .show/.success/.error change. */
+    transition: transform 0.25s, opacity 0.25s, border-color 0.25s;
     z-index: 1000;
     max-width: 380px;
 }
