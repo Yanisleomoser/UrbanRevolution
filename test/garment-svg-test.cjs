@@ -261,12 +261,12 @@ GARBAGE.concat([{ material: '"><img onerror=x>', stops: ["#000\"><img>"] }]).for
 console.log("\n— construction detail: zip ladder, ribs, camp collar, hood, pockets —");
 const pathCount = (s) => (s.match(/<path/g) || []).length;
 const qCount = (s) => (s.match(/Q/g) || []).length;
-// Zip closure is a teeth ladder (stroke-width 1.1 is unique to zip teeth), capped.
+// Zip closure is a teeth ladder (stroke-width 1.15 is unique to zip teeth), capped.
 const zip = GarmentSVG.build("jacket", { closure: "zip", hardware: "metal" });
-const zipTeeth = (zip.match(/stroke-width="1\.1"/g) || []).length;
+const zipTeeth = (zip.match(/stroke-width="1\.15"/g) || []).length;
 assert(zipTeeth > 20, `zip closure emits a teeth ladder (${zipTeeth} teeth > 20)`);
 const longZip = GarmentSVG.build("jacket", { closure: "zip", length: "long" });
-assert((longZip.match(/stroke-width="1\.1"/g) || []).length <= 42, "zip teeth stay capped on a long body (morph budget)");
+assert((longZip.match(/stroke-width="1\.15"/g) || []).length <= 42, "zip teeth stay capped on a long body (morph budget)");
 assert(zip.includes("<rect"), "metal zip carries a pull tab");
 // Ribbed bands add a rib group (many more paths than a non-ribbed build).
 const ribbed = GarmentSVG.build("hoodie", { hem: "ribbed", cuffs: "ribbed" });
