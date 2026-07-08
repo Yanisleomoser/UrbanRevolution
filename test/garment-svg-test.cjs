@@ -257,6 +257,46 @@ GARBAGE.concat([{ material: '"><img onerror=x>', stops: ["#000\"><img>"] }]).for
     `dress + ${JSON.stringify(bad)} → grounded, clean, no injection`);
 });
 
+// ─── upgraded construction detail (fidelity pass, UR flat reference) ────────
+console.log("\n— construction detail: zip ladder, ribs, camp collar, hood, pockets —");
+const pathCount = (s) => (s.match(/<path/g) || []).length;
+const qCount = (s) => (s.match(/Q/g) || []).length;
+// Zip closure is a teeth ladder (stroke-width 1.1 is unique to zip teeth), capped.
+const zip = GarmentSVG.build("jacket", { closure: "zip", hardware: "metal" });
+const zipTeeth = (zip.match(/stroke-width="1\.1"/g) || []).length;
+assert(zipTeeth > 20, `zip closure emits a teeth ladder (${zipTeeth} teeth > 20)`);
+const longZip = GarmentSVG.build("jacket", { closure: "zip", length: "long" });
+assert((longZip.match(/stroke-width="1\.1"/g) || []).length <= 42, "zip teeth stay capped on a long body (morph budget)");
+assert(zip.includes("<rect"), "metal zip carries a pull tab");
+// Ribbed bands add a rib group (many more paths than a non-ribbed build).
+const ribbed = GarmentSVG.build("hoodie", { hem: "ribbed", cuffs: "ribbed" });
+const plainHem = GarmentSVG.build("hoodie", { hem: "curved", cuffs: "button" });
+assert(pathCount(ribbed) > pathCount(plainHem) + 15, `ribbed hem+cuffs emit a rib group (${pathCount(ribbed)} > ${pathCount(plainHem)} paths)`);
+// Camp collar → two open lapels (the tinted lapel fill is unique to camp).
+const camp = GarmentSVG.build("shirt", { collar: "camp" });
+assert((camp.match(/fill="rgba\(255,255,255,0\.03\)"/g) || []).length === 2, "camp collar emits two lapel paths");
+// Hood → drawcord aglets (two rects) even without pockets.
+const hood = GarmentSVG.build("hoodie", { collar: "hood", hardware: "metal", pockets: "none" });
+assert((hood.match(/<rect/g) || []).length >= 2, "hood emits two drawcord aglets");
+// Patch pocket (flap) → inset topstitch + a button circle.
+const flap = GarmentSVG.build("jacket", { pockets: "flap" });
+assert(flap.includes('stroke-dasharray="2.2 2"') && flap.includes("<circle"), "flap pocket has inset topstitch + a button");
+// Kangaroo pouch is one clean shape (a path, not a bare rect grid).
+const kang = GarmentSVG.build("hoodie", { pockets: "kangaroo" });
+assert(kang.startsWith("<svg") && !/NaN/.test(kang), "kangaroo pouch renders clean");
+// Curved sleeve: a sleeved outline carries more Q curves than the straight
+// sleeveless edge (cap crown + concave underarm), stays closed, no NaN.
+const sleeveM = /class="gs-outline" d="([^"]+)"/.exec(GarmentSVG.build("tshirt", { sleeveLength: "long" }));
+const tankM = /class="gs-outline" d="([^"]+)"/.exec(GarmentSVG.build("tshirt", { sleeveLength: "sleeveless" }));
+assert(sleeveM && tankM && qCount(sleeveM[1]) > qCount(tankM[1]), "curved sleeve adds cap/underarm Q curves vs a straight sleeveless edge");
+assert(sleeveM[1].trim().endsWith("Z") && !/NaN|undefined/.test(sleeveM[1]), "curved-sleeve outline stays a closed, clean path");
+// New detail stays XSS-safe against hostile params.
+const hostileDetail = GarmentSVG.build("jacket", { closure: "zip", hardware: '"><img onerror=x>', pockets: "cargo", collar: "camp" });
+assert(!/<img|onerror/i.test(hostileDetail) && !/NaN/.test(hostileDetail), "upgraded detail never injects markup (hostile hardware/params)");
+// Proportion retune: the tee shoulder spread widened toward the reference.
+assert(GarmentSVG.model("tshirt", { fit: 0.9 }).g.shoulderHalf > GarmentSVG.model("tshirt", { fit: 0.2 }).g.shoulderHalf + 8,
+  "tee shoulder spreads visibly wider from slim → oversized (reference proportions)");
+
 // ─── regionAnchors — hotspot geometry for the detail atelier (roadmap §7) ───
 console.log("\n— regionAnchors() places hotspots on the resolved geometry —");
 const inBox = (a) => a && a.x >= 14 && a.x <= 226 && a.y >= 14 && a.y <= 326;
