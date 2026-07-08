@@ -1262,7 +1262,7 @@ input[aria-invalid="true"] {
     align-items: center;
 }
 
-.photo-upload-text h4 {
+.photo-upload-text h3 {
     font-size: 15px;
     font-weight: 700;
     margin-bottom: 6px;
@@ -1553,18 +1553,18 @@ input[aria-invalid="true"] {
 }
 
 .annotation.is-active line {
-    stroke: #f9a8d4;
+    stroke: var(--accent-3);
     stroke-width: 5;
     stroke-dasharray: none;
 }
 
 .annotation.is-active circle {
-    fill: #f9a8d4;
+    fill: var(--accent-3);
     r: 11;
 }
 
 .annotation.is-active text {
-    fill: #f9a8d4;
+    fill: var(--accent-3);
 }
 
 /* Tappable markers (wired in app.js) — the figure doubles as a legend that

@@ -56,11 +56,14 @@ const Pose = (() => {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = typeof fileOrUrl === 'string'
-                ? fileOrUrl
-                : URL.createObjectURL(fileOrUrl);
+            // A File/Blob gets a temporary object URL; revoke it once the image
+            // has decoded (or failed) so each Pose.detect(file) call doesn't leak
+            // one blob URL for the lifetime of the session. A string src is a
+            // real URL we don't own — nothing to revoke.
+            const objectUrl = typeof fileOrUrl === 'string' ? null : URL.createObjectURL(fileOrUrl);
+            img.onload = () => { if (objectUrl) URL.revokeObjectURL(objectUrl); resolve(img); };
+            img.onerror = (e) => { if (objectUrl) URL.revokeObjectURL(objectUrl); reject(e); };
+            img.src = objectUrl || fileOrUrl;
         });
     }
 
