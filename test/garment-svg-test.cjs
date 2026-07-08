@@ -261,12 +261,12 @@ GARBAGE.concat([{ material: '"><img onerror=x>', stops: ["#000\"><img>"] }]).for
 console.log("\n— construction detail: zip ladder, ribs, camp collar, hood, pockets —");
 const pathCount = (s) => (s.match(/<path/g) || []).length;
 const qCount = (s) => (s.match(/Q/g) || []).length;
-// Zip closure is a teeth ladder (stroke-width 1.1 is unique to zip teeth), capped.
+// Zip closure is a teeth ladder (stroke-width 1.15 is unique to zip teeth), capped.
 const zip = GarmentSVG.build("jacket", { closure: "zip", hardware: "metal" });
-const zipTeeth = (zip.match(/stroke-width="1\.1"/g) || []).length;
+const zipTeeth = (zip.match(/stroke-width="1\.15"/g) || []).length;
 assert(zipTeeth > 20, `zip closure emits a teeth ladder (${zipTeeth} teeth > 20)`);
 const longZip = GarmentSVG.build("jacket", { closure: "zip", length: "long" });
-assert((longZip.match(/stroke-width="1\.1"/g) || []).length <= 42, "zip teeth stay capped on a long body (morph budget)");
+assert((longZip.match(/stroke-width="1\.15"/g) || []).length <= 42, "zip teeth stay capped on a long body (morph budget)");
 assert(zip.includes("<rect"), "metal zip carries a pull tab");
 // Ribbed bands add a rib group (many more paths than a non-ribbed build).
 const ribbed = GarmentSVG.build("hoodie", { hem: "ribbed", cuffs: "ribbed" });
@@ -296,6 +296,27 @@ assert(!/<img|onerror/i.test(hostileDetail) && !/NaN/.test(hostileDetail), "upgr
 // Proportion retune: the tee shoulder spread widened toward the reference.
 assert(GarmentSVG.model("tshirt", { fit: 0.9 }).g.shoulderHalf > GarmentSVG.model("tshirt", { fit: 0.2 }).g.shoulderHalf + 8,
   "tee shoulder spreads visibly wider from slim → oversized (reference proportions)");
+
+console.log("\n— pocket honesty + shirt cuff (construction-review fixes) —");
+// A zip hoodie must NOT carry a centred kangaroo pouch over the open zip: the
+// pouch trapezoid (its unique tall side segment 'L .. Z') is gone, replaced by
+// two flanking welts. Compare the kangaroo pouch signature vs a pullover.
+const zipHood = GarmentSVG.build("hoodie", { closure: "zip", cuffs: "ribbed" });
+const pullHood = GarmentSVG.build("hoodie", { cuffs: "ribbed" });
+const pouchSig = (s) => (s.match(/ Z" fill="none" stroke="#CFCFD8" stroke-width="1\.8"/g) || []).length;
+assert(pouchSig(pullHood) >= 1, "pullover hoodie keeps its centred kangaroo pouch");
+assert(pouchSig(zipHood) === 0, "zip hoodie drops the centred pouch (no kangaroo over the open zip)");
+// Camp collar carries a connected back-neck band (a Q arc across the neckline).
+const campC = GarmentSVG.build("shirt", { collar: "camp" });
+assert(/Q 120 [0-9.]+ 13[0-9]/.test(campC) || campC.includes("Q 120"), "camp collar joins its lapels with a back-neck band");
+// A long-sleeve shirt gets a default barrel cuff (button near each wrist).
+const shirtLong = GarmentSVG.build("shirt", { collar: "shirt", sleeveLength: "long" });
+const shirtBare = GarmentSVG.model("shirt", { sleeveLength: "sleeveless" }).g;
+assert(shirtLong.includes("<circle") && !/NaN/.test(shirtLong), "long-sleeve shirt renders a default cuff button, clean");
+assert(shirtBare.sleeveless === true, "a sleeveless shirt has no sleeve to cuff");
+// Flap pockets sit on the chest (above the hem) and stay inside the body.
+const flapA = GarmentSVG.regionAnchors("jacket", { pockets: "flap" });
+assert(flapA.pockets.x >= 14 && flapA.pockets.x <= 226, "flap pocket anchor stays in-box after the placement fix");
 
 // ─── regionAnchors — hotspot geometry for the detail atelier (roadmap §7) ───
 console.log("\n— regionAnchors() places hotspots on the resolved geometry —");
