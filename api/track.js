@@ -92,6 +92,10 @@ export default async function handler(request) {
     // incrementing freely but a flood of fresh ids can't grow the hash forever.
     if (cmds.length > 1) {
       const field = cmds[1][2];
+      // Both reads in ONE round-trip (was HEXISTS, then a separate HLEN when
+      // new) — shaves a full Upstash hop off every new-id event. The distinct-
+      // field cap is a soft, best-effort guard on a fire-and-forget beacon, so a
+      // rare TOCTOU overshoot of a few fields under concurrency is acceptable.
       const [exists, len] = await pipeline(url, token, [
         ["HEXISTS", NODES_KEY, field],
         ["HLEN", NODES_KEY],

@@ -27,6 +27,11 @@
     --accent: #2a9d8f;
     --accent-2: #2779a8;
     --accent-3: #64d6c4;
+    /* Dark ink for text/icons sitting ON the accent gradient (CTAs/buttons). */
+    --on-accent: #06121c;
+    /* Single danger/error tone (unified from three near-duplicate reds). Light
+       enough to read on the dark theme as both border and text (6.6:1 on --bg). */
+    --danger: #f87171;
     --gradient: linear-gradient(135deg, #2779a8 0%, #2a9d8f 50%, #64d6c4 100%);
     --gradient-dim: linear-gradient(135deg, rgba(42, 157, 143, 0.15), rgba(39, 121, 168, 0.15));
     /* CTA fill: the teal→aqua slice of Ocean Depths (drops the dark blue stop)
@@ -556,7 +561,7 @@ select:focus-visible {
 
 /* Out-of-range / invalid measurement inputs surface visibly + to AT. */
 input[aria-invalid="true"] {
-    border-color: #f87171;
+    border-color: var(--danger);
     box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
 }
 
@@ -1264,15 +1269,20 @@ input[aria-invalid="true"] {
     font-size: 14px;
 }
 
+.spec-table th,
 .spec-table td {
     padding: 8px 0;
     border-bottom: 1px solid #eee;
     color: #222;
 }
 
-.spec-table td:first-child {
+/* Row-header label cell (was a plain td; now <th scope="row"> so AT associates
+   each value with its label). Reset the th defaults to match the old look. */
+.spec-table th {
     color: #666;
     width: 40%;
+    text-align: left;
+    font-weight: 400;
 }
 
 .spec-table td:last-child {
@@ -1484,7 +1494,7 @@ input[aria-invalid="true"] {
 }
 
 .toast.error {
-    border-color: #ef4444;
+    border-color: var(--danger);
 }
 
 /* ============ LEGAL PAGES (Impressum / Datenschutz) ============ */
@@ -1648,8 +1658,8 @@ html[lang="en"] [data-l="de"] { display: none; }
        auf weissem Papier (vorbestehender Fund dieser Runde). Das ganze Sheet
        druckt dunkel-auf-weiss, die helle Linienzeichnung invertiert. */
     .spec-sheet { background: #fff !important; color: #111 !important; border: none !important; }
-    .spec-sheet h3, .spec-sheet h4, .spec-sheet p, .spec-sheet td, .spec-sheet li, .spec-sheet span, .spec-sheet div { color: #111 !important; }
-    .spec-sheet .spec-table td { border-color: #ddd !important; }
+    .spec-sheet h3, .spec-sheet h4, .spec-sheet p, .spec-sheet th, .spec-sheet td, .spec-sheet li, .spec-sheet span, .spec-sheet div { color: #111 !important; }
+    .spec-sheet .spec-table th, .spec-sheet .spec-table td { border-color: #ddd !important; }
     .spec-sheet .spec-drawing-note { color: #555 !important; }
     .spec-drawing { background: #fff !important; border: none !important; padding: 0 !important; }
     .spec-drawing svg { filter: invert(1) hue-rotate(180deg); }
@@ -1658,7 +1668,7 @@ html[lang="en"] [data-l="de"] { display: none; }
 /* Die Vorlage wird echt: die technische Zeichnung des Stücks im Spec-Sheet —
    dieselbe Studio-Bühnensprache wie Vorschau/Atelier/Ownership, gerendert aus
    denselben Flat-Params (app.js currentFlatParams). */
-.spec-drawing { border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.08), rgba(150, 205, 228, 0) 60%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%); }
+.spec-drawing { border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.08), rgba(150, 205, 228, 0) 60%), radial-gradient(130% 100% at 50% 34%, #122638, var(--bg)72%); }
 .spec-drawing svg { display: block; width: 100%; max-height: 340px; }
 .spec-drawing:empty { display: none; }
 .spec-drawing-note { margin: 8px 0 0; font-size: var(--text-xs); color: #666; }
@@ -1934,7 +1944,7 @@ html[lang="en"] [data-l="de"] { display: none; }
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at center, #1a1a1f 0%, #0a1622 100%);
+    background: radial-gradient(circle at center, #1a1a1f 0%, var(--bg)100%);
     overflow: hidden;
 }
 .vto-stage .vto-result-img {
@@ -2002,7 +2012,7 @@ html[lang="en"] [data-l="de"] { display: none; }
     max-width: none;
     padding: 24px 16px 16px;
     justify-content: center;
-    background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.1), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%);
+    background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.1), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, var(--bg)72%);
 }
 #vto-example.has-flat .own-flat { flex: 1; min-height: 0; width: min(300px, 82%); display: flex; align-items: center; }
 #vto-example.has-flat .own-flat svg { width: 100%; height: 100%; max-height: 520px; display: block; }
@@ -2510,8 +2520,8 @@ html.is-touch { scroll-behavior: auto; }
 }
 
 .library-tile-delete:hover {
-    border-color: #dc2626;
-    color: #dc2626;
+    border-color: var(--danger);
+    color: var(--danger);
 }
 
 /* ============================================================
@@ -3177,8 +3187,8 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-nav:disabled { opacity: 0.4; cursor: default; }
 /* "Fertig" ist DIE Zusage "du kannst jederzeit abschliessen" — sobald sie
    erscheint, verdient sie Confirm-Gewicht statt eines leisen Textlinks. */
-.de-finish { margin-left: auto; background: var(--gradient); color: #06121c; font-weight: 700; border-radius: 999px; padding: 8px 18px; }
-.de-finish:hover:not(:disabled) { color: #06121c; filter: brightness(1.1); }
+.de-finish { margin-left: auto; background: var(--gradient); color: var(--on-accent); font-weight: 700; border-radius: 999px; padding: 8px 18px; }
+.de-finish:hover:not(:disabled) { color: var(--on-accent); filter: brightness(1.1); }
 
 @media (max-width: 560px) {
     .de-question { font-size: var(--text-xl); }
@@ -3254,7 +3264,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 /* Werkbank-Bühne: dasselbe Studio-Licht wie die Hauptvorschau (sanftes
    Key-Light von oben, abgedunkelter Boden, Tiefen-Verlauf) — das Atelier ist
    ein beleuchteter Arbeitsplatz, kein schwebendes Icon. */
-.de-regions-stage { aspect-ratio: 240 / 340; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.11), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, #0a1622 72%); }
+.de-regions-stage { aspect-ratio: 240 / 340; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(70% 44% at 50% 4%, rgba(150, 205, 228, 0.11), rgba(150, 205, 228, 0) 60%), radial-gradient(120% 70% at 50% 118%, rgba(2, 7, 12, 0.6), rgba(2, 7, 12, 0) 55%), radial-gradient(130% 100% at 50% 34%, #122638, var(--bg)72%); }
 .de-regions-stage svg { width: 100%; height: 100%; display: block; }
 /* Hotspots treten gestaffelt auf wie gesetzte Stecknadeln (Delay inline aus
    JS, Reihenfolge = JSON-Reihenfolge). */
@@ -3365,7 +3375,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
 /* Cinematic studio stage: a soft key light from the top, a darkened floor that
    seats the garment's contact shadow, and a depth gradient — the flat reads as
    a garment lit in a studio, not an icon on a panel. */
-.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(68% 48% at 50% 6%, rgba(150,205,228,0.13), rgba(150,205,228,0) 62%), radial-gradient(120% 78% at 50% 122%, rgba(2,7,12,0.62), rgba(2,7,12,0) 56%), radial-gradient(132% 104% at 50% 36%, #122638, #0a1622 70%); display: flex; align-items: center; justify-content: center; }
+.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(68% 48% at 50% 6%, rgba(150,205,228,0.13), rgba(150,205,228,0) 62%), radial-gradient(120% 78% at 50% 122%, rgba(2,7,12,0.62), rgba(2,7,12,0) 56%), radial-gradient(132% 104% at 50% 36%, #122638, var(--bg)70%); display: flex; align-items: center; justify-content: center; }
 .de-preview svg { width: 100%; height: 100%; object-fit: contain; }
 .de-preview.is-fade { animation: deCross .24s var(--ease-out); }
 @keyframes deCross { from { opacity: .4; } to { opacity: 1; } }
@@ -3778,7 +3788,7 @@ footer.footer {
 /* Karten-Kacheln zeigen statt rosa-lila Farbfläche eine parametrische
    GarmentSVG-Illustration der jeweiligen Option (Kragen/Länge/Verschluss …);
    ein echtes Foto blendet darüber, sobald das JSON `image` lädt. */
-.de-visual-garment { background: radial-gradient(120% 90% at 50% 22%, #16293b, #0a1622 82%); }
+.de-visual-garment { background: radial-gradient(120% 90% at 50% 22%, #16293b, var(--bg)82%); }
 .de-visual-garment .de-garment { width: 100%; height: 100%; max-width: none; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.4)); }
 
 /* ── Hybrid card cohesion (Schritt 3) ───────────────────────────────────
@@ -3944,7 +3954,7 @@ footer.footer {
     border-radius: var(--radius-sm, 10px);
     border: 1px solid transparent;
     background: var(--gradient);
-    color: #06121d;
+    color: var(--on-accent);
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -4240,7 +4250,7 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 .make-real[hidden] { display: none; }
 
 /* Sticky-CTA (mobil, immer erreichbar) */
-.sticky-create { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 60; padding: 0.9rem 1.6rem; border-radius: 999px; background: var(--gradient); color: #06121c; font-weight: 700; letter-spacing: 0.04em; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+.sticky-create { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 60; padding: 0.9rem 1.6rem; border-radius: 999px; background: var(--gradient); color: var(--on-accent); font-weight: 700; letter-spacing: 0.04em; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
 .sticky-create[hidden] { display: none; }
 @media (min-width: 861px) { .sticky-create { display: none; } }
 
@@ -4410,7 +4420,7 @@ html:not(.fx) .lp-loader { display: none; }
 }
 .lp-btn--primary {
     background: var(--gradient-cta);
-    color: #06121d;
+    color: var(--on-accent);
     font-weight: 600;
     position: relative;
     overflow: hidden;   /* clippt den Sheen-Sweep auf die Pille (Box-Shadow bleibt sichtbar) */
@@ -5777,7 +5787,7 @@ html:not(.fx) .lp-portal { display: none; }
 .lp-portal-disc {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(120% 90% at 50% 30%, #16293b, #0a1622 78%);
+    background: radial-gradient(120% 90% at 50% 30%, #16293b, var(--bg)78%);
     box-shadow:
         inset 0 0 0 2px rgba(100, 214, 196, 0.32),
         inset 0 0 120px rgba(39, 121, 168, 0.24),
