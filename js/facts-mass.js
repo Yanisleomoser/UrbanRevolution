@@ -3,7 +3,9 @@
  *
  * Prozente lügen über Masse. Drei bühnenhohe Beats zeigen die physische
  * Masse hinter den drei Zahlen — eine gemeinsame Partikelsprache: fein,
- * kühl, langsam, unerbittlich (Asche, nicht Konfetti).
+ * langsam, unerbittlich (Asche, nicht Konfetti). Farb-Dramaturgie der
+ * Slides: Beat 1 + 2 glimmen warm (Kupfer — das Chaos des Abfalls ist
+ * menschlich), erst Beat 3 antwortet in Aqua.
  *   1 · PRODUZIEREN — eine nie endende Fahne feiner Partikel steigt von
  *       einer schmalen Quelllinie auf (≈ 1,2 Mrd. t CO₂/Jahr, EMF 2017);
  *       dazu ein Live-Zähler ≈ +38 t/s (immer mit „≈" ausgewiesen).
@@ -49,12 +51,16 @@
     const BURST_EVERY = 4.6; // s zwischen den Rückkehr-Versuchen
 
     // Design-Tokens als rgb-Basen (Canvas kann keine CSS-Variablen lesen):
-    // --text #EEF4F8 · --accent-3 #64D6C4 · --accent #2A9D8F · --bg-card #14283B
+    // --text #EEF4F8 · --accent-3 #7EE0CF · --warm-thread #C9906F ·
+    // --warm-deep #8A5F4C. Farb-Dramaturgie der Slides: Beat 1 + 2 (das
+    // Chaos des Abfalls) sind KUPFER/warm; Aqua wird erst in Beat 3
+    // ausgegeben — die haarfeine Linie, die den Einen birgt.
     const C_WHITE = "238,244,248";
-    const C_AQUA = "100,214,196";
-    const C_TEAL = "42,157,143";
-    const C_MOUND = "20,40,59";
-    const C_DEEP = "15,30,46";
+    const C_AQUA = "126,224,207";
+    const C_COPPER = "201,144,111";
+    const C_COPPER_DEEP = "138,95,76";
+    const C_MOUND = "45,32,27";
+    const C_DEEP = "38,28,24";
 
     // Schweizer Tausender-Gruppierung (wie ambient-ticker.js)
     const swiss = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
@@ -86,7 +92,7 @@
             fr: (0.16 + rnd() * 0.42) * Math.PI * 2,  // Drift-Frequenz (rad/s)
             s: 0.7 + rnd() * 1.6,
             a: 0.07 + rnd() * 0.19,
-            c: rnd() < 0.62 ? C_WHITE : (rnd() < 0.6 ? C_AQUA : C_TEAL),
+            c: rnd() < 0.62 ? C_WHITE : (rnd() < 0.6 ? C_COPPER : C_COPPER_DEEP),
         });
         // Vorwärmen: die Fahne steht schon, wenn der Beat einblendet —
         // der Punkt ist Unerbittlichkeit, nicht Aufbau-Spektakel.
@@ -120,17 +126,18 @@
                 ctx.fillRect(x, y, s, s);
             }
             ctx.globalCompositeOperation = "source-over";
-            // Quelllinie: schmal, definiert — der Ursprung der Fahne
-            ctx.fillStyle = "rgba(" + C_AQUA + ",0.33)";
+            // Quelllinie: schmal, definiert — der Ursprung der Fahne (Kupfer:
+            // die Glut der Produktion, kein Aqua vor der Wende)
+            ctx.fillStyle = "rgba(" + C_COPPER + ",0.38)";
             ctx.fillRect(b.w * 0.39, b.h - 1.5, b.w * 0.22, 1.5);
         };
         b.onSize = () => {
             // Radialer Lichtpool (weiche Ränder statt Gradient-Box)
             b.glowR = Math.min(b.h * 0.4, 300);
             const g = b.ctx.createRadialGradient(b.w / 2, b.h, 0, b.w / 2, b.h, b.w * 0.3);
-            g.addColorStop(0, "rgba(" + C_AQUA + ",0.12)");
-            g.addColorStop(0.55, "rgba(" + C_AQUA + ",0.045)");
-            g.addColorStop(1, "rgba(" + C_AQUA + ",0)");
+            g.addColorStop(0, "rgba(" + C_COPPER + ",0.13)");
+            g.addColorStop(0.55, "rgba(" + C_COPPER + ",0.05)");
+            g.addColorStop(1, "rgba(" + C_COPPER + ",0)");
             b.glow = g;
         };
         b.onSize();
@@ -183,11 +190,11 @@
             ctx.stroke();
         }
     }
-    // Halden-Füllung: Kamm fängt Licht (--surface), Körper versinkt im
-    // Seiten-Hintergrund (--bg) — so gibt es keine Naht am Beat-Boden.
+    // Halden-Füllung: Kamm fängt warmes Licht (Kupfer-Strata), Körper
+    // versinkt im Seiten-Hintergrund (--bg) — keine Naht am Beat-Boden.
     function moundGradient(b, maxH) {
         const g = b.ctx.createLinearGradient(0, b.h * (1 - maxH) - 40, 0, b.h);
-        g.addColorStop(0, "rgba(27,51,73,0.98)");   // --surface #1B3349
+        g.addColorStop(0, "rgba(64,45,38,0.98)");   // warmer Kamm
         g.addColorStop(0.55, "rgba(" + C_MOUND + ",0.97)");
         g.addColorStop(1, "rgba(10,22,34,1)");      // --bg #0A1622
         return g;
@@ -204,7 +211,9 @@
         new Path2D("M34 12 L66 12 L70 38 L60 90 L52 90 L50 48 L48 90 L36 90 L30 38 Z"),
         new Path2D("M40 12 L60 12 L63 26 L58 34 L74 86 L26 86 L42 34 L37 26 Z"),
     ];
-    const GARMENT_TONES = ["34,59,82", "27,51,73", "20,40,58", "31,74,71"];
+    /* Warme Strata (Slide-Kupferwelt): drei Kupfer-Braun-Töne + ein
+       seltener Mauve-Ton — der Berg besteht aus weggeworfener Wärme. */
+    const GARMENT_TONES = ["82,55,44", "66,46,38", "51,36,31", "84,61,66"];
     function drawGarment(ctx, gi, x, y, size, rot, fill, strokeA) {
         ctx.save();
         ctx.translate(x, y);
@@ -267,7 +276,7 @@
                 // tief = ruhiger (kleinere Rotations-Varianz) + gestaucht
                 const rot = tilt + (rnd() - 0.5) * (0.2 + (1 - sink) * 0.5);
                 const squash = 1 - 0.32 * sink;
-                // Der grünliche Ton bleibt selten (Strata, kein Konfetti)
+                // Der Mauve-Ton bleibt selten (Strata, kein Konfetti)
                 const ti = rnd() < 0.85 ? (rnd() * 3) | 0 : 3;
                 const mixF = clamp01(0.24 + sink * 0.3 + dim + (ti === 3 ? 0.1 : 0) + (rnd() - 0.5) * 0.16);
                 octx.save();
@@ -505,7 +514,8 @@
             }
             ctx.beginPath();
             crestPath(b, hm);
-            ctx.strokeStyle = "rgba(" + C_AQUA + "," + (b.atTop ? 0.28 : 0.14) + ")";
+            // Kamm-Licht in Kupfer — Beat 2 gehört dem Chaos, kein Aqua
+            ctx.strokeStyle = "rgba(" + C_COPPER + "," + (b.atTop ? 0.30 : 0.16) + ")";
             ctx.lineWidth = 1;
             ctx.stroke();
         };

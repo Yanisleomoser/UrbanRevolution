@@ -582,7 +582,7 @@
     if (!canvas || !svg || !ctx) return;
 
     const C_WHITE = "238,244,248"; // --text  (Canvas liest keine CSS-Variablen)
-    const C_AQUA = "100,214,196";  // --accent-3
+    const C_AQUA = "126,224,207";  // --accent-3
     const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
     let W = 0, H = 0, cx = 0, cy = 0, ringR = 0;
     const motes = [];
@@ -744,7 +744,7 @@
     const canvas = document.getElementById("weave-canvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const COLORS = ["#2779a8", "#2a9d8f", "#64d6c4"];
+    const COLORS = ["#2f86b3", "#2fae9e", "#7ee0cf"];
     const TAU = Math.PI * 2;
     const WRAP = 84;                         // Rand fürs Torus-Wrap + Masken-PAD
     const DOT_ALPHA = 0.3;                   // Grund-Deckkraft der Staub-Punkte (ruhiger Lint)
@@ -951,9 +951,9 @@
         const grad = (maxX - minX) >= (maxY - minY)
           ? ctx.createLinearGradient(minX, 0, maxX, 0)
           : ctx.createLinearGradient(0, minY, 0, maxY);
-        grad.addColorStop(0, "#2779a8");
-        grad.addColorStop(0.5, "#2a9d8f");
-        grad.addColorStop(1, "#64d6c4");
+        grad.addColorStop(0, "#2f86b3");
+        grad.addColorStop(0.5, "#2fae9e");
+        grad.addColorStop(1, "#7ee0cf");
         return { closed: chain.closed, smooth, scum, slen, startDist, grad, parts };
       });
       free.forEach((p) => { p.forming = false; p.placed = false; p.build = 0; });
@@ -1136,17 +1136,18 @@
     }
 
     // Das Feld zeichnen: die senkrechten Warp-Fäden (die „Linie" als Masse) +
-    // feiner farbloser Staub (die Partikel, die fürs Tap-Formen bleiben).
+    // feiner warmer Staub (die Partikel, die fürs Tap-Formen bleiben).
     // dimm < 1 lässt das Feld beim Formen zurücktreten (statt zu verschwinden).
     function drawField(dimm) {
-      // 1) Warp — ruhig schwingende, senkrechte Kett-Fäden (grau/ash, KEIN Teal:
-      //    die farblose Maschinen-Linie; Farbe kommt erst nach der Wende). Hinter
-      //    der Headline über die Durchschnitts-Maske gedämpft (Lesbarkeit).
+      // 1) Warp — ruhig schwingende, senkrechte Kett-Fäden (warmgrau/Mauve wie
+      //    die Chaos-Stränge der Slides, KEIN Teal: die alte Maschinen-Linie;
+      //    Aqua kommt erst nach der Wende). Hinter der Headline über die
+      //    Durchschnitts-Maske gedämpft (Lesbarkeit).
       const SEG = mobile ? 9 : 11;
       const baseW = mobile ? 1.1 : 0.9;
       const H = h || 1;
       ctx.lineCap = "round";
-      ctx.strokeStyle = "#9fb6c6";
+      ctx.strokeStyle = "#b3a09a";
       for (let wi = 0; wi < warp.length; wi++) {
         const th = warp[wi];
         const d = th.d;
@@ -1173,7 +1174,7 @@
         ctx.stroke();
       }
 
-      // 2) Staub — die treibenden Partikel als feiner, farbloser Lint (Headline
+      // 2) Staub — die treibenden Partikel als feiner, warmer Lint (Headline
       //    ausgespart). Gebündelt in einem Path2D-Fill (billig).
       const n = particles.length;
       const dust = new Path2D();
@@ -1184,7 +1185,7 @@
         dust.rect(p.x - r, p.y - r, r + r, r + r);
       }
       ctx.globalAlpha = DOT_ALPHA * dimm;
-      ctx.fillStyle = "#8ba2b5";
+      ctx.fillStyle = "#a6928b";
       ctx.fill(dust);
       ctx.globalAlpha = 1;
     }
@@ -1322,7 +1323,7 @@
 
         // 2) Dekorative Knöpfe (Hemd) erscheinen mit der Naht
         if (formButtons.length && reveal > 0.6) {
-          ctx.fillStyle = `rgba(100, 214, 196, ${(0.85 * fade).toFixed(3)})`;
+          ctx.fillStyle = `rgba(126, 224, 207, ${(0.85 * fade).toFixed(3)})`;
           for (const b of formButtons) {
             ctx.beginPath();
             ctx.arc(b.x, b.y, 2.2, 0, Math.PI * 2);
@@ -1360,8 +1361,8 @@
           ctx.globalCompositeOperation = "lighter";
           if (tp && tp.x != null) {
             const tg = ctx.createLinearGradient(tp.x, tp.y, np.x, np.y);
-            tg.addColorStop(0, "rgba(100, 214, 196, 0)");
-            tg.addColorStop(1, "rgba(100, 214, 196, 0.9)");
+            tg.addColorStop(0, "rgba(126, 224, 207, 0)");
+            tg.addColorStop(1, "rgba(126, 224, 207, 0.9)");
             ctx.strokeStyle = tg;
             ctx.lineWidth = 3;
             ctx.lineCap = "round";
@@ -1370,9 +1371,9 @@
             ctx.lineTo(np.x, np.y);
             ctx.stroke();
           }
-          ctx.shadowColor = "#64d6c4";
+          ctx.shadowColor = "#7ee0cf";
           ctx.shadowBlur = 16;
-          ctx.fillStyle = "#9ff0e2";
+          ctx.fillStyle = "#aef2e6";
           ctx.beginPath();
           ctx.arc(np.x, np.y, 4.5, 0, Math.PI * 2);
           ctx.fill();

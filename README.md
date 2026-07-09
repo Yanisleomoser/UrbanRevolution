@@ -39,9 +39,11 @@ Build-Schritt; gehostet auf Vercel, KI-Aufrufe laufen über Edge Functions in `a
   fotorealistische Anprobe am eigenen Foto (Replicate), beide über Edge Functions.
 - **Produktions-Spec-Sheet** — Automatisch berechnete Konfektionsgröße, Stoffmenge, Naht­-
   länge und Preisspanne (CHF). Export als JSON oder druckbares HTML.
-- **Ocean-Depths-Design-System** — Midnight-Navy mit Ozean-Blau/Teal/Aqua-Akzent, Display-
-  Serif Fraunces + Body-Sans Poppins + Label-Mono JetBrains Mono (alle selbst gehostet);
-  mobile-first, barrierefrei, `prefers-reduced-motion`.
+- **Reclaimed-Light-Design-System (Ocean Depths v2)** — Midnight-Navy mit leuchtendem
+  Ozean-Blau/Teal/Aqua-Akzent und der Kupfer-Dramaturgie der Kampagnen-Slides (Akt I:
+  Chaos in Kupfer, Aqua erst nach der Wende); Display-Serif Fraunces + Body-Sans Poppins +
+  Label-Mono JetBrains Mono (alle selbst gehostet); mobile-first, barrierefrei,
+  `prefers-reduced-motion`.
 
 ## Architektur
 

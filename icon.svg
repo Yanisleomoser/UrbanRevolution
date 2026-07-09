@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Urban Revolution">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2a9d8f"/>
-      <stop offset="50%" stop-color="#2779a8"/>
-      <stop offset="100%" stop-color="#64d6c4"/>
+      <stop offset="0%" stop-color="#2fae9e"/>
+      <stop offset="50%" stop-color="#2f86b3"/>
+      <stop offset="100%" stop-color="#7ee0cf"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#g)"/>

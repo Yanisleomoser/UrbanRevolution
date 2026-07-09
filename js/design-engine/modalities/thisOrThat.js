@@ -9,7 +9,7 @@
   const TONE = {
     calm: "linear-gradient(160deg,#14283b,#0a1622)",
     soft: "linear-gradient(160deg,#1b3349,#0f1e2e)",
-    bold: "linear-gradient(160deg,#2a9d8f,#2779a8 55%,#64d6c4)",
+    bold: "linear-gradient(160deg,#2fae9e,#2f86b3 55%,#7ee0cf)",
     sharp: "linear-gradient(160deg,#1e293b,#0a1622)",
   };
 

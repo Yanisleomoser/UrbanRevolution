@@ -170,7 +170,7 @@ const Export = (() => {
         .drawing { background: #fff; padding: 0; }
         .drawing svg { filter: invert(1) hue-rotate(180deg); }
     }
-    .description { background: #fafafa; padding: 16px; border-left: 3px solid #2a9d8f; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
+    .description { background: #fafafa; padding: 16px; border-left: 3px solid #2fae9e; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
     .footer { margin-top: 60px; padding-top: 16px; border-top: 1px solid #eee; font-size: 11px; color: #999; text-align: center; }
 </style>
 </head>
