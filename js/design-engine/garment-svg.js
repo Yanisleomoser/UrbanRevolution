@@ -1036,7 +1036,7 @@ const GarmentSVG = (() => {
     const tint = (p && archTint(p.archetype)) || "#8b96a4";
     // Second, brighter ocean accent so the threads read as luminous fibre, not
     // grey scribble — aqua by default, warmed toward the archetype tint.
-    const accentCol = (p && archTint(p.archetype)) ? "#64d6c4" : "#76c7c0";
+    const accentCol = (p && archTint(p.archetype)) ? "#7ee0cf" : "#76c7c0";
     const cx = CX, cy = 158;
     const hash = (i, k) => { const s = Math.sin(i * 127.1 + k * 311.7 + 13.37) * 43758.5453; return s - Math.floor(s); };
     const count = Math.min(34, 14 + seed * 2);

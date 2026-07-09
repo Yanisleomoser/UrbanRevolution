@@ -289,7 +289,7 @@ const Pose = (() => {
             [0, 11], [0, 12]
         ];
 
-        ctx.strokeStyle = 'rgba(42, 157, 143, 0.9)';
+        ctx.strokeStyle = 'rgba(47, 174, 158, 0.9)';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         connections.forEach(([a, b]) => {
@@ -302,7 +302,7 @@ const Pose = (() => {
         ctx.stroke();
 
         // Landmark-Punkte
-        ctx.fillStyle = '#64d6c4';
+        ctx.fillStyle = '#7ee0cf';
         landmarks.forEach((lm) => {
             if ((lm.visibility || 1) < 0.4) return;
             ctx.beginPath();

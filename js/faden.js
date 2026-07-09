@@ -3,8 +3,8 @@
  *
  * Sechs Nähte (.fil-seam, statisches Markup) verbinden die Sektionen
  * unterhalb von #facts zu EINER Linie: der Besucher zieht den Faden beim
- * Scrollen selbst (Scrub auf stroke-dashoffset). Dramaturgie:
- *   Naht 1 (facts → pivot)  — die alte Linie, aschfahl, gerade, tot.
+ * Scrollen selbst (Scrub auf stroke-dashoffset). Dramaturgie (Slides):
+ *   Naht 1 (facts → pivot)  — die alte Linie, kupfern, gerade, tot.
  *   Naht 2–6 (nach der Wende) — der Faden lebt: Teal/Aqua, und ein
  *   Glint-Signal wandert ihn periodisch entlang (versetzt je Naht, wie
  *   ein Impuls, der die Seite hinunterläuft).

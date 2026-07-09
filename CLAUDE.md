@@ -66,9 +66,10 @@ Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Ve
 - State: `state-manager.js` (localStorage, Wiederaufnahme). KI: `ai.js` → Replicate (FLUX) / Anthropic-Proxy. Maße: `measurements.js` (9 Körpermaße). i18n: `i18n.js`. Telemetrie: `js/design-engine/telemetry.js` → `/api/track` (+ Admin-Dashboard `insights.html`). Fehler: Sentry (Loader im `<head>`).
 
 ## Design-System — NUR bestehende :root-Tokens
-- Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2779A8` → Teal `#2A9D8F` → Aqua `#64D6C4` (`--gradient`, „Ocean Depths").
+- Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2F86B3` → Teal `#2FAE9E` → Aqua `#7EE0CF` (`--gradient`, „Ocean Depths v2 / Reclaimed Light" — die helleren Stops der Instagram-Slides, Drive → Slide Design System).
 - Fonts (drei Register): Fraunces (Display-Serif/Headlines, variabel mit optischer Grösse, Lora als Fallback) + Poppins (Body) + JetBrains Mono (Eyebrows/Labels/Einheiten/Marquee — die „Maschinen"-Stimme neben dem „Handwerks"-Serif). Selbst gehostet in `/assets/fonts/` (DSGVO, kein Google-CDN); neue Faces via `scripts/fetch-fonts-extra.mjs`. KEINE weiteren Fonts (kein Inter, kein Playfair).
-- Akzent-Wärme: `--accent-warm` (#E8A06A) ist der EINE warme Ton, bewusst nur im Identitäts-Beat (`#your-style`). Sonst bleibt die Palette „Ocean Depths".
+- **Kupfer-Dramaturgie (Slides → Site):** Akt I (Preloader → Hero-Weave → Manifest → #facts Beat 1+2) trägt die warme Kupfer-Familie — `--warm-thread` #C9906F (Akt-I-Faden, fil-seam[1], #pivot-line), `--warm-deep` #8A5F4C, `--warm-bright` #ECC39F, `--gradient-warm` (Protokoll-Zahlen). Das Chaos des Abfalls ist warm/menschlich; Teal/Aqua wird ERST nach der Wende ausgegeben (#facts Beat 3 Bergungs-Faden / #pivot-Arc). Canvas-rgb-Basen: Kupfer 201,144,111 · Kupfer-tief 138,95,76 · Aqua 126,224,207.
+- Akzent-Wärme in Akt II: `--accent-warm` (#D99B78, Text-tauglich 7.7:1) bleibt der EINE warme Ton nach der Wende, bewusst nur im Identitäts-Beat (`#your-style`) — dieselbe Wärme, die in Akt I Abfall war, kehrt dort als Identität zurück. Sonst bleibt Akt II „Ocean Depths".
 - Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum; Übergänge ≤ 250 ms; kein Layout-Sprung.
 
 ## Harte Regeln (immer)
@@ -425,7 +426,9 @@ compact "Live … kg" badges beside other section numbers. Swiss thousands
 grouping (`1'234'567`), bilingual via `ticker.*` i18n keys.
 
 **`js/facts-mass.js`** stages the three numbers as „Die Masse" — three
-full-height canvas-particle beats (one shared ash-like particle language):
+full-height canvas-particle beats (one shared ash-like particle language;
+beats 1–2 glow copper per the slide dramaturgy, aqua answers only in
+beat 3's rescue thread):
 a never-ending CO₂ plume behind the ≤8 % with a live "≈ +38 t seit du hier
 bist" counter (1.2 Gt/yr ÷ seconds, always marked ≈), a waste mound onto
 which one garment silhouette falls and stacks per real second (a mountain
@@ -701,9 +704,13 @@ it if you modify the flow.
 ## Styling
 
 All styles in `css/styles.css`. Design system uses CSS variables on
-`:root` (`--bg*`, `--text*`, `--accent*`, `--gradient`, `--radius*`,
-`--shadow*`). Reuse variables instead of hardcoding hex. The Ocean Depths
-`--gradient` (#2779A8 → #2A9D8F → #64D6C4 on `--bg` #0A1622) is core brand.
+`:root` (`--bg*`, `--text*`, `--accent*`, `--warm*`, `--gradient*`,
+`--radius*`, `--shadow*`). Reuse variables instead of hardcoding hex. The
+Ocean Depths v2 `--gradient` (#2F86B3 → #2FAE9E → #7EE0CF on `--bg`
+#0A1622) is core brand; the copper family (`--warm-thread` #C9906F,
+`--warm-deep` #8A5F4C, `--warm-bright` #ECC39F, `--gradient-warm`) carries
+Act I — waste/chaos is warm, aqua is only spent after the Wende (see
+Design-System section above).
 A global `prefers-reduced-motion`
 reset, a `:focus-visible` ring, and a skip-link target (`#main-content`)
 are in place.

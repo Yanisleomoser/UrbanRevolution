@@ -204,9 +204,9 @@ function stageCardSvg(item) {
         + '<defs><linearGradient id="stage-bg" x1="0" y1="0" x2="0" y2="1">'
         + '<stop offset="0" stop-color="#102231"/><stop offset="0.62" stop-color="#0C1A28"/><stop offset="1" stop-color="#0A1622"/>'
         + '</linearGradient><radialGradient id="stage-glow" cx="0.5" cy="0.34" r="0.62">'
-        + '<stop offset="0" stop-color="rgba(100,214,196,0.10)"/><stop offset="1" stop-color="rgba(100,214,196,0)"/>'
+        + '<stop offset="0" stop-color="rgba(126,224,207,0.10)"/><stop offset="1" stop-color="rgba(126,224,207,0)"/>'
         + '</radialGradient></defs>'
-        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-bg)" stroke="rgba(100,214,196,0.16)" stroke-width="2"/>`
+        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-bg)" stroke="rgba(126,224,207,0.16)" stroke-width="2"/>`
         + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-glow)"/>`
         + inner + "</svg>";
 }
