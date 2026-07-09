@@ -350,14 +350,14 @@ const GarmentSVG = (() => {
   }
 
   // Default collar by sub-archetype (jacket only): a ribbed-trim bomber/puffer
-  // takes a knit STAND collar (open tailored lapels can't sit over a full zip);
-  // a coach takes a flat shirt collar over its snap front. Other jackets and all
-  // other categories keep their category default.
+  // takes a knit STAND collar (open tailored lapels can't sit over a full zip).
+  // Other jackets and all other categories keep their category default.
+  // (Only the subArchetypes jacket.json actually emits are listed here —
+  // keep this in sync with content/nodes/jacket.json's subArchetype ids.)
   function defCollarFor(cfg, p) {
     if (cfg.defCollar === "notched") {
       const sub = p && p.subArchetype;
-      if (sub === "bomber" || sub === "puffer" || sub === "work" || sub === "varsity") return "stand";
-      if (sub === "coach") return "shirt";
+      if (sub === "bomber" || sub === "puffer" || sub === "work") return "stand";
     }
     return cfg.defCollar;
   }
@@ -504,18 +504,9 @@ const GarmentSVG = (() => {
     }
 
     // Pockets. A patch pocket is a rect with an inset topstitch line and (with
-    // a flap) a top flap + button — the UR flat's pocket vocabulary.
+    // a flap) a top flap + button — the UR flat's pocket vocabulary (shared
+    // module-level `patch()`, also used by paintPants()'s cargo pockets).
     const py = g.hemY - 50;
-    const patch = (xc, y, w, h, withFlap) => {
-      const x = r(xc - w / 2);
-      let m = `<rect x="${x}" y="${Y(y)}" width="${r(w)}" height="${r(h)}" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.7"/>`;
-      m += `<rect x="${r(x + 3)}" y="${Y(y + 3)}" width="${r(w - 6)}" height="${r(h - 6)}" rx="1.5" fill="none" stroke="${INK}" stroke-width="0.8" stroke-dasharray="2.2 2" opacity="0.5"/>`;
-      if (withFlap) {
-        m += `<path d="M ${x} ${Y(y)} L ${x} ${Y(y - 5)} L ${r(x + w)} ${Y(y - 5)} L ${r(x + w)} ${Y(y)}" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`;
-        m += `<circle cx="${r(xc)}" cy="${Y(y + 1)}" r="1.5" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${SEAM}" stroke-width="1.2"/>`;
-      }
-      return m;
-    };
     // A full-length front zip splits the pouch: an open front can't carry a
     // centred kangaroo OVER the zip, so a zip hoodie gets two diagonal
     // hand-warmer welt pockets flanking the closure (as on the UR zip hoodie).
@@ -539,11 +530,11 @@ const GarmentSVG = (() => {
     }
     // Flap = two chest patch pockets flanking the placket (kept inboard of the
     // side seam so they never overshoot the torso / overlap the sleeve).
-    if (p.pockets === "flap") { s.push(patch(CX - g.chestHalf * 0.5, g.armpitY + 16, 22, 15, true)); s.push(patch(CX + g.chestHalf * 0.5, g.armpitY + 16, 22, 15, true)); }
+    if (p.pockets === "flap") { s.push(patch(CX - g.chestHalf * 0.5, g.armpitY + 16, 22, 15, true, p.hardware)); s.push(patch(CX + g.chestHalf * 0.5, g.armpitY + 16, 22, 15, true, p.hardware)); }
     // Cargo = larger utility patch pockets low on the body, also kept inboard.
-    if (p.pockets === "cargo") { s.push(patch(CX - g.chestHalf * 0.5, py, 24, 22, true)); s.push(patch(CX + g.chestHalf * 0.5, py, 24, 22, true)); }
+    if (p.pockets === "cargo") { s.push(patch(CX - g.chestHalf * 0.5, py, 24, 22, true, p.hardware)); s.push(patch(CX + g.chestHalf * 0.5, py, 24, 22, true, p.hardware)); }
     if (p.pockets === "side") line(`M ${L(g.waistHalf - 4)} ${Y(py + 4)} l 18 5 M ${R(g.waistHalf - 4)} ${Y(py + 4)} l -18 5`, 1.8);
-    if (p.pockets === "chest") s.push(patch(CX - (g.chestHalf - 8), g.armpitY + 12, 18, 16, false));
+    if (p.pockets === "chest") s.push(patch(CX - (g.chestHalf - 8), g.armpitY + 12, 18, 16, false, p.hardware));
 
     // Cuffs (only when there are sleeves to cuff). Ribbed = a real knit band.
     if (!g.sleeveless) {
@@ -652,8 +643,9 @@ const GarmentSVG = (() => {
   // puller; else the dim seam tone. Constant ink → XSS-safe.
   function zipLadder(cx, top, bot, metal) {
     const ink = metal ? INK : SEAM;
+    const railW = metal ? 1.7 : 1.4;
     const n = clamp(Math.round((bot - top) / 4.5), 8, 40);
-    let out = `<path d="M ${r(cx)} ${Y(top)} L ${r(cx)} ${Y(bot)}" fill="none" stroke="${ink}" stroke-width="1.4" opacity="0.85"/>`;
+    let out = `<path d="M ${r(cx)} ${Y(top)} L ${r(cx)} ${Y(bot)}" fill="none" stroke="${ink}" stroke-width="${railW}" opacity="0.85"/>`;
     for (let i = 0; i <= n; i++) {
       const y = Y(lerp(top, bot, i / n));
       out += `<path d="M ${r(cx - 2.6)} ${y} L ${r(cx + 2.6)} ${y}" fill="none" stroke="${ink}" stroke-width="1.15"/>`;
@@ -664,6 +656,19 @@ const GarmentSVG = (() => {
   // A topstitch run: a fine dashed line just inside an edge (constant INK).
   function topstitch(d, op) {
     return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="1" stroke-dasharray="2.4 2.2" stroke-linecap="round" opacity="${r(num(op, 0.55))}"/>`;
+  }
+  // A patch pocket: a rect with an inset topstitch line and (with a flap) a
+  // top flap + button — the shared UR flat pocket recipe, reused by tops
+  // (chest/flap/cargo pockets) and pants (mid-thigh cargo pockets).
+  function patch(xc, y, w, h, withFlap, hardware) {
+    const x = r(xc - w / 2);
+    let m = `<rect x="${x}" y="${Y(y)}" width="${r(w)}" height="${r(h)}" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.7"/>`;
+    m += `<rect x="${r(x + 3)}" y="${Y(y + 3)}" width="${r(w - 6)}" height="${r(h - 6)}" rx="1.5" fill="none" stroke="${INK}" stroke-width="0.8" stroke-dasharray="2.2 2" opacity="0.5"/>`;
+    if (withFlap) {
+      m += `<path d="M ${x} ${Y(y)} L ${x} ${Y(y - 5)} L ${r(x + w)} ${Y(y - 5)} L ${r(x + w)} ${Y(y)}" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`;
+      m += `<circle cx="${r(xc)}" cy="${Y(y + 1)}" r="1.5" fill="${hardware === "metal" ? INK : "none"}" stroke="${SEAM}" stroke-width="1.2"/>`;
+    }
+    return m;
   }
 
   // Torso/sleeve drape for tops + (reused by) dresses' bodice.
@@ -791,19 +796,15 @@ const GarmentSVG = (() => {
     }
     if (p.pockets === "cargo") {
       // patch cargo pockets at MID-THIGH, centred on each leg panel (tracking the
-      // tapering leg at that height) with a flap + button + topstitch.
+      // tapering leg at that height) with a flap + button + topstitch — the
+      // shared module-level `patch()` recipe, same as tops' chest/flap/cargo.
       const py = lerp(crotchY, hemY, 0.28), ph = 30;
       const t = (py - hipY) / (hemY - hipY);
       const outerOff = lerp(hipHalf, ankleHalf, clamp(t, 0, 1)); // leg outer edge here
       const legMid = clamp(outerOff * 0.52, 13, 30);             // leg-panel centre
       const pw = r(clamp(outerOff * 0.66, 16, 26));
       for (const dir of [-1, 1]) {
-        const xc = r(CX + dir * legMid);
-        const x0 = r(xc - pw / 2);
-        seam.push(`<rect x="${x0}" y="${Y(py)}" width="${pw}" height="${ph}" rx="2" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`);
-        seam.push(`<rect x="${r(x0 + 3)}" y="${Y(py + 3)}" width="${r(pw - 6)}" height="${r(ph - 6)}" rx="1.5" fill="none" stroke="${INK}" stroke-width="0.8" stroke-dasharray="2.2 2" opacity="0.5"/>`);
-        seam.push(`<path d="M ${x0} ${Y(py)} L ${x0} ${Y(py - 5)} L ${r(x0 + pw)} ${Y(py - 5)} L ${r(x0 + pw)} ${Y(py)}" fill="none" stroke="${SEAM}" stroke-width="1.5"/>`);
-        seam.push(`<circle cx="${xc}" cy="${Y(py + 1)}" r="1.4" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${SEAM}" stroke-width="1.1"/>`);
+        seam.push(patch(CX + dir * legMid, py, pw, ph, true, p.hardware));
       }
     } else if (p.pockets && p.pockets !== "none") {
       // side: slash pockets at the hip
@@ -1186,7 +1187,8 @@ const GarmentSVG = (() => {
     if (pv === "chest") a.pockets = cl(CX - g.chestHalf * 0.55, g.armpitY + 16);
     else if (pv === "kangaroo") a.pockets = cl(CX + g.chestHalf * 0.45, g.hemY - 36);
     else if (pv === "side") a.pockets = cl(CX + g.waistHalf - 4, Math.max(g.armpitY + 16, g.hemY - 44));
-    else if (pv === "flap" || pv === "cargo") a.pockets = cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));
+    else if (pv === "flap") a.pockets = cl(CX + g.chestHalf * 0.5, g.armpitY + 16);
+    else if (pv === "cargo") a.pockets = cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));
     else a.pockets = (m.cat === "shirt" || m.cat === "tshirt")
       ? cl(CX - g.chestHalf * 0.55, g.armpitY + 16)
       : cl(CX + g.chestHalf * 0.62, Math.max(g.armpitY + 16, g.hemY - 44));

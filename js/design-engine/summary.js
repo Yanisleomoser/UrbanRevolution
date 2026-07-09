@@ -59,6 +59,7 @@ const DesignSummary = (() => {
       stand: { de: "Stehkragen", en: "stand collar" }, notched: { de: "Reverskragen", en: "notched lapel" },
       hood: { de: "Kapuze", en: "hood" }, crew: { de: "Rundhals", en: "crew neck" },
       vneck: { de: "V-Ausschnitt", en: "v-neck" }, shirt: { de: "Hemdkragen", en: "shirt collar" },
+      camp: { de: "offenem Resortkragen", en: "open camp collar" },
       none: { de: "ohne Kragen", en: "collarless" },
     },
     sleeveLength: {

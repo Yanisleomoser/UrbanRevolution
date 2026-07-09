@@ -25,7 +25,7 @@
     "pattern.type": ["none", "stripe", "check", "camo", "graphic", "abstract"],
     "hardware.finish": ["tonal", "matte", "metal"],
     "construction.closure": ["zip", "button", "half", "none"],
-    "construction.collar": ["stand", "notched", "hood", "crew", "vneck", "shirt", "none"],
+    "construction.collar": ["stand", "notched", "hood", "crew", "vneck", "shirt", "camp", "none"],
     "construction.sleeveLength": ["sleeveless", "cap", "short", "long"],
     "construction.pockets": ["none", "side", "flap", "cargo", "kangaroo", "chest"],
     "construction.hem": ["straight", "curved", "ribbed", "drawcord", "cuffed", "elastic"],

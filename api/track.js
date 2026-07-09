@@ -24,6 +24,16 @@ const NODES_KEY = "urev:tel:nodes";
 // urev:tel:nodes without bound (unbounded Redis storage/cost, unlike
 // gallery.js's LTRIM-bounded list or waitlist.js's legitimately-unbounded set).
 const MAX_NODE_FIELDS = 500;
+
+// Constant-time string compare so a wrong TELEMETRY_KEY guess can't be
+// narrowed down via response-time side-channel (standard `!==` short-circuits
+// on the first differing byte). Mirrors api/gen-image.js's IMAGE_GEN_KEY gate.
+function timingSafeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
 export const ALLOWED = new Set([
   "node_shown", "node_choice", "node_skip", "node_back",
   "journey_refine", "generate", "generate_ok", "generate_fail", "abandon",
@@ -52,7 +62,7 @@ export default async function handler(request) {
   if (request.method === "GET") {
     const adminKey = process.env.TELEMETRY_KEY;
     const given = new URL(request.url).searchParams.get("key");
-    if (!adminKey || given !== adminKey) {
+    if (!adminKey || !timingSafeEqual(given || "", adminKey)) {
       return Response.json({ error: "forbidden", code: "forbidden" }, { status: 403 });
     }
     if (!configured) return Response.json({ configured: false, events: {}, nodes: {} });

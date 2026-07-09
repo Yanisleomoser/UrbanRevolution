@@ -451,12 +451,16 @@
     // the validated state — without this, the two would silently diverge
     // (e.g. the spec sheet showing the raw "material.Baumwolle" i18n
     // fallback while the studio still shows the last-good material).
+    // Guard on design.* having actually been set above: an AI response that
+    // never supplied a field (falsy/missing, not a rejected value) must stay
+    // absent, not get silently back-filled with a previous design's stale
+    // state value.
     const liveColor = S.get("currentColor");
-    if (liveColor !== undefined && design.color !== liveColor) design.color = liveColor;
+    if (design.color && liveColor !== undefined && design.color !== liveColor) design.color = liveColor;
     const liveMaterial = S.get("currentMaterial");
-    if (liveMaterial !== undefined && design.material !== liveMaterial) design.material = liveMaterial;
+    if (design.material && liveMaterial !== undefined && design.material !== liveMaterial) design.material = liveMaterial;
     const liveFit = S.get("currentFit");
-    if (liveFit !== undefined && design.fit !== liveFit) design.fit = liveFit;
+    if (design.fit !== undefined && design.fit !== null && liveFit !== undefined && design.fit !== liveFit) design.fit = liveFit;
   }
 
   // Flag an out-of-range measurement so the user sees/hears it, instead of

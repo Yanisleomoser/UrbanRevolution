@@ -314,9 +314,13 @@ const shirtLong = GarmentSVG.build("shirt", { collar: "shirt", sleeveLength: "lo
 const shirtBare = GarmentSVG.model("shirt", { sleeveLength: "sleeveless" }).g;
 assert(shirtLong.includes("<circle") && !/NaN/.test(shirtLong), "long-sleeve shirt renders a default cuff button, clean");
 assert(shirtBare.sleeveless === true, "a sleeveless shirt has no sleeve to cuff");
-// Flap pockets sit on the chest (above the hem) and stay inside the body.
+// Flap pockets sit on the chest (above the hem) and stay inside the body —
+// the hotspot must track the actual chest-level render, not the low-body
+// position cargo pockets use.
 const flapA = GarmentSVG.regionAnchors("jacket", { pockets: "flap" });
+const cargoA = GarmentSVG.regionAnchors("jacket", { pockets: "cargo" });
 assert(flapA.pockets.x >= 14 && flapA.pockets.x <= 226, "flap pocket anchor stays in-box after the placement fix");
+assert(flapA.pockets.y < cargoA.pockets.y, "flap pocket anchor sits above the low-body cargo anchor (chest vs hem)");
 
 // ─── regionAnchors — hotspot geometry for the detail atelier (roadmap §7) ───
 console.log("\n— regionAnchors() places hotspots on the resolved geometry —");
