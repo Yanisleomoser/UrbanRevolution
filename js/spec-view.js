@@ -37,14 +37,15 @@ const SpecView = (() => {
     clear(table);
     Object.entries(measurements || {}).forEach(([key, value]) => {
       const tr = document.createElement("tr");
-      const tdLabel = document.createElement("td");
+      const thLabel = document.createElement("th");
+      thLabel.scope = "row";
       const tdValue = document.createElement("td");
-      tdLabel.textContent = measureLabel(key);
+      thLabel.textContent = measureLabel(key);
       // Per-field unit from CONFIG (single source) — weight is kg, all body
       // lengths are cm. Without this, weight rendered as a wrong "70 cm".
       const cc = window.CONFIG && window.CONFIG.MEASUREMENT_CONSTRAINTS[key];
       tdValue.textContent = `${value} ${(cc && cc.unit) || "cm"}`;
-      tr.appendChild(tdLabel);
+      tr.appendChild(thLabel);
       tr.appendChild(tdValue);
       table.appendChild(tr);
     });
