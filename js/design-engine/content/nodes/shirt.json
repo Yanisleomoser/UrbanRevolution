@@ -52,7 +52,7 @@
           "effects": {
             "set": {
               "subArchetype": "camp",
-              "construction.collar": "notched"
+              "construction.collar": "camp"
             },
             "weight": {
               "softCouture": 0.1
@@ -197,7 +197,7 @@
           },
           "effects": {
             "set": {
-              "construction.collar": "notched"
+              "construction.collar": "camp"
             },
             "weight": {
               "softCouture": 0.1

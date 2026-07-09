@@ -24,6 +24,16 @@ const NODES_KEY = "urev:tel:nodes";
 // urev:tel:nodes without bound (unbounded Redis storage/cost, unlike
 // gallery.js's LTRIM-bounded list or waitlist.js's legitimately-unbounded set).
 const MAX_NODE_FIELDS = 500;
+
+// Constant-time string compare so a wrong TELEMETRY_KEY guess can't be
+// narrowed down via response-time side-channel (standard `!==` short-circuits
+// on the first differing byte). Mirrors api/gen-image.js's IMAGE_GEN_KEY gate.
+function timingSafeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
 export const ALLOWED = new Set([
   "node_shown", "node_choice", "node_skip", "node_back",
   "journey_refine", "generate", "generate_ok", "generate_fail", "abandon",
@@ -52,7 +62,7 @@ export default async function handler(request) {
   if (request.method === "GET") {
     const adminKey = process.env.TELEMETRY_KEY;
     const given = new URL(request.url).searchParams.get("key");
-    if (!adminKey || given !== adminKey) {
+    if (!adminKey || !timingSafeEqual(given || "", adminKey)) {
       return Response.json({ error: "forbidden", code: "forbidden" }, { status: 403 });
     }
     if (!configured) return Response.json({ configured: false, events: {}, nodes: {} });
@@ -82,11 +92,11 @@ export default async function handler(request) {
     // incrementing freely but a flood of fresh ids can't grow the hash forever.
     if (cmds.length > 1) {
       const field = cmds[1][2];
-      const [exists] = await pipeline(url, token, [["HEXISTS", NODES_KEY, field]]);
-      if (!exists) {
-        const [len] = await pipeline(url, token, [["HLEN", NODES_KEY]]);
-        if (Number(len) >= MAX_NODE_FIELDS) cmds.pop();
-      }
+      const [exists, len] = await pipeline(url, token, [
+        ["HEXISTS", NODES_KEY, field],
+        ["HLEN", NODES_KEY],
+      ]);
+      if (!exists && Number(len) >= MAX_NODE_FIELDS) cmds.pop();
     }
     await pipeline(url, token, cmds);
   } catch (err) {
