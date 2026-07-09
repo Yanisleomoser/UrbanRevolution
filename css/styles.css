@@ -13,9 +13,17 @@
     --bg-card: #14283b;
     --surface: #1b3349;
     --border: #25415a;
+    /* Interactive form-field boundary — ≥3:1 against both --bg and
+       --bg-elevated (WCAG 1.4.11 non-text contrast). The field fill equals the
+       page bg, so the border alone must carry perceivability; --border is a
+       decorative divider tone (1.7:1) and stays as-is for non-interactive edges. */
+    --border-field: #4a7196;
     --text: #eef4f8;
     --text-dim: #9fb6c6;
-    --text-muted: #6f8a9d;
+    /* Lightened from #6f8a9d so small print on cards/modals/tiles clears AA 4.5:1
+       (was 4.15:1 on --bg-card, 3.59:1 on --surface); stays a clear tier below
+       --text-dim. */
+    --text-muted: #879fb0;
     --accent: #2a9d8f;
     --accent-2: #2779a8;
     --accent-3: #64d6c4;
@@ -523,7 +531,7 @@ input[type="number"],
 select {
     width: 100%;
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-field);
     border-radius: var(--radius-sm);
     padding: 14px 16px;
     color: var(--text);
@@ -3449,7 +3457,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
 
 .de-freetext { margin: var(--space-6) 0 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .de-freetext-label { font-size: var(--text-sm); color: var(--text-dim); }
-.de-freetext-input { width: 100%; box-sizing: border-box; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: var(--space-3) var(--space-4); font-family: inherit; font-size: var(--text-base); resize: vertical; transition: border-color .2s var(--ease-out); }
+.de-freetext-input { width: 100%; box-sizing: border-box; background: var(--bg-elevated); border: 1px solid var(--border-field); border-radius: var(--radius-sm); color: var(--text); padding: var(--space-3) var(--space-4); font-family: inherit; font-size: var(--text-base); resize: vertical; transition: border-color .2s var(--ease-out); }
 .de-freetext-input:focus { outline: none; border-color: var(--accent); }
 .de-freetext-input::placeholder { color: var(--text-muted); }
 
@@ -4072,7 +4080,7 @@ footer.footer {
 .own-edit select {
     padding: 9px 10px;
     border-radius: var(--radius-sm, 10px);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-field);
     background: var(--bg-elevated);
     color: var(--text);
 }
@@ -4133,7 +4141,7 @@ footer.footer {
 .join-choice:hover { border-color: var(--accent); }
 .join-choice input { accent-color: var(--accent); }
 .join-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-.join-row input[type="email"] { flex: 1 1 240px; padding: 0.85rem 1.1rem; border-radius: 999px; border: 1px solid var(--border, #25415a); background: var(--bg-elevated, #0f1e2e); color: var(--text); font: inherit; }
+.join-row input[type="email"] { flex: 1 1 240px; padding: 0.85rem 1.1rem; border-radius: 999px; border: 1px solid var(--border-field, #4a7196); background: var(--bg-elevated, #0f1e2e); color: var(--text); font: inherit; }
 .join-consent { margin-top: 14px; font-size: 0.8rem; color: var(--text-muted); }
 .join-status { margin-top: 12px; color: var(--accent-3, #64d6c4); min-height: 1.2em; }
 
