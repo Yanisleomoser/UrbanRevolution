@@ -25,7 +25,13 @@
  *   { imageUrl }                              on success
  *   { pending, pollUrl, predictionId }        if still running after 20 s
  *   { error }                                 on any failure
+ *
+ * Server-side rate limit (see _lib/rate-limit.js): the client-side
+ * urev_preview_count cap only throttles the browser UI, not a direct POST,
+ * so a per-IP Upstash counter bounds the billed Replicate calls too.
  */
+
+import { checkRateLimit } from "./_lib/rate-limit.js";
 
 export const config = { runtime: "edge" };
 
@@ -33,6 +39,7 @@ export const config = { runtime: "edge" };
 // constant to change the visualisation engine.
 const MODEL_ENDPOINT =
     "https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions";
+const RATE_LIMIT = { prefix: "preview-design", limit: 20, windowSeconds: 600 };
 
 export default async function handler(request) {
     if (request.method !== "POST") {
@@ -64,6 +71,13 @@ export default async function handler(request) {
     if (designPrompt.length > 1000) {
         return jsonError(400, "designPrompt must be a string under 1000 chars");
     }
+
+    const { limited } = await checkRateLimit(request, {
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        ...RATE_LIMIT,
+    });
+    if (limited) return jsonError(429, "Too many requests", "rate_limited");
 
     // Wrap the raw design concept in a studio product-photography brief.
     // Ghost-mannequin / no face → no uncanny valley, no representation

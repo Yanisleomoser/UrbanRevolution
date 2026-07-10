@@ -16,13 +16,20 @@
  *
  * Response shape (consumed by generateDesign in js/ai.js):
  *   { name, description, color, material, fit, tags, constructionNotes }
+ *
+ * Server-side rate limit (see _lib/rate-limit.js): the client-side
+ * urev_preview_count cap only throttles the browser UI, not a direct POST,
+ * so a per-IP Upstash counter bounds the billed Anthropic calls too.
  */
+
+import { checkRateLimit } from "./_lib/rate-limit.js";
 
 export const config = { runtime: "edge" };
 
 const API_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-opus-4-8";
 const VALID_GARMENT_TYPES = ['tshirt', 'hoodie', 'shirt', 'pants', 'jacket', 'dress'];
+const RATE_LIMIT = { prefix: "gen-design", limit: 30, windowSeconds: 600 };
 
 // Pure request validator — returns a decision object (no Response), so the
 // offline suite can exercise the prompt/type rules headless (same convention
@@ -106,6 +113,13 @@ export default async function handler(request) {
         return jsonError(valid.status, valid.message);
     }
     const { prompt, garmentType } = valid;
+
+    const { limited } = await checkRateLimit(request, {
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        ...RATE_LIMIT,
+    });
+    if (limited) return jsonError(429, "Too many requests", "rate_limited");
 
     const userPrompt =
         `Du bist Designer für Urban Revolution. Erstelle ein JSON-Design-Konzept für: ` +

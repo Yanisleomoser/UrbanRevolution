@@ -89,13 +89,29 @@ const Pose = (() => {
     function estimateMeasurements(landmarks, refHeightCm) {
         const get = i => landmarks[i];
 
-        // Vertikale Spannweite Nase → Mittelpunkt Knöchel
+        // Vertikale Spannweite Nase → Knöchel (Kalibrierungs-Referenz)
         const nose = get(IDX.NOSE);
-        const midAnkle = {
-            x: (get(IDX.L_ANKLE).x + get(IDX.R_ANKLE).x) / 2,
-            y: (get(IDX.L_ANKLE).y + get(IDX.R_ANKLE).y) / 2
+        // Ist nur ein Fuß im Bild, extrapoliert MediaPipe den anderen still
+        // weit unter den Bildrand (normalisiertes y > 1.05) — mitteln würde
+        // den Skalierungsfaktor für ALLE Maße verzerren. Denselben Usability-
+        // Check wie app.js' Vorab-Gate anwenden und nur brauchbare Knöchel
+        // einbeziehen (bei beiden unbrauchbar hätte das Gate schon abgebrochen;
+        // hier trotzdem robust auf den Mittelwert zurückfallen statt zu crashen).
+        const ankleUsable = (lm) => {
+            if (!lm) return false;
+            const vis = lm.visibility ?? 1;
+            const y = lm.y ?? 0.5;
+            return vis >= 0.3 && y <= 1.05;
         };
-        const noseToAnkleY = Math.abs(midAnkle.y - nose.y);
+        const lAnkle = get(IDX.L_ANKLE);
+        const rAnkle = get(IDX.R_ANKLE);
+        const lOk = ankleUsable(lAnkle);
+        const rOk = ankleUsable(rAnkle);
+        const ankleY = lOk && rOk ? (lAnkle.y + rAnkle.y) / 2
+            : lOk ? lAnkle.y
+            : rOk ? rAnkle.y
+            : (lAnkle.y + rAnkle.y) / 2;
+        const noseToAnkleY = Math.abs(ankleY - nose.y);
 
         // Nase-zu-Knöchel ≈ 88% der Körpergröße (Kopf-oben bis Nase ≈ 12%)
         // Skalierungsfaktor: 1 normalized unit → wieviele cm in der Realität

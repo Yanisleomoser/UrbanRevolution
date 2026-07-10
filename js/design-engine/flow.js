@@ -762,6 +762,16 @@ const DesignFlow = (() => {
     // deeper, then generate.
     function renderRefine() {
       T("journey_refine", { archetype: DesignDNA.topArchetype(dna), maturity: Math.round(maturity() * 100) });
+      // Any live slider drag / region pick still sitting at confidence 0 (the
+      // user never hit the modality's own confirm) must win over the archetype
+      // default here too — the same reason updatePreview() overlays LIVE_PATHS
+      // onto its preview clone above, just applied to the real dna this time,
+      // since this is the value that actually ships (finalize/persist/share).
+      LIVE_PATHS.forEach((path) => {
+        const v = DesignDNA.get(dna, path);
+        if (v !== undefined && v !== null) DesignDNA.set(dna, path, v, 1);
+      });
+      pendingLive = null;
       DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
       mirror(dna, content.attributes);
       persist();
