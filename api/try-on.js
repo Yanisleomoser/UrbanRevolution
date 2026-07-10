@@ -15,12 +15,19 @@
  *   - 4.5 MB request/response body (user photos must be reasonable
  *     size; we expect compressed JPEG/PNG data-URLs from the existing
  *     pose-detection flow, typically < 500 KB)
+ *
+ * Server-side rate limit (see _lib/rate-limit.js): the client-side
+ * urev_preview_count cap only throttles the browser UI, not a direct POST,
+ * so a per-IP Upstash counter bounds the billed Replicate calls too.
  */
+
+import { checkRateLimit } from "./_lib/rate-limit.js";
 
 export const config = { runtime: "edge" };
 
 const MODEL_ENDPOINT =
     "https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions";
+const RATE_LIMIT = { prefix: "try-on", limit: 15, windowSeconds: 600 };
 
 export default async function handler(request) {
     if (request.method !== "POST") {
@@ -61,6 +68,13 @@ export default async function handler(request) {
     if (typeof designPrompt !== "string" || designPrompt.length > 1000) {
         return jsonError(400, "designPrompt must be a string under 1000 chars");
     }
+
+    const { limited } = await checkRateLimit(request, {
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        ...RATE_LIMIT,
+    });
+    if (limited) return jsonError(429, "Too many requests", "rate_limited");
 
     // FLUX-Kontext is an instruction-following image editor. The prompt
     // tells it to keep the person identity while swapping clothing.

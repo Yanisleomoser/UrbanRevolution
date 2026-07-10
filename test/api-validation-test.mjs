@@ -15,6 +15,7 @@ import { validateDna, clampField, parseItems } from "../api/gallery.js";
 import { buildCommands, sanitiseId, toObj, ALLOWED } from "../api/track.js";
 import { validateInput as validateDesignInput, extractDesign } from "../api/generate-design.js";
 import { validateRequest as validateGenImage } from "../api/gen-image.js";
+import { rateLimitKey, clientIp, checkRateLimit } from "../api/_lib/rate-limit.js";
 
 let failures = 0;
 function assert(cond, msg) {
@@ -160,6 +161,69 @@ console.log("\n— gen-image.validateRequest (auth gate ordering + prompt rules)
   assert(validateGenImage({ key: "secret", prompt: "x".repeat(1501) }, env).code === "invalid_prompt", "oversized prompt → invalid_prompt");
   assert(validateGenImage({ key: "secret", prompt: "x", aspect: "16:9" }, env).aspect === "16:9", "valid aspect ratio is kept");
   assert(validateGenImage({ key: "secret", prompt: "x", aspect: "5:5" }, env).aspect === "4:5", "unknown aspect ratio → 4:5 default");
+}
+
+console.log("\n— rate-limit.rateLimitKey (fixed-window bucketing) —");
+{
+  const now = 1_700_000_000_000; // fixed instant, deterministic across runs
+  assert(
+    rateLimitKey("try-on", "1.2.3.4", 600, now) === rateLimitKey("try-on", "1.2.3.4", 600, now + 1000),
+    "same window (< windowSeconds apart) → identical key",
+  );
+  assert(
+    rateLimitKey("try-on", "1.2.3.4", 600, now) !== rateLimitKey("try-on", "1.2.3.4", 600, now + 601_000),
+    "a full window later → different key (fresh bucket)",
+  );
+  assert(
+    rateLimitKey("try-on", "1.2.3.4", 600, now) !== rateLimitKey("preview-design", "1.2.3.4", 600, now),
+    "different prefix → different key (endpoints don't share a budget)",
+  );
+  assert(
+    rateLimitKey("try-on", "1.2.3.4", 600, now) !== rateLimitKey("try-on", "5.6.7.8", 600, now),
+    "different IP → different key",
+  );
+}
+
+console.log("\n— rate-limit.clientIp (best-effort IP extraction) —");
+{
+  const req = (headers) => ({ headers: new Headers(headers) });
+  assert(clientIp(req({ "x-forwarded-for": "203.0.113.5, 10.0.0.1" })) === "203.0.113.5", "takes the first x-forwarded-for entry");
+  assert(clientIp(req({ "x-forwarded-for": "  203.0.113.5  " })) === "203.0.113.5", "trims whitespace");
+  assert(clientIp(req({ "x-real-ip": "198.51.100.9" })) === "198.51.100.9", "falls back to x-real-ip");
+  assert(clientIp(req({})) === "unknown", "no IP headers at all → 'unknown' (never throws)");
+}
+
+console.log("\n— rate-limit.checkRateLimit (fails open, never blocks without Upstash) —");
+{
+  const req = { headers: new Headers({ "x-forwarded-for": "9.9.9.9" }) };
+  const originalFetch = globalThis.fetch;
+
+  // Not configured (no url/token) → fails open WITHOUT even touching the network.
+  globalThis.fetch = () => { throw new Error("must not be called when Upstash isn't configured"); };
+  const notConfigured = await checkRateLimit(req, { url: "", token: "", prefix: "t", limit: 5, windowSeconds: 60 });
+  assert(notConfigured.limited === false && notConfigured.count === 0, "missing url/token → { limited: false }, no fetch attempted");
+
+  // Under the limit.
+  globalThis.fetch = async () => ({ ok: true, json: async () => [{ result: 3 }, { result: 1 }] });
+  const underLimit = await checkRateLimit(req, { url: "https://x", token: "t", prefix: "t", limit: 5, windowSeconds: 60 });
+  assert(underLimit.limited === false && underLimit.count === 3, "count (3) at/under limit (5) → not limited");
+
+  // Over the limit.
+  globalThis.fetch = async () => ({ ok: true, json: async () => [{ result: 6 }, { result: 1 }] });
+  const overLimit = await checkRateLimit(req, { url: "https://x", token: "t", prefix: "t", limit: 5, windowSeconds: 60 });
+  assert(overLimit.limited === true && overLimit.count === 6, "count (6) over limit (5) → limited");
+
+  // Upstash unreachable → fails open (never turns a store hiccup into a hard outage).
+  globalThis.fetch = async () => { throw new Error("network down"); };
+  const networkDown = await checkRateLimit(req, { url: "https://x", token: "t", prefix: "t", limit: 5, windowSeconds: 60 });
+  assert(networkDown.limited === false, "Upstash fetch throws → fails open");
+
+  // Upstash returns a non-2xx → fails open too.
+  globalThis.fetch = async () => ({ ok: false, status: 500 });
+  const upstash500 = await checkRateLimit(req, { url: "https://x", token: "t", prefix: "t", limit: 5, windowSeconds: 60 });
+  assert(upstash500.limited === false, "Upstash non-2xx response → fails open");
+
+  globalThis.fetch = originalFetch;
 }
 
 if (failures > 0) {
