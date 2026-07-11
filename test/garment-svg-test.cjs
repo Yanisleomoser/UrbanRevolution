@@ -337,6 +337,11 @@ const inBox = (a) => a && a.x >= 14 && a.x <= 226 && a.y >= 14 && a.y <= 326;
   ["waistband", "pockets", "hem"].forEach((rg) => assert(inBox(p[rg]), `pants: ${rg} anchor inside the viewBox`));
   assert(p.waistband.y < p.pockets.y && p.pockets.y < p.hem.y, "pants: waistband above pockets above hem");
   assert(p.collar === undefined, "pants: no collar anchor (different topology)");
+  // Honest position (same rule as tops): cargo patch pockets draw at mid-thigh
+  // in paintPants(), side slash pockets at the hip — the hotspot must follow.
+  const sideP = GarmentSVG.regionAnchors("pants", { pockets: "side" }).pockets;
+  const cargoP = GarmentSVG.regionAnchors("pants", { pockets: "cargo" }).pockets;
+  assert(cargoP.y > sideP.y + 50, "pants: cargo pocket anchor sits well below the hip-level side-pocket anchor");
   const d = GarmentSVG.regionAnchors("dress", {});
   assert(inBox(d.collar) && inBox(d.waist) && inBox(d.hem), "dress: collar/waist/hem anchors inside the viewBox");
 }
