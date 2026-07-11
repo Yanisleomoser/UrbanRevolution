@@ -1,6 +1,9 @@
 {
   "all": true,
-  "include": ["js/**/*.js", "api/**/*.js"],
+  "include": [
+    "js/**/*.js",
+    "api/**/*.js"
+  ],
   "exclude": [
     "js/app.js",
     "js/ur-create.js",
@@ -10,9 +13,13 @@
     "js/landing.js",
     "js/facts-mass.js",
     "js/faden.js",
+    "js/machine.js",
     "js/design-engine/modalities/**"
   ],
-  "reporter": ["text-summary", "text"],
+  "reporter": [
+    "text-summary",
+    "text"
+  ],
   "check-coverage": true,
   "statements": 73,
   "branches": 77,

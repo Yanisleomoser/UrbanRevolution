@@ -99,7 +99,7 @@
     document.documentElement.classList.add("fx"); // already set in <head>; idempotent
     window.gsap.registerPlugin(window.ScrollTrigger);
     // The mobile URL bar sliding in/out fires a viewport resize; by default
-    // ScrollTrigger re-measures on it and the pinned loop section visibly jumps
+    // ScrollTrigger re-measures on it and pinned sections visibly jump
     // on every toolbar toggle. --svh is already frozen against height-only
     // resizes (see <head>), so tell ScrollTrigger to ignore them too.
     window.ScrollTrigger.config({ ignoreMobileResize: true });
@@ -117,7 +117,7 @@
   // Trigger, die währenddessen entstehen/vermessen werden, rechnen die Sprung-
   // Zielposition in ihre starts ein — gepinnte Sektionen wirken dann
   // „durchgespielt", bevor man sie erreicht (deterministisch reproduzierbar
-  // unter #pivot-/#how-Deep-Links, headless UND real). Während des Ladens auf
+  // unter #pivot-/#machine-Deep-Links, headless UND real). Während des Ladens auf
   // instant schalten — ein Deep-Link soll ohnehin nicht 3000 px „anreisen" —
   // und erst wieder freigeben, wenn Sprung + Layout gesetzt sind.
   if (fx && location.hash) {
@@ -419,7 +419,7 @@
 
   // Manifest-Faden + Übergabe-Naht scrubben beim Scrollen von oben nach unten
   // (scaleY 0→1, transform-origin top). Ruhezustand (kein fx) = CSS-Default
-  // (fertig gezeichnet). Muster wie initPivot/initLoop: !fx → sofort raus.
+  // (fertig gezeichnet). Muster wie initPivot: !fx → sofort raus.
   function initActOneThread() {
     if (!fx) return;
     const mani = document.querySelector(".lp-linie--mani .lp-linie-rail");
@@ -450,7 +450,7 @@
 
   /* ── Die Wende (#pivot): die Linie biegt sich zum Kreis ──── */
 
-  // Gepinnter Scrub (gleiches Muster wie initLoop): pro Frame wird EIN
+  // Gepinnter Scrub: pro Frame wird EIN
   // <path d> neu gerechnet (pivotBendPath, reine viewBox-Koordinaten —
   // resize-immun) und auf beide Pfade geschrieben: die Mono-Linie blendet
   // aus, der Ozean-Verlauf ein — die Linie WIRD der Kreis. Text-Choreo:
@@ -518,165 +518,12 @@
     ScrollTrigger.create({
       trigger: pin,
       start: "top top",
-      // kurz und entschieden — kein zweiter Marathon-Pin vor #loop
+      // kurz und entschieden — kein zweiter Marathon-Pin vor der Maschine
       end: () => (window.matchMedia("(max-width: 700px)").matches ? "+=110%" : "+=130%"),
       pin: true,
       scrub: true,
       onUpdate: (self) => setPivot(self.progress),
     });
-  }
-
-  /* ── Der Kreislauf: gepinnte Kreis-Reise ─────────────────── */
-
-  function initLoop() {
-    if (!fx) return;
-    const pin = document.getElementById("loop-pin");
-    const progress = document.getElementById("loop-progress");
-    const needle = document.getElementById("loop-needle");
-    const num = document.getElementById("loop-num");
-    const steps = Array.from(document.querySelectorAll(".lp-loop-step"));
-    const dots = Array.from(document.querySelectorAll("#loop-dots circle"));
-    if (!pin || !progress) return;
-
-    const C = 2 * Math.PI * 130;
-    progress.style.strokeDasharray = String(C);
-    progress.style.strokeDashoffset = String(C);
-
-    let lastIdx = -1;
-    function setProgress(p) {
-      progress.style.strokeDashoffset = String(C * (1 - p));
-      // Die Nadel dreht einmal um den Kreis — wie der Zeiger einer Uhr.
-      needle.setAttribute("transform", `rotate(${16 + p * 360} 160 160)`);
-      const idx = Math.min(3, Math.floor(p * 4));
-      if (idx !== lastIdx) {
-        lastIdx = idx;
-        steps.forEach((s, i) => s.classList.toggle("is-active", i === idx));
-        dots.forEach((d, i) => d.classList.toggle("is-active", i <= idx));
-        if (num) num.textContent = "0" + (idx + 1);
-      }
-    }
-    setProgress(0);
-
-    ScrollTrigger.create({
-      trigger: pin,
-      start: "top top",
-      end: "+=280%",
-      pin: true,
-      scrub: true,
-      onUpdate: (self) => setProgress(self.progress),
-    });
-
-    initLoopMotes(pin);
-  }
-
-  // „Was die Linie wegwarf, kehrt in den Kreis zurück": eine hauchdünne
-  // Asche-Schicht (dieselbe Partikelsprache wie #facts, js/facts-mass.js) —
-  // wenige Motten treiben von aussen langsam auf den Ring zu und lösen sich
-  // an ihm auf. Bewusst kaum da: der Kreislauf ist Vision, kein Instrument.
-  // Nur unter fx erreichbar (initLoop-Guard); rAF pausiert offscreen und bei
-  // verstecktem Tab; DPR ≤ 2; Budget 84 Desktop / 36 Mobil.
-  function initLoopMotes(pin) {
-    const canvas = pin.querySelector(".lp-loop-canvas");
-    const svg = pin.querySelector(".lp-loop-svg");
-    const ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
-    if (!canvas || !svg || !ctx) return;
-
-    const C_WHITE = "238,244,248"; // --text  (Canvas liest keine CSS-Variablen)
-    const C_AQUA = "126,224,207";  // --accent-3
-    const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
-    let W = 0, H = 0, cx = 0, cy = 0, ringR = 0;
-    const motes = [];
-
-    // Spawn irgendwo auf der Bühne ausserhalb des Rings; vorgewärmt (pre=true)
-    // steht die Schicht schon, wenn die Sektion einblendet — wie die Fahne
-    // in #facts: Unerbittlichkeit, kein Aufbau-Spektakel.
-    function spawnMote(pre) {
-      let x = 0, y = 0, r = 0;
-      for (let tries = 0; tries < 8; tries++) {
-        x = Math.random() * W;
-        y = Math.random() * H;
-        r = Math.hypot(x - cx, y - cy);
-        if (r > ringR + 28) break;
-      }
-      return {
-        a: Math.atan2(y - cy, x - cx),
-        r,
-        v: 6 + Math.random() * 8,             // px/s einwärts — Asche, kein Sturm
-        w: (Math.random() - 0.5) * 0.05,      // leichte tangentiale Drift
-        s: 0.8 + Math.random() * 1.4,
-        al: 0.1 + Math.random() * 0.18,
-        ph: Math.random() * Math.PI * 2,
-        aqua: Math.random() < 0.3,
-        age: pre ? Math.random() * 4 : 0,
-      };
-    }
-
-    function size() {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      if (!w || !h) return false;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = w; H = h;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // Ring-Mitte + -Radius aus dem realen SVG-Layout (r=130 im 320er-viewBox)
-      const cr = canvas.getBoundingClientRect();
-      const sr = svg.getBoundingClientRect();
-      cx = sr.left - cr.left + sr.width / 2;
-      cy = sr.top - cr.top + sr.height / 2;
-      ringR = sr.width * (130 / 320);
-      motes.length = 0;
-      const n = W < 640 ? 44 : 110; // Budget ≤ 120 Desktop / ≤ 50 Mobil
-      for (let i = 0; i < n; i++) motes.push(spawnMote(true));
-      return true;
-    }
-
-    let rafId = 0;
-    let lastT = 0;
-    let visible = false;
-    function tick(now) {
-      rafId = 0;
-      if (document.hidden || !visible) return;
-      const dt = Math.min(0.05, Math.max(0.001, (now - lastT) / 1000));
-      lastT = now;
-      const t = now / 1000;
-      ctx.clearRect(0, 0, W, H);
-      for (let i = 0; i < motes.length; i++) {
-        const m = motes[i];
-        m.age += dt;
-        m.r -= m.v * dt;
-        m.a += m.w * dt;
-        if (m.r <= ringR + 1) { motes[i] = spawnMote(false); continue; }
-        // Weich erscheinen nach dem Spawn, auflösen kurz vor dem Ring —
-        // das Material kehrt zurück, es prallt nicht ab.
-        const env = clamp01(m.age / 3) * clamp01((m.r - ringR) / 36);
-        if (env <= 0.02) continue;
-        const a = m.al * env * (0.7 + Math.sin(t * 0.5 + m.ph) * 0.3);
-        ctx.fillStyle = "rgba(" + (m.aqua ? C_AQUA : C_WHITE) + "," + a.toFixed(3) + ")";
-        ctx.fillRect(cx + Math.cos(m.a) * m.r, cy + Math.sin(m.a) * m.r, m.s, m.s);
-      }
-      rafId = requestAnimationFrame(tick);
-    }
-    function wake() {
-      if (!rafId && visible && !document.hidden) {
-        lastT = performance.now();
-        rafId = requestAnimationFrame(tick);
-      }
-    }
-
-    if (!size() || !("IntersectionObserver" in window)) return;
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => { visible = en.isIntersecting; });
-      wake();
-    }, { rootMargin: "80px 0px 80px 0px", threshold: 0 });
-    io.observe(pin);
-    document.addEventListener("visibilitychange", wake);
-    let rt = 0;
-    window.addEventListener("resize", () => {
-      clearTimeout(rt);
-      rt = setTimeout(() => { size(); wake(); }, 160);
-    }, { passive: true });
   }
 
   /* ── Sichtbarkeits-Reveals + Zahlen-Count-up ─────────────── */
@@ -1507,7 +1354,6 @@
     buildVerbs();
     initActOneThread();
     initPivot();
-    initLoop();
     initReveals();
     initCounters();
     initOrb();
@@ -1522,7 +1368,7 @@
     if (fx && document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => ScrollTrigger.refresh());
     }
-    // Hash-Deep-Links (#pivot/#how/#dna=…): Chrome „re-snappt" auf das Fragment,
+    // Hash-Deep-Links (#pivot/#machine/#dna=…): Chrome „re-snappt" auf das Fragment,
     // sobald die Pin-Spacer MITTEN im initialen Refresh eingefügt werden (Layout-
     // Shift oberhalb des Ziels). Trigger, die nach dem Snap gemessen werden,
     // rechnen mit veralteter Scroll-Kompensation — ihre starts sind um scrollY

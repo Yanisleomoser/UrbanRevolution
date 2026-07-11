@@ -1,0 +1,166 @@
+/**
+ * Maschinen-Verifikation (#machine, js/machine.js): belegt die BEWEGUNG der
+ * Ingenieur-Simulation (Item-Fluss, Status-Zyklus der Remake-Zelle, Kamera-
+ * Zoom) als Kurven über die Zeit — nicht als Standbilder —, den Reduced-
+ * Motion-Ruhezustand (vollständiges, ehrliches Standbild) und die Studio-
+ * Brücke (StateManager-Entwurf → Datei-Nummer in Zelle/Schiene/Caption).
+ *
+ *   node scripts/verify-machine.mjs
+ */
+import { chromium } from "playwright-core";
+import { mkdirSync } from "node:fs";
+import { startServer } from "./static-server.mjs";
+import { routeCdnThroughNode } from "./cdn-route.mjs";
+
+const OUT = "screenshots/verify-machine";
+mkdirSync(OUT, { recursive: true });
+
+const server = await startServer();
+const base = `http://127.0.0.1:${server.address().port}`;
+const browser = await chromium.launch({ args: ["--no-sandbox"] });
+let failed = 0;
+const check = (cond, msg) => {
+  console.log((cond ? "  ✓ " : "  ✗ ") + msg);
+  if (!cond) failed++;
+};
+
+// ── 1. Volle Bewegung: Boot, Item-Fluss, Status-Zyklus, Kamera ─────────────
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.goto(base + "/#machine", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(2500);
+  await page.evaluate(() => document.getElementById("machine")?.scrollIntoView({ block: "start" }));
+
+  console.log("— full motion: boot + item flow + cell cycle —");
+  const boot = await page.evaluate(() => ({
+    svg: !!document.getElementById("mSvg"),
+    cards: document.querySelectorAll("button.lp-m-st").length,
+    rails: document.querySelectorAll("#mSvg .m-rail").length,
+  }));
+  check(boot.svg, "#mSvg is present");
+  check(boot.cards === 4, `4 station cards render (found ${boot.cards})`);
+  check(boot.rails >= 5, `rails present (${boot.rails})`);
+
+  // Status + Items über ~14 s samplen (Boot-Delay 3 s + Zellen-Zyklus)
+  const trace = await page.evaluate(async () => {
+    const out = [];
+    for (let i = 0; i < 28; i++) {
+      const vis = Array.from(document.querySelectorAll("#mItems g"))
+        .filter((g) => parseFloat(g.getAttribute("opacity") || "0") > 0.05).length;
+      out.push({
+        t: i * 500,
+        status: document.getElementById("mStatus")?.textContent || "",
+        items: vis,
+        chip: getComputedStyle(document.getElementById("mChipG")).opacity,
+      });
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    return out;
+  });
+  const statuses = [...new Set(trace.map((s) => s.status))];
+  const maxItems = Math.max(...trace.map((s) => s.items));
+  const chipShown = trace.some((s) => parseFloat(s.chip) > 0.5);
+  console.log("    statuses seen:", JSON.stringify(statuses));
+  console.log("    max concurrent items:", maxItems, "| chip shown:", chipShown);
+  check(maxItems >= 2, "items flow on the belt (≥2 concurrently)");
+  check(statuses.length >= 2, "cell status cycles (≥2 distinct states)");
+  check(trace.some((s) => /SCHNITT|CUTTING/.test(s.status)), "the cell actually cuts");
+  check(chipShown, "the NIR analysis chip appears during a scan");
+
+  // Kamera: Stations-Karte klicken → viewBox zoomt, Stempel erscheint
+  const vb0 = await page.evaluate(() => document.getElementById("mSvg").getAttribute("viewBox"));
+  await page.click('button.lp-m-st[data-cam="3"]');
+  const cam = await page.evaluate(async () => {
+    const svg = document.getElementById("mSvg");
+    const seen = [];
+    for (let i = 0; i < 12; i++) {
+      seen.push(svg.getAttribute("viewBox"));
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    return {
+      seen: [...new Set(seen)].length,
+      end: svg.getAttribute("viewBox"),
+      zoomed: document.querySelector(".lp-machine-band")?.classList.contains("zoomed"),
+      pressed: document.querySelector('button.lp-m-st[data-cam="3"]')?.getAttribute("aria-pressed"),
+      stamp: getComputedStyle(document.getElementById("mStampOverlay")).opacity,
+    };
+  });
+  check(cam.end !== vb0, `camera zooms on station click (${vb0} → ${cam.end})`);
+  check(cam.seen >= 4, `zoom is animated, not a jump (${cam.seen} distinct frames)`);
+  check(cam.zoomed === true, "band gets .zoomed");
+  check(cam.pressed === "true", "card aria-pressed reflects the zoom");
+  check(parseFloat(cam.stamp) > 0.5, "SIMULATION stamp overlays the zoomed view");
+  await page.screenshot({ path: `${OUT}/machine-zoom-desktop.png` });
+
+  check(errors.length === 0, `no page errors (${errors.join("; ") || "none"})`);
+  await page.close();
+}
+
+// ── 2. Reduced motion: vollständiges Standbild + sofortige Studio-Brücke ───
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.goto(base + "/#machine", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(1800);
+
+  console.log("— reduced motion: honest static frame + studio bridge —");
+  const rm = await page.evaluate(() => ({
+    items: Array.from(document.querySelectorAll("#mItems g"))
+      .filter((g) => parseFloat(g.getAttribute("opacity") || "0") > 0.5).length,
+    chip: getComputedStyle(document.getElementById("mChipG")).opacity,
+    chipText: document.getElementById("mChipT")?.textContent || "",
+    status: document.getElementById("mStatus")?.textContent || "",
+    anims: document.getElementById("mSvg").getAnimations({ subtree: true }).length,
+  }));
+  check(rm.items === 3, `static frame paints 3 items (${rm.items})`);
+  check(parseFloat(rm.chip) > 0.5 && rm.chipText.length > 4, "chip visible with analysis text");
+  check(/WARTET|WAITING/.test(rm.status), `cell waits honestly (${rm.status})`);
+  check(rm.anims === 0, `no running animations under reduced motion (${rm.anims})`);
+  await page.screenshot({ path: `${OUT}/machine-reduced-mobile.png` });
+
+  // Studio-Brücke: Entwurf setzen → Datei erscheint sofort (RM-Pfad)
+  const bridge = await page.evaluate(() => {
+    window.StateManager.set("currentType", "hoodie");
+    window.StateManager.set("currentColor", "#831843");
+    window.StateManager.set("currentDesign", { name: "Verify Piece" });
+    return {
+      tag: document.getElementById("mTagT")?.textContent || "",
+      hangNo: document.getElementById("mHangNo")?.textContent || "",
+      cap: document.getElementById("mFileCap")?.hidden === false,
+      fill: document.getElementById("mGarFill")?.getAttribute("fill"),
+      status: document.getElementById("mStatus")?.textContent || "",
+    };
+  });
+  check(/\d{4}/.test(bridge.tag), `cell tag carries the file number (${bridge.tag})`);
+  check(/\d{4}/.test(bridge.hangNo), `your hanger carries the file number (${bridge.hangNo})`);
+  check(bridge.cap, "file caption under the band becomes visible");
+  check(bridge.fill === "#831843", `the cell cuts YOUR colour (${bridge.fill})`);
+  await page.screenshot({ path: `${OUT}/machine-bridge-mobile.png` });
+
+  // Sprachwechsel: JS-gesetzte Texte rendern neu
+  const en = await page.evaluate(() => {
+    window.I18N.setLang("en");
+    return {
+      status: document.getElementById("mStatus")?.textContent || "",
+      tag: document.getElementById("mTagT")?.textContent || "",
+      zone: document.querySelector('[data-i18n="machine.z1"]')?.textContent || "",
+    };
+  });
+  check(/ONE AT A TIME|READY|WAITING/.test(en.status), `status re-renders in EN (${en.status})`);
+  check(/No\./.test(en.tag), `tag re-renders in EN (${en.tag})`);
+  check(en.zone === "01 · INTAKE", `SVG zone captions re-hydrate (${en.zone})`);
+
+  check(errors.length === 0, `no page errors (${errors.join("; ") || "none"})`);
+  await ctx.close();
+}
+
+await browser.close();
+server.close();
+console.log(failed ? `\n✗ ${failed} check(s) FAILED` : "\n✓ machine verification passed");
+process.exit(failed ? 1 : 0);

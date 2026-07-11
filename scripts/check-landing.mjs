@@ -37,16 +37,12 @@ for (const vp of viewports) {
   await page.waitForTimeout(700);
   await page.screenshot({ path: `screenshots/home-${vp.name}-2-manifesto.png` });
 
-  // Kreislauf: gepinnt — Frame-Serie über die volle Scroll-Strecke
-  const pinTop = await page.evaluate(() => {
-    const el = document.getElementById("loop-pin");
-    return el.getBoundingClientRect().top + window.scrollY;
-  });
-  const span = await page.evaluate(() => window.innerHeight * 2.8);
+  // Die Maschine: zeit-animiert (nicht scroll-gescrubbt) — Frame-Serie
+  // über einen Anlauf- + Zellen-Zyklus, um die Bewegung selbst zu belegen
+  await page.locator("#machine").scrollIntoViewIfNeeded();
   for (let i = 0; i <= 5; i++) {
-    await page.evaluate(([y]) => window.scrollTo(0, y), [pinTop + (span * i) / 5]);
-    await page.waitForTimeout(650);
-    await page.screenshot({ path: `screenshots/home-${vp.name}-3-loop-${i}.png` });
+    await page.waitForTimeout(i === 0 ? 900 : 1600);
+    await page.screenshot({ path: `screenshots/home-${vp.name}-3-machine-${i}.png` });
   }
 
   await page.locator("#facts").scrollIntoViewIfNeeded();
