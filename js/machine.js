@@ -59,9 +59,22 @@
         const hangFill = document.getElementById("mHangGarFill");
         const hangNo = document.getElementById("mHangNo");
         const fileCap = document.getElementById("mFileCap");
+        /* Mini-Silhouetten für die Schiene (lokaler Raum, x um 0 zentriert;
+           die Pfad-Elemente tragen translate(cx 0)): jedes gefertigte Stück
+           hängt als SEIN Kleidungstyp am Bügel — Hood-Bogen, Kragenkerbe,
+           offener Jacken-Saum, ausgestelltes Kleid, Hosenbeine — statt als
+           generisches T-Shirt. */
+        const HPATHS = {
+            tshirt: "M-12,404 L-4,397 L4,397 L12,404 L8,411 L5,409 L5,434 Q0,436 -5,434 L-5,409 L-8,411 Z",
+            hoodie: "M-12,404 L-4,397 Q0,391 4,397 L12,404 L8,411 L5,409 L5,434 Q0,436 -5,434 L-5,409 L-8,411 Z",
+            shirt: "M-12,404 L-4,397 L-1,400 L0,396 L1,400 L4,397 L12,404 L8,411 L5,409 L5,434 L-5,434 L-5,409 L-8,411 Z",
+            jacket: "M-13,403 L-4,396 L4,396 L13,403 L9,412 L6,410 L6,436 L1,436 L0,431 L-1,436 L-6,436 L-6,410 L-9,412 Z",
+            dress: "M-9,403 L-3,397 Q0,395 3,397 L9,403 L6,409 L4,407 L11,437 Q0,441 -11,437 L-4,407 L-6,409 Z",
+            pants: "M-7,397 L7,397 L5,436 L1,436 L0,406 L-1,436 L-5,436 Z",
+        };
         // Anonyme Bügel: Ziele der Demo-Stücke; [1] und [3] sind der gefüllte
-        // Markup-Ruhezustand (Farben dort = Remake-Qualitäten Baumwolle/Leinen).
-        const HANG_DEFAULTS = [null, "#7c4a45", null, "#8a8168"];
+        // Markup-Ruhezustand (verschiedene Typen + Remake-Materialfarben).
+        const HANG_DEFAULTS = [null, { type: "hoodie", hex: "#7c4a45" }, null, { type: "dress", hex: "#8a8168" }];
         const demoHangs = [0, 1, 2, 3].map((i) => {
             const g = document.getElementById("mHang" + i);
             return g
@@ -74,10 +87,16 @@
                 }
                 : null;
         }).filter(Boolean);
+        function paintHang(h, type, hex) {
+            const d = HPATHS[type] || HPATHS.tshirt;
+            h.fill.setAttribute("d", d);
+            h.line.setAttribute("d", d);
+            h.fill.setAttribute("fill", hex);
+        }
         function resetDemoHangs() {
             demoHangs.forEach((h) => {
                 h.g.setAttribute("transform", "");
-                if (h.def) h.fill.setAttribute("fill", h.def);
+                if (h.def) paintHang(h, h.def.type, h.def.hex);
                 h.fill.style.opacity = h.def ? "1" : "0";
                 h.line.style.opacity = h.def ? "1" : "0";
             });
@@ -173,10 +192,16 @@
             cutHead.setAttribute("transform", "translate(" + (x - 958).toFixed(1) + " " + (y - 214).toFixed(1) + ") translate(958 214)");
         }
         // Das Stück, das die Zelle gerade fährt: die Besucher-Datei ODER ein
-        // Demo-Stück des laufenden Betriebs (Typ rotiert, Farbe vom Remake-Item).
+        // Demo-Stück des laufenden Betriebs. Typ und Farbe rotieren mit
+        // teilerfremden Perioden (6 × 5 = 30 Kombinationen), damit sichtbar
+        // UNTERSCHIEDLICHE Stücke entstehen — der Zyklus-Takt (~12 s) rastete
+        // sonst auf dasselbe Remake-Item ein und färbte jedes Stück gleich.
+        // Die Palette IST die Material-Palette der Band-Items (Rezyklat).
         let cellPiece = { type: "tshirt", hex: "#1c2c3b" };
         const DEMO_TYPES = ["tshirt", "hoodie", "shirt", "jacket", "dress", "pants"];
+        const DEMO_COLORS = ["#7c4a45", "#3e5a78", "#8a8168", "#476457", "#6e6a63"];
         let demoTypeIdx = 0;
+        let demoColorIdx = 0;
         let demoHangIdx = 0;
         function setCellPiece(type, hex) {
             cellPiece = { type: type, hex: hex };
@@ -197,6 +222,11 @@
                 hangNo.textContent = f ? tr("machine.no", { no: f.no }) : tr("machine.no_none");
                 hangNo.setAttribute("fill", f ? "#7ee0cf" : "rgba(238,244,248,.62)");
             }
+            // Auch der DEINS-Bügel hängt den TYP der Datei auf (Kleid als
+            // Kleid, Hose als Hose), nicht ein generisches T-Shirt.
+            const hd = HPATHS[(f && f.type) || "tshirt"] || HPATHS.tshirt;
+            if (hangGar) hangGar.setAttribute("d", hd);
+            if (hangFill) hangFill.setAttribute("d", hd);
             if (hangFill) hangFill.setAttribute("fill", f ? f.hex : "#1c2c3b");
             if (hangGar) hangGar.style.opacity = 0;
             if (hangFill) hangFill.style.opacity = 0;
@@ -284,14 +314,18 @@
                 setStatus("machine.st_ready");
             }
         }
-        function startCycle(itemHex) {
+        function startCycle() {
             if (cellState !== "IDLE") return;
             takePending();
-            // Ohne Datei fertigt die Linie ein Demo-Stück: aus dem Material,
-            // das den Zyklus ausgelöst hat, der Typ rotiert durch alle sechs.
+            // Ohne Datei fertigt die Linie ein Demo-Stück: Typ und Material-
+            // Farbe rotieren unabhängig — jedes Stück ist sichtbar ein anderes.
             if (!fileApplied) {
-                setCellPiece(DEMO_TYPES[demoTypeIdx % DEMO_TYPES.length], itemHex || "#7c4a45");
+                setCellPiece(
+                    DEMO_TYPES[demoTypeIdx % DEMO_TYPES.length],
+                    DEMO_COLORS[demoColorIdx % DEMO_COLORS.length],
+                );
                 demoTypeIdx++;
+                demoColorIdx++;
             }
             resetCell(false);
             cellState = "CUT";
@@ -350,7 +384,8 @@
                         hangSel = demoHangs.length ? demoHangs[demoHangIdx % demoHangs.length] : null;
                         demoHangIdx++;
                         if (hangSel) {
-                            hangSel.fill.setAttribute("fill", cellPiece.hex);
+                            // Das Demo-Stück hängt als sein Typ, in seiner Farbe
+                            paintHang(hangSel, cellPiece.type, cellPiece.hex);
                             hangSel.fill.style.opacity = "0";
                             hangSel.line.style.opacity = "0";
                         }
@@ -575,8 +610,7 @@
                         setTimeout(() => b.classList.remove("pulse"), 240);
                     }
                     // Remake-Material gelandet → die Zelle beginnt einen Zyklus
-                    // (ohne Datei wird genau dieses Material zum Demo-Stück)
-                    if (ty.lane === 0 && cellState === "IDLE") startCycle(ty.c);
+                    if (ty.lane === 0 && cellState === "IDLE") startCycle();
                 }
             });
             return scanning ? { type: scanning, t: scanT } : null;
