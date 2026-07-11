@@ -43,8 +43,9 @@
     --gradient-cta: linear-gradient(135deg, #2fae9e 0%, #7ee0cf 100%);
     /* Die warme Kupfer-Familie (Slides, Akt I): das Chaos des Abfalls trägt
        Kupfer/Rosé — Aqua wird erst nach der Wende ausgegeben. --accent-warm
-       bleibt zusätzlich der EINE warme Akzent in Akt II (#your-style):
-       dieselbe Familie, Text-tauglich (7.7:1 auf --bg). */
+       ist die Text-taugliche Stufe der Familie (7.7:1 auf --bg) — seit dem
+       Entfernen des Identitäts-Beats reserviert/ungenutzt; Akt II bleibt
+       vollständig „Ocean Depths". */
     --accent-warm: #d99b78;
     --warm-thread: #c9906f;      /* der Akt-I-Faden (Canvas-Basis 201,144,111) */
     --warm-deep: #8a5f4c;        /* Schatten-Strang (≥3:1 auf --bg, nur gross/grafisch) */
@@ -1909,7 +1910,7 @@ html[lang="en"] [data-l="de"] { display: none; }
 /* Error state (set by setVtoError): the spinner is gone, so make the message
    read as a final, legible notice — full-contrast text in a subtly bordered
    panel — instead of a faint placeholder that looks like it is still loading.
-   Brand-safe: no red and no --accent-warm (reserved for #your-style); only
+   Brand-safe: no red and no --accent-warm (Akt II bleibt Ocean Depths); only
    the existing neutral tokens. */
 .vto-loading.has-error {
     gap: 8px;
@@ -5435,12 +5436,10 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
 }
 
 /* ── Der Faden — die durchgehende Naht der Erzählung ─────────────
-   Sechs scroll-gezeichnete Nähte verbinden #facts → #pivot → #loop →
-   Urteil → #your-style → #how → Orb zu EINER Linie. Farb-Dramaturgie
-   (Slides): Naht 1 kupfern (die alte Linie, kein Glint), ab der Wende
-   lebt der Faden (Teal/Aqua + wanderndes Glint-Signal), im Identitäts-
-   Beat kehrt die Wärme zurück (lp-identity-fuse — Kupfer als Identität,
-   nicht mehr als Abfall), am Orb wird er Kreis. Ruhezustand = fertig
+   Drei scroll-gezeichnete Nähte verbinden #facts → #pivot → #machine →
+   Orb zu EINER Linie. Farb-Dramaturgie (Slides): Naht 1 kupfern (die
+   alte Linie, kein Glint), ab der Wende lebt der Faden (Teal/Aqua +
+   wanderndes Glint-Signal), am Orb wird er Kreis. Ruhezustand = fertig
    gezeichnet (no-JS/reduced-motion); erst html.fil-go (js/faden.js)
    setzt Startzustände und scrubbt. */
 .fil-seam {
@@ -5460,10 +5459,9 @@ html.fxb-go .fxb-beat.is-in .fxb-copy > * { opacity: 1; transform: none; }
 .lp-pivot-thread-in { stroke: rgba(201, 144, 111, 0.40); stroke-width: 2; }
 .lp-pivot-thread-out { stroke: rgba(47, 174, 158, 0.5); stroke-width: 1.5; }
 .fil-seam[data-fil="2"] .fil-path { stroke: rgba(47, 174, 158, 0.55); }
-.fil-seam[data-fil="3"] .fil-path { stroke: rgba(126, 224, 207, 0.38); }
-.fil-seam[data-fil="4"] .fil-path { stroke: rgba(126, 224, 207, 0.48); }
-/* S6: eine Naht, zwei Wege — Desktop kommt von rechts (Faden-Ende),
-   Mobil aus der linken Gosse (wie der vertikale How-Bogen). */
+.fil-seam[data-fil="3"] .fil-path { stroke: rgba(126, 224, 207, 0.48); }
+/* Finale-Naht: eine Naht, zwei Wege — Desktop kommt von rechts (Ende der
+   Schritt-Leiste in #machine), Mobil aus der linken Gosse. */
 .fil-seam .fil-m { display: none; }
 @media (max-width: 860px) {
     .fil-seam .fil-d { display: none; }
@@ -5490,21 +5488,6 @@ html.fil-go .fil-seam svg { clip-path: inset(0% -3% 102% -3%); }
     opacity: 0;
     will-change: transform, opacity;
 }
-/* Zünd-Naht im Identitäts-Beat: der ankommende Aqua-Faden wird warm —
-   die einzige Stelle in AKT II, an der Kupfer existieren darf: dieselbe
-   Wärme, die in Akt I Abfall war, kehrt hier als Identität zurück. */
-.lp-identity { position: relative; }
-.lp-identity-fuse {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 1px;
-    height: clamp(44px, 9svh, 110px);
-    transform: translateX(-0.5px);
-    background: linear-gradient(180deg, rgba(126, 224, 207, 0.5), var(--accent-warm));
-    opacity: 0.8;
-}
-
 /* ── KI, richtig eingesetzt — das Urteil als Protokoll ──────────────────────
    Offenes typografisches Verdikt-Ledger statt Karten (Gerichtsakte, in der
    Sprache von #facts): EINE Haarlinie, zwei Spalten reiner Text. Die Linie
@@ -5566,72 +5549,6 @@ html.fil-go .fil-seam svg { clip-path: inset(0% -3% 102% -3%); }
     max-width: 64ch;
 }
 .lp-aidr-body strong { color: var(--text); font-weight: 500; }
-
-/* ── Der Mittelpunkt (Identitäts-Beat — der eine warme Akzent, nur hier) ── */
-.lp-identity {
-    max-width: 820px;
-    margin: 0 auto;
-    text-align: center;
-    position: relative;
-    z-index: 0; /* eigener Stacking-Context: der Ring (z -1) bleibt ÜBER dem bg */
-    /* fauchter warmer Schimmer hinter dem Block — fällt zum Rand auf 0 ab */
-    background: radial-gradient(58% 52% at 50% 42%, rgba(217, 155, 120, 0.10) /* --accent-warm */, transparent 70%);
-}
-/* Haarlinien-Kreis mit EINER warmen Glut hinter dem Text — dieselbe
-   Ring-Sprache wie der Finale-Orb. Die Glut ist der einzige warme und der
-   einzige bewegte Punkt der Sektion: unter html.fx treibt sie langsam am
-   Ring entlang (Rotation der Gruppe im SVG-Raum) und atmet (Opacity).
-   Ruhezustand (no-JS / reduced-motion): stiller warmer Punkt bei ~1 Uhr. */
-.lp-identity-ring {
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    z-index: -1;
-    width: min(86vw, 480px);
-    height: min(86vw, 480px);
-    color: var(--border);
-    opacity: 0.9;
-    pointer-events: none;
-}
-.lp-identity-ember-halo { fill: rgba(217, 155, 120, 0.16); } /* --accent-warm */
-.lp-identity-ember-dot { fill: var(--accent-warm); }
-/* Drift auf der GRUPPE im SVG-Koordinatenraum (transform-origin = viewBox-
-   Zentrum 200×200): bewegt den Punkt am Ring entlang, ohne die Layout-Box
-   anzufassen — kein scrollWidth-Risiko wie bei rotierter Host-Box. */
-html.fx .lp-identity-ember {
-    transform-origin: 100px 100px;
-    animation: lp-ember-drift 18s ease-in-out infinite alternate;
-}
-html.fx .lp-identity-ember-halo,
-html.fx .lp-identity-ember-dot { animation: lp-ember-breathe 5.5s ease-in-out infinite; }
-@keyframes lp-ember-drift {
-    from { transform: rotate(-6deg); }
-    to { transform: rotate(6deg); }
-}
-@keyframes lp-ember-breathe {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 1; }
-}
-.lp-label--warm { color: var(--accent-warm); }
-.lp-identity-title {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(32px, 6vw, 64px);
-    letter-spacing: -0.02em;
-    line-height: 1.14;
-    max-width: 16ch;
-    margin: 0 auto;
-}
-.lp-identity-title em { font-style: italic; color: var(--accent-warm); }
-.lp-identity-body {
-    margin: clamp(22px, 3.5vw, 32px) auto 0;
-    max-width: 54ch;
-    color: var(--text-dim);
-    font-weight: 300;
-    font-size: clamp(15.5px, 1.9vw, 19px);
-    line-height: 1.7;
-}
-.lp-identity-body strong { color: var(--text); font-weight: 500; }
 
 /* ── Finale ── */
 .lp-finale {

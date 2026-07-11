@@ -637,10 +637,6 @@ const I18N = (() => {
       "aidr.lit_p": "KI auf den Abfallberg gerichtet: Sie soll entwirren, was weggeworfen wurde, damit es neu leben kann.",
       "aidr.body_html": "Das schwierige Problem im Kreis war nie das Nähen — es ist das Entwirren des Weggeworfenen: Mischfasern, Knöpfe, Nähte, Farben. Ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau dort soll die Maschine arbeiten: <strong>den Stoff sortieren und das Stück bauen. Mehr nicht.</strong> Das Design bleibt deins — du gibst den Stil vor, du triffst jede Entscheidung. <strong>Die KI entwirft nie.</strong>",
 
-      // ── Der Mittelpunkt (Landing-Beat #2 — Identität, der eine warme Akzent) ──
-      "identity.label": "Der Mittelpunkt",
-      "identity.h2_html": "In der Mitte dieses Kreises: <em>du</em>.",
-      "identity.body_html": "Die Linie fertigte für alle — dasselbe Stück, millionenfach, in einer Grösse, die niemandem gehört. Der Kreis dreht sich anders: um dich. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong>",
       "how.label": "So funktioniert's",
       "how.sub": "Das ist deine Seite des Kreises — vom ersten Satz zur dokumentierten Vorlage. Du hältst den Faden, die Maschine hält die Nadel.",
       "how.s1_label": "Du entwirfst",
@@ -1270,10 +1266,6 @@ const I18N = (() => {
       "aidr.lit_p": "AI aimed at the discard pile: it is meant to untangle what was thrown away so it can live again.",
       "aidr.body_html": "The hard problem in the circle was never the sewing — it is untangling the discarded: mixed fibres, fastenings, seams, dyes. A pile no human line can sort at scale. That is exactly where the machine is meant to work: <strong>sort the fabric and build the piece. Nothing more.</strong> The design stays yours — you set the style, you make every decision. <strong>The AI never designs.</strong>",
 
-      // ── The centre (landing beat #2 — identity) ──
-      "identity.label": "The centre",
-      "identity.h2_html": "At the centre of this circle: <em>you</em>.",
-      "identity.body_html": "The line made for all — the same piece, a million times over, in a size that belongs to no one. The circle turns the other way: around you. <strong>Identity isn't chosen from options. It's made.</strong>",
       "how.label": "How it works",
       "how.sub": "This is your side of the circle — from the first sentence to a documented blueprint. You hold the thread, the machine holds the needle.",
       "how.s1_label": "You design",

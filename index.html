@@ -88,7 +88,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260711-machine">
+    <link rel="stylesheet" href="css/styles.css?v=20260711-no-identity">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -842,37 +842,11 @@
         </div>
     </section>
 
-    <!-- ★ DER MITTELPUNKT — Botschaft #2, der Identitäts-Beat (der eine warme
-         Akzent): das Zentrum des Kreises ist ein Mensch — die Auflösung der
-         Hero-Tagline (die Linie fertigt für alle, der Kreis für einen). -->
-        <div class="fil-seam" data-fil="3" aria-hidden="true">
-        <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path" d="M10 0 C10 110 50 130 50 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
-        <span class="fil-glint"></span>
-    </div>
-
-    <section class="lp-identity lp-block" id="your-style" data-lp-reveal>
-        <span class="lp-identity-fuse" aria-hidden="true"></span>
-        <!-- Feiner Haarlinien-Kreis (statt Zier-Strichelung) mit EINER warmen
-             Glut: ein einzelner Funke (--accent-warm) bei ~1 Uhr, im
-             Negativraum über der Headline — der einzige warme, der einzige
-             bewegte Punkt der Seite. Unter html.fx treibt er langsam am Ring
-             entlang und atmet; Ruhezustand (no-JS / reduced-motion): stiller
-             warmer Punkt. -->
-        <svg class="lp-identity-ring" viewBox="0 0 200 200" aria-hidden="true">
-            <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke"/>
-            <g class="lp-identity-ember">
-                <circle class="lp-identity-ember-halo" cx="148" cy="16.9" r="7"/>
-                <circle class="lp-identity-ember-dot" cx="148" cy="16.9" r="2.2"/>
-            </g>
-        </svg>
-        <p class="lp-label lp-label--warm" data-i18n="identity.label">Der Mittelpunkt</p>
-        <h2 class="lp-identity-title" data-i18n-html="identity.h2_html">In der Mitte dieses Kreises: <em>du</em>.</h2>
-        <p class="lp-identity-body" data-i18n-html="identity.body_html">Die Linie fertigte für alle — dasselbe Stück, millionenfach, in einer Grösse, die niemandem gehört. Der Kreis dreht sich anders: um dich. <strong>Identität wählt man nicht aus Optionen. Man macht sie.</strong></p>
-    </section>
-
     <!-- Finale — Übergabe-Zeile (Mono) + magnetischer Kreis-CTA, öffnet das Studio.
-         Der Orb ist die geometrische Konklusion: die Seite endet auf dem Kreis. -->
-        <div class="fil-seam" data-fil="4" aria-hidden="true">
+         Der Orb ist die geometrische Konklusion: die Seite endet auf dem Kreis.
+         Die Naht kommt auf Desktop von rechts (Ende der Schritt-Leiste in
+         #machine), mobil aus der linken Gosse. -->
+        <div class="fil-seam" data-fil="3" aria-hidden="true">
         <svg viewBox="0 0 100 240" preserveAspectRatio="none"><path class="fil-path fil-d" d="M95 0 C95 110 50 130 50 240" pathLength="1" vector-effect="non-scaling-stroke"/><path class="fil-path fil-m" d="M8 0 C8 110 50 130 50 240" pathLength="1" vector-effect="non-scaling-stroke"/></svg>
         <span class="fil-glint"></span>
     </div>
