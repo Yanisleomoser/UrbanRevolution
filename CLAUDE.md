@@ -138,15 +138,21 @@ handing over with a clip-drawn seam + knot (`.lp-linie-seam*`) → the pinned
 **`#pivot` turn** (the one
 big question; a straight line scroll-scrubs into a circle via `initPivot` /
 exported `pivotBendPath`, hinge sentence + mission statement) → **Act II THE
-CIRCLE** (pinned `#loop` vision with STATUS meta + Alle/KI/Du/KI station tags
-→ `#ai-done-right` → `#your-style` centre beat) → a
-**4-step "So funktioniert's" arc** (`#how`: Du entwirfst → Du entscheidest →
-Deine Masse → Deine Vorlage — an SVG-arc seam with open type stations (no card boxes), drawn via
-`stroke-dashoffset`/`pathLength=1` on scroll-in: horizontal through the icon
-row on desktop, a vertical arc bowing toward the cards in the left gutter on
-mobile; station dots sit ON the thread. It frames the user journey honestly, the user decides every step, AI
-never authors the design; `how.*` i18n keys, `[data-reveal]` entrance) → the mono
-handoff line → a magnetic circle CTA (the page's geometric conclusion).
+MACHINE** (`#machine`, `js/machine.js`): ONE section merges the former
+loop/AI/how beats around a running **engineering simulation of the planned
+autonomous line** (SVG `#mSvg`: bale intake → NIR scanner bridge with live
+analysis chip → diverter into remake/panel/fibre streams → glass remake cell
+that cuts the visitor's own studio design → outbound hanger rail). Honesty is
+drawn in: the unsolved sewing module is dashed, a SIMULATION stamp rides every
+zoom, the `[STATUS: VISION]` meta line stays. Four station cards (Getragen →
+Zurückgewonnen → Entworfen → Wiedergeboren, with the Alle/KI/Du/KI tags) zoom
+the drawing's camera (viewBox interpolation, desktop) or scroll it (mobile);
+below follow the AI-role contrast (line vs. circle, "Die KI entwirft nie") and
+the user's 4 steps as a compact protocol rail (`how.*` keys). A StateManager
+bridge makes the cell cut the visitor's garment type + colour with a
+deterministic file number once a design exists → then `#your-style` (centre
+beat) → the mono handoff line → a magnetic circle CTA (the page's geometric
+conclusion).
 The **UR-Create studio**
 (`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it —
 an orb/CTA click opens it through a **threshold portal** (`portalReveal`),
@@ -203,7 +209,8 @@ js/
   ur-create.js          # Wires UR-Create sections (hero/ownership/community/join) to the engine
   ambient-ticker.js     # Live cited textile-waste counter (kg/sec, side effect)
   facts-mass.js         # #facts „Die Masse": 3 Canvas-Partikel-Beats + Live-CO₂-Zähler (side effect)
-  faden.js              # „Der Faden": 6 scroll-gezeichnete Nähte verbinden die Akt-II-Sektionen (side effect)
+  faden.js              # „Der Faden": 4 scroll-gezeichnete Nähte verbinden die Akt-II-Sektionen (side effect)
+  machine.js            # #machine: Ingenieur-Simulation der autonomen Linie (side effect)
   community-sphere.js   # WebGL community globe (ES module — three.js + GSAP, lazy)
   design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
@@ -254,11 +261,9 @@ not two stills (project rule).
 | `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
 | `#facts` `.lp-stats`   | Cited fast-fashion evidence — „Die Masse": 3 full-height canvas-particle beats | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-mass.js` (`html.fxb-go`, `.is-live` je Beat) | count-up + live kg/CO₂ odometer + particle plume/mound/tracer (canvas, offscreen-paused) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
-| `#loop` `.lp-loop`     | Pinned circular-economy section              | `landing.js` `initLoop` / `setProgress` (`#loop-pin/-progress`) + `initLoopMotes` (`.lp-loop-canvas` orbiting motes) | GSAP ScrollTrigger pin + needle sweep + orbiting motes (canvas) | —           |
-| `#ai-done-right`       | AI's-role beat (sorts/makes, never designs)  | `landing.js` `initReveals` (`[data-lp-reveal]`)                  | entrance reveal                         | `aidr`      |
+| `#machine` `.lp-machine` | Act II machine: engineering simulation of the autonomous line + station cards + AI-role + user steps (merged former loop/aidr/how beats) | `js/machine.js` (side effect; SVG `#mSvg`, station cards `.lp-m-st`, StateManager bridge) + `landing.js` `initReveals` | boot rail-draw → item flow → NIR chip → cell cycle (CUT→SEW→FIN→LAB→HANG); camera viewBox zoom per station; reduced-motion = complete static frame. Verify: `scripts/verify-machine.mjs` | `machine`   |
 | `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | `style`     |
-| `#how` `.lp-how`       | 4-step "So funktioniert's" arc               | static markup (`how.*` i18n) + `animations.js` (`[data-reveal]`)  | SVG-arc stroke-draw on scroll-in (horiz. desktop / vert. mobile) + staggered open stations | `how`       |
-| `.fil-seam` ×6         | „Der Faden" — Nähte zwischen den Akt-II-Sektionen | `js/faden.js` (Clip-Reveal-Scrub, `html.fil-go`)                | scroll-gezeichnete Naht + wanderndes Glint (rAF, IO-gegatet)   | —           |
+| `.fil-seam` ×4         | „Der Faden" — Nähte zwischen den Akt-II-Sektionen | `js/faden.js` (Clip-Reveal-Scrub, `html.fil-go`)                | scroll-gezeichnete Naht + wanderndes Glint (rAF, IO-gegatet)   | —           |
 | CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet; click opens the studio through the threshold portal | —           |
 | `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash` + threshold portal `portalReveal`/`shouldPortal`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | portal reveal → weave draw-in → choreographed question swaps (see Design-Engine section) | `studio`    |
 | `#ownership`           | Ownership moment (save/share/publish, VTO)   | `ur-create.js`; VTO via `api/try-on.js`                          | appears once a design exists            | —           |
@@ -362,6 +367,7 @@ window.Foo = Foo;
 | `ambient-ticker.js`| (none — side effect)   | classic         |
 | `facts-mass.js`   | (none — side effect)    | classic         |
 | `faden.js`        | (none — side effect)    | classic         |
+| `machine.js`      | (none — side effect)    | classic         |
 | `community-sphere.js`| (none — side effect) | **ES module** (`type="module"`) |
 
 The **live garment preview** (inside the studio) is a **data-driven 2D
@@ -381,7 +387,7 @@ subscribe to its events). The bottom-of-body order is:
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → focus-trap → animations →
 design-engine/* (dna … flow) → spec-view → app → flair → ur-create → ambient-ticker →
-facts-mass → faden → [importmap] → gsap + ScrollTrigger (CDN) → landing →
+facts-mass → faden → machine → [importmap] → gsap + ScrollTrigger (CDN) → landing →
 community-sphere (module)
 ```
 
@@ -843,8 +849,8 @@ The tools are available — use them instead of delegating the lookup back:
   with `get_check_runs` / `get` / `get_diff`, etc.).
 - **Visual rendering:** the SessionStart hook installs headless Chromium.
   Fastest loop — **`npm run shoot`** boots its own static server and writes
-  desktop + mobile PNGs of every key section (`hero`, `how`, `facts`, `pivot`,
-  `aidr`, `style`, `studio`, `community`) to `screenshots/` (gitignored) in one
+  desktop + mobile PNGs of every key section (`hero`, `machine`, `facts`, `pivot`,
+  `style`, `studio`, `community`) to `screenshots/` (gitignored) in one
   command; it reveals the studio via the `#design` deep-link and CDN-routes
   GSAP/three.js so animations and the WebGL globe actually render. Scope it with
   `npm run shoot -- hero,studio`. For the studio journey itself use

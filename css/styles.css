@@ -4823,7 +4823,11 @@ html:not(.fx) .lp-loader { display: none; }
     border: 1px solid var(--border);
     pointer-events: none;
 }
-@media (max-width: 990px) { .lp-machine-swipe { display: block; } }
+@media (max-width: 990px) {
+    /* Unter dem Typenschild (viewBox y 26–72 ≈ 22–60 px bei 1000 px Breite),
+       nicht darüber — sonst verdeckt der Hinweis den SIMULATION-Schriftzug. */
+    .lp-machine-swipe { display: block; top: 68px; }
+}
 /* SIMULATION-Stempel: eingeblendet, sobald die Kamera in eine Stufe zoomt —
    die Vorlaunch-Ehrlichkeit reist mit jeder Bildschirmfüllung mit. */
 .lp-machine-stamp {
