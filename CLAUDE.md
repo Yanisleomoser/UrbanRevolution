@@ -169,7 +169,8 @@ wall holds floating creations.
 itself has no build step. MediaPipe, GSAP, three.js and Vercel analytics
 load from CDNs at runtime (three.js + GSAP via an `importmap`). Seven Vercel
 Edge Functions (`api/`) proxy the AI/storage calls.
-UI copy is **bilingual German/English** (`I18N`, default `de`,
+UI copy is **bilingual German/English** (`I18N`; language resolves at load as
+`?lang=` URL param (persisted) → saved choice → `navigator.language` → `de`;
 `toLocaleDateString` follows the active locale).
 
 ## Layout

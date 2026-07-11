@@ -53,6 +53,12 @@ const I18N = (() => {
       "own.shared": "Link kopiert — teile deine Kreation.",
       "own.published": "In der Community-Galerie veröffentlicht.",
       "own.publish_retry": "Nicht veröffentlicht — nochmal versuchen.",
+      "own.reserve_label": "[ SEI ZUERST DRAN ]",
+      "own.reserve_title": "Reserviere dir dieses Stück.",
+      "own.reserve_text": "Noch wird nichts gefertigt — das sagen wir ehrlich. Trag dich ein, und dein Entwurf wird mit deinem Platz verknüpft: Du erfährst es zuerst, wenn der Kreis sich zum ersten Mal schliesst.",
+      "own.reserve_btn": "Platz sichern",
+      "own.reserve_ok": "Du bist dabei — dein Entwurf ist mit deinem Platz verknüpft.",
+      "own.reserve_fine": "Mitgesendet wird nur dein kompakter Design-Code — kein Foto, keine Körpermasse.",
       "own.see_title": "Sieh es an dir.",
       "own.see_sub": "Wähle eine der Vorschau-Personen — oder lade dein eigenes Ganzkörperfoto hoch.",
       "own.stage_tag": "Dein Stück",
@@ -95,7 +101,7 @@ const I18N = (() => {
       "join.email_ph": "deine@email.ch",
       "join.cta": "Urban Revolution beitreten",
       "join.consent": "Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.",
-      "join.ok": "Willkommen in der Revolution. Wir melden uns.",
+      "join.ok": "Willkommen in der Revolution — du erfährst es zuerst, wenn es losgeht.",
       "join.err_email": "Bitte gib eine gültige E-Mail-Adresse ein.",
       "join.err_consent": "Bitte bestätige die Einwilligung.",
       "join.err": "Etwas ging schief. Bitte später erneut versuchen.",
@@ -682,6 +688,12 @@ const I18N = (() => {
       "own.shared": "Link copied — share your creation.",
       "own.published": "Published to the community gallery.",
       "own.publish_retry": "Not published — try again.",
+      "own.reserve_label": "[ BE FIRST ]",
+      "own.reserve_title": "Reserve this piece.",
+      "own.reserve_text": "Nothing is manufactured yet — we say that honestly. Leave your email and your design is tied to your spot: you'll be the first to know when the circle closes for the first time.",
+      "own.reserve_btn": "Reserve my spot",
+      "own.reserve_ok": "You're in — your design is saved to your spot.",
+      "own.reserve_fine": "Only your compact design code is sent — no photo, no body measurements.",
       "own.see_title": "See it on you.",
       "own.see_sub": "Pick one of the preview people — or upload your own full-body photo.",
       "own.stage_tag": "Your piece",
@@ -724,7 +736,7 @@ const I18N = (() => {
       "join.email_ph": "you@email.com",
       "join.cta": "Join Urban Revolution",
       "join.consent": "I'd like to receive updates (unsubscribe anytime). The privacy policy applies.",
-      "join.ok": "Welcome to the revolution. We'll be in touch.",
+      "join.ok": "Welcome to the revolution — you'll be the first to know when it begins.",
       "join.err_email": "Please enter a valid email address.",
       "join.err_consent": "Please confirm consent.",
       "join.err": "Something went wrong. Please try again later.",
@@ -1282,14 +1294,50 @@ const I18N = (() => {
 
   let current = loadLang();
 
+  // Sprachauflösung (Tier 1 der Englisch-Sichtbarkeit) — pure Funktion,
+  // unit-testbar. Reihenfolge:
+  //   1. ?lang=-URL-Parameter (explizit + teilbar; wird persistiert)
+  //   2. gespeicherte Wahl (localStorage)
+  //   3. Browser-Sprache (navigator.languages) — EN-Publikum landet auf EN
+  //   4. Default de
+  function resolveLang({ param, saved, navLangs } = {}) {
+    const norm = (v) => String(v || "").slice(0, 2).toLowerCase();
+    if (param && SUPPORTED.includes(norm(param))) return norm(param);
+    if (saved && SUPPORTED.includes(saved)) return saved;
+    for (const l of navLangs || []) {
+      if (SUPPORTED.includes(norm(l))) return norm(l);
+    }
+    return DEFAULT_LANG;
+  }
+
   function loadLang() {
+    let param = null;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && SUPPORTED.includes(saved)) return saved;
+      if (typeof location !== "undefined" && location.search) {
+        param = new URLSearchParams(location.search).get("lang");
+      }
+    } catch {
+      /* kein location / kaputter Query-String — egal */
+    }
+    let saved = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
     } catch {
       /* localStorage blocked — fall through */
     }
-    return DEFAULT_LANG;
+    const navLangs =
+      (typeof navigator !== "undefined" && (navigator.languages || [navigator.language])) || [];
+    const lang = resolveLang({ param, saved, navLangs });
+    // Eine explizite URL-Wahl überlebt die Navigation: persistieren wie die
+    // Toggle-Wahl (setLang) — nur wenn der Parameter sie wirklich bestimmt hat.
+    if (param && lang !== saved && SUPPORTED.includes(String(param).slice(0, 2).toLowerCase())) {
+      try {
+        localStorage.setItem(STORAGE_KEY, lang);
+      } catch {
+        /* ignore */
+      }
+    }
+    return lang;
   }
 
   function getLang() {
@@ -1394,6 +1442,19 @@ const I18N = (() => {
     } catch {
       /* ignore */
     }
+    // Ein expliziter Toggle schlägt den ?lang=-Parameter — ihn aus der URL
+    // nehmen, sonst gewinnt er beim nächsten Laden wieder gegen diese Wahl.
+    try {
+      if (typeof location !== "undefined" && location.search &&
+        new URLSearchParams(location.search).has("lang")) {
+        const q = new URLSearchParams(location.search);
+        q.delete("lang");
+        const qs = q.toString();
+        history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+      }
+    } catch {
+      /* kein history/location (Tests) — egal */
+    }
     apply();
     window.dispatchEvent(new CustomEvent("language:change", { detail: { lang } }));
   }
@@ -1413,6 +1474,7 @@ const I18N = (() => {
     SUPPORTED,
     getLang,
     setLang,
+    resolveLang,
     locale,
     t,
     material,

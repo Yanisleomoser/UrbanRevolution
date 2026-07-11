@@ -12,7 +12,10 @@
 const path = require("path");
 
 global.CustomEvent = class { constructor(type, init) { this.type = type; Object.assign(this, init); } };
-const store = {};
+// Boot deterministisch auf DE pinnen: seit der Tier-1-Sprachauflösung zählt
+// auch navigator.language, und Node's globaler navigator meldet "en-US" —
+// eine gespeicherte Wahl schlägt ihn (genau das prüft die erste Assertion).
+const store = { urev_lang: "de" };
 global.localStorage = {
   getItem: (k) => (k in store ? store[k] : null),
   setItem: (k, v) => { store[k] = String(v); },
@@ -36,7 +39,20 @@ function assert(cond, msg) {
 }
 
 console.log("\n— default language —");
-assert(I18N.getLang() === "de", "default language is German");
+assert(I18N.getLang() === "de", "saved choice (de) wins at boot — even over navigator en-US");
+
+console.log("\n— resolveLang: ?lang= > gespeichert > navigator > de —");
+{
+  const R = I18N.resolveLang;
+  assert(R({}) === "de", "no signals → de (brand default)");
+  assert(R({ navLangs: ["en-US", "de-DE"] }) === "en", "navigator en-US → en");
+  assert(R({ navLangs: ["fr-FR", "it-CH"] }) === "de", "unsupported navigator languages → de");
+  assert(R({ saved: "en", navLangs: ["de-DE"] }) === "en", "saved choice beats navigator");
+  assert(R({ param: "de", saved: "en" }) === "de", "?lang= beats the saved choice");
+  assert(R({ param: "EN" }) === "en", "?lang= is case-insensitive");
+  assert(R({ param: "en-GB" }) === "en", "?lang= regional tag normalises to its base language");
+  assert(R({ param: "xx", saved: "en" }) === "en", "invalid ?lang= falls through to saved");
+}
 
 console.log("\n— {placeholder} interpolation —");
 // 'engine.evolved' = "Version {v}" (de). Pick a couple of real keyed strings.

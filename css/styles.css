@@ -4128,10 +4128,57 @@ footer.footer {
 .oe-size.is-active { border-color: var(--accent-3, #7ee0cf); color: var(--accent-3, #7ee0cf); }
 .own-edit-hint { grid-column: 1 / -1; margin: 0; color: var(--text-muted); font-size: 0.8rem; }
 
+/* „Sei zuerst dran" — Capture am Höhepunkt (docs/WEBSITE-IMPROVEMENTS.md #02):
+   Karte mit dem gerenderten Flat neben E-Mail + Einwilligung. Formular-Teile
+   (.join-row/.join-consent/.join-status) sind die bestehenden Join-Stile. */
+.own-reserve {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 26px;
+    max-width: 760px;
+    margin: 34px auto 0;
+    padding: 24px 26px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: left;
+}
+.own-reserve-flat {
+    /* renderInto füllt eine absolute Stage (.de-garment-wrap, inset:0) —
+       dieser Container MUSS positioniert sein, sonst ankert die Stage am
+       nächsthöheren positionierten Vorfahren und legt sich über die Karte. */
+    position: relative;
+    flex: 0 0 132px;
+    align-self: stretch;
+    min-height: 150px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    /* Rein dekorativ (aria-hidden) — darf nie Klicks/Fokus abfangen. */
+    pointer-events: none;
+}
+.own-reserve-flat .de-garment-wrap { padding: 10px; }
+/* Miniatur: das „Stilvorschau"-Badge der Stage ist hier nur Rauschen. */
+.own-reserve-flat .de-preview-badge { display: none; }
+.own-reserve-flat svg { height: 90%; width: auto; max-width: 92%; filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
+.own-reserve-flat[hidden] { display: none; }
+.own-reserve-body { flex: 1 1 300px; min-width: 0; }
+.own-reserve-title { font-family: var(--font-display, 'Lora', serif); font-size: clamp(1.3rem, 3vw, 1.7rem); margin: 10px 0 8px; }
+.own-reserve-text { color: var(--text-muted); font-size: 0.92rem; margin: 0 0 16px; }
+.own-reserve .join-row { justify-content: flex-start; }
+.own-reserve .join-status { min-height: 0; }
+.own-reserve .join-status:empty { display: none; }
+.own-reserve-fine { margin: 10px 0 0; color: var(--text-muted); font-size: 0.75rem; }
+
 @media (max-width: 860px) {
     .own-show { grid-template-columns: 1fr; }
     .own-stage-col .vto-stage { min-height: 360px; }
     .own-edit-body { grid-template-columns: 1fr; }
+    .own-reserve { padding: 20px 18px; }
+    /* Mobil: die Kachel als breite Bühne ÜBER dem Text statt als verlorenes
+       Kästchen neben dem Umbruch. */
+    .own-reserve-flat { flex: 1 1 100%; align-self: auto; min-height: 0; height: 150px; }
 }
 
 /* 4 · Galerie */
@@ -4153,7 +4200,9 @@ footer.footer {
 .join-choice:hover { border-color: var(--accent); }
 .join-choice input { accent-color: var(--accent); }
 .join-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-.join-row input[type="email"] { flex: 1 1 240px; padding: 0.85rem 1.1rem; border-radius: 999px; border: 1px solid var(--border-field, #4a7196); background: var(--bg-elevated, #0f1e2e); color: var(--text); font: inherit; }
+/* min-width:0 — ohne das hält der Flex-Min-Content-Floor das Feld auf seiner
+   bevorzugten Breite und es läuft in schmalen Containern rechts über. */
+.join-row input[type="email"] { flex: 1 1 240px; min-width: 0; padding: 0.85rem 1.1rem; border-radius: 999px; border: 1px solid var(--border-field, #4a7196); background: var(--bg-elevated, #0f1e2e); color: var(--text); font: inherit; }
 .join-consent { margin-top: 14px; font-size: 0.8rem; color: var(--text-muted); }
 .join-status { margin-top: 12px; color: var(--accent-3, #7ee0cf); min-height: 1.2em; }
 

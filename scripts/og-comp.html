@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>OG-Comp — Urban Revolution</title>
+<!--
+  Social-Share-Comp (1200×630) für assets/og-image.png — gerendert von
+  scripts/render-og.mjs (headless Chromium, Element-Screenshot auf #card).
+
+  Sprache des Hero (Ehrlichkeits-Regeln, KI-Rolle):
+  - Eyebrow: GERETTETE FASER · DEIN ENTWURF · AUTONOM GEFERTIGT
+    (KI sortiert & fertigt — sie entwirft NIE; kein Preis, keine Lieferzeit)
+  - Headline: „Made for one." / Gradient-Italic „Not for all."
+  - Motiv: der Kupferfaden (Akt I, Abfall/warm) läuft nach rechts und wird
+    zum Ozean-Kreis (Akt II, Kreislauf) — die Wende der Landing-Dramaturgie.
+  Tokens wie in css/styles.css (:root) — Midnight-Navy, Ocean Depths v2,
+  Kupfer-Familie. Fonts selbst gehostet aus /assets/fonts/.
+-->
+<style>
+  @font-face {
+    font-family: "Fraunces";
+    src: url("/assets/fonts/fraunces-400-700-normal-latin.woff2") format("woff2");
+    font-weight: 400 700;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: "Fraunces";
+    src: url("/assets/fonts/fraunces-400-700-italic-latin.woff2") format("woff2");
+    font-weight: 400 700;
+    font-style: italic;
+  }
+  @font-face {
+    font-family: "JetBrains Mono";
+    src: url("/assets/fonts/jetbrainsmono-500-normal-latin.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: "Poppins";
+    src: url("/assets/fonts/poppins-400-normal-latin.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  :root {
+    --bg: #0A1622;
+    --text: #F2F7F9;
+    --text-dim: #93AEBE;
+    --accent: #2F86B3;
+    --accent-2: #2FAE9E;
+    --accent-3: #7EE0CF;
+    --warm-thread: #C9906F;
+    --warm-bright: #ECC39F;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #333; display: grid; place-items: center; min-height: 100vh; }
+
+  #card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background:
+      radial-gradient(1100px 620px at 88% 30%, rgba(47, 134, 179, 0.14), transparent 62%),
+      radial-gradient(900px 700px at 8% 108%, rgba(201, 144, 111, 0.10), transparent 58%),
+      var(--bg);
+    color: var(--text);
+  }
+
+  .thread { position: absolute; inset: 0; }
+
+  .brand {
+    position: absolute;
+    top: 54px;
+    left: 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    color: var(--text-dim);
+  }
+
+  .copy { position: absolute; left: 64px; top: 200px; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: var(--accent-3);
+    white-space: nowrap;
+  }
+  .eyebrow .warm { color: var(--warm-bright); }
+  .eyebrow .dot { color: var(--text-dim); padding: 0 6px; }
+  h1 {
+    margin-top: 30px;
+    font-family: "Fraunces", serif;
+    font-weight: 620;
+    font-size: 104px;
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+  }
+  h1 .grad {
+    font-style: italic;
+    font-weight: 560;
+    background: linear-gradient(92deg, var(--accent) 0%, var(--accent-2) 48%, var(--accent-3) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* Italic-Ausläufer nicht am Clip-Rand beschneiden */
+    padding-right: 0.08em;
+  }
+
+  .domain {
+    position: absolute;
+    right: 64px;
+    bottom: 54px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+<div id="card">
+  <!-- Der Faden: Kupfer-Linie (Akt I) läuft ein und wird rechts zum
+       Ozean-Kreis (Akt II) — ein Pfad, ein Verlauf, die Wende. -->
+  <svg class="thread" viewBox="0 0 1200 630" fill="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="turn" gradientUnits="userSpaceOnUse" x1="0" y1="560" x2="1120" y2="240">
+        <stop offset="0" stop-color="#C9906F" stop-opacity="0.85"/>
+        <stop offset="0.52" stop-color="#C9906F" stop-opacity="0.9"/>
+        <stop offset="0.7" stop-color="#2F86B3"/>
+        <stop offset="0.86" stop-color="#2FAE9E"/>
+        <stop offset="1" stop-color="#7EE0CF"/>
+      </linearGradient>
+      <radialGradient id="ringGlow" gradientUnits="userSpaceOnUse" cx="960" cy="330" r="230">
+        <stop offset="0.55" stop-color="#2FAE9E" stop-opacity="0"/>
+        <stop offset="0.78" stop-color="#2FAE9E" stop-opacity="0.10"/>
+        <stop offset="1" stop-color="#2FAE9E" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- weicher Glow hinter dem Kreis (Zentrum = Ring-Zentrum 960/330) -->
+    <circle cx="960" cy="330" r="215" fill="url(#ringGlow)"/>
+    <!-- Faden: von links unten (Kupfer) mit horizontalem Tangens in den
+         untersten Punkt des Rings (960/480), dann 330° gegen den Uhrzeiger
+         (large-arc=1, sweep=0) — der Kreis bleibt 30° offen: er schliesst
+         sich erst noch. Ring: Zentrum 960/330, r=150. -->
+    <path d="M -24 560
+             C 240 596, 430 588, 610 540
+             C 740 505, 850 484, 960 480
+             A 150 150 0 1 0 885 460"
+          stroke="url(#turn)" stroke-width="5" stroke-linecap="round"/>
+    <!-- leuchtendes Fadenende -->
+    <circle cx="885" cy="460" r="7" fill="#7EE0CF"/>
+    <circle cx="885" cy="460" r="16" fill="#7EE0CF" opacity="0.22"/>
+  </svg>
+
+  <div class="brand">
+    <!-- Nadel-Kreis-Marke (vereinfachte Logo-Geste der Site) -->
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <circle cx="20" cy="20" r="15" stroke="#7EE0CF" stroke-width="2.4" stroke-dasharray="66 28" stroke-linecap="round" transform="rotate(-64 20 20)"/>
+      <line x1="20" y1="20" x2="31" y2="7" stroke="#F2F7F9" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+    URBAN REVOLUTION
+  </div>
+
+  <div class="copy">
+    <p class="eyebrow"><span class="warm">GERETTETE FASER</span><span class="dot">&nbsp;·&nbsp;</span>DEIN ENTWURF<span class="dot">&nbsp;·&nbsp;</span>AUTONOM GEFERTIGT</p>
+    <h1>Made for one.<br><span class="grad">Not for all.</span></h1>
+  </div>
+
+  <p class="domain">revolveurban.com</p>
+</div>
+</body>
+</html>
