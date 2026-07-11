@@ -13,10 +13,17 @@
  * Graceful: ohne Upstash-Env antwortet GET mit { ok, items: null } (der
  * Client zeigt die kuratierte Fallback-Galerie) und POST mit dem neutralen
  * coded error — wie bei den Replicate-Funktionen.
+ *
+ * POST is per-IP rate-limited (same _lib/rate-limit.js as the AI proxies):
+ * the ring buffer only holds MAX_ITEMS entries, so an unthrottled POST loop
+ * could flood-evict every real published creation from the public sphere.
  */
+import { checkRateLimit } from "./_lib/rate-limit.js";
+
 export const config = { runtime: "edge" };
 
 const KEY = "urev:gallery";
+const RATE_LIMIT = { prefix: "gallery-post", limit: 20, windowSeconds: 600 };
 const MAX_ITEMS = 60;   // Ringpuffer in Redis
 const PAGE = 24;        // pro GET ausgeliefert
 const MAX_DNA = 4000;   // Share-Strings sind ~200–600 Zeichen; Schutzlimit
@@ -89,6 +96,8 @@ export default async function handler(req) {
 
     if (req.method === "POST") {
       if (!configured) return jsonError(503, "Gallery unavailable", "service_unavailable");
+      const { limited } = await checkRateLimit(req, { url, token, ...RATE_LIMIT });
+      if (limited) return jsonError(429, "Too many requests", "rate_limited");
       let body;
       try { body = await req.json(); } catch (_e) { return jsonError(400, "Invalid JSON", "bad_request"); }
       // `body` can be `null`/`false`/`0` — all valid JSON — so fall back to {}

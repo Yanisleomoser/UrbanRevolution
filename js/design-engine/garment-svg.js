@@ -1160,7 +1160,20 @@ const GarmentSVG = (() => {
     const a = {};
     if (m.kind === "pants") {
       a.waistband = cl(CX, g.topY + 8);
-      a.pockets = cl(CX - (g.legTop - 10), g.topY + 30);
+      // The pocket marker sits where the CHOSEN pocket actually draws (same
+      // honesty rule as the tops branch below): cargo patch pockets sit at
+      // mid-thigh, everything else (side slash, or none picked yet) sits at
+      // the hip. Mirrors paintPants()'s own cargo-patch placement formula so
+      // the hotspot always lands on the real drawn shape.
+      if (m.p && m.p.pockets === "cargo") {
+        const py = lerp(g.crotchY, g.hemY, 0.28);
+        const t = (py - g.hipY) / (g.hemY - g.hipY);
+        const outerOff = lerp(g.hipHalf, g.ankleHalf, clamp(t, 0, 1));
+        const legMid = clamp(outerOff * 0.52, 13, 30);
+        a.pockets = cl(CX - legMid, py);
+      } else {
+        a.pockets = cl(CX - (g.legTop - 10), g.topY + 30);
+      }
       a.hem = cl(CX - (g.ankleHalf + g.thighHalf * 0.05) / 2, g.hemY - 10);
       return a;
     }

@@ -52,6 +52,23 @@ function resolveEffects(node, choice) {
     return { eff, conf: 0.8 };
   }
   if (node.modality === "colorGradient") return { eff: choice, conf: 1 };
+  if (node.modality === "ranking") {
+    // Mirrors flow.js: choice is a ranked array of option ids; decayed weights
+    // plus the top pick's own set() + the bind path.
+    const decay = [1, 0.6, 0.35, 0.2, 0.1];
+    const payload = Array.isArray(choice) ? choice : [];
+    const weight = {};
+    payload.forEach((id, idx) => {
+      const opt = (node.options || []).find((o) => o.id === id);
+      const w = opt && opt.effects && opt.effects.weight;
+      if (w) { const f = decay[idx] != null ? decay[idx] : 0.05; Object.entries(w).forEach(([k, v]) => { weight[k] = (weight[k] || 0) + v * f; }); }
+    });
+    const eff = { weight, set: {} };
+    const topOpt = (node.options || []).find((o) => o.id === payload[0]);
+    if (topOpt && topOpt.effects && topOpt.effects.set) Object.assign(eff.set, topOpt.effects.set);
+    if (node.bind && payload.length) eff.set[node.bind] = payload[0];
+    return { eff, conf: 1 };
+  }
   if (node.modality === "regions") {
     // Mirrors flow.js: { regionId: choiceId } picks merge; a non-object payload
     // (a persona's _default string) means "accept as is" — empty effects.
@@ -158,8 +175,11 @@ assert(B.order.includes("jacket_details") && B.order.includes("jacket_signature"
 assert(DNA.get(B.dna, "construction.pockets") === "cargo" && DNA.get(B.dna, "construction.cuffs") === "ribbed"
   && DNA.get(B.dna, "construction.hem") === "drawcord" && DNA.get(B.dna, "construction.closure") === "zip",
   "one board answer lands ALL touched regions in the DNA (Eingabe == Output)");
-assert(B.order.length <= 14,
-  `the board compresses phase E: even the answer-everything bold path fits in 14 screens, was 19 (${B.order.length})`);
+// 15, not 14: the fixed mood_rank bug (see below) restores one real, previously
+// unreachable question (a ranking node) to this path — the ceiling moves by
+// exactly that +1, not because the board stopped compressing phase E.
+assert(B.order.length <= 15,
+  `the board compresses phase E: even the answer-everything bold path fits in 15 screens, was 19 (${B.order.length})`);
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
 assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
 
@@ -184,6 +204,23 @@ const mCat = moodP.order.indexOf("category_select");
   const idx = moodP.order.indexOf(id);
   assert(idx === -1 || idx < mCat, `${id} never resurfaces after the category (idx ${idx} vs cat ${mCat})`);
 });
+
+console.log("\n— Bug: mood_rank (a real `ranking` question) was permanently unreachable —");
+// isPureSoftMood()'s /^(mood_|inspo_)/ id check used to fire for ANY node with
+// that id prefix, not just the intended thisOrThat mood pairs — so the real
+// `ranking` question mood_rank (bind: intent.aesthetic) was retracted the
+// instant category_select resolved, exactly like the thisOrThat pairs above,
+// even though it has its own concrete bind/gate and was never meant to be
+// treated as content-free. It must now actually surface and resolve.
+const rankP = run("mood-rank-reachable", {
+  mood_calm_bold: "bold", mood_soft_sharp: "sharp",
+  category_select: "jacket", jacket_subarch: "puffer",
+  mood_rank: ["tech", "street", "minimal", "couture"],
+  _default: () => "regular",
+});
+assert(rankP.order.includes("mood_rank"), "mood_rank is offered somewhere in the journey");
+assert(DNA.confidence(rankP.dna, "intent.aesthetic") > 0, "answering mood_rank sets confidence on intent.aesthetic");
+assert(DNA.get(rankP.dna, "intent.aesthetic") === "tech", "the top-ranked option writes its bind path");
 
 console.log("\n— Inference layer (Phase F) —");
 const vec = Inference.styleVector(B.dna);

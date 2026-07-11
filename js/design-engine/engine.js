@@ -99,9 +99,16 @@ const DesignEngine = (() => {
   // a concrete attr on one branch (pattern.type:"none"), so targetPaths() is
   // non-empty and they'd otherwise escape retraction and resurface between
   // concrete detail questions — the exact defect this guard exists to prevent.
+  // Scoped to modality "thisOrThat": a mood_/inspo_-prefixed node of a DIFFERENT
+  // modality (e.g. mood_rank, a real `ranking` question with its own bind and
+  // confidence gate) is not one of these soft pairs and must not be retracted
+  // by the same id-prefix match — that previously made mood_rank unreachable
+  // in every journey (it always lost the priority race to category_select
+  // before this guard could ever legitimately let it through).
   function isPureSoftMood(node) {
     return node.phase === "A" &&
-      (targetPaths(node).length === 0 || /^(mood_|inspo_)/.test(node.id));
+      (targetPaths(node).length === 0 ||
+        (node.modality === "thisOrThat" && /^(mood_|inspo_)/.test(node.id)));
   }
 
   function nextNode(nodes, dna, answered, minGain) {
