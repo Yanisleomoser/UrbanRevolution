@@ -124,6 +124,31 @@ console.log("\n— buildUrl + read roundtrip through a real hash string —");
   delete global.location;
 }
 
+console.log("\n— buildUrl carries the sharer's language (?lang=) —");
+{
+  const dna = { category: "dress" };
+  global.location = { origin: "https://revolveurban.com", pathname: "/", search: "", hash: "" };
+  // EN sharer → der Empfänger landet auf EN (?lang=en VOR dem #dna-Fragment).
+  global.window = { I18N: { getLang: () => "en" } };
+  assert(
+    DesignShare.buildUrl(dna).startsWith("https://revolveurban.com/?lang=en#" + DesignShare.PARAM + "="),
+    "EN sharer → ?lang=en before the #dna fragment",
+  );
+  // DE (Default) → saubere URL ohne Query.
+  global.window.I18N.getLang = () => "de";
+  assert(
+    DesignShare.buildUrl(dna).startsWith("https://revolveurban.com/#" + DesignShare.PARAM + "="),
+    "DE (default) sharer → clean URL without ?lang",
+  );
+  // Ohne I18N (z. B. Standalone-Kontext) → wie bisher.
+  delete global.window;
+  assert(
+    DesignShare.buildUrl(dna).startsWith("https://revolveurban.com/#" + DesignShare.PARAM + "="),
+    "no I18N → clean URL, no throw",
+  );
+  delete global.location;
+}
+
 console.log("\n— PARAM is the documented key —");
 assert(DesignShare.PARAM === "dna", "PARAM === 'dna'");
 

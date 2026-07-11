@@ -66,7 +66,14 @@ const DesignShare = (() => {
 
   function buildUrl(dna) {
     const base = (typeof location !== "undefined") ? location.origin + location.pathname : "";
-    return base + "#" + PARAM + "=" + encode(dna);
+    // Die Sprache des Teilenden reist mit (nur nicht-Default, hält URLs sauber):
+    // wer einen EN-Link teilt, dessen Empfänger landet auf EN — i18n.js liest
+    // ?lang= vor dem ersten Paint.
+    const lang = (typeof window !== "undefined" && window.I18N && window.I18N.getLang)
+      ? window.I18N.getLang()
+      : null;
+    const q = lang && lang !== "de" ? "?lang=" + lang : "";
+    return base + q + "#" + PARAM + "=" + encode(dna);
   }
 
   function read() {

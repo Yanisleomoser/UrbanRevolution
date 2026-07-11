@@ -1294,14 +1294,50 @@ const I18N = (() => {
 
   let current = loadLang();
 
+  // Sprachauflösung (Tier 1 der Englisch-Sichtbarkeit) — pure Funktion,
+  // unit-testbar. Reihenfolge:
+  //   1. ?lang=-URL-Parameter (explizit + teilbar; wird persistiert)
+  //   2. gespeicherte Wahl (localStorage)
+  //   3. Browser-Sprache (navigator.languages) — EN-Publikum landet auf EN
+  //   4. Default de
+  function resolveLang({ param, saved, navLangs } = {}) {
+    const norm = (v) => String(v || "").slice(0, 2).toLowerCase();
+    if (param && SUPPORTED.includes(norm(param))) return norm(param);
+    if (saved && SUPPORTED.includes(saved)) return saved;
+    for (const l of navLangs || []) {
+      if (SUPPORTED.includes(norm(l))) return norm(l);
+    }
+    return DEFAULT_LANG;
+  }
+
   function loadLang() {
+    let param = null;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && SUPPORTED.includes(saved)) return saved;
+      if (typeof location !== "undefined" && location.search) {
+        param = new URLSearchParams(location.search).get("lang");
+      }
+    } catch {
+      /* kein location / kaputter Query-String — egal */
+    }
+    let saved = null;
+    try {
+      saved = localStorage.getItem(STORAGE_KEY);
     } catch {
       /* localStorage blocked — fall through */
     }
-    return DEFAULT_LANG;
+    const navLangs =
+      (typeof navigator !== "undefined" && (navigator.languages || [navigator.language])) || [];
+    const lang = resolveLang({ param, saved, navLangs });
+    // Eine explizite URL-Wahl überlebt die Navigation: persistieren wie die
+    // Toggle-Wahl (setLang) — nur wenn der Parameter sie wirklich bestimmt hat.
+    if (param && lang !== saved && SUPPORTED.includes(String(param).slice(0, 2).toLowerCase())) {
+      try {
+        localStorage.setItem(STORAGE_KEY, lang);
+      } catch {
+        /* ignore */
+      }
+    }
+    return lang;
   }
 
   function getLang() {
@@ -1406,6 +1442,19 @@ const I18N = (() => {
     } catch {
       /* ignore */
     }
+    // Ein expliziter Toggle schlägt den ?lang=-Parameter — ihn aus der URL
+    // nehmen, sonst gewinnt er beim nächsten Laden wieder gegen diese Wahl.
+    try {
+      if (typeof location !== "undefined" && location.search &&
+        new URLSearchParams(location.search).has("lang")) {
+        const q = new URLSearchParams(location.search);
+        q.delete("lang");
+        const qs = q.toString();
+        history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
+      }
+    } catch {
+      /* kein history/location (Tests) — egal */
+    }
     apply();
     window.dispatchEvent(new CustomEvent("language:change", { detail: { lang } }));
   }
@@ -1425,6 +1474,7 @@ const I18N = (() => {
     SUPPORTED,
     getLang,
     setLang,
+    resolveLang,
     locale,
     t,
     material,
