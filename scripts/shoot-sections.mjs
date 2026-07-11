@@ -30,7 +30,6 @@ const SECTIONS = [
   { name: "machine", hash: "#machine", target: "machine" },
   { name: "facts", hash: "#facts", target: "facts" },
   { name: "pivot", hash: "#pivot", target: "pivot" },
-  { name: "style", hash: "#your-style", target: "your-style" },
   { name: "studio", hash: "#design", target: "design", reveal: true },
   { name: "community", hash: "#community", target: "community" },
 ];

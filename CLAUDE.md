@@ -69,7 +69,7 @@ Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Ve
 - Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2F86B3` → Teal `#2FAE9E` → Aqua `#7EE0CF` (`--gradient`, „Ocean Depths v2 / Reclaimed Light" — die helleren Stops der Instagram-Slides, Drive → Slide Design System).
 - Fonts (drei Register): Fraunces (Display-Serif/Headlines, variabel mit optischer Grösse, Lora als Fallback) + Poppins (Body) + JetBrains Mono (Eyebrows/Labels/Einheiten/Marquee — die „Maschinen"-Stimme neben dem „Handwerks"-Serif). Selbst gehostet in `/assets/fonts/` (DSGVO, kein Google-CDN); neue Faces via `scripts/fetch-fonts-extra.mjs`. KEINE weiteren Fonts (kein Inter, kein Playfair).
 - **Kupfer-Dramaturgie (Slides → Site):** Akt I (Preloader → Hero-Weave → Manifest → #facts Beat 1+2) trägt die warme Kupfer-Familie — `--warm-thread` #C9906F (Akt-I-Faden, fil-seam[1], #pivot-line), `--warm-deep` #8A5F4C, `--warm-bright` #ECC39F, `--gradient-warm` (Protokoll-Zahlen). Das Chaos des Abfalls ist warm/menschlich; Teal/Aqua wird ERST nach der Wende ausgegeben (#facts Beat 3 Bergungs-Faden / #pivot-Arc). Canvas-rgb-Basen: Kupfer 201,144,111 · Kupfer-tief 138,95,76 · Aqua 126,224,207.
-- Akzent-Wärme in Akt II: `--accent-warm` (#D99B78, Text-tauglich 7.7:1) bleibt der EINE warme Ton nach der Wende, bewusst nur im Identitäts-Beat (`#your-style`) — dieselbe Wärme, die in Akt I Abfall war, kehrt dort als Identität zurück. Sonst bleibt Akt II „Ocean Depths".
+- Akzent-Wärme in Akt II: keine. Der Identitäts-Beat (`#your-style`), der als einziger `--accent-warm` trug, wurde entfernt — Akt II bleibt vollständig „Ocean Depths". Das Token `--accent-warm` (#D99B78, Text-tauglich 7.7:1) bleibt als reservierte Stufe der Kupfer-Familie in `:root` definiert, ist aber derzeit ungenutzt.
 - Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum; Übergänge ≤ 250 ms; kein Layout-Sprung.
 
 ## Harte Regeln (immer)
@@ -150,9 +150,11 @@ the drawing's camera (viewBox interpolation, desktop) or scroll it (mobile);
 below follow the AI-role contrast (line vs. circle, "Die KI entwirft nie") and
 the user's 4 steps as a compact protocol rail (`how.*` keys). A StateManager
 bridge makes the cell cut the visitor's garment type + colour with a
-deterministic file number once a design exists → then `#your-style` (centre
-beat) → the mono handoff line → a magnetic circle CTA (the page's geometric
-conclusion).
+deterministic file number once a design exists → the mono handoff line → a
+magnetic circle CTA (the page's geometric conclusion). (The former
+`#your-style` identity beat between machine and finale was removed; its
+"the design stays yours" message lives on inside `#machine`'s AI-role
+contrast and the four user steps.)
 The **UR-Create studio**
 (`#studio`) stays `hidden` until a CTA/anchor or a share/deep-link reveals it —
 an orb/CTA click opens it through a **threshold portal** (`portalReveal`),
@@ -262,8 +264,7 @@ not two stills (project rule).
 | `#facts` `.lp-stats`   | Cited fast-fashion evidence — „Die Masse": 3 full-height canvas-particle beats | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-mass.js` (`html.fxb-go`, `.is-live` je Beat) | count-up + live kg/CO₂ odometer + particle plume/mound/tracer (canvas, offscreen-paused) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
 | `#machine` `.lp-machine` | Act II machine: engineering simulation of the autonomous line + station cards + AI-role + user steps (merged former loop/aidr/how beats) | `js/machine.js` (side effect; SVG `#mSvg`, station cards `.lp-m-st`, StateManager bridge) + `landing.js` `initReveals` | boot rail-draw → item flow → NIR chip → cell cycle (CUT→SEW→FIN→LAB→HANG); camera viewBox zoom per station; reduced-motion = complete static frame. Verify: `scripts/verify-machine.mjs` | `machine`   |
-| `#your-style`          | Identity beat (the one `--accent-warm` use)  | `landing.js` `initReveals`                                       | entrance reveal                         | `style`     |
-| `.fil-seam` ×4         | „Der Faden" — Nähte zwischen den Akt-II-Sektionen | `js/faden.js` (Clip-Reveal-Scrub, `html.fil-go`)                | scroll-gezeichnete Naht + wanderndes Glint (rAF, IO-gegatet)   | —           |
+| `.fil-seam` ×3         | „Der Faden" — Nähte zwischen den Akt-II-Sektionen | `js/faden.js` (Clip-Reveal-Scrub, `html.fil-go`)                | scroll-gezeichnete Naht + wanderndes Glint (rAF, IO-gegatet)   | —           |
 | CTA orb                | Magnetic circle CTA → reveals studio         | `landing.js` `initOrb` (`#cta-orb`)                              | pointer-magnet; click opens the studio through the threshold portal | —           |
 | `#studio` → `#design`  | UR-Create studio (hidden until revealed)     | reveal: `landing.js` `revealStudio`/`shouldRevealForHash` + threshold portal `portalReveal`/`shouldPortal`; journey: `design-engine/flow.js` (`#engine-host`) + `ur-create.js`; live 2D flat: `design-engine/garment-svg.js` + `render-preview.js` | portal reveal → weave draw-in → choreographed question swaps (see Design-Engine section) | `studio`    |
 | `#ownership`           | Ownership moment (save/share/publish, VTO)   | `ur-create.js`; VTO via `api/try-on.js`                          | appears once a design exists            | —           |
@@ -850,7 +851,7 @@ The tools are available — use them instead of delegating the lookup back:
 - **Visual rendering:** the SessionStart hook installs headless Chromium.
   Fastest loop — **`npm run shoot`** boots its own static server and writes
   desktop + mobile PNGs of every key section (`hero`, `machine`, `facts`, `pivot`,
-  `style`, `studio`, `community`) to `screenshots/` (gitignored) in one
+  `studio`, `community`) to `screenshots/` (gitignored) in one
   command; it reveals the studio via the `#design` deep-link and CDN-routes
   GSAP/three.js so animations and the WebGL globe actually render. Scope it with
   `npm run shoot -- hero,studio`. For the studio journey itself use

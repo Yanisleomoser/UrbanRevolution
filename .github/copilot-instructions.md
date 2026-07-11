@@ -39,7 +39,7 @@ Deploy: Vercel. Sprachen: DE + EN. Live: `revolveurban.com`.
   hartkodieren.
 - **Design-System:** bestehende `:root`-Tokens bevorzugen. Hintergrund Midnight-Navy
   `#0A1622`, Akzent-Verlauf `--gradient` (Ozean-Blau → Teal → Aqua); `--accent-warm`
-  (#E8A06A) bewusst nur im Identitäts-Beat (`#your-style`). Fonts: Fraunces (Display,
+  ist reserviert/ungenutzt (der Identitäts-Beat wurde entfernt). Fonts: Fraunces (Display,
   optische Grösse; Lora als Fallback) + Poppins (Body) + JetBrains Mono
   (Eyebrows/Labels/Einheiten) — selbst gehostet, keine anderen.
 - **Validate at the boundary:** User-/AI-Input über `CONFIG.validate*` führen.
@@ -90,7 +90,7 @@ Beim Review eines PRs prüfen:
 1. Alle vier CI-Checks (`validate` enthält `npm test`) lokal grün?
 2. Neue sichtbare Strings in **DE und EN** in `i18n.js`?
 3. Keine rohen `vh` (stattdessen `svh`/`dvh`/`--svh`)? Mobile (≤ 480 px) ok?
-4. Tokens aus `:root` (`--accent-warm` nur im Identitäts-Beat)? Fonts = Fraunces/Poppins/JetBrains Mono?
+4. Tokens aus `:root` (`--accent-warm` bleibt ungenutzt/reserviert)? Fonts = Fraunces/Poppins/JetBrains Mono?
 5. Keine hartkodierten Werte, die in `config.js`/JSON gehören?
 6. Keine Secrets im Diff? Keine Console-Fehler?
 7. Barrierefreiheit (Fokus, ARIA, `prefers-reduced-motion`) gewahrt?
