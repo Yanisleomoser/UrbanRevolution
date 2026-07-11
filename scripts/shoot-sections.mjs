@@ -27,10 +27,9 @@ const OUT = "screenshots";
 // scroll into frame before the shot (defaults to the hash's id).
 const SECTIONS = [
   { name: "hero", hash: "", target: null },
-  { name: "how", hash: "#how", target: "how" },
+  { name: "machine", hash: "#machine", target: "machine" },
   { name: "facts", hash: "#facts", target: "facts" },
   { name: "pivot", hash: "#pivot", target: "pivot" },
-  { name: "aidr", hash: "#ai-done-right", target: "ai-done-right" },
   { name: "style", hash: "#your-style", target: "your-style" },
   { name: "studio", hash: "#design", target: "design", reveal: true },
   { name: "community", hash: "#community", target: "community" },

@@ -55,9 +55,9 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
   });
   console.log("reduced-motion: Loader sichtbar?", loaderVisible, "| pageerrors:", errors.length);
   await page.screenshot({ path: "screenshots/home-reduced-hero.png" });
-  await page.locator("#loop").scrollIntoViewIfNeeded();
+  await page.locator("#machine").scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: "screenshots/home-reduced-loop.png" });
+  await page.screenshot({ path: "screenshots/home-reduced-machine.png" });
   await ctx.close();
 }
 
@@ -73,9 +73,9 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
   const fx = await page.evaluate(() => document.documentElement.classList.contains("fx"));
   console.log("no-gsap: fx-Klasse?", fx, "| pageerrors:", errors.join("; ") || "keine");
   await page.screenshot({ path: "screenshots/home-nogsap-hero.png" });
-  await page.locator("#loop").scrollIntoViewIfNeeded();
+  await page.locator("#machine").scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: "screenshots/home-nogsap-loop.png" });
+  await page.screenshot({ path: "screenshots/home-nogsap-machine.png" });
   await page.close();
 }
 
