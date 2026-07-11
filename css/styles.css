@@ -4804,8 +4804,18 @@ html:not(.fx) .lp-loader { display: none; }
 .lp-machine-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .lp-machine-scroll:focus-visible { outline: 2px solid var(--accent-3); outline-offset: -2px; }
 .lp-machine-svg { display: block; min-width: 1000px; width: 100%; height: auto; }
-/* Die Zeichnung spricht Mono — die Maschinen-Stimme der Marke */
-.lp-machine-svg text { font-family: var(--font-mono); }
+/* Die Zeichnung spricht Mono — die Maschinen-Stimme der Marke. Der Halo
+   (paint-order: stroke, Grundfarbe) stanzt Raster-, Bahn- und Perspektiv-
+   linien hinter jeder Beschriftung aus — wie freigestellte Beschriftung
+   in einer echten Ingenieur-Zeichnung; keine Glyphe kollidiert mit Linien. */
+.lp-machine-svg text {
+    font-family: var(--font-mono);
+    paint-order: stroke;
+    stroke: #0a1622;
+    stroke-width: 3;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
 .lp-machine-swipe {
     display: none;
     position: absolute;
