@@ -230,6 +230,20 @@
         const en = window.I18N && window.I18N.getLang && window.I18N.getLang() === "en";
         nameEl.textContent = en ? `“${design.name}”` : `„${design.name}“`;
       }
+      // Reservieren-Karte: das Flat des aktuellen Entwurfs als Miniatur
+      // (dieselbe DNA→SVG-Maschine wie der Hero-Showcase). Ohne DNA — z. B.
+      // ein klassischer Prompt-Entwurf — bleibt die Karte ohne Bild; das
+      // Formular funktioniert trotzdem.
+      const reserveFlat = $("#reserve-flat");
+      if (reserveFlat && window.DesignPreview && window.DesignShare) {
+        const dna = currentDna();
+        if (dna) {
+          try {
+            window.DesignPreview.renderInto(reserveFlat, dna, {});
+            reserveFlat.hidden = false;
+          } catch (_e) { reserveFlat.hidden = true; }
+        }
+      }
       if (!revealed) {
         revealed = true;
         if (window.I18N && window.I18N.apply) window.I18N.apply(sec);
@@ -328,21 +342,19 @@
     if (makeReal) makeReal.addEventListener("click", () => { openMakeReal("#measure"); location.hash = "#measure"; });
   }
 
-  // ── 5 · Join (Waitlist) ────────────────────────────────────────────────────
-  function joinForm() {
-    const form = $("#join-form");
+  // ── 5 · Capture-Formulare: Join (unten) + Reservieren (Ownership-Moment) ──
+  // Beide E-Mail-Formulare teilen Validierung, A11y-Verdrahtung und den
+  // Formspree-Submit; nur Erfolgstext und Zusatzfelder unterscheiden sich.
+  function wireCaptureForm({ form, emailEl, consentEl, status, statusId, okKey, buildPayload }) {
     if (!form) return;
-    const status = $("#join-status");
-    const emailEl = $("#join-email");
-    const consentEl = $("#join-consent");
     const setStatus = (key) => { if (status) status.textContent = t(key); };
     // A11y: tie the inline error to the field that failed so a screen reader,
-    // on re-focusing it, hears that it's invalid (the live #join-status carries
-    // the human message). Cleared on every fresh submit and on success.
+    // on re-focusing it, hears that it's invalid (the live status element
+    // carries the human message). Cleared on every fresh submit and on success.
     const markInvalid = (el) => {
       if (!el) return;
       el.setAttribute("aria-invalid", "true");
-      el.setAttribute("aria-describedby", "join-status");
+      el.setAttribute("aria-describedby", statusId);
       el.focus();
     };
     const clearInvalid = () => {
@@ -365,22 +377,15 @@
         setStatus("join.err");
         return;
       }
-      // Die gewählten Teilnahme-Optionen mitsenden (für den Kontext im Postfach).
-      const interests = $$('input[name="part"]:checked', form).map((i) => i.value).join(", ");
       if (submitBtn) submitBtn.disabled = true;
       try {
         const res = await fetch(FORMSPREE_ENDPOINT, {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({
-            email,
-            consent: true,
-            interests,
-            _subject: "Neue Urban-Revolution-Anmeldung",
-          }),
+          body: JSON.stringify({ email, consent: true, ...buildPayload() }),
         });
         if (res.ok) {
-          setStatus("join.ok");
+          setStatus(okKey);
           form.reset();
           clearInvalid();
         } else {
@@ -391,6 +396,49 @@
       } finally {
         if (submitBtn) submitBtn.disabled = false;
       }
+    });
+  }
+
+  function joinForm() {
+    const form = $("#join-form");
+    if (!form) return;
+    wireCaptureForm({
+      form,
+      emailEl: $("#join-email"),
+      consentEl: $("#join-consent"),
+      status: $("#join-status"),
+      statusId: "join-status",
+      okKey: "join.ok",
+      // Die gewählten Teilnahme-Optionen mitsenden (für den Kontext im Postfach).
+      buildPayload: () => ({
+        interests: $$('input[name="part"]:checked', form).map((i) => i.value).join(", "),
+        _subject: "Neue Urban-Revolution-Anmeldung",
+      }),
+    });
+  }
+
+  // ── 5b · Reservieren am Höhepunkt (docs/WEBSITE-IMPROVEMENTS.md #02) ──────
+  // Der kompakte DNA-Code (kein Bild, keine PII) und der Share-Link gehen mit,
+  // damit der reservierte Platz mit genau diesem Entwurf verknüpft ist.
+  function reserveForm() {
+    wireCaptureForm({
+      form: $("#reserve-form"),
+      emailEl: $("#reserve-email"),
+      consentEl: $("#reserve-consent"),
+      status: $("#reserve-status"),
+      statusId: "reserve-status",
+      okKey: "own.reserve_ok",
+      buildPayload: () => {
+        const design = window.StateManager && window.StateManager.get("currentDesign");
+        const dna = currentDna();
+        const canShare = dna && window.DesignShare;
+        return {
+          design: canShare ? window.DesignShare.encode(dna) : "",
+          designName: (design && design.name) || "",
+          designUrl: canShare ? window.DesignShare.buildUrl(dna) : "",
+          _subject: "Urban Revolution — Platz reserviert",
+        };
+      },
     });
   }
 
@@ -478,6 +526,7 @@
     heroShowcase();
     ownership();
     joinForm();
+    reserveForm();
     stickyCta();
     makeRealLinks();
   }

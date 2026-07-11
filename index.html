@@ -88,7 +88,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260711-no-identity">
+    <link rel="stylesheet" href="css/styles.css?v=20260711-reserve">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -1061,6 +1061,33 @@
                 <button type="button" id="own-share" class="btn-ghost" data-i18n="own.share">Teilen</button>
                 <button type="button" id="own-publish" class="btn-ghost" data-i18n="own.publish">In der Galerie zeigen</button>
             </div>
+
+            <!-- „Sei zuerst dran" — Capture am Höhepunkt (docs/WEBSITE-IMPROVEMENTS.md #02):
+                 Der ehrlichste Moment für „be first" ist der, in dem der eigene Entwurf
+                 gerade entstanden ist. E-Mail + Einwilligung gehen an denselben
+                 Formspree-Endpoint wie #join-form, zusätzlich der kompakte DNA-Code
+                 des Entwurfs (kein Bild, keine PII) — so ist der Platz mit genau
+                 diesem Stück verknüpft. Pre-Launch-ehrlich: reservieren heisst
+                 „zuerst erfahren", nicht kaufen. Das untere Join-Formular bleibt. -->
+            <div class="own-reserve" data-reveal>
+                <div class="own-reserve-flat" id="reserve-flat" aria-hidden="true" hidden></div>
+                <div class="own-reserve-body">
+                    <p class="mono-label" data-i18n="own.reserve_label">[ SEI ZUERST DRAN ]</p>
+                    <h3 class="own-reserve-title" data-i18n="own.reserve_title">Reserviere dir dieses Stück.</h3>
+                    <p class="own-reserve-text" data-i18n="own.reserve_text">Noch wird nichts gefertigt — das sagen wir ehrlich. Trag dich ein, und dein Entwurf wird mit deinem Platz verknüpft: Du erfährst es zuerst, wenn der Kreis sich zum ersten Mal schliesst.</p>
+                    <form id="reserve-form" class="reserve-form" novalidate>
+                        <div class="join-row">
+                            <label class="visually-hidden" for="reserve-email" data-i18n="join.email_label">E-Mail-Adresse</label>
+                            <input type="email" id="reserve-email" name="email" required data-i18n-placeholder="join.email_ph" placeholder="deine@email.ch" autocomplete="email">
+                            <button type="submit" class="manifesto-cta" data-i18n="own.reserve_btn">Platz sichern</button>
+                        </div>
+                        <p class="join-consent"><label><input type="checkbox" id="reserve-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label></p>
+                        <p class="join-status mono-label" id="reserve-status" aria-live="polite"></p>
+                        <p class="own-reserve-fine" data-i18n="own.reserve_fine">Mitgesendet wird nur dein kompakter Design-Code — kein Foto, keine Körpermasse.</p>
+                    </form>
+                </div>
+            </div>
+
             <div class="ownership-next" data-reveal>
                 <a href="#facts" class="manifesto-link" data-i18n-html="own.why_html">Entdecke, warum das zählt <span aria-hidden="true">&#8595;</span></a>
                 <button type="button" id="own-makereal" class="manifesto-link as-button" data-i18n-html="own.makereal_html">Mach es real — Masse &amp; Fertigung <span aria-hidden="true">&#8594;</span></button>
@@ -1504,7 +1531,7 @@
     <script defer src="js/spec-view.js"></script>
     <script defer src="js/app.js"></script>
     <script defer src="js/flair.js"></script>
-    <script defer src="js/ur-create.js?v=20260708-audit-fixes"></script>
+    <script defer src="js/ur-create.js?v=20260711-reserve"></script>
     <script defer src="js/ambient-ticker.js"></script>
     <script defer src="js/facts-mass.js?v=20260709-reclaimed-light2"></script>
     <script defer src="js/faden.js"></script>
