@@ -32,12 +32,16 @@ for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile
   await page.goto(BASE + "#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForFunction(() => window.StateManager && window.DesignShare && window.DesignPreview && window.I18N, null, { timeout: 15000 });
 
-  // Formspree mocken, BEVOR irgendetwas submitten kann.
+  // Formspree mocken, BEVOR irgendetwas submitten kann. Hostname exakt
+  // vergleichen statt Substring (CodeQL: js/incomplete-url-substring-
+  // sanitization) — auch wenn das hier nur ein Test-Mock ist.
   await page.evaluate(() => {
     const orig = window.fetch;
     window.__formspreeBody = null;
     window.fetch = (url, opts) => {
-      if (String(url).includes("formspree.io")) {
+      let host = "";
+      try { host = new URL(String(url), location.href).hostname; } catch { /* kein URL-String */ }
+      if (host === "formspree.io" || host.endsWith(".formspree.io")) {
         window.__formspreeBody = opts && opts.body;
         return Promise.resolve(new Response("{}", { status: 200, headers: { "Content-Type": "application/json" } }));
       }
