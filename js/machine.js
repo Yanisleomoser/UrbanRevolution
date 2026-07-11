@@ -8,12 +8,14 @@
  * wandert an die Ausgangs-Schiene. Vier Stations-Karten zoomen die Kamera
  * (viewBox-Interpolation, Desktop) bzw. scrollen die Zeichnung (Mobil).
  *
- * Studio-Brücke: existiert ein Entwurf (StateManager.currentDesign), schneidet
- * die Zelle die Silhouette SEINES Kleidungstyps in SEINER Farbe, mit einer
- * deterministischen Datei-Nummer — der Kreis zeigt dem Besucher sein Stück.
+ * Die Linie zeigt IMMER den ganzen Prozess: ohne Studio-Datei fertigt die
+ * Zelle Demo-Stücke (Typ rotiert durch alle sechs, Farbe = das Remake-Item,
+ * das den Zyklus ausgelöst hat) und hängt sie reihum an die vier anonymen
+ * Bügel — nur der „DEINS"-Bügel bleibt reserviert, seine Nummer gestrichelt.
  *
- * Ehrlichkeit ist eingebaut: ohne Entwurf schneidet die Zelle nur die Kontur,
- * hält inne („WARTET AUF DEINE DATEI") und wischt — nichts wird vorgetäuscht.
+ * Studio-Brücke: existiert ein Entwurf (StateManager.currentDesign), schneidet
+ * die Zelle stattdessen die Silhouette SEINES Kleidungstyps in SEINER Farbe,
+ * mit deterministischer Datei-Nummer, und übergibt an den „DEINS"-Bügel.
  *
  * Progressive Enhancement (Konvention wie facts-mass.js/faden.js):
  * Ruhezustand = vollständiges Standbild (Markup); volle Bewegung nur mit
@@ -57,6 +59,29 @@
         const hangFill = document.getElementById("mHangGarFill");
         const hangNo = document.getElementById("mHangNo");
         const fileCap = document.getElementById("mFileCap");
+        // Anonyme Bügel: Ziele der Demo-Stücke; [1] und [3] sind der gefüllte
+        // Markup-Ruhezustand (Farben dort = Remake-Qualitäten Baumwolle/Leinen).
+        const HANG_DEFAULTS = [null, "#7c4a45", null, "#8a8168"];
+        const demoHangs = [0, 1, 2, 3].map((i) => {
+            const g = document.getElementById("mHang" + i);
+            return g
+                ? {
+                    g: g,
+                    line: g.querySelector(".hang-line"),
+                    fill: g.querySelector(".hang-fill"),
+                    cx: 1064 + i * 28,
+                    def: HANG_DEFAULTS[i],
+                }
+                : null;
+        }).filter(Boolean);
+        function resetDemoHangs() {
+            demoHangs.forEach((h) => {
+                h.g.setAttribute("transform", "");
+                if (h.def) h.fill.setAttribute("fill", h.def);
+                h.fill.style.opacity = h.def ? "1" : "0";
+                h.line.style.opacity = h.def ? "1" : "0";
+            });
+        }
         const bales = [
             document.getElementById("mBale0"),
             document.getElementById("mBale1"),
@@ -147,16 +172,26 @@
             const y = PTS[i * 2 + 1] + (PTS[(i + 1) * 2 + 1] - PTS[i * 2 + 1]) * r;
             cutHead.setAttribute("transform", "translate(" + (x - 958).toFixed(1) + " " + (y - 214).toFixed(1) + ") translate(958 214)");
         }
-        // Kragen-/Ärmel-Details passen nur auf Oberteile
-        function garDOK() { return !fileApplied || (fileApplied.type !== "dress" && fileApplied.type !== "pants"); }
-        function applyFileNow(f) {
-            fileApplied = f;
-            const d = MPATHS[(f && f.type) || "tshirt"] || MPATHS.tshirt;
+        // Das Stück, das die Zelle gerade fährt: die Besucher-Datei ODER ein
+        // Demo-Stück des laufenden Betriebs (Typ rotiert, Farbe vom Remake-Item).
+        let cellPiece = { type: "tshirt", hex: "#1c2c3b" };
+        const DEMO_TYPES = ["tshirt", "hoodie", "shirt", "jacket", "dress", "pants"];
+        let demoTypeIdx = 0;
+        let demoHangIdx = 0;
+        function setCellPiece(type, hex) {
+            cellPiece = { type: type, hex: hex };
+            const d = MPATHS[type] || MPATHS.tshirt;
             gar.setAttribute("d", d);
             garF.setAttribute("d", d);
             garH.setAttribute("d", d);
-            garF.setAttribute("fill", f ? f.hex : "#1c2c3b");
+            garF.setAttribute("fill", hex);
             measurePath();
+        }
+        // Kragen-/Ärmel-Details passen nur auf Oberteile
+        function garDOK() { return cellPiece.type !== "dress" && cellPiece.type !== "pants"; }
+        function applyFileNow(f) {
+            fileApplied = f;
+            setCellPiece(f ? f.type : "tshirt", f ? f.hex : "#1c2c3b");
             tagT.textContent = f ? tr("machine.tag_no", { no: f.no }) : tr("machine.tag_empty");
             if (hangNo) {
                 hangNo.textContent = f ? tr("machine.no", { no: f.no }) : tr("machine.no_none");
@@ -167,12 +202,7 @@
             if (hangFill) hangFill.style.opacity = 0;
             if (hangG) hangG.setAttribute("transform", "");
             if (fileCap) {
-                if (f) {
-                    fileCap.textContent = tr("machine.file", { no: f.no });
-                    fileCap.hidden = false;
-                } else {
-                    fileCap.hidden = true;
-                }
+                fileCap.textContent = f ? tr("machine.file", { no: f.no }) : tr("machine.file_none");
             }
         }
 
@@ -199,7 +229,10 @@
             it.p.setAttribute("fill", type.c);
             place(it.g, x, y, r);
         }
-        /* Reduced motion: EIN vollständiges, ehrliches Standbild */
+        /* Reduced motion: EIN vollständiges, ehrliches Standbild der laufenden
+           Linie — Items auf Band und Bahn, Chip liest, ein fertiges Stück in
+           der Zelle, zwei Demo-Stücke auf der Schiene. Der DEINS-Bügel bleibt
+           leer, bis der Besucher entworfen hat. */
         function paintRM() {
             poolPaint(0, TYPES[0], 190, BELT_Y, -6);
             poolPaint(1, TYPES[1], SCAN_X, BELT_Y, 0);
@@ -214,27 +247,23 @@
             divert.setAttribute("transform", "rotate(-50 504 302)");
             cutHead.style.opacity = "0";
             gar.style.strokeDashoffset = 0;
-            if (fileApplied) {
-                garF.style.opacity = "1";
-                garD.style.opacity = garDOK() ? "1" : "0";
-                garH.style.opacity = ".9";
-                if (hangGar) hangGar.style.opacity = "1";
-                if (hangFill) hangFill.style.opacity = "1";
-                setStatus("machine.st_one");
-            } else {
-                garF.style.opacity = "0";
-                garD.style.opacity = "0";
-                garH.style.opacity = "0";
-                if (hangGar) hangGar.style.opacity = "0";
-                if (hangFill) hangFill.style.opacity = "0";
-                setStatus("machine.st_wait");
-            }
+            resetDemoHangs();
+            if (!fileApplied) setCellPiece("tshirt", "#7c4a45");
+            garF.style.opacity = "1";
+            garD.style.opacity = garDOK() ? "1" : "0";
+            garH.style.opacity = ".9";
+            if (hangGar) hangGar.style.opacity = fileApplied ? "1" : "0";
+            if (hangFill) hangFill.style.opacity = fileApplied ? "1" : "0";
+            setStatus("machine.st_one");
         }
 
-        /* ── Zellen-Zustandsmaschine ── */
+        /* ── Zellen-Zustandsmaschine: JEDER Zyklus läuft komplett durch
+           (CUT → SEW → FIN → LAB → HANG → RST) — mit Besucher-Datei ans
+           DEINS-Bügel, ohne als Demo-Stück reihum an die anonymen Bügel. ── */
         let cellState = "IDLE";
         let cellT = 0;
-        const D_CUT = 3.2, D_SEW = 3.0, D_FIN = 0.8, D_LAB = 1.0, D_HANG = 1.4, D_RST = 0.6, D_HOLD = 2.5, D_WIPE = 0.8;
+        let hangSel = null; // Ziel-Bügel des laufenden Stücks (beim LAB→HANG-Übergang gewählt)
+        const D_CUT = 3.2, D_SEW = 3.0, D_FIN = 0.8, D_LAB = 1.0, D_HANG = 1.4, D_RST = 0.6;
         function takePending() {
             if (hasPending) {
                 applyFileNow(filePending);
@@ -252,12 +281,18 @@
             if (toIdle) {
                 cellState = "IDLE";
                 cellT = 0;
-                setStatus(fileApplied ? "machine.st_ready" : "machine.st_wait");
+                setStatus("machine.st_ready");
             }
         }
-        function startCycle() {
+        function startCycle(itemHex) {
             if (cellState !== "IDLE") return;
             takePending();
+            // Ohne Datei fertigt die Linie ein Demo-Stück: aus dem Material,
+            // das den Zyklus ausgelöst hat, der Typ rotiert durch alle sechs.
+            if (!fileApplied) {
+                setCellPiece(DEMO_TYPES[demoTypeIdx % DEMO_TYPES.length], itemHex || "#7c4a45");
+                demoTypeIdx++;
+            }
             resetCell(false);
             cellState = "CUT";
             cellT = 0;
@@ -281,23 +316,10 @@
                 else setStatus("machine.st_cut");
                 if (p >= 1) {
                     cutHead.style.opacity = "0";
-                    if (!fileApplied) {
-                        cellState = "HOLD"; cellT = 0;
-                        setStatus("machine.st_wait");
-                    } else {
-                        cellState = "SEW"; cellT = 0;
-                        setStatus("machine.st_sew");
-                        needle.classList.add("sewing");
-                    }
+                    cellState = "SEW"; cellT = 0;
+                    setStatus("machine.st_sew");
+                    needle.classList.add("sewing");
                 }
-            } else if (cellState === "HOLD") {
-                garH.style.opacity = 0.35 * Math.sin(Math.min(1, cellT / 1.6) * Math.PI);
-                if (cellT >= D_HOLD) { cellState = "WIPE"; cellT = 0; }
-            } else if (cellState === "WIPE") {
-                const wp = Math.min(1, cellT / D_WIPE);
-                gar.style.strokeDashoffset = L * wp;
-                garH.style.opacity = "0";
-                if (wp >= 1) { takePending(); resetCell(true); }
             } else if (cellState === "SEW") {
                 if (cellT >= D_SEW) {
                     needle.classList.remove("sewing");
@@ -311,14 +333,29 @@
                 garH.style.opacity = fp * 0.9;
                 if (fp >= 1) {
                     cellState = "LAB"; cellT = 0;
-                    setStatus("machine.st_label", { no: fileApplied.no });
+                    if (fileApplied) setStatus("machine.st_label", { no: fileApplied.no });
+                    else setStatus("machine.st_label0");
                 }
             } else if (cellState === "LAB") {
                 const lp = easeOut(cellT / D_LAB);
                 labelChip.setAttribute("transform", "translate(" + (16 * lp).toFixed(1) + " " + (-34 * lp).toFixed(1) + ")");
                 if (cellT >= D_LAB) {
                     cellState = "HANG"; cellT = 0;
-                    setStatus("machine.st_rail", { no: fileApplied.no });
+                    // Ziel-Bügel wählen: Besucher-Datei → DEINS; Demo-Stück →
+                    // reihum der nächste anonyme Bügel, in der Stück-Farbe.
+                    if (fileApplied) {
+                        hangSel = { g: hangG, line: hangGar, fill: hangFill, cx: 1176 };
+                        setStatus("machine.st_rail", { no: fileApplied.no });
+                    } else {
+                        hangSel = demoHangs.length ? demoHangs[demoHangIdx % demoHangs.length] : null;
+                        demoHangIdx++;
+                        if (hangSel) {
+                            hangSel.fill.setAttribute("fill", cellPiece.hex);
+                            hangSel.fill.style.opacity = "0";
+                            hangSel.line.style.opacity = "0";
+                        }
+                        setStatus("machine.st_rail0");
+                    }
                 }
             } else if (cellState === "HANG") {
                 const gp = Math.min(1, cellT / D_HANG);
@@ -327,11 +364,14 @@
                 garD.style.opacity = "0";
                 garH.style.opacity = (1 - fd) * 0.9;
                 gar.style.strokeDashoffset = L * fd;
-                if (hangGar) hangGar.style.opacity = fd;
-                if (hangFill) hangFill.style.opacity = fd;
-                const sw = Math.exp(-3 * gp) * Math.cos(gp * 9) * 4;
-                if (hangG) hangG.setAttribute("transform", "rotate(" + sw.toFixed(2) + " 1176 372)");
+                if (hangSel) {
+                    hangSel.line.style.opacity = fd;
+                    hangSel.fill.style.opacity = fd;
+                    const sw = Math.exp(-3 * gp) * Math.cos(gp * 9) * 4;
+                    hangSel.g.setAttribute("transform", "rotate(" + sw.toFixed(2) + " " + hangSel.cx + " 372)");
+                }
                 if (gp >= 1) {
+                    if (hangSel) hangSel.g.setAttribute("transform", "");
                     labelChip.setAttribute("transform", "");
                     cellState = "RST"; cellT = 0;
                     setStatus("machine.st_reset");
@@ -438,7 +478,9 @@
             if (lastStatusKey) statusT.textContent = tr(lastStatusKey, lastStatusVars);
             tagT.textContent = fileApplied ? tr("machine.tag_no", { no: fileApplied.no }) : tr("machine.tag_empty");
             if (hangNo) hangNo.textContent = fileApplied ? tr("machine.no", { no: fileApplied.no }) : tr("machine.no_none");
-            if (fileCap && fileApplied) fileCap.textContent = tr("machine.file", { no: fileApplied.no });
+            if (fileCap) {
+                fileCap.textContent = fileApplied ? tr("machine.file", { no: fileApplied.no }) : tr("machine.file_none");
+            }
             if (RM && chipT) chipT.textContent = tr(TYPES[1].chipKey);
         });
 
@@ -533,7 +575,8 @@
                         setTimeout(() => b.classList.remove("pulse"), 240);
                     }
                     // Remake-Material gelandet → die Zelle beginnt einen Zyklus
-                    if (ty.lane === 0 && cellState === "IDLE") startCycle();
+                    // (ohne Datei wird genau dieses Material zum Demo-Stück)
+                    if (ty.lane === 0 && cellState === "IDLE") startCycle(ty.c);
                 }
             });
             return scanning ? { type: scanning, t: scanT } : null;
@@ -625,6 +668,8 @@
                 if (band) band.classList.remove("zoomed");
                 cards.forEach((c) => c.setAttribute("aria-pressed", "false"));
                 takePending();
+                resetDemoHangs();
+                demoHangIdx = 0;
                 resetCell(true);
                 if (!booted) {
                     booted = true;

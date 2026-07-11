@@ -704,16 +704,19 @@
                         </g>
                     </g>
 
-                    <!-- 05 AUSGANG — Bügel-Schiene (durchgezogen: gibt es heute); Bügel leer als Default -->
+                    <!-- 05 AUSGANG — Bügel-Schiene (durchgezogen: gibt es heute) -->
                     <g class="m-ignite">
                         <path d="M1042,405 C1052,405 1050,376 1058,373" stroke="rgba(238,244,248,.25)" stroke-dasharray="3 4" fill="none"/>
                         <path d="M1052,372 V470 M1192,372 V470" stroke="rgba(238,244,248,.3)" stroke-width="2"/>
                         <path class="m-rail" d="M1044,372 H1196" stroke="rgba(238,244,248,.3)" stroke-width="2.5" fill="none"/>
                         <g id="mHangers" stroke="rgba(238,244,248,.5)" fill="none" stroke-width="1.5">
-                            <g class="hang"><circle cx="1064" cy="372" r="3"/><path d="M1064,375 v6 L1051,392 h26 Z"/></g>
-                            <g class="hang"><circle cx="1092" cy="372" r="3"/><path d="M1092,375 v6 L1079,392 h26 Z"/></g>
-                            <g class="hang"><circle cx="1120" cy="372" r="3"/><path d="M1120,375 v6 L1107,392 h26 Z"/></g>
-                            <g class="hang"><circle cx="1148" cy="372" r="3"/><path d="M1148,375 v6 L1135,392 h26 Z"/></g>
+                            <!-- Anonyme Bügel: Ziel der Demo-Stücke, die die Linie ohne
+                                 Studio-Datei fertigt (Farbe = das gelandete Remake-Item).
+                                 Zwei sind als Ruhezustand gefüllt — die Linie läuft. -->
+                            <g class="hang" id="mHang0"><circle cx="1064" cy="372" r="3"/><path d="M1064,375 v6 L1051,392 h26 Z"/><path class="hang-fill" d="M1057,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" fill="#7c4a45" stroke="none" opacity="0"/><path class="hang-line" d="M1057,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" opacity="0"/></g>
+                            <g class="hang" id="mHang1"><circle cx="1092" cy="372" r="3"/><path d="M1092,375 v6 L1079,392 h26 Z"/><path class="hang-fill" d="M1085,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" fill="#7c4a45" stroke="none" opacity="1"/><path class="hang-line" d="M1085,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" opacity="1"/></g>
+                            <g class="hang" id="mHang2"><circle cx="1120" cy="372" r="3"/><path d="M1120,375 v6 L1107,392 h26 Z"/><path class="hang-fill" d="M1113,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" fill="#8a8168" stroke="none" opacity="0"/><path class="hang-line" d="M1113,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" opacity="0"/></g>
+                            <g class="hang" id="mHang3"><circle cx="1148" cy="372" r="3"/><path d="M1148,375 v6 L1135,392 h26 Z"/><path class="hang-fill" d="M1141,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" fill="#8a8168" stroke="none" opacity="1"/><path class="hang-line" d="M1141,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" opacity="1"/></g>
                             <g class="hang" id="mHangYours">
                                 <circle cx="1176" cy="372" r="3"/><path d="M1176,375 v6 L1163,392 h26 Z"/>
                                 <path id="mHangGarFill" d="M1169,404 l8,-7 h6 l8,7 -4,7 -3,-2 v25 q-8,3 -16,0 v-25 l-3,2 -4,-7 Z" fill="#1c2c3b" stroke="none" opacity="0"/>
@@ -748,9 +751,13 @@
                 </svg>
             </div>
         </div>
-        <!-- Deine Datei auf der Linie (machine.js füllt und zeigt die Zeile,
-             sobald im Studio ein Entwurf existiert) -->
-        <p class="lp-machine-file" id="mFileCap" hidden></p>
+        <!-- Deine Datei auf der Linie: ohne Entwurf lädt die Zeile ins Studio
+             ein (statischer DE-Default für no-JS); machine.js ersetzt sie durch
+             die Datei-Nummer, sobald im Studio ein Entwurf existiert. Bewusst
+             KEIN data-i18n: der Text ist zustandsabhängig JS-gesetzt —
+             I18N.apply() würde die Datei-Variante beim Sprachwechsel
+             überschreiben, machine.js rendert selbst neu. -->
+        <p class="lp-machine-file" id="mFileCap">Ein Bügel bleibt frei — deins. Entwirf dein Stück im Studio, und die Remake-Zelle schneidet deine Vorlage hier.</p>
         <!-- Die vier Stationen des Kreislaufs (aus #loop), auf echte Maschinen-
              Stufen gelegt — Attributions-Tags [ Alle / KI / Du / KI ] bleiben.
              Klick/Tap zoomt die Kamera der Zeichnung auf die Stufe. -->

@@ -44,17 +44,25 @@ const check = (cond, msg) => {
   check(boot.cards === 4, `4 station cards render (found ${boot.cards})`);
   check(boot.rails >= 5, `rails present (${boot.rails})`);
 
-  // Status + Items über ~14 s samplen (Boot-Delay 3 s + Zellen-Zyklus)
+  // Status + Items über ~20 s samplen (Boot-Delay 3 s + EIN voller Demo-
+  // Zyklus: SCHNITT → NAHT → FERTIGSTELLUNG → ETIKETT → SCHIENE — die Linie
+  // muss den GANZEN Prozess auch ohne Studio-Datei zeigen)
   const trace = await page.evaluate(async () => {
     const out = [];
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 40; i++) {
       const vis = Array.from(document.querySelectorAll("#mItems g"))
         .filter((g) => parseFloat(g.getAttribute("opacity") || "0") > 0.05).length;
+      const demoHung = [0, 1, 2, 3].filter((k) => {
+        const p = document.querySelector("#mHang" + k + " .hang-line");
+        return p && parseFloat(getComputedStyle(p).opacity) > 0.5;
+      }).length;
       out.push({
         t: i * 500,
         status: document.getElementById("mStatus")?.textContent || "",
         items: vis,
         chip: getComputedStyle(document.getElementById("mChipG")).opacity,
+        demoHung: demoHung,
+        sewing: document.getElementById("mSewNeedle")?.classList.contains("sewing") || false,
       });
       await new Promise((r) => setTimeout(r, 500));
     }
@@ -66,8 +74,11 @@ const check = (cond, msg) => {
   console.log("    statuses seen:", JSON.stringify(statuses));
   console.log("    max concurrent items:", maxItems, "| chip shown:", chipShown);
   check(maxItems >= 2, "items flow on the belt (≥2 concurrently)");
-  check(statuses.length >= 2, "cell status cycles (≥2 distinct states)");
   check(trace.some((s) => /SCHNITT|CUTTING/.test(s.status)), "the cell actually cuts");
+  check(trace.some((s) => /NAHT|SEAM/.test(s.status)) && trace.some((s) => s.sewing), "the cell sews (demo mode, needle animating)");
+  check(trace.some((s) => /FERTIGSTELLUNG|FINISHING/.test(s.status)), "the cell finishes the piece");
+  check(trace.some((s) => /SCHIENE|RAIL/.test(s.status)), "the piece reaches the rail");
+  check(Math.max(...trace.map((s) => s.demoHung)) >= 3, "a demo piece lands on an anonymous hanger (beyond the 2 defaults)");
   check(chipShown, "the NIR analysis chip appears during a scan");
 
   // Kamera: Stations-Karte klicken → viewBox zoomt, Stempel erscheint
@@ -117,30 +128,47 @@ const check = (cond, msg) => {
     chipText: document.getElementById("mChipT")?.textContent || "",
     status: document.getElementById("mStatus")?.textContent || "",
     anims: document.getElementById("mSvg").getAnimations({ subtree: true }).length,
+    cellPiece: parseFloat(getComputedStyle(document.getElementById("mGarFill")).opacity),
+    demoHung: [0, 1, 2, 3].filter((k) => {
+      const p = document.querySelector("#mHang" + k + " .hang-line");
+      return p && parseFloat(getComputedStyle(p).opacity) > 0.5;
+    }).length,
+    yours: parseFloat(getComputedStyle(document.getElementById("mHangGar")).opacity),
   }));
   check(rm.items === 3, `static frame paints 3 items (${rm.items})`);
   check(parseFloat(rm.chip) > 0.5 && rm.chipText.length > 4, "chip visible with analysis text");
-  check(/WARTET|WAITING/.test(rm.status), `cell waits honestly (${rm.status})`);
+  check(/EINS NACH DEM ANDEREN|ONE AT A TIME/.test(rm.status), `status carries the line's principle (${rm.status})`);
+  check(rm.cellPiece === 1, "static frame shows a finished piece in the cell (whole process)");
+  check(rm.demoHung === 2, `two demo pieces rest on the rail (${rm.demoHung})`);
+  check(rm.yours === 0, "the DEINS hanger stays reserved until a design exists");
   check(rm.anims === 0, `no running animations under reduced motion (${rm.anims})`);
   await page.screenshot({ path: `${OUT}/machine-reduced-mobile.png` });
 
-  // Studio-Brücke: Entwurf setzen → Datei erscheint sofort (RM-Pfad)
-  const bridge = await page.evaluate(() => {
+  // Studio-Brücke: Entwurf setzen → Datei erscheint sofort (RM-Pfad).
+  // Lesen erst NACH einem Frame: der globale Reduced-Motion-Reset gibt allen
+  // Elementen transition:all 1e-5s — synchron gelesen zeigt die frisch
+  // gestartete Mikro-Transition noch den alten Opacity-Wert.
+  await page.evaluate(() => {
     window.StateManager.set("currentType", "hoodie");
     window.StateManager.set("currentColor", "#831843");
     window.StateManager.set("currentDesign", { name: "Verify Piece" });
+  });
+  await page.waitForTimeout(150);
+  const bridge = await page.evaluate(() => {
     return {
       tag: document.getElementById("mTagT")?.textContent || "",
       hangNo: document.getElementById("mHangNo")?.textContent || "",
-      cap: document.getElementById("mFileCap")?.hidden === false,
+      cap: document.getElementById("mFileCap")?.textContent || "",
       fill: document.getElementById("mGarFill")?.getAttribute("fill"),
+      yours: parseFloat(getComputedStyle(document.getElementById("mHangGar")).opacity),
       status: document.getElementById("mStatus")?.textContent || "",
     };
   });
   check(/\d{4}/.test(bridge.tag), `cell tag carries the file number (${bridge.tag})`);
   check(/\d{4}/.test(bridge.hangNo), `your hanger carries the file number (${bridge.hangNo})`);
-  check(bridge.cap, "file caption under the band becomes visible");
+  check(/\d{4}/.test(bridge.cap), `file caption switches from invite to file number (${bridge.cap.slice(0, 40)}…)`);
   check(bridge.fill === "#831843", `the cell cuts YOUR colour (${bridge.fill})`);
+  check(bridge.yours === 1, "the DEINS hanger now holds your piece");
   await page.screenshot({ path: `${OUT}/machine-bridge-mobile.png` });
 
   // Sprachwechsel: JS-gesetzte Texte rendern neu
