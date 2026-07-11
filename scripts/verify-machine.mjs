@@ -44,12 +44,13 @@ const check = (cond, msg) => {
   check(boot.cards === 4, `4 station cards render (found ${boot.cards})`);
   check(boot.rails >= 5, `rails present (${boot.rails})`);
 
-  // Status + Items über ~20 s samplen (Boot-Delay 3 s + EIN voller Demo-
-  // Zyklus: SCHNITT → NAHT → FERTIGSTELLUNG → ETIKETT → SCHIENE — die Linie
-  // muss den GANZEN Prozess auch ohne Studio-Datei zeigen)
+  // Status + Items über ~36 s samplen (Boot-Delay 3 s + ZWEI volle Demo-
+  // Zyklen: SCHNITT → NAHT → FERTIGSTELLUNG → ETIKETT → SCHIENE — die Linie
+  // muss den GANZEN Prozess auch ohne Studio-Datei zeigen, und die Stücke
+  // müssen sich in Typ UND Farbe unterscheiden)
   const trace = await page.evaluate(async () => {
     const out = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 72; i++) {
       const vis = Array.from(document.querySelectorAll("#mItems g"))
         .filter((g) => parseFloat(g.getAttribute("opacity") || "0") > 0.05).length;
       const demoHung = [0, 1, 2, 3].filter((k) => {
@@ -80,6 +81,24 @@ const check = (cond, msg) => {
   check(trace.some((s) => /SCHIENE|RAIL/.test(s.status)), "the piece reaches the rail");
   check(Math.max(...trace.map((s) => s.demoHung)) >= 3, "a demo piece lands on an anonymous hanger (beyond the 2 defaults)");
   check(chipShown, "the NIR analysis chip appears during a scan");
+
+  // Vielfalt: die gefertigten Stücke unterscheiden sich in Silhouette UND Farbe
+  const rail = await page.evaluate(() => {
+    return [0, 1, 2, 3].map((k) => {
+      const g = document.getElementById("mHang" + k);
+      const line = g.querySelector(".hang-line");
+      const fill = g.querySelector(".hang-fill");
+      return parseFloat(getComputedStyle(line).opacity) > 0.5
+        ? { d: line.getAttribute("d"), fill: fill.getAttribute("fill") }
+        : null;
+    }).filter(Boolean);
+  });
+  const shapes = new Set(rail.map((r) => r.d)).size;
+  const colours = new Set(rail.map((r) => r.fill)).size;
+  console.log(`    rail: ${rail.length} pieces, ${shapes} distinct shapes, ${colours} distinct colours`);
+  check(rail.length >= 3, `≥3 pieces hang on the rail (${rail.length})`);
+  check(shapes >= 2, `pieces differ in silhouette (${shapes} shapes)`);
+  check(colours >= 2, `pieces differ in colour (${colours} colours)`);
 
   // Kamera: Stations-Karte klicken → viewBox zoomt, Stempel erscheint
   const vb0 = await page.evaluate(() => document.getElementById("mSvg").getAttribute("viewBox"));
@@ -148,6 +167,7 @@ const check = (cond, msg) => {
   // Lesen erst NACH einem Frame: der globale Reduced-Motion-Reset gibt allen
   // Elementen transition:all 1e-5s — synchron gelesen zeigt die frisch
   // gestartete Mikro-Transition noch den alten Opacity-Wert.
+  const yoursDBefore = await page.evaluate(() => document.getElementById("mHangGar").getAttribute("d"));
   await page.evaluate(() => {
     window.StateManager.set("currentType", "hoodie");
     window.StateManager.set("currentColor", "#831843");
@@ -156,6 +176,7 @@ const check = (cond, msg) => {
   await page.waitForTimeout(150);
   const bridge = await page.evaluate(() => {
     return {
+      yoursD: document.getElementById("mHangGar").getAttribute("d"),
       tag: document.getElementById("mTagT")?.textContent || "",
       hangNo: document.getElementById("mHangNo")?.textContent || "",
       cap: document.getElementById("mFileCap")?.textContent || "",
@@ -169,6 +190,7 @@ const check = (cond, msg) => {
   check(/\d{4}/.test(bridge.cap), `file caption switches from invite to file number (${bridge.cap.slice(0, 40)}…)`);
   check(bridge.fill === "#831843", `the cell cuts YOUR colour (${bridge.fill})`);
   check(bridge.yours === 1, "the DEINS hanger now holds your piece");
+  check(bridge.yoursD !== yoursDBefore, "the DEINS hanger silhouette matches YOUR garment type (hoodie ≠ tee)");
   await page.screenshot({ path: `${OUT}/machine-bridge-mobile.png` });
 
   // Sprachwechsel: JS-gesetzte Texte rendern neu
