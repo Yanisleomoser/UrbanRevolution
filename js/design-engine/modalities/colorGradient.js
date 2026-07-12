@@ -4,30 +4,15 @@
  * Scheme-Toggle (Uni / Verlauf; duo nimmt zwei Stops in Tipp-Reihenfolge).
  * Es gibt KEIN totes Vorschau-Rechteck — das Kleidungsstück auf der Bühne IST
  * die Vorschau: jeder Tap färbt den Flat live über ctx.live. Commits
- * { scheme, stops, value, saturation }.
+ * { scheme, stops } — die Farbe steckt vollständig in den Stops; die früher
+ * mitgeschriebenen HSL-Ableitungen color.value/color.saturation las kein
+ * Renderer (roadmap C3, entfernt).
  */
 (function () {
   const V = window.DEVisuals;
 
-  function hexToRgb(hex) {
-    const c = String(hex).replace("#", "");
-    return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)];
-  }
-  function luminance(hex) {
-    const [r, g, b] = hexToRgb(hex).map((v) => v / 255);
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-  function saturationOf(hex) {
-    const [r, g, b] = hexToRgb(hex).map((v) => v / 255);
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    return max === 0 ? 0 : (max - min) / max;
-  }
   function payloadFor(scheme, stops) {
-    return {
-      scheme, stops: stops.slice(),
-      value: stops.length ? 1 - luminance(stops[0]) : 0.3,
-      saturation: stops.length ? saturationOf(stops[0]) : 0.2,
-    };
+    return { scheme, stops: stops.slice() };
   }
 
   function render(host, node, ctx) {

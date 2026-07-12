@@ -49,6 +49,17 @@ const DesignFlow = (() => {
   const lang = () => (window.I18N ? window.I18N.getLang() : "de");
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
 
+  // Neutral energy seed (roadmap C1): ohne dies lässt ein übersprungenes
+  // mood_calm_bold intent.energy undefiniert, wodurch jedes
+  // `intent.energy > x`-Gate zu `NaN > x` = false wird und Muster/Signature/
+  // Hardware dauerhaft verschwinden. 0.5 hält den Auftakt neutral (0.5 > 0.45 →
+  // Muster sichtbar; 0.5 ≯ 0.5 / 0.6 → Signature/Hardware bleiben aus). Die
+  // niedrige Confidence (0.05) sorgt dafür, dass eine echte Mood-Wahl (conf 1)
+  // sie überschreibt und der Seed nicht als „entschieden" zählt (kein Chip,
+  // keine Reifegrad-/Inferenz-Wirkung — intent.energy ist weder required noch
+  // in ATTR_LABELS).
+  function seedDefaults(d) { DesignDNA.set(d, "intent.energy", 0.5, 0.05); return d; }
+
   // Every garment category now has its own node branch (each gated by
   // `when: category=='X'`), so the journey goes deep for all six — not just the
   // jacket. All branches load upfront; the engine only surfaces matching nodes.
@@ -78,9 +89,11 @@ const DesignFlow = (() => {
       return { eff, conf: 0.8 };
     }
     if (node.modality === "colorGradient") {
+      // Only scheme + stops — the colour is fully carried by the stops. The old
+      // color.value/color.saturation HSL derivations were read by no renderer
+      // (roadmap C3), so they're no longer written.
       return { eff: { set: {
         "color.scheme": payload.scheme, "color.stops": payload.stops,
-        "color.value": payload.value, "color.saturation": payload.saturation,
       } }, conf: 1 };
     }
     if (node.modality === "ranking") {
@@ -351,7 +364,7 @@ const DesignFlow = (() => {
   function mount(hostEl, opts) {
     const options = opts || {};
     const base = options.contentBase || DEFAULT_BASE;
-    let dna = DesignDNA.create();
+    let dna = seedDefaults(DesignDNA.create());
     let answered = new Set();
     const history = [];
     let content = null;
@@ -1081,7 +1094,7 @@ const DesignFlow = (() => {
     function resetJourney() {
       clearSaved();
       clearNameplate();
-      dna = DesignDNA.create();
+      dna = seedDefaults(DesignDNA.create());
       answered = new Set();
       history.length = 0;
       maxPhaseIdx = -1; // fresh journey → the stepper starts at Phase A again
@@ -1141,6 +1154,11 @@ const DesignFlow = (() => {
         dna = saved.dna;
         if (!dna.archetypeWeights) dna.archetypeWeights = DesignDNA.create().archetypeWeights;
         if (!dna._confidence) dna._confidence = {};
+        // Resume-Robustheit (C1): ein vor dem Seed gespeicherter Lauf mit
+        // übersprungenem mood_calm_bold trägt kein intent.energy → beim Fortsetzen
+        // würden Muster/Signature weiterhin fehlen. Neutral nachseeden, ohne eine
+        // echte Wahl zu überschreiben (nur wenn wirklich ungesetzt).
+        if (DesignDNA.get(dna, "intent.energy") == null) seedDefaults(dna);
         answered = new Set(saved.answered);
         // Resume-Falle: Ein BEREITS KONVERGIERTER Durchlauf (keine offenen
         // Fragen mehr) würde jeden Wiederbesuch direkt aufs Ergebnis werfen —
@@ -1148,7 +1166,7 @@ const DesignFlow = (() => {
         // Design lebt in StateManager/Library weiter, die Reise startet frisch.
         if (DesignEngine.nextNode(content.nodes, dna, answered)) return renderNext();
         clearSaved();
-        dna = DesignDNA.create();
+        dna = seedDefaults(DesignDNA.create());
         answered = new Set();
       }
       // Direktive: „No onboarding" — Nutzer erschaffen sofort (showIntro bleibt
@@ -1168,7 +1186,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors, seedDefaults };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

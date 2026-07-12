@@ -97,7 +97,8 @@ console.log("\n— adjust · brightness repaints stops + writes derived colour �
   const r = Inference.adjust(dna, "brightness", 1, "en");
   assert(r && r.axis === "brightness" && r.label === "Brightness", "returns the axis + localised label");
   assert(lumOf(firstStop(dna)) > before, "dir +1 lightens the first stop");
-  assert(typeof DNA.get(dna, "color.value") === "number" && typeof DNA.get(dna, "color.saturation") === "number", "derived color.value + color.saturation are written back");
+  assert(DNA.get(dna, "color.value") === undefined && DNA.get(dna, "color.saturation") === undefined,
+    "no dead color.value/color.saturation are written — the stops carry the colour (roadmap C3)");
 
   const dna2 = DNA.create();
   DNA.set(dna2, "color.stops", ["#a0a0a0"], 1);

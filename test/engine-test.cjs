@@ -112,7 +112,7 @@ const calm = {
   jacket_length: "long",
   jacket_material: "wool",
   jacket_finish: 0.2,
-  jacket_color: { set: { "color.scheme": "mono", "color.stops": ["#1a1a1a"], "color.value": 0.2, "color.saturation": 0.1 } },
+  jacket_color: { set: { "color.scheme": "mono", "color.stops": ["#1a1a1a"] } },
   // Detail board: calm touches ONE region and leaves the rest to inference —
   // exactly the partial-answer path the board exists for.
   jacket_details: { collar: "notched" },
@@ -129,7 +129,7 @@ const bold = {
   jacket_length: "cropped",
   jacket_material: "polyester",
   jacket_finish: 0.5,
-  jacket_color: { set: { "color.scheme": "duo-gradient", "color.stops": ["#ec4899", "#06b6d4"], "color.value": 0.4, "color.saturation": 0.85 } },
+  jacket_color: { set: { "color.scheme": "duo-gradient", "color.stops": ["#ec4899", "#06b6d4"] } },
   jacket_pattern: "graphic",
   jacket_pattern_scale: 0.7,
   jacket_details: { closure: "zip", collar: "hood", sleeve: "drop", pockets: "cargo", cuffs: "ribbed", hem: "drawcord" },
@@ -182,6 +182,39 @@ assert(B.order.length <= 15,
   `the board compresses phase E: even the answer-everything bold path fits in 15 screens, was 19 (${B.order.length})`);
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
 assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
+
+console.log("\n— category lands on Q3 DETERMINISTICALLY, not by array order (roadmap C2) —");
+{
+  // At priority 1 the category node scored exactly 0.90 = mood_soft_sharp, so a
+  // pure iteration-order tie decided whether category was Q2 or Q3. Lowering it
+  // to 0.95 (→ 0.855) makes mood_soft_sharp reliably win Q2 and category reliably
+  // land Q3, regardless of how the intent nodes are ordered in the array.
+  const intent = readJSON("content/nodes/intent.json").nodes;
+  const jacket = readJSON("content/nodes/jacket.json").nodes;
+  const openingOrder = (intentNodes) => {
+    const nodeList = [...intentNodes, ...jacket];
+    const dna = DNA.create();
+    DNA.set(dna, "intent.energy", 0.5, 0.05); // C1 seed (mirrors flow.js mount)
+    const answered = new Set();
+    const order = [];
+    for (let i = 0; i < 10; i++) {
+      const n = Engine.nextNode(nodeList, dna, answered);
+      if (!n) break;
+      order.push(n.id);
+      if (n.id === "category_select") break;
+      const eff = (n.pair && n.pair[0] && n.pair[0].effects) || (n.choices && n.choices[0] && n.choices[0].effects) || null;
+      if (eff) DNA.applyEffects(dna, eff, 0.8);
+      answered.add(n.id);
+    }
+    return order;
+  };
+  const normal = openingOrder(intent);
+  const reversed = openingOrder([...intent].reverse());
+  assert(normal.indexOf("category_select") === 2, "category is Q3 with the nodes in file order");
+  assert(reversed.indexOf("category_select") === 2, "category is STILL Q3 with the intent nodes reversed (tie broken deterministically)");
+  assert(JSON.stringify(normal) === JSON.stringify(reversed), "the whole opening is identical regardless of node array order");
+  assert(normal[1] === "mood_soft_sharp", "the second mood pair reliably wins Q2 over the category node");
+}
 
 console.log("\n— Bug 1: pure express (only category) → 100% —");
 const pe = DNA.create();
@@ -298,7 +331,7 @@ global.GarmentSVG = require(path.join(ROOT, "garment-svg.js"));
 const Preview = require(path.join(ROOT, "render-preview.js"));
 const RENDERED_PATHS = new Set([
   "category", "subArchetype", "length", "silhouette.fit", "silhouette.structure", "silhouette.volume",
-  "fabric.material", "fabric.finish", "fabric.finishWeight", "color.scheme", "color.stops", "color.value", "color.saturation",
+  "fabric.material", "fabric.finish", "fabric.finishWeight", "color.scheme", "color.stops",
   "pattern.type", "pattern.scale", "hardware.finish", "signature", "intent.energy",
   "construction.collar", "construction.closure", "construction.sleeve", "construction.sleeveLength",
   "construction.pockets", "construction.cuffs", "construction.hem", "construction.waistband", "construction.waist",
@@ -338,7 +371,7 @@ const street = {
   category_select: "hoodie",
   hoodie_subarch: "zip", hoodie_fit: 0.9, hoodie_length: "regular", hoodie_sleeve: "drop",
   hoodie_material: "fleece", hoodie_finish: 0.8,
-  hoodie_color: { set: { "color.scheme": "mono", "color.stops": ["#2a9d8f"], "color.value": 0.5, "color.saturation": 0.6 } },
+  hoodie_color: { set: { "color.scheme": "mono", "color.stops": ["#2a9d8f"] } },
   hoodie_pattern: "graphic", hoodie_pattern_scale: 0.8,
   hoodie_details: { pockets: "kangaroo", hem: "ribbed" }, hoodie_hardware: "metal", hoodie_signature: "branding",
   _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
@@ -363,7 +396,7 @@ const couture = {
   category_select: "dress",
   dress_subarch: "slip", dress_fit: 0.75, dress_length: "long", dress_neck: "vneck",
   dress_sleeve: "sleeveless", dress_waist: "fitted", dress_material: "silk", dress_finish: 0.9,
-  dress_color: { set: { "color.scheme": "mono", "color.stops": ["#0a1622"], "color.value": 0.2, "color.saturation": 0.3 } },
+  dress_color: { set: { "color.scheme": "mono", "color.stops": ["#0a1622"] } },
   dress_pattern: "none", dress_signature: "side-slit",
   _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
 };
