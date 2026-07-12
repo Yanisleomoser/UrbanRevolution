@@ -329,6 +329,13 @@ neues Scoping: Wirkung an den Metriken messen (`insights.html`: completion,
 abandon-Verteilung — der Phase-E-Cluster sollte verschwinden —, generate-Rate,
 time-to-Fertig) und aus den echten Zahlen die nächste Runde schneiden.
 
+**Status update (2026-07-12):** the next round has since been scoped without
+waiting on `insights.html` numbers — `docs/WEBSITE-IMPROVEMENTS.md` #01 names
+the same phase-E cluster this doc predicted, plus the still-present
+`isGuardedTap` two-commit-model band-aid. See that doc's "Re-ranked open work"
+section for the recommended next PR (single commit model + phase-E
+reweighting); it does not touch the "no onboarding" directive above.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps
