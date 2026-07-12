@@ -13,8 +13,10 @@
    and mutateDna drives DesignDNA — both bare globals, so we wire the real
    modules onto `global` exactly like engine-test.cjs does. */
 const path = require("path");
+const fs = require("fs");
 const ROOT = path.join(__dirname, "..", "js", "design-engine");
 global.DesignDNA = require(path.join(ROOT, "dna.js"));
+global.DesignCondition = require(path.join(ROOT, "condition.js"));
 global.DesignEngine = require(path.join(ROOT, "engine.js"));
 const Flow = require(path.join(ROOT, "flow.js"));
 
@@ -313,6 +315,57 @@ console.log("\n— toSentence German adjective agreement (feminine materials) �
   assert(Summary.toSentence(mk("denim"), "de").includes("aus mattem Denim"), "masculine/neuter keeps 'aus mattem Denim'");
   assert(Summary.toSentence(mk("cotton"), "de").includes("aus matter Baumwolle"), "cotton reads as plain 'Baumwolle' (true for every cotton card)");
   assert(Summary.toSentence(mk("wool"), "en").includes("in matte wool"), "EN unaffected by German gender handling");
+}
+
+console.log("\n— seedDefaults: a skipped mood must not kill pattern/signature (roadmap C1) —");
+{
+  const D = global.DesignDNA;
+  const readNodes = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, "content/nodes", f), "utf8")).nodes;
+  const nodes = [...readNodes("intent.json"), ...readNodes("tshirt.json")];
+
+  // The seed itself: neutral value, non-decisive confidence.
+  const seeded = Flow.seedDefaults(D.create());
+  assert(D.get(seeded, "intent.energy") === 0.5, "seedDefaults sets intent.energy to the neutral 0.5");
+  assert(D.confidence(seeded, "intent.energy") === 0.05, "…at a low confidence (a real mood pick at conf 1 overrides it)");
+  assert(D.confidence(seeded, "intent.energy") < 0.5, "…below the 'decided' threshold → no chip, no maturity/inference effect");
+
+  // Reachability probe: pre-set the category (already chosen), SKIP the mood
+  // question (answered, no effects applied), then walk the engine to see which
+  // gated nodes ever surface. We only test reachability, so we mark each
+  // surfaced node answered without applying its effects.
+  function reachable(dna) {
+    const answered = new Set(["category_select", "mood_calm_bold"]);
+    D.set(dna, "category", "tshirt", 1);
+    const seen = [];
+    for (let i = 0; i < 60; i++) {
+      const n = global.DesignEngine.nextNode(nodes, dna, answered);
+      if (!n) break;
+      seen.push(n.id);
+      answered.add(n.id);
+    }
+    return seen;
+  }
+  const hasPattern = (ids) => ids.some((id) => /pattern/.test(id));
+  const hasSig = (ids) => ids.some((id) => /signature/.test(id));
+
+  // Without the seed (the bug): intent.energy is undefined → `NaN > 0.45` is
+  // false → the pattern node is unreachable forever.
+  const bug = reachable(D.create());
+  assert(!hasPattern(bug), "REGRESSION GUARD: unseeded skip leaves intent.energy undefined → pattern node unreachable");
+
+  // With the seed: pattern surfaces (0.5 > 0.45); signature stays off (0.5 ≯ 0.5).
+  const withSeed = reachable(Flow.seedDefaults(D.create()));
+  assert(hasPattern(withSeed), "seeded skip → the pattern node surfaces again (0.5 > 0.45)");
+  assert(!hasSig(withSeed), "…but signature stays off on a neutral skip (0.5 is not > 0.5)");
+
+  // A real 'calm' pick (0.25) still suppresses the pattern node as designed.
+  const calm = D.create(); D.set(calm, "intent.energy", 0.25, 1);
+  assert(!hasPattern(reachable(calm)), "an explicit 'calm' (0.25) still hides the pattern node (0.25 ≯ 0.45)");
+
+  // A real 'bold' pick (0.8) opens pattern AND signature.
+  const bold = D.create(); D.set(bold, "intent.energy", 0.8, 1);
+  const b = reachable(bold);
+  assert(hasPattern(b) && hasSig(b), "an explicit 'bold' (0.8) opens both pattern and signature");
 }
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
