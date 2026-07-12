@@ -235,10 +235,11 @@ scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smok
                         # — see Deployment
 ```
 
-Unit tests: 25 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+Unit tests: 28 offline suites in `test/` (DNA roundtrip, seam formulas, AI
 fallback + assembled-design contract, export scaling, i18n parity + t()
 interpolation, coded API-error → message, state, persistence, share-link
-encode/decode, pose math, garment-flat builder, DOM-safe spec-view renderer,
+encode/decode, pose math, garment-flat builder, measurement capture
+(read/write/preset), DOM-safe spec-view renderer,
 modal focus-trap containment, design-engine inference — archetype ranking,
 inferred-fill suggestions, warmer/colder refine axes, journey-flow helpers,
 render-preview mappers, $0 preview fallback, client telemetry/DNT, waste-ticker
@@ -803,7 +804,7 @@ The functional PR checks (check name = job id):
 | PR check       | File               | Workflow name | What it runs                                        |
 | -------------- | ------------------ | ------------- | --------------------------------------------------- |
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
-| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (24 offline suites) |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (28 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404)   |
 | `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
