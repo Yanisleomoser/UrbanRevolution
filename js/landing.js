@@ -387,9 +387,19 @@
       if (manifestoTween.scrollTrigger) manifestoTween.scrollTrigger.kill();
       manifestoTween.kill();
     }
+    // Ruhe-/Eintritts-Deckkraft der noch nicht „gescrubbten" Wörter. War 0.13
+    // (≈1.4:1 auf Navy) — unter WCAG: ein Nutzer OHNE reduced-motion sieht die
+    // Wörter beim Eintritt kurz in diesem Ruhezustand, bevor der Scrub sie
+    // aufhellt. (Der reduced-motion-/No-JS-Pfad oben returned vor dem Tween und
+    // lässt sie bei voller Deckkraft — deshalb war nur der fx-Pfad betroffen und
+    // die reduced-motion-Achse des axe-Gates sah nichts.) 0.40 hebt den
+    // Ruhezustand auf ≈3.55:1 — klar über der 3:1-Schwelle für großen Text
+    // (Manifest ist clamp(26px,4.6vw,52px), also durchgängig „large") — und
+    // erhält die Dunkel→Hell-Dramaturgie des Wort-Scrubs (0.40 → 1.0). NICHT
+    // unter ~0.36 senken (fällt unter 3:1). Guard: scripts/verify-manifesto-contrast.mjs.
     manifestoTween = gsap.fromTo(
       el.querySelectorAll(".w"),
-      { opacity: 0.13 },
+      { opacity: 0.4 },
       {
         opacity: 1,
         stagger: 0.04,
