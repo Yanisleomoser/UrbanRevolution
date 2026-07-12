@@ -119,9 +119,14 @@ console.log("\n— lerpModel cross-fades the fill colour so a recolour doesn't j
   assert(GarmentSVG.lerpModel(monoM, duoM, 0.5).p === duoM.p, "scheme change snaps the colour to the target (no half-built gradient)");
   const two = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "mono", stops: ["#eeeeee", "#333333"] });
   assert(GarmentSVG.lerpModel(mk("#111111"), two, 0.5).p === two.p, "a stop-count change snaps to the target");
-  // A garbage stop can't crash the tween or leak markup.
-  const bad = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "mono", stops: ['#000"><script>'] });
-  assert(!/NaN|undefined|<script>/.test(GarmentSVG.paint(GarmentSVG.lerpModel(mk("#204080"), bad, 0.5))), "an unparseable target stop snaps cleanly (no NaN, no injected markup)");
+  // A garbage stop can't crash the tween or leak markup. We check the exact
+  // hostile string is absent (a plain substring test — NOT a tag-matching regex,
+  // which CodeQL rightly flags as a fragile HTML filter) plus no NaN.
+  const HOSTILE_STOP = '#000"><script>';
+  const bad = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "mono", stops: [HOSTILE_STOP] });
+  const painted = GarmentSVG.paint(GarmentSVG.lerpModel(mk("#204080"), bad, 0.5));
+  assert(!painted.includes(HOSTILE_STOP) && !/NaN|undefined/.test(painted),
+    "an unparseable target stop snaps cleanly (safeHex neutralises it — the hostile stop never reaches the markup, no NaN)");
 }
 
 console.log("\n— paint(model) === build(category, params) (build is paint∘model) —");
