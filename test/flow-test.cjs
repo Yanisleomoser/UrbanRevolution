@@ -42,12 +42,13 @@ const slider = { modality: "slider", bind: "silhouette.fit", weightAt: { low: { 
   assert(eq(mid.eff.weight, {}), "a mid value weights no archetype (only the extremes do)");
 }
 
-console.log("\n— resolveEffects · colorGradient (maps the full colour payload) —");
+console.log("\n— resolveEffects · colorGradient (maps scheme + stops; C3: no dead HSL fields) —");
 {
-  const r = Flow.resolveEffects({ modality: "colorGradient" }, { scheme: "duo-gradient", stops: ["#fff", "#000"], value: 0.5, saturation: 0.7 });
+  const r = Flow.resolveEffects({ modality: "colorGradient" }, { scheme: "duo-gradient", stops: ["#fff", "#000"] });
   assert(r.conf === 1, "colour choice is fully confident");
   assert(r.eff.set["color.scheme"] === "duo-gradient" && eq(r.eff.set["color.stops"], ["#fff", "#000"]), "scheme + stops mapped");
-  assert(r.eff.set["color.value"] === 0.5 && r.eff.set["color.saturation"] === 0.7, "value + saturation mapped");
+  assert(!("color.value" in r.eff.set) && !("color.saturation" in r.eff.set),
+    "the render-dead color.value/color.saturation HSL fields are no longer written (roadmap C3)");
 }
 
 console.log("\n— resolveEffects · ranking (decay-weights the order, top option also renders) —");

@@ -89,9 +89,11 @@ const DesignFlow = (() => {
       return { eff, conf: 0.8 };
     }
     if (node.modality === "colorGradient") {
+      // Only scheme + stops — the colour is fully carried by the stops. The old
+      // color.value/color.saturation HSL derivations were read by no renderer
+      // (roadmap C3), so they're no longer written.
       return { eff: { set: {
         "color.scheme": payload.scheme, "color.stops": payload.stops,
-        "color.value": payload.value, "color.saturation": payload.saturation,
       } }, conf: 1 };
     }
     if (node.modality === "ranking") {

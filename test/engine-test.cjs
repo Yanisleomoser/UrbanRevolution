@@ -112,7 +112,7 @@ const calm = {
   jacket_length: "long",
   jacket_material: "wool",
   jacket_finish: 0.2,
-  jacket_color: { set: { "color.scheme": "mono", "color.stops": ["#1a1a1a"], "color.value": 0.2, "color.saturation": 0.1 } },
+  jacket_color: { set: { "color.scheme": "mono", "color.stops": ["#1a1a1a"] } },
   // Detail board: calm touches ONE region and leaves the rest to inference —
   // exactly the partial-answer path the board exists for.
   jacket_details: { collar: "notched" },
@@ -129,7 +129,7 @@ const bold = {
   jacket_length: "cropped",
   jacket_material: "polyester",
   jacket_finish: 0.5,
-  jacket_color: { set: { "color.scheme": "duo-gradient", "color.stops": ["#ec4899", "#06b6d4"], "color.value": 0.4, "color.saturation": 0.85 } },
+  jacket_color: { set: { "color.scheme": "duo-gradient", "color.stops": ["#ec4899", "#06b6d4"] } },
   jacket_pattern: "graphic",
   jacket_pattern_scale: 0.7,
   jacket_details: { closure: "zip", collar: "hood", sleeve: "drop", pockets: "cargo", cuffs: "ribbed", hem: "drawcord" },
@@ -298,7 +298,7 @@ global.GarmentSVG = require(path.join(ROOT, "garment-svg.js"));
 const Preview = require(path.join(ROOT, "render-preview.js"));
 const RENDERED_PATHS = new Set([
   "category", "subArchetype", "length", "silhouette.fit", "silhouette.structure", "silhouette.volume",
-  "fabric.material", "fabric.finish", "fabric.finishWeight", "color.scheme", "color.stops", "color.value", "color.saturation",
+  "fabric.material", "fabric.finish", "fabric.finishWeight", "color.scheme", "color.stops",
   "pattern.type", "pattern.scale", "hardware.finish", "signature", "intent.energy",
   "construction.collar", "construction.closure", "construction.sleeve", "construction.sleeveLength",
   "construction.pockets", "construction.cuffs", "construction.hem", "construction.waistband", "construction.waist",
@@ -338,7 +338,7 @@ const street = {
   category_select: "hoodie",
   hoodie_subarch: "zip", hoodie_fit: 0.9, hoodie_length: "regular", hoodie_sleeve: "drop",
   hoodie_material: "fleece", hoodie_finish: 0.8,
-  hoodie_color: { set: { "color.scheme": "mono", "color.stops": ["#2a9d8f"], "color.value": 0.5, "color.saturation": 0.6 } },
+  hoodie_color: { set: { "color.scheme": "mono", "color.stops": ["#2a9d8f"] } },
   hoodie_pattern: "graphic", hoodie_pattern_scale: 0.8,
   hoodie_details: { pockets: "kangaroo", hem: "ribbed" }, hoodie_hardware: "metal", hoodie_signature: "branding",
   _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
@@ -363,7 +363,7 @@ const couture = {
   category_select: "dress",
   dress_subarch: "slip", dress_fit: 0.75, dress_length: "long", dress_neck: "vneck",
   dress_sleeve: "sleeveless", dress_waist: "fitted", dress_material: "silk", dress_finish: 0.9,
-  dress_color: { set: { "color.scheme": "mono", "color.stops": ["#0a1622"], "color.value": 0.2, "color.saturation": 0.3 } },
+  dress_color: { set: { "color.scheme": "mono", "color.stops": ["#0a1622"] } },
   dress_pattern: "none", dress_signature: "side-slit",
   _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
 };

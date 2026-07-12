@@ -71,8 +71,6 @@ const DesignInference = (() => {
     const a = toRgb(hex), b = toRgb(target);
     return toHex(a.map((v, i) => v + (b[i] - v) * t));
   };
-  const lum = (hex) => { const [r, g, b] = toRgb(hex).map((v) => v / 255); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-  const satOf = (hex) => { const [r, g, b] = toRgb(hex).map((v) => v / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b); return mx === 0 ? 0 : (mx - mn) / mx; };
   const saturate = (hex, t) => {
     const [r, g, b] = toRgb(hex); const gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
     return toHex([r + (r - gray) * t, g + (g - gray) * t, b + (b - gray) * t]);
@@ -119,9 +117,9 @@ const DesignInference = (() => {
   function repaint(dna, fn) {
     const stops = (DesignDNA.get(dna, "color.stops") || []).map(fn);
     if (!stops.length) return;
+    // Only the stops carry colour; the old color.value/color.saturation HSL
+    // derivations were read by no renderer (roadmap C3), so drop them.
     DesignDNA.set(dna, "color.stops", stops, 0.85);
-    DesignDNA.set(dna, "color.value", 1 - lum(stops[0]), 0.85);
-    DesignDNA.set(dna, "color.saturation", satOf(stops[0]), 0.85);
   }
 
   function adjust(dna, axis, dir, lang) {
