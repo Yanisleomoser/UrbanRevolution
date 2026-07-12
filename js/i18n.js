@@ -413,7 +413,7 @@ const I18N = (() => {
       "footer.privacy": "Datenschutz",
       "footer.credits": "Bildnachweise",
       "footer.top": "Zum Seitenanfang",
-      "footer.meta_html": '© 2026 Urban Revolution · Vollautonome Kreislauf-Fertigung · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · Hergestellt mit <span role="img" aria-label="Liebe">♥</span> und KI',
+      "footer.meta_html": '© 2026 Urban Revolution · Vollautonome Kreislauf-Fertigung · <a href="/impressum.html">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a> · Hergestellt mit <span role="img" aria-label="Liebe">♥</span> und KI',
       "footer.meta_fine": "Pre-Launch-Vision · DSGVO-konform · Foto-Auswertung 100 % clientseitig",
 
       // ── Design-Karte (dynamisch) ──
@@ -1055,7 +1055,7 @@ const I18N = (() => {
       "footer.privacy": "Privacy",
       "footer.credits": "Image credits",
       "footer.top": "Back to top",
-      "footer.meta_html": '© 2026 Urban Revolution · Fully autonomous circular factory · <a href="impressum.html">Imprint</a> · <a href="datenschutz.html">Privacy</a> · Made with <span role="img" aria-label="Love">♥</span> and AI',
+      "footer.meta_html": '© 2026 Urban Revolution · Fully autonomous circular factory · <a href="/impressum.html">Imprint</a> · <a href="/datenschutz.html">Privacy</a> · Made with <span role="img" aria-label="Love">♥</span> and AI',
       "footer.meta_fine": "Pre-launch vision · GDPR-compliant · Photo analysis 100% client-side",
 
       // ── Design card (dynamic) ──
