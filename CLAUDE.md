@@ -235,13 +235,15 @@ scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smok
                         # — see Deployment
 ```
 
-Unit tests: 22 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+Unit tests: 24 offline suites in `test/` (DNA roundtrip, seam formulas, AI
 fallback + assembled-design contract, export scaling, i18n parity + t()
 interpolation, coded API-error → message, state, persistence, share-link
 encode/decode, pose math, garment-flat builder, DOM-safe spec-view renderer,
-journey-flow helpers, render-preview mappers, $0 preview fallback, client
-telemetry/DNT, waste-ticker math, landing studio-reveal predicate, API error
-mapping + input validation),
+modal focus-trap containment, journey-flow helpers, render-preview mappers,
+$0 preview fallback, client telemetry/DNT, waste-ticker math, landing
+studio-reveal predicate, API error mapping + input validation, and edge-function
+handler flows — waitlist/track/gallery GET+POST, graceful no-Upstash
+degradation, the consent/rate-limit/whitelist gates),
 run via `npm test` in CI (test.yml). No network needed. A separate `npm run e2e`
 (`e2e.yml`) drives the **real site in headless Chromium** end-to-end (see the CI
 table below). CI additionally runs
@@ -800,7 +802,7 @@ The functional PR checks (check name = job id):
 | PR check       | File               | Workflow name | What it runs                                        |
 | -------------- | ------------------ | ------------- | --------------------------------------------------- |
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
-| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (22 offline suites) |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (24 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404)   |
 | `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
