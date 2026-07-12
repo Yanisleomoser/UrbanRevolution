@@ -601,6 +601,28 @@ const GarmentSVG = (() => {
       }
     }
 
+    // ── Sub-archetype signatures (roadmap Punkt A) ──────────────────────────
+    // The Phase-B "which tee/shirt/…?" card is the first and highest-priority
+    // design decision; besides the fit/length it co-sets, each now carries its
+    // OWN drawn mark so the choice reads even when two options share a fit.
+    // Additive seam lines only — they never fight the fit/length/volume sliders
+    // (that was the aline↔fit desync the audit flagged), and every branch is
+    // gated on the category so it can't fire on the wrong flat.
+    if (p.category === "tshirt" && p.subArchetype === "boxy") {
+      // Dropped shoulder: a soft yoke line easing off the neck to the sleeve.
+      const dy = g.shoulderY + (g.armpitY - g.shoulderY) * 0.44;
+      for (const X of [L, R]) line(`M ${X(g.neckHalf + 4)} ${Y(g.shoulderY + 3)} L ${X(g.chestHalf - 2)} ${Y(dy)}`, 1.3, 0.6);
+    } else if (p.category === "tshirt" && p.subArchetype === "fitted") {
+      // Waist shaping: a pair of gentle princess/dart curves nipping the waist.
+      const yTop = g.armpitY + 8, yBot = g.hemY - 16;
+      for (const X of [L, R]) line(`M ${X(g.chestHalf * 0.52)} ${Y(yTop)} Q ${X(g.waistHalf * 0.46)} ${Y((yTop + yBot) / 2)} ${X(g.waistHalf * 0.54)} ${Y(yBot)}`, 1.1, 0.5);
+    }
+    if (p.category === "shirt" && p.subArchetype === "overshirt") {
+      // Shirt-jacket cue: a horizontal chest yoke seam above the flap pockets.
+      const yy = g.shoulderY + (g.armpitY - g.shoulderY) * 0.5;
+      line(`M ${L(g.chestHalf - 2)} ${Y(yy)} L ${R(g.chestHalf - 2)} ${Y(yy)}`, 1.3, 0.6);
+    }
+
     return s.join("");
   }
 
@@ -764,6 +786,14 @@ const GarmentSVG = (() => {
       const ky = lerp(crotchY, hemY, 0.56);
       out.push(crease(`M ${r(CX + lc - thighHalf * 0.5)} ${Y(ky - 3)} q ${r(thighHalf * 0.5)} ${5} ${r(thighHalf)} ${0}`, dr * 0.6));
       out.push(crease(`M ${r(CX - lc - thighHalf * 0.5)} ${Y(ky - 3)} q ${r(thighHalf * 0.5)} ${5} ${r(thighHalf)} ${0}`, dr * 0.6));
+    }
+    // "Lang/Stack" length pools at the ankle: a couple of short break folds just
+    // above the (now longer) hem so the stacked length reads as fabric gathering,
+    // not merely extra height (audit §pants "Lang/Stack").
+    if (p && p.length === "long") {
+      const sy = hemY - 18;
+      out.push(crease(`M ${r(CX + lc - ankleHalf * 0.5)} ${Y(sy)} q ${r(ankleHalf * 0.5)} ${3.5} ${r(ankleHalf)} ${0}`, dr * 0.65));
+      out.push(crease(`M ${r(CX - lc - ankleHalf * 0.5)} ${Y(sy)} q ${r(ankleHalf * 0.5)} ${3.5} ${r(ankleHalf)} ${0}`, dr * 0.65));
     }
     return out.join("");
   }
