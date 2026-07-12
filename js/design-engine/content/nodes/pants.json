@@ -179,7 +179,7 @@
               "y2kStreet": 0.15
             }
           },
-          "image": "js/design-engine/content/img/material/denim.jpg"
+          "image": "/js/design-engine/content/img/material/denim.jpg"
         },
         {
           "id": "cotton",
@@ -195,7 +195,7 @@
               "utility": 0.1
             }
           },
-          "image": "js/design-engine/content/img/material/cotton.jpg"
+          "image": "/js/design-engine/content/img/material/cotton.jpg"
         },
         {
           "id": "wool",
@@ -211,7 +211,7 @@
               "softCouture": 0.15
             }
           },
-          "image": "js/design-engine/content/img/material/wool.jpg"
+          "image": "/js/design-engine/content/img/material/wool.jpg"
         }
       ]
     },

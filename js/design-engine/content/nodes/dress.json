@@ -238,7 +238,7 @@
               "softCouture": 0.2
             }
           },
-          "image": "js/design-engine/content/img/material/silk.jpg"
+          "image": "/js/design-engine/content/img/material/silk.jpg"
         },
         {
           "id": "cotton",
@@ -251,7 +251,7 @@
               "fabric.material": "cotton"
             }
           },
-          "image": "js/design-engine/content/img/material/cotton.jpg"
+          "image": "/js/design-engine/content/img/material/cotton.jpg"
         },
         {
           "id": "linen",
@@ -267,7 +267,7 @@
               "quietMinimal": 0.1
             }
           },
-          "image": "js/design-engine/content/img/material/linen.jpg"
+          "image": "/js/design-engine/content/img/material/linen.jpg"
         }
       ]
     },
