@@ -22,6 +22,9 @@ const DesignPreview = (() => {
   // shape to the new one (GarmentSVG.lerpModel), so the user SEES the garment
   // reshape (shoulder widening, hem dropping, waist nipping). This is the fix
   // for "the morph works but is so minimal it feels like nothing happens".
+  // lerpModel also cross-fades the fill colour (roadmap C4), so a same-scheme
+  // recolour blends hue over MORPH_MS instead of snapping; reduced-motion and
+  // cross-category switches still take the target instantly (morph isn't run).
   const MORPH_MS = 380; // per-answer reshape: snappy but still legibly animated
   const RETENSION_MS = 620; // genesis re-tension per answer (§5.2): calm but visible
   const lastModel = new WeakMap(); // preview el → last GarmentSVG model

@@ -99,6 +99,31 @@ assert(GarmentSVG.lerpModel(GarmentSVG.model("pants", {}), b, 0.5) === b,
   "incomparable models → returns target b (caller crossfades)");
 assert(GarmentSVG.lerpModel(null, b, 0.5) === b, "null source → returns target b");
 
+console.log("\n— lerpModel cross-fades the fill colour so a recolour doesn't jump (roadmap C4) —");
+{
+  const mk = (hex) => GarmentSVG.model("tshirt", { fit: 0.5, length: "regular", scheme: "mono", stops: [hex], material: "cotton" });
+  const from = mk("#204080"), to = mk("#a04020");
+  const fillOf = (m) => { const x = GarmentSVG.paint(GarmentSVG.lerpModel(from, to, m)); const g = x.match(/fill="(#[0-9a-fA-F]{6})"/); return g ? g[1] : null; };
+  assert(fillOf(0) === "#204080", "t=0 paints the FROM colour (no flash of the target)");
+  assert(fillOf(1) === "#a04020", "t=1 paints the TO colour");
+  assert(fillOf(0.5) === "#604050" && fillOf(0.5) !== fillOf(0) && fillOf(0.5) !== fillOf(1),
+    "t=0.5 is the channel-wise midpoint — the fill interpolates, it doesn't snap");
+  // duo-gradient blends BOTH stops.
+  const dFrom = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "duo-gradient", stops: ["#000000", "#000000"] });
+  const dTo = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "duo-gradient", stops: ["#ffffff", "#808080"] });
+  const dMid = GarmentSVG.paint(GarmentSVG.lerpModel(dFrom, dTo, 0.5));
+  assert(dMid.includes('stop-color="#808080"') && dMid.includes('stop-color="#404040"'), "both gradient stops cross-fade");
+  // A scheme change or a stop-count mismatch is NOT a hue tween → snap to target.
+  const monoM = mk("#204080");
+  const duoM = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "duo-gradient", stops: ["#a04020", "#402080"] });
+  assert(GarmentSVG.lerpModel(monoM, duoM, 0.5).p === duoM.p, "scheme change snaps the colour to the target (no half-built gradient)");
+  const two = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "mono", stops: ["#eeeeee", "#333333"] });
+  assert(GarmentSVG.lerpModel(mk("#111111"), two, 0.5).p === two.p, "a stop-count change snaps to the target");
+  // A garbage stop can't crash the tween or leak markup.
+  const bad = GarmentSVG.model("tshirt", { fit: 0.5, scheme: "mono", stops: ['#000"><script>'] });
+  assert(!/NaN|undefined|<script>/.test(GarmentSVG.paint(GarmentSVG.lerpModel(mk("#204080"), bad, 0.5))), "an unparseable target stop snaps cleanly (no NaN, no injected markup)");
+}
+
 console.log("\n— paint(model) === build(category, params) (build is paint∘model) —");
 // renderFlat tags each call with an incrementing uid (gradient ids gN), so two
 // renders differ only in those ids — normalise them before comparing shape.

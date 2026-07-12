@@ -1189,10 +1189,28 @@ const GarmentSVG = (() => {
     return paintTop(m.p, m.cfg, m.g);
   }
 
-  // Interpolated model: numeric geometry fields lerp a→b; everything else
-  // (discrete params, collar/length strings, cfg) takes the target b. If the
-  // models aren't the same category/kind the shapes aren't comparable, so we
-  // just return the target (caller crossfades / snaps).
+  // #rgb / #rrggbb (/ #rgba / #rrggbbaa, alpha ignored) → [r,g,b] 0..255, or
+  // null if it isn't a valid hex literal (so callers can fall back / snap).
+  function hexToRgb(hex) {
+    if (typeof hex !== "string" || !HEX_RE.test(hex.trim())) return null;
+    let c = hex.trim().slice(1);
+    if (c.length === 3 || c.length === 4) c = c.slice(0, 3).replace(/./g, "$&$&");
+    return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)];
+  }
+  // Interpolate two hex colours channel-wise; null if either won't parse.
+  function lerpHex(from, to, t) {
+    const a = hexToRgb(from), b = hexToRgb(to);
+    if (!a || !b) return null;
+    const ch = (i) => Math.max(0, Math.min(255, Math.round(a[i] + (b[i] - a[i]) * t)));
+    return "#" + [ch(0), ch(1), ch(2)].map((v) => v.toString(16).padStart(2, "0")).join("");
+  }
+
+  // Interpolated model: numeric geometry fields lerp a→b, and the fill colour
+  // (p.stops) cross-fades too (roadmap C4) — a pure recolour otherwise jumped,
+  // because paint() reads p.stops and we used to hand back the target p
+  // untouched. Everything else (discrete params, collar/length strings, cfg)
+  // takes the target b. If the models aren't the same category/kind the shapes
+  // aren't comparable, so we just return the target (caller crossfades / snaps).
   function lerpModel(a, b, t) {
     if (!a || !b || a.cat !== b.cat || a.kind !== b.kind) return b;
     const g = {};
@@ -1200,7 +1218,18 @@ const GarmentSVG = (() => {
       const bv = b.g[k], av = a.g[k];
       g[k] = (typeof bv === "number" && typeof av === "number") ? lerp(av, bv, t) : bv;
     }
-    return { cat: b.cat, kind: b.kind, p: b.p, cfg: b.cfg, g };
+    // Blend the colour stops only when the two colours are structurally
+    // comparable: same scheme, same stop count, all valid hex. A scheme/length
+    // change or the first colour out of the neutral (null-stops) state isn't a
+    // hue tween — snap it to the target as before.
+    let p = b.p;
+    const as = a.p && a.p.stops, bs = b.p && b.p.stops;
+    if (Array.isArray(as) && Array.isArray(bs) && as.length && as.length === bs.length &&
+        (a.p.scheme || null) === (b.p.scheme || null)) {
+      const stops = bs.map((to, i) => lerpHex(as[i], to, t));
+      if (stops.every((s) => s !== null)) p = Object.assign({}, b.p, { stops });
+    }
+    return { cat: b.cat, kind: b.kind, p, cfg: b.cfg, g };
   }
 
   function build(category, params) {
