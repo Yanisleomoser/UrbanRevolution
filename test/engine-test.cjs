@@ -183,6 +183,39 @@ assert(B.order.length <= 15,
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
 assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
 
+console.log("\n— category lands on Q3 DETERMINISTICALLY, not by array order (roadmap C2) —");
+{
+  // At priority 1 the category node scored exactly 0.90 = mood_soft_sharp, so a
+  // pure iteration-order tie decided whether category was Q2 or Q3. Lowering it
+  // to 0.95 (→ 0.855) makes mood_soft_sharp reliably win Q2 and category reliably
+  // land Q3, regardless of how the intent nodes are ordered in the array.
+  const intent = readJSON("content/nodes/intent.json").nodes;
+  const jacket = readJSON("content/nodes/jacket.json").nodes;
+  const openingOrder = (intentNodes) => {
+    const nodeList = [...intentNodes, ...jacket];
+    const dna = DNA.create();
+    DNA.set(dna, "intent.energy", 0.5, 0.05); // C1 seed (mirrors flow.js mount)
+    const answered = new Set();
+    const order = [];
+    for (let i = 0; i < 10; i++) {
+      const n = Engine.nextNode(nodeList, dna, answered);
+      if (!n) break;
+      order.push(n.id);
+      if (n.id === "category_select") break;
+      const eff = (n.pair && n.pair[0] && n.pair[0].effects) || (n.choices && n.choices[0] && n.choices[0].effects) || null;
+      if (eff) DNA.applyEffects(dna, eff, 0.8);
+      answered.add(n.id);
+    }
+    return order;
+  };
+  const normal = openingOrder(intent);
+  const reversed = openingOrder([...intent].reverse());
+  assert(normal.indexOf("category_select") === 2, "category is Q3 with the nodes in file order");
+  assert(reversed.indexOf("category_select") === 2, "category is STILL Q3 with the intent nodes reversed (tie broken deterministically)");
+  assert(JSON.stringify(normal) === JSON.stringify(reversed), "the whole opening is identical regardless of node array order");
+  assert(normal[1] === "mood_soft_sharp", "the second mood pair reliably wins Q2 over the category node");
+}
+
 console.log("\n— Bug 1: pure express (only category) → 100% —");
 const pe = DNA.create();
 DNA.set(pe, "category", "jacket", 1);

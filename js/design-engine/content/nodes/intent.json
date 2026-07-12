@@ -209,7 +209,8 @@
       "phase": "B",
       "modality": "cards",
       "when": "_confidence.category < 0.6",
-      "priority": 1,
+      "_priorityNote": "0.95 (not 1) breaks a score tie deterministically (roadmap C2): at 1 the category node scored exactly 0.90 = the phase-A mood_soft_sharp node, so which one landed on Q2 vs Q3 depended on the node array order. 0.95 → 0.855 keeps the category reliably on Q3 (still far above the depth mood signals ~0.46), independent of ordering.",
+      "priority": 0.95,
       "question": {
         "de": "Was entsteht?",
         "en": "What are we making?"
