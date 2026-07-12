@@ -172,7 +172,18 @@
     if (!target || target.offsetParent === null) target = document.getElementById("design");
     if (target) {
       target.setAttribute("tabindex", "-1");
-      target.focus({ preventScroll: false });
+      // A11y focus (WCAG 2.4.3) — but with preventScroll: WE own the scroll.
+      // A focus- or fragment-driven scroll here fires while the just-un-hidden
+      // studio's ScrollTrigger pin-spacers are still settling, and lands the
+      // section behind the sticky navbar (measured: heading top = −65px, clipped
+      // ~154px). scrollIntoView({block:"start"}) honours the section's
+      // scroll-margin-top (the navbar offset — a single source in CSS, not a JS
+      // magic number); re-asserting on the next frames lets a late pin recalc
+      // resolve to the same, correct rest position instead of a clipped one.
+      target.focus({ preventScroll: true });
+      const align = () => target.scrollIntoView({ block: "start", behavior: "auto" });
+      align();
+      requestAnimationFrame(() => requestAnimationFrame(align));
     }
   }
 

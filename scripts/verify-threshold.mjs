@@ -78,6 +78,15 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
     hash: location.hash,
     focus: document.activeElement && document.activeElement.id,
     engineVisible: (() => { const el = document.getElementById("engine-host"); if (!el) return false; const r = el.getBoundingClientRect(); return r.top < innerHeight && r.bottom > 0; })(),
+    // R1: the first studio heading must land BELOW the sticky navbar, not
+    // clipped behind it (the reveal used to focus-scroll before the pin
+    // spacers settled → heading top = −65px). Clearance = h2.top − navbar.bottom.
+    headingClear: (() => {
+      const h2 = document.querySelector("#design .section-header h2");
+      const shell = document.querySelector(".nav-shell");
+      if (!h2 || !shell) return null;
+      return Math.round(h2.getBoundingClientRect().top - shell.getBoundingClientRect().bottom);
+    })(),
   }));
   check(sawPortal, "the portal overlay appears on the orb click");
   check(growth.length >= 2 && growth[growth.length - 1] > growth[0], `the disc visibly grows (${growth[0]} → ${growth[growth.length - 1]})`);
@@ -87,6 +96,7 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   check(end.hidden === false && end.hash === "#design", `studio revealed + fragment set (hash=${end.hash})`);
   check(end.focus === "design", `focus moved into the studio (activeElement=${end.focus})`);
   check(end.engineVisible, "the journey stage is on screen after the portal");
+  check(end.headingClear != null && end.headingClear >= 0, `the first studio heading lands clear of the navbar, not clipped (clearance: ${end.headingClear}px)`);
   check(errors.length === 0, `no page errors (${errors.length ? errors : "clean"})`);
   await page.screenshot({ path: `${OUT}/portal-after.png` });
   await page.close();
@@ -118,9 +128,19 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(base + "/#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForTimeout(1500);
-  const r = await page.evaluate(() => ({ hidden: document.getElementById("studio").hidden, portal: !!document.querySelector(".lp-portal") }));
+  const r = await page.evaluate(() => ({
+    hidden: document.getElementById("studio").hidden,
+    portal: !!document.querySelector(".lp-portal"),
+    headingClear: (() => {
+      const h2 = document.querySelector("#design .section-header h2");
+      const shell = document.querySelector(".nav-shell");
+      if (!h2 || !shell) return null;
+      return Math.round(h2.getBoundingClientRect().top - shell.getBoundingClientRect().bottom);
+    })(),
+  }));
   check(r.hidden === false, "deep-link: studio visible on load (mobile 390px)");
   check(r.portal === false, "deep-link: no portal");
+  check(r.headingClear != null && r.headingClear >= 0, `deep-link: heading lands clear of the navbar (clearance: ${r.headingClear}px)`);
   check(errors.length === 0, "deep-link: no page errors");
   await page.close();
 }
