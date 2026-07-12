@@ -92,17 +92,35 @@ markup in `index.html`, styles in `css/styles.css`. Live kg readout reuses
 
 ## 4. Remaining roadmap (each its own PR, interactive-not-wallpaper)
 
-Suggested order (highest leverage / most visible first):
+> **Status update (2026-07-12 review):** re-checked against `main` @
+> `e97ec55`. **Every row below is now done except the `#measure` trust
+> component.** `#loop`, `#manifesto`'s metaphor, `#ai-done-right` and `#how`
+> no longer exist as separate sections — they were superseded, not built as
+> originally scoped: the Akt-II rewrite (PRs #382/#386/#387) merged
+> loop/AI-role/how into one `#machine` engineering-simulation section, and
+> the line→circle "signature moment" + manifesto metaphor now live in the
+> pinned `#pivot` beat (`initPivot`/`pivotBendPath`, shipped before this
+> table was last edited but never reflected in it). Verified by reading the
+> current `index.html`/`css/styles.css`, not re-derived from this table.
 
-| Beat | Anchor | Interactive concept (starting point — refine at build time) |
-| ---- | ------ | ----------------------------------------------------------- |
-| **The signature moment** | `#loop` | The pinned circular-economy circle physically **closing** as you scroll — the one "stop-scrolling" interaction. Stage-by-stage transformation synced to the progress arc. Build this as the payoff *after* the calmer beats exist. |
-| **Manifesto** | `#manifesto` | Kinetic typography on the existing word-scrub; visualize the "line becomes a circle" metaphor (a thread/seam that bends into a loop). Integrate with the existing `manifestoTween` ScrollTrigger; kill/rebuild tweens on DE/EN toggle. |
-| **AI done right** | `#ai-done-right` | Make the "demand-AI vs reclaim-AI" contrast a real interactive **diptych** (two opposed states), not two near-identical text cards. STRICT guard: AI only *sorts/reclaims* + *manufactures*, never designs the garment. |
-| **Your style** | `#your-style` | ~~The identity climax + the ONE `--accent-warm` use.~~ **Section removed (2026-07):** the identity message now lives inside `#machine` (AI-role contrast + user steps); the page hands off machine → finale directly. |
-| **How it works** | `#how` | The four steps become self-drawing "artifact vignettes" (prompt → flat → measured flat → spec sheet) the needle stitches along. |
-| **Finale** | `.lp-finale` | The orb CTA becomes the point where the loop visibly *completes* (ties to `#loop`). |
-| Studio headers | `#design`/`#measure`/`#production`/`#faq` | `#measure`: promote the buried privacy line into a designed "stays on this device" trust component. `#production`+`#faq`: "Fabrik-Dossier" — the spec sheet as a credible engineering blueprint (CSS/SVG only). |
+Suggested order (highest leverage / most visible first) — kept for history;
+see the status column for what to actually act on:
+
+| Beat | Anchor | Interactive concept (starting point — refine at build time) | Status |
+| ---- | ------ | ----------------------------------------------------------- | ------ |
+| **The signature moment** | ~~`#loop`~~ → `#pivot` | The pinned circular-economy circle physically **closing** as you scroll — the one "stop-scrolling" interaction. | **done** — `#pivot`: a straight line scroll-scrubs into a circle (`initPivot`/`pivotBendPath`), pinned, hinge sentence + mission statement. |
+| **Manifesto** | `#manifesto` | Kinetic typography on the existing word-scrub; visualize the "line becomes a circle" metaphor. | **done** — word-scrub thesis (`buildManifesto`) ships; the line→circle metaphor itself is carried by `#pivot` directly after it rather than inside the manifesto beat — same payoff, adjacent section. |
+| **AI done right** | ~~`#ai-done-right`~~ → `#machine` | Make the "demand-AI vs reclaim-AI" contrast a real interactive **diptych**, not two near-identical text cards. | **done** — `#machine`'s `.lp-aidr-grid` diptych (`aidr.*` i18n keys), "Auf der Linie" vs "Im Kreis" cards, AI-role guard intact (`aidr.h2_html`: "KI kann die Linie beschleunigen. Oder den Kreis schliessen."). |
+| **Your style** | `#your-style` | ~~The identity climax + the ONE `--accent-warm` use.~~ | **removed (2026-07)** — identity message now lives inside `#machine` (AI-role contrast + user steps); machine hands off to the finale directly. |
+| **How it works** | ~~`#how`~~ → `#machine` | The four steps become self-drawing "artifact vignettes" the needle stitches along. | **done, simpler than scoped** — shipped as a compact `how.*` protocol rail inside `#machine`, not standalone self-drawing vignettes. If the vignette treatment still matters, it's a *new*, smaller-scope idea against the current rail, not a resumption of this row. |
+| **Finale** | `.lp-finale` | The orb CTA becomes the point where the loop visibly *completes*. | **done** — the magnetic circle CTA is the page's geometric conclusion, tying back to `#pivot`'s circle. |
+| Studio headers | `#design`/`#measure`/`#production`/`#faq` | `#measure`: promote the buried privacy line into a designed trust component. `#production`+`#faq`: spec sheet as engineering blueprint. | **split:** `#production`/`#faq` **done** (`.spec-drawing` "Werkstatt-Tinte" print/export treatment, PR #356). `#measure` **still open** — `.photo-privacy` is still 11px italic text (`css/styles.css`), not a designed component. |
+
+**Only open item from this table: the `#measure` privacy trust component.**
+Low effort (one section, existing tokens, no new mechanism — promote the
+existing `measure.photo_privacy` string into a small designed component next
+to the upload control), low risk (static, no motion, no `svh`/scroll
+concerns) — a good low-risk-visual autonomous-merge candidate once built.
 
 ---
 
