@@ -1725,11 +1725,16 @@
     updateLangToggleState();
     toggle.addEventListener("click", (e) => {
       const opt = e.target.closest(".lang-opt");
+      const cur = window.I18N.getLang();
       // Click a specific option, or just flip to the other language.
-      const target = opt
-        ? opt.dataset.lang
-        : window.I18N.getLang() === "de" ? "en" : "de";
+      const target = opt ? opt.dataset.lang : cur === "de" ? "en" : "de";
+      if (!target || target === cur) return;
+      // Each language has its own indexable URL (/ ↔ /en/). Persist the choice
+      // (so the German root respects a chosen DE even for an English browser),
+      // then navigate there — switching language is now a real navigation to a
+      // crawlable page, not just a client-side copy swap. The #hash is kept.
       window.I18N.setLang(target);
+      window.location.assign(window.I18N.langPath(target) + (window.location.hash || ""));
     });
   }
 

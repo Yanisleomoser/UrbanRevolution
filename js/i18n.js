@@ -27,6 +27,14 @@ const I18N = (() => {
       "meta.description": "Urban Revolution ist eine Vision: Du entwirfst dein Kleidungsstück, eine vollautonome Kreislauf-Fabrik soll es eines Tages aus weggeworfener Mode fertigen — nach deinen Massen, ohne Überproduktion. Sei von Anfang an dabei.",
       "meta.og_title": "Erschaffe die Zukunft der Mode — Urban Revolution",
       "meta.og_description": "Eine Vision für Mode ohne Überproduktion: dein Entwurf, eines Tages autonom gefertigt aus recycelter Kleidung. Werde Teil der Bewegung.",
+      "meta.og_image_alt": "Urban Revolution — Vision einer vollautonomen Kreislauf-Fabrik für massgeschneiderte Mode",
+      // JSON-LD-Fliesstexte (Organization/Service). DE == die statischen
+      // Literale im <head> von index.html; scripts/build-en.mjs übersetzt die
+      // JSON-LD-Blöcke für /en/ aus genau diesen Schlüsseln (die FAQPage nutzt
+      // die faq.*-Schlüssel). Single Source of Truth, kein Drift.
+      "ld.org_desc": "Vision einer vollautonomen Kreislauf-Fabrik — selbst gestaltete, massgeschneiderte Mode, eines Tages autonom gefertigt aus recycelter Kleidung",
+      "ld.service_name": "Massgeschneiderte, autonom gefertigte Mode (Vision)",
+      "ld.service_desc": "Die Vision von Urban Revolution: Du entwirfst dein Kleidungsstück nach deinen Massen, und eine vollautonome Kreislauf-Fabrik soll es eines Tages aus weggeworfener Mode fertigen — ohne Überproduktion. Noch keine laufende Produktion.",
 
       // ── Navigation ──
       "nav.skip": "Zum Inhalt springen",
@@ -662,6 +670,13 @@ const I18N = (() => {
       "meta.description": "Urban Revolution is a vision: you design your garment, and a fully autonomous circular factory will one day make it from discarded fashion — to your measurements, without overproduction. Be part of it from the start.",
       "meta.og_title": "Create the future of fashion — Urban Revolution",
       "meta.og_description": "A vision for fashion without overproduction: your design, one day made autonomously from recycled clothing. Become part of the movement.",
+      "meta.og_image_alt": "Urban Revolution — vision of a fully autonomous circular factory for made-to-measure fashion",
+      // JSON-LD prose (Organization/Service) — English twins of the DE keys
+      // above; scripts/build-en.mjs writes these into /en/'s JSON-LD (the
+      // FAQPage reuses faq.*). Vision-framed, exactly like the head copy.
+      "ld.org_desc": "Vision of a fully autonomous circular factory — self-designed, made-to-measure fashion, one day made autonomously from recycled clothing",
+      "ld.service_name": "Made-to-measure, autonomously made fashion (vision)",
+      "ld.service_desc": "Urban Revolution's vision: you design your garment to your measurements, and a fully autonomous circular factory will one day make it from discarded fashion — without overproduction. No live production yet.",
 
       // ── Navigation ──
       "nav.skip": "Skip to content",
@@ -1294,14 +1309,18 @@ const I18N = (() => {
 
   let current = loadLang();
 
-  // Sprachauflösung (Tier 1 der Englisch-Sichtbarkeit) — pure Funktion,
-  // unit-testbar. Reihenfolge:
+  // Sprachauflösung — pure Funktion, unit-testbar. Reihenfolge:
+  //   0. /en(/…)-Pfad (server-gerenderte EN-Seite) — höchste Priorität, damit
+  //      die vorgerenderte englische Kopie NIE von einer veralteten gespeicherten
+  //      Wahl oder einem DE-Browser überschrieben wird.
   //   1. ?lang=-URL-Parameter (explizit + teilbar; wird persistiert)
   //   2. gespeicherte Wahl (localStorage)
   //   3. Browser-Sprache (navigator.languages) — EN-Publikum landet auf EN
   //   4. Default de
-  function resolveLang({ param, saved, navLangs } = {}) {
+  function resolveLang({ path, param, saved, navLangs } = {}) {
     const norm = (v) => String(v || "").slice(0, 2).toLowerCase();
+    // Nur /en bzw. /en/… matcht — /enterprise o.ä. NICHT (kein startsWith-Fehlgriff).
+    if (path && /^\/en(?:\/|$)/.test(String(path))) return "en";
     if (param && SUPPORTED.includes(norm(param))) return norm(param);
     if (saved && SUPPORTED.includes(saved)) return saved;
     for (const l of navLangs || []) {
@@ -1311,10 +1330,12 @@ const I18N = (() => {
   }
 
   function loadLang() {
+    let path = null;
     let param = null;
     try {
-      if (typeof location !== "undefined" && location.search) {
-        param = new URLSearchParams(location.search).get("lang");
+      if (typeof location !== "undefined") {
+        path = location.pathname || null;
+        if (location.search) param = new URLSearchParams(location.search).get("lang");
       }
     } catch {
       /* kein location / kaputter Query-String — egal */
@@ -1327,7 +1348,7 @@ const I18N = (() => {
     }
     const navLangs =
       (typeof navigator !== "undefined" && (navigator.languages || [navigator.language])) || [];
-    const lang = resolveLang({ param, saved, navLangs });
+    const lang = resolveLang({ path, param, saved, navLangs });
     // Eine explizite URL-Wahl überlebt die Navigation: persistieren wie die
     // Toggle-Wahl (setLang) — nur wenn der Parameter sie wirklich bestimmt hat.
     if (param && lang !== saved && SUPPORTED.includes(String(param).slice(0, 2).toLowerCase())) {
@@ -1346,6 +1367,14 @@ const I18N = (() => {
 
   function locale() {
     return current === "de" ? "de-DE" : "en-US";
+  }
+
+  // Canonical, indexable URL path for a language: English is server-rendered at
+  // /en/, German at the site root. The header toggle navigates here (a real URL
+  // per language) instead of only swapping copy client-side — so each language
+  // is a distinct page a visitor can land on, share, and Google can index.
+  function langPath(lang) {
+    return lang === "en" ? "/en/" : "/";
   }
 
   // Resolve a key in the current language, with German as fallback, and the
@@ -1419,6 +1448,8 @@ const I18N = (() => {
     setMetaKey('meta[name="twitter:title"]', "meta.og_title");
     setMetaKey('meta[property="og:description"]', "meta.og_description");
     setMetaKey('meta[name="twitter:description"]', "meta.og_description");
+    setMetaKey('meta[property="og:image:alt"]', "meta.og_image_alt");
+    setMetaKey('meta[name="twitter:image:alt"]', "meta.og_image_alt");
     setMeta('meta[property="og:locale"]', current === "en" ? "en_US" : "de_DE");
   }
 
@@ -1475,6 +1506,7 @@ const I18N = (() => {
     getLang,
     setLang,
     resolveLang,
+    langPath,
     locale,
     t,
     material,

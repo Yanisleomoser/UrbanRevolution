@@ -54,6 +54,26 @@ console.log("\n— resolveLang: ?lang= > gespeichert > navigator > de —");
   assert(R({ param: "xx", saved: "en" }) === "en", "invalid ?lang= falls through to saved");
 }
 
+console.log("\n— resolveLang: the /en path is authoritative (highest priority) —");
+{
+  const R = I18N.resolveLang;
+  assert(R({ path: "/en/" }) === "en", "/en/ → en");
+  assert(R({ path: "/en" }) === "en", "/en (no trailing slash) → en");
+  assert(R({ path: "/en/", saved: "de" }) === "en", "/en/ beats a stale saved 'de' (never clobbers the prerendered page)");
+  assert(R({ path: "/en/", param: "de", saved: "de", navLangs: ["de-DE"] }) === "en", "/en/ outranks every other signal");
+  assert(R({ path: "/", saved: "en" }) === "en", "the root path falls through to the other signals (saved)");
+  assert(R({ path: "/", navLangs: ["de-DE"] }) === "de", "root + DE browser → de (root unchanged)");
+  assert(R({ path: "/enterprise" }) === "de", "/enterprise is NOT matched as /en (no startsWith false-positive)");
+  assert(R({ path: "/impressum.html", param: "en" }) === "en", "a non-en path still lets ?lang= decide");
+}
+
+console.log("\n— langPath: each language's canonical URL —");
+{
+  assert(I18N.langPath("en") === "/en/", "en → /en/");
+  assert(I18N.langPath("de") === "/", "de → /");
+  assert(I18N.langPath("xx") === "/", "unknown language → root (safe default)");
+}
+
 console.log("\n— {placeholder} interpolation —");
 // 'engine.evolved' = "Version {v}" (de). Pick a couple of real keyed strings.
 assert(I18N.t("engine.evolved", { v: 3 }) === "Version 3", "single {v} token is substituted");
