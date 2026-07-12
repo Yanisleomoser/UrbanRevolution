@@ -192,6 +192,7 @@ api/
   gallery.js            # Edge Function — community creations (DNA strings) → Upstash Redis
   track.js              # Edge Function — aggregate-only journey telemetry → Upstash Redis
   waitlist.js           # Edge Function — waitlist signups → Upstash Redis (frontend retired)
+  _lib/rate-limit.js    # Shared per-IP server-side rate limiter (`_` = not a route) — cost-DoS net for the billed proxies
 js/
   config.js             # Source of truth — constants, presets, validators (window.CONFIG)
   i18n.js               # Bilingual DE/EN dictionary + DOM hydration (window.I18N)
@@ -524,7 +525,15 @@ e.g. Recraft V3). Same success/`pending`/`error` response shape and
 - **Setup:** reuses `REPLICATE_API_TOKEN` (no new env var).
 - **Rate limit:** client-side `urev_preview_count` in localStorage,
   `PREVIEW_LIMIT = 30`/browser, charged only on a billable success (mirrors
-  the VTO limit). **Cost** ~$0.04/render, only on explicit click.
+  the VTO limit). **Cost** ~$0.04/render, only on explicit click. That
+  localStorage counter is UI-only — a script POSTing straight to the endpoint
+  skips it, so a **shared server-side per-IP limiter** (`api/_lib/rate-limit.js`,
+  `checkRateLimit`) sits in front of the billed/storage proxies
+  (`generate-design`, `preview-design`, `try-on`, `gallery`): a fixed-window
+  `INCR`+`EXPIRE` counter in the same Upstash Redis the gallery/track/waitlist
+  functions already use (no new env var). It **fails open** — without Upstash
+  configured, or on any store hiccup, requests are never blocked (a transient
+  store issue must not take down a revenue-relevant flow).
 - **Caching:** the render URL is stored on the in-memory design object and,
   if the design is saved, on its `Library` entry (`previewImageUrl`,
   `Library.setPreviewImage`); library tiles fall back to it when there's no
