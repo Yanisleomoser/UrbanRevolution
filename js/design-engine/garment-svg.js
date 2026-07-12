@@ -518,7 +518,15 @@ const GarmentSVG = (() => {
     // centred kangaroo OVER the zip, so a zip hoodie gets two diagonal
     // hand-warmer welt pockets flanking the closure (as on the UR zip hoodie).
     const fullZip = p.closure === "zip" || (cfg.closure === "zip" && p.closure == null);
-    if ((p.pockets === "kangaroo" || (g.collar === "hood" && !p.pockets)) && fullZip) {
+    // A hood with NO explicitly-chosen pocket is the "auto" case; an explicit
+    // "Kängurutasche" pick (p.pockets==="kangaroo") is honoured on its own terms
+    // even on a zip hood, where it previously silently became the auto welts
+    // (roadmap C5 — the tap did nothing).
+    const autoHoodPocket = g.collar === "hood" && !p.pockets;
+    const explicitKangaroo = p.pockets === "kangaroo";
+    if (autoHoodPocket && fullZip) {
+      // Auto case on a zip hood: a full front zip can't carry a centred muff, so
+      // default to two diagonal hand-warmer welt pockets flanking the closure.
       const wy = py + 6, inX = clamp(g.chestHalf * 0.34, 8, 40), outX = clamp(g.chestHalf - 6, 18, 52);
       for (const dir of [-1, 1]) {
         const X = dir < 0 ? L : R;
@@ -526,10 +534,25 @@ const GarmentSVG = (() => {
         s.push(topstitch(`M ${X(inX - 1)} ${Y(wy + 2.5)} L ${X(outX - 1)} ${Y(wy + 18.5)}`, 0.5));
         s.push(`<path d="M ${X(inX)} ${Y(wy - 2)} L ${X(inX)} ${Y(wy + 3.5)} M ${X(outX)} ${Y(wy + 13)} L ${X(outX)} ${Y(wy + 18.5)}" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`);
       }
-    } else if (p.pockets === "kangaroo" || (g.collar === "hood" && !p.pockets)) {
+    } else if (explicitKangaroo && fullZip) {
+      // Explicit "Kängurutasche" on a zip hood (roadmap C5): the choice must
+      // register, but a single continuous muff can't physically cross a
+      // full-length front zip. Draw the real split kangaroo — two mirrored pouch
+      // halves flanking the closure, each with an angled hand opening beside the
+      // zip. Clearly distinct from the auto welts above AND from "Clean" (no
+      // pocket), so the tap is visible; and it stays a producible garment.
+      const kb = clamp(g.chestHalf * 0.72, 20, 42);
+      const gp = clamp(g.chestHalf * 0.14, 6, 16); // zip clearance at the centre
+      const ky0 = py + 2, ky1 = py + 30, kyk = ky0 + 10;
+      for (const dir of [-1, 1]) {
+        const X = dir < 0 ? L : R;
+        s.push(`<path d="M ${X(gp)} ${Y(ky1)} L ${X(kb)} ${Y(ky1)} L ${X(kb)} ${Y(kyk)} L ${X(gp)} ${Y(ky0)} Z" fill="none" stroke="${SEAM}" stroke-width="1.8" stroke-linejoin="round"/>`);
+        line(`M ${X(gp)} ${Y(ky0)} L ${X(gp + 7)} ${Y(ky0 + 12)}`, 1.4, 0.7);
+      }
+    } else if (explicitKangaroo || autoHoodPocket) {
       // Centre muff (kangaroo) pocket: a compact pouch whose angled top corners
       // are the two hand openings — kept well inside the side seams and clear of
-      // the hem.
+      // the hem. Pullover hoodie / any non-zip closure.
       const kb = clamp(g.chestHalf * 0.72, 20, 42), kt = clamp(g.chestHalf * 0.54, 14, 32);
       const ky0 = py + 2, ky1 = py + 30, kyk = ky0 + 10;
       s.push(`<path d="M ${L(kb)} ${Y(ky1)} L ${L(kb)} ${Y(kyk)} L ${L(kt)} ${Y(ky0)} L ${R(kt)} ${Y(ky0)} L ${R(kb)} ${Y(kyk)} L ${R(kb)} ${Y(ky1)} Z" fill="none" stroke="${SEAM}" stroke-width="1.8"/>`);

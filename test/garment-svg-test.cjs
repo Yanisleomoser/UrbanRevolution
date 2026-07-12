@@ -406,5 +406,34 @@ console.log("\n— detailCrop() frames the region; pocket anchor follows its VAL
   assert(kang.y > 200, "kangaroo anchors on the low body");
 }
 
+console.log("\n— kangaroo pocket honours the closure (roadmap C5) —");
+{
+  const hoodie = (extra) => GarmentSVG.build("hoodie", { fit: 0.5, length: "regular", color: "#2b6b8f", material: "cotton", ...extra });
+  const zipKangaroo = hoodie({ closure: "zip", pockets: "kangaroo" });
+  const zipAuto = hoodie({ closure: "zip" });                    // hood, no explicit pocket → welts
+  const zipClean = hoodie({ closure: "zip", pockets: "none" });  // Clean → no pocket
+  const pullKangaroo = hoodie({ closure: "none", pockets: "kangaroo" }); // pullover → central muff
+  const pullClean = hoodie({ closure: "none", pockets: "none" });
+
+  // The bug: on a zip hood the explicit "kangaroo" pick silently rendered the
+  // same welts as the auto default → the tap did nothing. It must now change
+  // the drawing.
+  assert(zipKangaroo !== zipAuto, "REGRESSION GUARD: zip+kangaroo no longer equals the auto welts (the tap is effective)");
+  assert(zipKangaroo !== zipClean, "zip+kangaroo differs from Clean (a pocket is drawn)");
+  // Realism: a single continuous muff can't cross a full front zip — the zip
+  // variant must NOT be the pullover's central muff.
+  assert(zipKangaroo !== pullKangaroo, "zip+kangaroo draws the split pouch, not the impossible central muff-over-zip");
+  // The pullover muff still reacts to the pocket choice.
+  assert(pullKangaroo !== pullClean, "pullover+kangaroo (central muff) still differs from Clean");
+  // Never leak garbage into any variant.
+  [zipKangaroo, zipAuto, zipClean, pullKangaroo, pullClean].forEach((svg) =>
+    assert(svg.startsWith("<svg") && !/NaN|undefined/.test(svg), "…every closure×pocket combo is clean SVG"));
+  // Split pouch survives the fit clamps (slim + oversized) without garbage.
+  ["slim", "oversized"].forEach((f, i) => {
+    const svg = hoodie({ fit: i ? 0.98 : 0.05, volume: i ? "high" : "low", closure: "zip", pockets: "kangaroo" });
+    assert(svg.startsWith("<svg") && !/NaN|undefined/.test(svg), `split pouch stays clean at the ${f} clamp`);
+  });
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
