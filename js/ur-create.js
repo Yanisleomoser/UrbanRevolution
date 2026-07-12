@@ -78,10 +78,10 @@
     if (!stage) return;
     let pairs = [];
     try {
-      const res = await fetch("js/design-engine/content/hero-pairs.json");
+      const res = await fetch("/js/design-engine/content/hero-pairs.json");
       pairs = (await res.json()).pairs || [];
     } catch (_e) { pairs = []; }
-    const DIR = "js/design-engine/content/img/hero/";
+    const DIR = "/js/design-engine/content/img/hero/";
     if (!pairs.length) return;
 
     stage.innerHTML =

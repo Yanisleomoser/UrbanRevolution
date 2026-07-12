@@ -13,7 +13,7 @@
  *   DesignPreview.renderInto(el, dna, opts?)   // opts.realism → show photo
  */
 const DesignPreview = (() => {
-  const PREVIEW_DIR = "js/design-engine/content/img/preview/";
+  const PREVIEW_DIR = "/js/design-engine/content/img/preview/";
   const SCHEME_THRESHOLD = 0.6; // above the inferred 0.5 → user actively chose
 
   // --- silhouette morph ----------------------------------------------------

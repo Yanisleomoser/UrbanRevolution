@@ -227,7 +227,7 @@
               "fabric.material": "cotton"
             }
           },
-          "image": "js/design-engine/content/img/material/cotton.jpg"
+          "image": "/js/design-engine/content/img/material/cotton.jpg"
         },
         {
           "id": "linen",
@@ -243,7 +243,7 @@
               "quietMinimal": 0.1
             }
           },
-          "image": "js/design-engine/content/img/material/linen.jpg"
+          "image": "/js/design-engine/content/img/material/linen.jpg"
         },
         {
           "id": "polyester",
@@ -260,7 +260,7 @@
               "sport": 0.15
             }
           },
-          "image": "js/design-engine/content/img/material/polyester.jpg"
+          "image": "/js/design-engine/content/img/material/polyester.jpg"
         }
       ]
     },

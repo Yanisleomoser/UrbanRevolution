@@ -183,7 +183,7 @@
               "sport": 0.1
             }
           },
-          "image": "js/design-engine/content/img/material/fleece.jpg"
+          "image": "/js/design-engine/content/img/material/fleece.jpg"
         },
         {
           "id": "cotton",
@@ -199,7 +199,7 @@
               "quietMinimal": 0.1
             }
           },
-          "image": "js/design-engine/content/img/material/cotton.jpg"
+          "image": "/js/design-engine/content/img/material/cotton.jpg"
         },
         {
           "id": "polyester",
@@ -216,7 +216,7 @@
               "techAvant": 0.15
             }
           },
-          "image": "js/design-engine/content/img/material/polyester.jpg"
+          "image": "/js/design-engine/content/img/material/polyester.jpg"
         }
       ]
     },
