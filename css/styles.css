@@ -4311,7 +4311,11 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 .make-real[hidden] { display: none; }
 
 /* Sticky-CTA (mobil, immer erreichbar) */
-.sticky-create { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 60; padding: 0.9rem 1.6rem; border-radius: 999px; background: var(--gradient); color: var(--on-accent); font-weight: 700; letter-spacing: 0.04em; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+/* white-space:nowrap ist load-bearing: als `position:fixed; left:50%`-Pill mit
+   `width:auto` schrumpft die Box auf die Breite AB der Viewport-Mitte (nur die
+   rechte Hälfte), sodass „UR Create starten" sonst auf zwei Zeilen umbricht.
+   nowrap zwingt die Ein-Zeilen-Breite, translateX(-50%) zentriert sie wieder. */
+.sticky-create { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 60; padding: 0.9rem 1.6rem; border-radius: 999px; background: var(--gradient); color: var(--on-accent); font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
 .sticky-create[hidden] { display: none; }
 @media (min-width: 861px) { .sticky-create { display: none; } }
 
