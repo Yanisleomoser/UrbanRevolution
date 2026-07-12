@@ -368,6 +368,11 @@ const DesignFlow = (() => {
     // A11y: focus moves to each new question heading as the journey advances —
     // but not on the very first mount (the user just arrived; avoid a jump).
     let firstQuestionShown = false;
+    // Highest phase index the orientation stepper has reached — it must only
+    // ever advance. When a node surfaces slightly out of phase order (e.g. a
+    // Phase-C finish slider scoring just after the Phase-D colour step), the
+    // stepper clamps to this so it never visibly jumps backward. Reset on restart.
+    let maxPhaseIdx = -1;
     const T = (event, props) => { if (window.DesignTelemetry) window.DesignTelemetry.track(event, props); };
 
     hostEl.classList.add("de-stage");
@@ -591,14 +596,22 @@ const DesignFlow = (() => {
         // Regular") and every chip says which decision it reflects.
         const chips = [];
         const cat = DesignDNA.get(dna, "category");
+        // Only surface a chip for a dimension the USER actually decided — its RAW
+        // confidence must clear the threshold. An archetype-inferred fill sits at
+        // exactly the threshold (completeFrom) and must NOT read as a committed
+        // choice; that was the "inferred value shown as decided before its step"
+        // report. The displayed value still comes from previewDna via g() so the
+        // wording matches the flat.
+        const chipTh = (content.attributes && content.attributes.confidenceThreshold) || 0.5;
+        const decided = (path) => DesignDNA.confidence(dna, path) > chipTh;
         if (cat) {
           const word = (path, value) => choiceWord(content.nodes, cat, lang(), path, value);
-          const sub = g("subArchetype"); if (sub) chips.push({ dim: t("chip.style"), text: word("subArchetype", sub) || cap(sub) });
+          const sub = g("subArchetype"); if (sub && decided("subArchetype")) chips.push({ dim: t("chip.style"), text: word("subArchetype", sub) || cap(sub) });
           const fit = g("silhouette.fit");
-          if (typeof fit === "number") chips.push({ dim: t("chip.fit"), text: window.I18N ? window.I18N.t(fit < 0.33 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.33 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular") });
-          const len = g("length"); if (len) chips.push({ dim: t("chip.length"), text: word("length", len) || (window.I18N ? window.I18N.t("length." + len) : len) });
-          const mat = g("fabric.material"); if (mat) chips.push({ dim: t("chip.material"), text: word("fabric.material", mat) || (window.I18N ? window.I18N.material(mat) : mat) });
-          const pat = g("pattern.type"); if (pat && pat !== "none") chips.push({ dim: t("chip.pattern"), text: word("pattern.type", pat) || (window.I18N ? window.I18N.pattern(pat) : pat) });
+          if (typeof fit === "number" && decided("silhouette.fit")) chips.push({ dim: t("chip.fit"), text: window.I18N ? window.I18N.t(fit < 0.33 ? "fit.slim" : fit > 0.66 ? "fit.oversized" : "fit.regular") : (fit < 0.33 ? "Slim" : fit > 0.66 ? "Oversized" : "Regular") });
+          const len = g("length"); if (len && decided("length")) chips.push({ dim: t("chip.length"), text: word("length", len) || (window.I18N ? window.I18N.t("length." + len) : len) });
+          const mat = g("fabric.material"); if (mat && decided("fabric.material")) chips.push({ dim: t("chip.material"), text: word("fabric.material", mat) || (window.I18N ? window.I18N.material(mat) : mat) });
+          const pat = g("pattern.type"); if (pat && pat !== "none" && decided("pattern.type")) chips.push({ dim: t("chip.pattern"), text: word("pattern.type", pat) || (window.I18N ? window.I18N.pattern(pat) : pat) });
         }
         const frag = document.createDocumentFragment();
         chips.forEach((c) => {
@@ -625,13 +638,20 @@ const DesignFlow = (() => {
     // Label it for assistive tech with the current beat ("Design-Phase: Stoff").
     function updateStepper(phase) {
       const p = String(phase || "A").toUpperCase();
-      const ci = PHASE_ORDER.indexOf(p);
-      const beat = PHASE_BEATS[ci < 0 ? 0 : Math.min(ci, PHASE_BEATS.length - 1)];
+      let ci = PHASE_ORDER.indexOf(p);
+      if (ci < 0) ci = 0;
+      // Monotonic: the stepper only ever advances. If a node surfaces out of
+      // phase order (a Phase-C finish slider scoring just after Phase-D colour),
+      // clamp the displayed phase to the furthest reached so the arc never jumps
+      // backward. Phase F (refine) is the natural high-water mark at the end.
+      if (ci < maxPhaseIdx) ci = maxPhaseIdx; else maxPhaseIdx = ci;
+      const shown = PHASE_ORDER[ci] || "A";
+      const beat = PHASE_BEATS[Math.min(ci, PHASE_BEATS.length - 1)];
       // Phase F (refine/generate) has no beat of its own — clamping to E's
       // "Details" would announce the wrong word right as the user arrives at
       // the refine screen (same trap phaseFlash's comment calls out above).
-      const label = p === "F" ? t("engine.refine_title") : t(beat.key);
-      stepperEl.innerHTML = phaseStepper(phase, (k) => t(k));
+      const label = shown === "F" ? t("engine.refine_title") : t(beat.key);
+      stepperEl.innerHTML = phaseStepper(shown, (k) => t(k));
       stepperEl.setAttribute("aria-label", t("engine.phase_aria") + ": " + label);
     }
     function refreshChrome() {
@@ -1061,6 +1081,7 @@ const DesignFlow = (() => {
       dna = DesignDNA.create();
       answered = new Set();
       history.length = 0;
+      maxPhaseIdx = -1; // fresh journey → the stepper starts at Phase A again
       currentNode = null;
       // Direktive: kein Onboarding — sofort die erste Frage (kein Intro-Screen).
       renderNext();

@@ -114,6 +114,13 @@ const GarmentSVG = (() => {
   // escape possible, but the render breaks). Only ever hand out real tints.
   const archTint = (a) => { const v = ARCH_TINT[a]; return typeof v === "string" ? v : null; };
 
+  // Hardware-finish → stroke tone. Three VISIBLY distinct finishes: shiny metal
+  // (bright ink + a filled, glinting pull), brushed matte metal (a mid tone,
+  // lighter than the seam but no glint), and tonal (blends into the dim seam).
+  // Previously matte and tonal both fell to SEAM and rendered pixel-identical.
+  const MATTE_HW = "#AEB2BB";
+  const hwStroke = (hw) => (hw === "metal" ? INK : hw === "matte" ? MATTE_HW : SEAM);
+
   // ---- recolour + material/finish/energy/archetype -------------------------
   // Light stroke always; chosen colour fills as a SOFT tonal wash (energy =
   // calm↔bold drives how present it is). No colour yet → tone from the
@@ -488,9 +495,9 @@ const GarmentSVG = (() => {
     // Centre-front closure. Hardware finish tints it: shiny metal = bright stroke
     // + glint, matte/tonal = the dim seam tone (so "Hardware-Finish" lands visibly).
     const top = g.neckY + (g.collar === "crew" || g.collar === "vneck" ? 26 : 12);
-    const hw = p.hardware === "metal" ? INK : SEAM;
+    const hw = hwStroke(p.hardware);
     if (p.closure === "zip" || (cfg.closure === "zip" && p.closure == null)) {
-      s.push(zipLadder(CX, top, g.hemY - 4, p.hardware === "metal"));
+      s.push(zipLadder(CX, top, g.hemY - 4, p.hardware));
     } else if (p.closure === "button" || (cfg.closure === "button" && p.closure == null)) {
       const n = 6; for (let i = 0; i < n; i++) { const y = top + 8 + (i * (g.hemY - top - 16)) / (n - 1); s.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${hw}" stroke-width="1.8"/>`); }
       line(`M ${CX} ${Y(top)} L ${CX} ${Y(g.hemY - 4)}`, 1.4, 0.5);
@@ -641,9 +648,10 @@ const GarmentSVG = (() => {
   // A zip: a centre rail with a ladder of short teeth + a pull tab. Teeth pitch
   // ~4.5 px, count clamped 8..40 (morph budget). metal → bright ink + filled
   // puller; else the dim seam tone. Constant ink → XSS-safe.
-  function zipLadder(cx, top, bot, metal) {
-    const ink = metal ? INK : SEAM;
-    const railW = metal ? 1.7 : 1.4;
+  function zipLadder(cx, top, bot, finish) {
+    const metal = finish === "metal";
+    const ink = metal ? INK : finish === "matte" ? MATTE_HW : SEAM;
+    const railW = metal ? 1.7 : finish === "matte" ? 1.55 : 1.4;
     const n = clamp(Math.round((bot - top) / 4.5), 8, 40);
     let out = `<path d="M ${r(cx)} ${Y(top)} L ${r(cx)} ${Y(bot)}" fill="none" stroke="${ink}" stroke-width="${railW}" opacity="0.85"/>`;
     for (let i = 0; i <= n; i++) {
@@ -719,7 +727,7 @@ const GarmentSVG = (() => {
   function pantsGeom(p) {
     const fit = clamp(num(p.fit, 0.5), 0, 1);
     const vol = p.volume === "high" ? 1 : p.volume === "low" ? -1 : 0;
-    const topY = 70, hemY = { cropped: 250, regular: 300, long: 318 }[p.length] || 300;
+    const topY = 70, hemY = { cropped: 250, regular: 300, long: 328 }[p.length] || 300;
     const hipHalf = (44 + vol * 7) * bodyK(p, "hip");
     const legTop = hipHalf;                 // hip = widest (kept for anchors/folds)
     const waistHalf = hipHalf * 0.9;        // waist nips in above the seat
@@ -779,7 +787,7 @@ const GarmentSVG = (() => {
     seam.push(`<path d="M ${L(waistHalf)} ${Y(topY)} L ${R(waistHalf)} ${Y(topY)} L ${R(wbBot)} ${Y(topY + 16)} L ${L(wbBot)} ${Y(topY + 16)} Z" fill="rgba(255,255,255,0.05)" stroke="${SEAM}" stroke-width="1.8"/>`);
     if (p.waistband === "belt") {
       for (const x of [-waistHalf + 9, -waistHalf / 2, waistHalf / 2 - 4, waistHalf - 9]) seam.push(`<rect x="${r(CX + x - 2)}" y="${Y(topY + 1.5)}" width="4" height="13" fill="none" stroke="${SEAM}" stroke-width="1.4"/>`);
-      seam.push(`<circle cx="${CX}" cy="${Y(topY + 8)}" r="2.4" fill="none" stroke="${p.hardware === "metal" ? INK : SEAM}" stroke-width="1.6"/>`);
+      seam.push(`<circle cx="${CX}" cy="${Y(topY + 8)}" r="2.4" fill="none" stroke="${hwStroke(p.hardware)}" stroke-width="1.6"/>`);
     } else if (p.waistband === "drawcord") {
       line(`M ${L(7)} ${Y(topY + 16)} L ${L(5)} ${Y(topY + 34)} M ${R(7)} ${Y(topY + 16)} L ${R(5)} ${Y(topY + 34)}`, 1.6, 0.85);
     } else if (p.waistband === "elastic") {

@@ -21,7 +21,8 @@
           "effects": {
             "set": {
               "subArchetype": "tailored",
-              "silhouette.fit": 0.45
+              "silhouette.fit": 0.45,
+              "silhouette.structure": 0.8
             },
             "weight": {
               "softCouture": 0.15
@@ -37,7 +38,8 @@
           "effects": {
             "set": {
               "subArchetype": "slim",
-              "silhouette.fit": 0.12
+              "silhouette.fit": 0.12,
+              "silhouette.structure": 0.35
             }
           }
         },
@@ -50,7 +52,8 @@
           "effects": {
             "set": {
               "subArchetype": "wide",
-              "silhouette.fit": 0.92
+              "silhouette.fit": 0.92,
+              "silhouette.structure": 0.3
             },
             "weight": {
               "y2kStreet": 0.15
@@ -66,7 +69,8 @@
           "effects": {
             "set": {
               "subArchetype": "cargo",
-              "construction.pockets": "cargo"
+              "construction.pockets": "cargo",
+              "silhouette.structure": 0.45
             },
             "weight": {
               "utility": 0.25
