@@ -123,7 +123,10 @@
     confirm.addEventListener("click", () => ctx.commit(payloadFor(scheme, stops)));
     host.appendChild(confirm);
 
-    paint();
+    // No initial ctx.live / no pre-selected swatch: opening the colour atelier
+    // must NOT seed a colour into the DNA. That seed made an un-tapped "Fertig"
+    // ship black mono as if chosen, and painted the flat before any choice. The
+    // flat keeps its neutral archetype tint until the first swatch tap.
   }
 
   window.DEModalities = window.DEModalities || {};

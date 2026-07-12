@@ -15,6 +15,7 @@
 const DesignPreview = (() => {
   const PREVIEW_DIR = "/js/design-engine/content/img/preview/";
   const SCHEME_THRESHOLD = 0.6; // above the inferred 0.5 → user actively chose
+  const PATTERN_THRESHOLD = 0.5; // above the inferred soft-fill (0.4) → user actively picked a pattern
 
   // --- silhouette morph ----------------------------------------------------
   // The flat doesn't just swap on each decision — it ANIMATES from the previous
@@ -126,9 +127,12 @@ const DesignPreview = (() => {
       hem: g("construction.hem"),
       waistband: g("construction.waistband"),
       waist: g("construction.waist"),
-      // Subarchetype reshapes the live flat (puffer voluminous, bomber cropped…),
-      // not just the tile. Hardware finish tints the closure; signature draws an
-      // extra detail — so the Phase-E choices also visibly land on the flat.
+      // Subarchetype is passed through, but only some categories' painters read
+      // it directly (jacket collar/quilting, dress bodice). For hoodie/shirt/
+      // tshirt/pants the sub-archetype reshapes the flat through the concrete
+      // paths its card CO-SETS (fit / length / volume / pockets / structure),
+      // not through this value alone. Hardware finish tints the closure;
+      // signature draws an extra detail — so Phase-E choices also land on the flat.
       subArchetype: g("subArchetype"),
       hardware: g("hardware.finish"),
       signature: g("signature"),
@@ -275,6 +279,17 @@ const DesignPreview = (() => {
 
     const badge = window.I18N ? window.I18N.t("dpreview.fallback_badge") : "STILVORSCHAU";
     const schemeChosen = DesignDNA.confidence(dna, "color.scheme") > SCHEME_THRESHOLD;
+    // ── Honesty gate on SURFACE decisions (colour + decorative pattern) ──────
+    // The live flat must not commit to a colour or a print the user hasn't
+    // reached yet. params() reads the finalized clone, so an archetype-inferred
+    // colour (color.stops filled from the top archetype) and an inferred pattern
+    // would otherwise paint the flat long before their own steps — the reported
+    // "eine Farbe wird zu früh angezeigt". Suppress both until actively chosen:
+    // with no stops, fillSpec falls back to its neutral archetype tint ("no
+    // colour chosen yet"), and the pattern stays off. Silhouette (fit/length/
+    // volume) still takes shape early on purpose — only surface decisions wait.
+    if (!schemeChosen) { p.stops = null; p.scheme = null; }
+    if (DesignDNA.confidence(dna, "pattern.type") <= PATTERN_THRESHOLD) p.pattern = "none";
 
     // Materialisation progress (0..1): the flat develops from faint sketch to
     // fully dressed as the journey matures (GarmentSVG honours p.reveal).

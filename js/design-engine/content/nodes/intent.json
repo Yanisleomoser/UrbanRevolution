@@ -158,9 +158,6 @@
             "en": "Quiet & reduced"
           },
           "effects": {
-            "set": {
-              "silhouette.structure": 0.3
-            },
             "weight": {
               "quietMinimal": 0.4,
               "softCouture": 0.1
@@ -174,9 +171,6 @@
             "en": "Technical & future"
           },
           "effects": {
-            "set": {
-              "silhouette.structure": 0.8
-            },
             "weight": {
               "techAvant": 0.4,
               "sport": 0.1
@@ -190,9 +184,6 @@
             "en": "Loud & street"
           },
           "effects": {
-            "set": {
-              "silhouette.volume": "high"
-            },
             "weight": {
               "y2kStreet": 0.4
             }
@@ -205,9 +196,6 @@
             "en": "Soft & flowing"
           },
           "effects": {
-            "set": {
-              "silhouette.structure": 0.45
-            },
             "weight": {
               "softCouture": 0.4,
               "quietMinimal": 0.1
