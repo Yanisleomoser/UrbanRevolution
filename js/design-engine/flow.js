@@ -14,7 +14,10 @@
  * DesignPreview, DesignSummary, DEModalities, I18N, CONFIG, StateManager.
  */
 const DesignFlow = (() => {
-  const DEFAULT_BASE = "js/design-engine/content/";
+  // Root-absolute so the journey's content JSON resolves from ANY document path
+  // (e.g. the prerendered /en/ page), not just the site root — a relative base
+  // would fetch /en/js/… and 404. Matches the other content fetches in the app.
+  const DEFAULT_BASE = "/js/design-engine/content/";
   const STORAGE_KEY = "urev_journey_v1";
   // Attributes that drive the live flat — the user's value (incl. a live slider
   // drag at confidence 0) must always win over the archetype inference in the

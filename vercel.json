@@ -4,6 +4,15 @@
   "buildCommand": "echo 'Static site — no build step'",
   "outputDirectory": ".",
   "installCommand": "npm install",
+  "redirects": [
+    { "source": "/en", "destination": "/en/", "permanent": true },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "lang", "value": "en" }],
+      "destination": "/en/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

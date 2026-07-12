@@ -107,17 +107,35 @@ async function main() {
     assert(journey.hasPreview, "the live garment/genesis preview SVG renders alongside the question");
     await page.screenshot({ path: join(OUT, "e2e-desktop.png"), fullPage: false });
 
-    // ── 4) Language toggle DE → EN ────────────────────────────────────────
-    section("Language toggle: DE ↔ EN swaps copy and <html lang>");
+    // ── 4) Language toggle navigates to the language's own indexable URL ───
+    section("Language toggle: DE/EN navigates to the per-language URL (/ ↔ /en/) and swaps copy");
     const beforeLang = await page.evaluate(() => document.documentElement.lang);
     const enterBefore = await page.evaluate(() => document.querySelector('[data-i18n="nav.enter"]')?.textContent.trim());
-    await page.evaluate(() => document.getElementById("lang-toggle").click());
-    await page.waitForFunction((prev) => document.documentElement.lang !== prev, beforeLang, { timeout: 5000 });
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 15000 }),
+      page.evaluate(() => document.getElementById("lang-toggle").click()),
+    ]);
+    await page.waitForFunction(() => window.I18N, null, { timeout: 15000 });
     const afterLang = await page.evaluate(() => document.documentElement.lang);
+    const afterPath = new URL(page.url()).pathname;
     const enterAfter = await page.evaluate(() => document.querySelector('[data-i18n="nav.enter"]')?.textContent.trim());
-    assert(beforeLang !== afterLang, `<html lang> flips (${beforeLang} → ${afterLang})`);
+    assert(beforeLang !== afterLang, `<html lang> flips via a real navigation (${beforeLang} → ${afterLang})`);
+    assert(afterLang !== "en" || /^\/en\/?$/.test(afterPath), `the English state lives at its own URL (/en/), got "${afterPath}"`);
     assert(enterBefore && enterAfter && enterBefore !== enterAfter, `nav copy is re-translated ("${enterBefore}" → "${enterAfter}")`);
     await ctx.close();
+
+    // ── 4b) The prerendered English page (/en/) boots as English ──────────
+    section("/en/ is a real, server-rendered English page (lang, title, self-canonical, clean boot)");
+    const enctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: "de-DE" });
+    const enpage = await enctx.newPage();
+    watchErrors(enpage, errors);
+    await enpage.goto(base + "/en/", { waitUntil: "networkidle", timeout: 30000 });
+    await enpage.waitForFunction(() => window.I18N, null, { timeout: 15000 });
+    assert(await enpage.getAttribute("html", "lang") === "en", "/en/ serves <html lang=en> even to a DE-locale browser (baked, not clobbered)");
+    assert(/create the future of fashion/i.test(await enpage.title()), "/en/ has the English <title>");
+    assert(/\/en\/$/.test(await enpage.evaluate(() => document.querySelector("link[rel=canonical]")?.href || "")), "/en/ self-canonicalises to …/en/");
+    assert(await enpage.evaluate(() => document.querySelector('[data-i18n="nav.enter"]')?.textContent.trim()) === "Enter UR Create", "/en/ renders English nav copy");
+    await enctx.close();
 
     // ── 5) Deep-link reveal (#dna=…) ──────────────────────────────────────
     section("Deep-link: a #dna= share link opens the studio on load");
