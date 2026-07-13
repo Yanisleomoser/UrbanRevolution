@@ -4322,6 +4322,41 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 .sticky-create[hidden] { display: none; }
 @media (min-width: 861px) { .sticky-create { display: none; } }
 
+/* R4 · „Nach oben"-FAB (mobil): bodenverankert wie .sticky-create — ein oben
+   verankerter Layer würde iOS-WebKit #297779 auslösen (siehe .navbar). Neutrales
+   Glas, KEIN Verlauf: der zentrale Pill trägt die Primär-Aktion, dieser FAB nur
+   die Utility. Bottom-rechts, damit er den mittigen Pill nie überdeckt. */
+.to-top {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    z-index: 60;
+    width: 46px; height: 46px; padding: 0;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: rgba(10, 22, 34, 0.92);
+    border: 1px solid var(--border-field);
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.25s var(--ease-out), transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.to-top svg { width: 22px; height: 22px; display: block; }
+.to-top:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+.to-top[hidden] { display: none; }
+@media (min-width: 861px) { .to-top { display: none; } }
+/* Schmale Phones (≤360px): der zentrierte Pill (~210px breit) und der Eck-FAB
+   lägen sonst im selben Bodenband zu dicht (unter ~330px sogar überlappend).
+   Hier hebt sich der FAB sauber ÜBER den Pill — gestapelt statt gequetscht.
+   80px ≈ Pill-Höhe (~54px) + Basis-Abstand (14px) + Lücke (12px). */
+@media (max-width: 360px) {
+    .to-top { bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .to-top { transition: none; }
+    .to-top:hover { transform: none; }
+}
+
 /* Concept-Studio (Direktive Schritte 3+4): Varianten-Grid + EVOLVE-Kette */
 .de-concepts { margin: 18px 0 6px; }
 /* §8 Refine-Crescendo: grössere Kacheln auf hellerer Bühne, jede Richtung mit
