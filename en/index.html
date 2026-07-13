@@ -92,7 +92,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="/css/styles.css?v=20260713-border-contrast">
+    <link rel="stylesheet" href="/css/styles.css?v=20260713-hero-garment">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -117,6 +117,10 @@
     <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/fraunces-400-700-normal-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/fraunces-400-700-italic-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/poppins-400-normal-latin.woff2">
+    <!-- R3: the hero photo is the LCP element — preload the viewport-matched crop
+         at high priority so it paints fast (mobile gets the portrait, desktop the wide). -->
+    <link rel="preload" as="image" href="/assets/hero-wide.jpg" media="(min-width: 701px)" fetchpriority="high">
+    <link rel="preload" as="image" href="/assets/hero-2.jpg" media="(max-width: 700px)" fetchpriority="high">
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
@@ -335,6 +339,17 @@
          interaktivem Faden-Partikelfeld, Manifest, Kreislauf, Zahlen, Finale.
          Die CTAs öffnen das UR-Create-Studio (#studio, unten). -->
     <section class="lp-hero" id="top">
+        <!-- R3: „Reclaimed Light"-Editorial füllt die leere Hälfte des Heros — das
+             Kleidungsstück wird endlich sichtbar (Desktop: Modell rechts, Copy links;
+             Mobil: Hochkant-Fassung). Ein gerichteter Scrim hält die Textspalte lesbar
+             und blendet die Aufnahme ins Midnight-Bg. Dekorativ → alt="" + aria-hidden;
+             das Faden-Canvas bleibt als feiner Overlay darüber (Interaktion überlebt). -->
+        <div class="lp-hero-media" aria-hidden="true">
+            <picture>
+                <source media="(max-width: 700px)" srcset="assets/hero-2.jpg" width="768" height="1376">
+                <img src="/assets/hero-wide.jpg" alt="" width="1872" height="1056" fetchpriority="high" decoding="async">
+            </picture>
+        </div>
         <canvas class="lp-hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
         <!-- Die eine Linie — der graue Maschinen-Faden, aus dem Preloader übergeben,
              läuft in der Gosse hinter der Headline weiter (fx zeichnet ihn ein). -->

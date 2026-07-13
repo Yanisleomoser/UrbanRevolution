@@ -4525,11 +4525,57 @@ html:not(.fx) .lp-loader { display: none; }
     flex-direction: column;
     justify-content: center;
 }
+/* R3: hero photography fills the empty half. Layer order (back→front):
+   photo → directional scrim → plucked-thread canvas → copy. The scrim keeps the
+   left copy column readable and dissolves the shot into the midnight bg; the
+   thread canvas stays a subtle overlay so the signature interaction survives. */
+.lp-hero-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.lp-hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 80% 50%;   /* keep the model (right of the wide frame) in view */
+}
+.lp-hero-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* left (copy) dark → right (garment) clear, plus a bottom blend into Act I */
+    background:
+        linear-gradient(90deg, var(--bg) 4%, rgba(10, 22, 34, 0.82) 33%, rgba(10, 22, 34, 0.32) 64%, rgba(10, 22, 34, 0.05) 100%),
+        linear-gradient(0deg, var(--bg) 1%, rgba(10, 22, 34, 0) 24%);
+}
 .lp-hero-canvas {
     position: absolute;
     inset: 0;
+    z-index: 0;   /* later in DOM than the photo → paints over it, under the copy */
     width: 100%;
     height: 100%;
+}
+/* Mobile: portrait crop (hero-2). The copy is tall and centred, so the shot
+   reads as a moody backdrop — a slightly stronger, top+bottom-weighted veil keeps
+   every line readable while the garment + light-threads still show through. */
+@media (max-width: 700px) {
+    .lp-hero-media img { object-position: 50% 24%; }
+    .lp-hero-media::after {
+        background:
+            linear-gradient(180deg, rgba(10, 22, 34, 0.78) 0%, rgba(10, 22, 34, 0.6) 38%, rgba(10, 22, 34, 0.62) 62%, rgba(10, 22, 34, 0.72) 82%, var(--bg) 100%);
+    }
+}
+/* R3: the small hero copy can sit over lit areas of the photo on mobile, where
+   axe can't measure contrast against image pixels. A soft shadow guarantees
+   legibility over the shot; on the dark desktop scrim it's invisible. The huge
+   display headline stays shadow-free (large + bold reads cleanly on its own). */
+.lp-hero-eyebrow,
+.lp-hero-sub,
+.lp-hero-hint {
+    text-shadow: 0 1px 10px rgba(6, 14, 22, 0.55);
 }
 .lp-hero-inner {
     position: relative;
