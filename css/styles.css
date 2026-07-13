@@ -4891,6 +4891,18 @@ html:not(.fx) .lp-loader { display: none; }
     /* Unter dem Typenschild (viewBox y 26–72 ≈ 22–60 px bei 1000 px Breite),
        nicht darüber — sonst verdeckt der Hinweis den SIMULATION-Schriftzug. */
     .lp-machine-swipe { display: block; top: 68px; }
+    /* R11: Der Bauplan ist breiter als der Viewport und scrollt hier horizontal.
+       Eine weiche Kante an beiden Seiten macht ihn als „es geht weiter →" lesbar,
+       statt Wörter hart abzuschneiden — ergänzt den SWIPE-Hinweis. Die Maske
+       sitzt am Container-Rand (nicht am gescrollten Inhalt), das Fade-Fenster
+       bleibt beim Scrollen stehen. Nur Darstellung; Scroll/Fokus unberührt. */
+    .lp-machine-scroll {
+        -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+        mask-image: linear-gradient(90deg, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+    }
+    /* Beim Tastatur-Fokus die Maske aussetzen, damit der Fokus-Ring an allen
+       Kanten kräftig sichtbar bleibt (WCAG 2.4.7). */
+    .lp-machine-scroll:focus-visible { -webkit-mask-image: none; mask-image: none; }
 }
 /* SIMULATION-Stempel: eingeblendet, sobald die Kamera in eine Stufe zoomt —
    die Vorlaunch-Ehrlichkeit reist mit jeder Bildschirmfüllung mit. */
