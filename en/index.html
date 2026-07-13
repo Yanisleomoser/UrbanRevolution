@@ -92,7 +92,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="/css/styles.css?v=20260713-hover-language">
+    <link rel="stylesheet" href="/css/styles.css?v=20260713-to-top">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -1506,6 +1506,18 @@
 
     <a id="sticky-create" class="sticky-create" href="#design" hidden="" data-i18n="nav.enter">Enter UR Create</a>
 
+    <!-- R4 · Mobil-Navigation: Auf Touch scrollt die Kopfzeile bewusst weg
+         (position:relative, iOS-WebKit #297779) — es gibt danach keinen
+         persistenten Weg zurück zum Seitenanfang/zur Sprache. Dieser
+         bodenverankerte „Nach oben"-FAB füllt die Lücke iOS-sicher (ein
+         VIEWPORT-verankerter TOP-Layer würde #297779 erneut auslösen; unten
+         verankert ist bewiesen unbedenklich wie .sticky-create). Neutrales
+         Glas statt Verlauf: der zentrale Pill trägt die Primär-Aktion
+         (vorwärts ins Studio), der FAB nur die Utility (zurück nach oben). -->
+    <button id="to-top" class="to-top" type="button" hidden="" data-i18n-aria-label="footer.top" aria-label="Back to top">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 19V6M6.5 11.5 12 6l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </button>
+
     </main>
 
     <footer class="footer">
@@ -1580,7 +1592,7 @@
     <script defer="" src="/js/spec-view.js"></script>
     <script defer="" src="/js/app.js"></script>
     <script defer="" src="/js/flair.js"></script>
-    <script defer="" src="/js/ur-create.js?v=20260713-hero-capture"></script>
+    <script defer="" src="/js/ur-create.js?v=20260713-to-top"></script>
     <script defer="" src="/js/ambient-ticker.js"></script>
     <script defer="" src="/js/facts-mass.js?v=20260709-reclaimed-light2"></script>
     <script defer="" src="/js/faden.js"></script>

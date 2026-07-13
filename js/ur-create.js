@@ -469,6 +469,11 @@
     const design = $("#design");
     const community = $("#community");
     const machine = $("#machine");
+    // R4 · „Nach oben"-FAB teilt sich die Sichtbarkeitslogik des Pills: mobil,
+    // sobald der Hero durchgescrollt ist, und tritt in denselben eigenen-CTA-
+    // Sektionen (#design/#community/#machine) zurück. So schweben nie zwei
+    // Boden-Elemente über der Studio-/Sphären-/Bauplan-UI.
+    const toTop = $("#to-top");
     // Der Pill erscheint nur mobil (CSS: `.sticky-create { display:none }` ab
     // 861px). Diese Media-Query spiegelt exakt diesen Breakpoint, damit der
     // Scroll-Handler auf Desktop GAR KEIN Layout misst — vorher las er dort 2–3
@@ -487,7 +492,11 @@
     let scheduled = false;
     const update = () => {
       scheduled = false;
-      if (!mobileMq.matches) { if (!cta.hidden) cta.hidden = true; return; }
+      if (!mobileMq.matches) {
+        if (!cta.hidden) cta.hidden = true;
+        if (toTop && !toTop.hidden) toTop.hidden = true;
+        return;
+      }
       const past = window.scrollY > heroH * 0.8;
       // In UR Create und in der Community-Sphäre hat der Moment eigene CTAs —
       // dort tritt der Sticky-Button zurück. Ebenso in der Maschinen-Simulation
@@ -495,6 +504,7 @@
       // scrollenden Bauplan und die Stationskarten (R11), während dort ohnehin
       // die Stationskarten selbst ins Studio führen.
       cta.hidden = !past || designInView || communityInView || machineInView;
+      if (toTop) toTop.hidden = cta.hidden;
     };
     // Scroll-Events zu EINEM Read pro Frame zusammenfassen (rAF-Throttle);
     // der rohe Handler las bei jedem Event synchron Layout und thrashte so.
@@ -515,6 +525,17 @@
       if (design) io.observe(design);
       if (community) io.observe(community);
       if (machine) io.observe(machine);
+    }
+    if (toTop) {
+      toTop.addEventListener("click", () => {
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+        // A11y: Fokus zurück an den Seitenanfang (die Marke) für Tastatur-Nutzer;
+        // preventScroll, damit das Fokussieren die weiche Scroll-Bewegung nicht
+        // überspringt. Die Kopfzeile ist am Seitenanfang wieder sichtbar.
+        const brand = document.querySelector(".lp-brand");
+        if (brand && brand.focus) brand.focus({ preventScroll: true });
+      });
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", () => { heroH = hero.offsetHeight; onScroll(); }, { passive: true });
