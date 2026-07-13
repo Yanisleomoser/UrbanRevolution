@@ -389,7 +389,13 @@
     }
     manifestoTween = gsap.fromTo(
       el.querySelectorAll(".w"),
-      { opacity: 0.13 },
+      // A11y floor (R5): a real (non-reduced-motion) reader must never see the
+      // thesis dim below WCAG-AA contrast. The words are #eef4f8 on the midnight
+      // bg at ≥26px (large text → 3:1 threshold); opacity 0.42 keeps the dimmest,
+      // just-entered word at ≈3.6:1. The old 0.13 looked filmic but composited to
+      // 1.41:1 — 27 serious axe nodes, the thesis literally unreadable mid-scrub.
+      // 0.42 → 1 still reads as a clear "words light up as you read" reveal.
+      { opacity: 0.42 },
       {
         opacity: 1,
         stagger: 0.04,
