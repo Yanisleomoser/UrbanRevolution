@@ -4484,7 +4484,7 @@ html:not(.fx) .lp-loader { display: none; }
     font-weight: 500;
     letter-spacing: 0.02em;
     text-decoration: none;
-    transition: transform 0.25s var(--ease-out), box-shadow 0.25s, border-color 0.25s;
+    transition: transform 0.25s var(--ease-out), box-shadow 0.25s, border-color 0.25s, filter 0.25s;
 }
 .lp-btn--primary {
     background: var(--gradient-cta);
@@ -4505,7 +4505,15 @@ html:not(.fx) .lp-loader { display: none; }
     pointer-events: none;
 }
 .lp-btn--primary:hover::before { transform: translateX(100%); }
-.lp-btn--primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+/* R10: die dominante CTA soll unter dem Cursor klar reagieren (vorher war der
+   Hover ~unsichtbar: nur diffuser Glow + 2px Lift). Jetzt gestapelter Schatten
+   (Tiefe + Teal-Glow) + etwas mehr Lift + ein leichtes Aufleuchten des Verlaufs
+   (Sättigung/Helligkeit statt hartem Winkel-Wechsel). Alles ≤250 ms, Tokens. */
+.lp-btn--primary:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft), var(--shadow-glow);
+    filter: saturate(1.06) brightness(1.05);
+}
 .lp-btn--ghost {
     /* R13: an interactive control's edge needs ≥3:1 (WCAG 1.4.11). --border
        (#25415a) is only ~1.7:1 on the midnight bg, so the ghost button's outline
@@ -4514,7 +4522,9 @@ html:not(.fx) .lp-loader { display: none; }
     border: 1px solid var(--border-field);
     color: var(--text-dim);
 }
-.lp-btn--ghost:hover { border-color: var(--accent); color: var(--text); }
+/* R10: Ghost-CTA teilt die Hover-Sprache der Primär-CTA — Kante zündet auf
+   Accent, dazu ein sanfter Lift + Teal-Halo (vorher nur Kanten-/Textwechsel). */
+.lp-btn--ghost:hover { border-color: var(--accent); color: var(--text); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
 
 /* ── Hero ── */
 .lp-hero {
@@ -5096,9 +5106,12 @@ html.fx .m-tread { animation: m-tread-run 1.4s linear infinite; }
     border-radius: var(--radius);
     background: rgba(238, 244, 248, 0.015);
     padding: 16px 16px 14px;
-    transition: border-color 0.25s, background 0.25s, transform 0.25s;
+    transition: border-color 0.25s, background 0.25s, transform 0.25s, box-shadow 0.25s;
 }
-.lp-m-st:hover { transform: translateY(-2px); border-color: var(--border-field); }
+/* R10: die Stationskarten sollen unter dem Cursor „zünden" — Kante auf Accent
+   (Teal) statt gedämpftem --border-field, dazu Tiefe per Schatten. Der aktive
+   Zustand (aria-pressed, Aqua) bleibt darüber definiert und gewinnt. ≤250 ms. */
+.lp-m-st:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--shadow-soft); }
 .lp-m-st[aria-pressed="true"] {
     border-color: rgba(126, 224, 207, 0.55);
     background: rgba(126, 224, 207, 0.05);
