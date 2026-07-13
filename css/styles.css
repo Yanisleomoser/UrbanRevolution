@@ -4593,6 +4593,94 @@ html:not(.fx) .lp-loader { display: none; }
 @media (prefers-reduced-motion: reduce) {
     .lp-hero-hint { display: none; }
 }
+/* ── Hero-Garment (R3) ─────────────────────────────────────────────────────
+   Das „Reclaimed Light"-Foto claimt die rechte Hero-Hälfte (Split-Hero); auf
+   Mobil liegt es als Vollbild-Bühne hinter der Copy. Es liegt UNTER dem
+   transparenten Weave-Canvas (clearRect je Frame), sodass die gezupften Fäden
+   das Foto überlagern. Navy-Scrim wie sonst auf der Site (rgba(10,22,34,α)):
+   löst die Bildkante in die Copy-Spalte auf UND sichert AA-Kontrast für Text,
+   der das Foto berührt (dieselbe Lehre wie R5 — Text über Foto braucht Scrim). */
+.lp-hero-media {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 44%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.lp-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 24%;
+    display: block;
+}
+/* Desktop-Naht: linke Bildkante löst sich nach links in die Copy-Spalte (Navy) auf. */
+.lp-hero-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+        var(--bg) 0%,
+        rgba(10, 22, 34, 0.72) 22%,
+        rgba(10, 22, 34, 0) 60%);
+}
+@media (min-width: 1024px) {
+    .lp-hero-eyebrow,
+    .lp-hero-title,
+    .lp-hero-sub,
+    .lp-hero-ctas,
+    .lp-hero-hint { max-width: min(600px, 48%); }
+    /* Im Split ist links nur die halbe Breite → kompaktere (immer noch grosse)
+       Headline, damit „Not for all." nicht unter das Foto läuft. NUR hier —
+       auf Mobil/Tablet (Vollbild) bleibt die Headline in voller Grösse. */
+    .lp-hero-title { font-size: clamp(44px, 6.2vw, 104px); }
+}
+/* Mobil/Tablet (≤1023): Foto als Vollbild-Bühne. WICHTIG (a11y, WCAG 1.4.3):
+   der Text-Scrim ist an die COPY gebunden, NICHT an den Viewport — sonst sitzt
+   auf kurzen/Landscape-Phones der Eyebrow/Sub über hellen Lichtspuren (gemessen
+   bis ~2.4:1). Der copy-getragene, volldeckende Navy-Rücken stellt sicher, dass
+   Text — wie überall auf der Seite — auf --bg steht (bewährter AA-Kontrast).
+   axe erkennt Kontrast über Rasterbildern nicht, daher bewusst deckend. */
+@media (max-width: 1023px) {
+    .lp-hero-media { inset: 0; width: 100%; }
+    .lp-hero-img { object-position: 50% 16%; }
+    /* Bild-Scrim NUR fürs sanfte Abdunkeln — trägt den Text NICHT. */
+    .lp-hero-media::after {
+        background: linear-gradient(180deg,
+            rgba(10, 22, 34, 0.08) 0%,
+            rgba(10, 22, 34, 0.26) 58%,
+            rgba(10, 22, 34, 0.46) 100%);
+    }
+    .lp-hero-inner { position: relative; }
+    .lp-hero-inner::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100vw;
+        top: -46px;
+        bottom: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(180deg, rgba(10, 22, 34, 0) 0%, var(--bg) 46px);
+    }
+    /* „SCROLL" bleibt über dem Copy-Rücken sichtbar. */
+    .lp-scroll-cue { z-index: 2; }
+}
+/* Nur hohe Portrait-Viewports schieben die Copy an den Fuss; kurze/Landscape-
+   Phones behalten die gestraffte, zentrierte Anordnung (primäre CTA über der
+   Falte — sonst überschreibt padding-bottom die @media(max-height:660)-Straffung). */
+@media (max-width: 1023px) and (min-height: 661px) {
+    .lp-hero { justify-content: flex-end; }
+    .lp-hero-inner { padding-top: 40px; padding-bottom: clamp(96px, 14vh, 140px); }
+}
+/* Kurze Viewports (Landscape-Phones, kurze Laptops): Headline höhen-skaliert,
+   damit die primäre CTA über der Falte bleibt. MUSS nach der Basis- UND der
+   ≥1024-Headline stehen (gleiche Spezifität → Quell-Reihenfolge entscheidet). */
+@media (max-height: 660px) {
+    .lp-hero-title { font-size: clamp(32px, 9vh, 64px); }
+}
 .lp-scroll-cue {
     position: absolute;
     left: 50%;

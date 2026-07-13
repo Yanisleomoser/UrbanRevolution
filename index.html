@@ -94,7 +94,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260712-sticky-cta">
+    <link rel="stylesheet" href="css/styles.css?v=20260712-hero-garment">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -119,6 +119,10 @@
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/fraunces-400-700-normal-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/fraunces-400-700-italic-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/poppins-400-normal-latin.woff2">
+    <!-- Hero-Garment (R3): das „Reclaimed Light"-Foto ist das kontrollierte
+         LCP-Element — früh + hoch priorisiert laden, damit es nicht erst spät
+         reinploppt. Dekoratives Foto (alt=""), rechte Hero-Hälfte / Mobil-Bühne. -->
+    <link rel="preload" as="image" href="/assets/hero-5.jpg" fetchpriority="high">
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
@@ -321,6 +325,13 @@
          interaktivem Faden-Partikelfeld, Manifest, Kreislauf, Zahlen, Finale.
          Die CTAs öffnen das UR-Create-Studio (#studio, unten). -->
     <section class="lp-hero" id="top">
+        <!-- Hero-Garment (R3): dekoratives „Reclaimed Light"-Foto (die Copy trägt
+             die Bedeutung → alt=""). Liegt UNTER dem transparenten Weave-Canvas,
+             sodass die gezupften Fäden das Foto überlagern (die Foto-Lichtspur =
+             derselbe Faden). Split-Hero rechts / Vollbild-Bühne auf Mobil. -->
+        <picture class="lp-hero-media" aria-hidden="true">
+            <img class="lp-hero-img" src="/assets/hero-5.jpg" alt="" fetchpriority="high" decoding="async" width="768" height="1376">
+        </picture>
         <canvas class="lp-hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
         <!-- Die eine Linie — der graue Maschinen-Faden, aus dem Preloader übergeben,
              läuft in der Gosse hinter der Headline weiter (fx zeichnet ihn ein). -->
