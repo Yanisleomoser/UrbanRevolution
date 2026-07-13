@@ -121,6 +121,16 @@ Low effort (one section, existing tokens, no new mechanism — promote the
 existing `measure.photo_privacy` string into a small designed component next
 to the upload control), low risk (static, no motion, no `svh`/scroll
 concerns) — a good low-risk-visual autonomous-merge candidate once built.
+Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
+11px italic text in `css/styles.css` — unchanged.
+
+> **Status update (2026-07-13):** two accessibility fixes landed on surfaces
+> this doc discusses, from a separate never-committed review (see
+> `docs/WEBSITE-IMPROVEMENTS.md`'s 2026-07-13 status update for the full
+> accounting) — the manifesto word-scrub's opacity floor was raised to clear
+> WCAG-AA large-text contrast in full motion (27/30 axe-serious nodes fixed),
+> and the ghost-button border was darkened to clear WCAG 1.4.11 non-text
+> contrast. Neither changes this doc's own open item above.
 
 ---
 
