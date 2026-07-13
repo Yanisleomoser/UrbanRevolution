@@ -18,6 +18,66 @@
 > deliberate call — see the flag in its section, don't just build it as
 > written.
 
+> **Status update (2026-07-13 review, read before acting):** re-checked
+> against `main` @ `5e5cbf3`. **12 PRs (#390–#409) landed since the
+> 2026-07-12 sync above — none of them are in this doc, because they came
+> from a separate, never-committed "redesign brief" plus a separate
+> "Design-Studio-Audit," not from this backlog.** Full accounting:
+> - **#03 is now partially shipped:** GSAP de-duped to one version (PR #389,
+>   2026-07-12). AVIF wiring and script minification are still open — see
+>   §03 below, unchanged otherwise.
+> - **#01 has had zero code movement** — `isGuardedTap`/`COMMIT_GUARD_MS` is
+>   still in `flow.js` verbatim, `jacket.json` node weights are byte-identical
+>   to the 2026-07-12 review. It remains the single largest open item, see
+>   the re-ranked table at the bottom (unchanged recommendation).
+> - **A "redesign brief" (R-series) shipped R1, R2, R3, R5, R11, R13** as six
+>   separate PRs (#400/#409/#408/#406/#404/#407) — studio-reveal scroll
+>   clipped behind the navbar, a hero email capture + garment photo ("Mockup
+>   A"), two WCAG contrast fixes (manifesto word-scrub, ghost-button border),
+>   and a mobile `#machine` sticky-pill overlap fix. **The source document was
+>   never committed to the repo and is now unrecoverable** — R4, R6–R10, R12
+>   and anything past R13 have no PR, no code trace, and no record of their
+>   content anywhere (confirmed via repo-wide code search). If whoever ran
+>   that 2026-07-10 audit still has the session transcript, recovering it
+>   would be worth doing; otherwise treat those numbers as permanently lost.
+>   **One stale duplicate is still open: PR #402** is an independent, unmerged
+>   R5 draft superseded by the merged #406 — recommend closing it.
+> - **A separate "Design-Studio-Audit" shipped C1–C5 in one PR (#401):** a
+>   skipped first mood question was silently hiding the pattern/signature/
+>   hardware nodes (undefined `intent.energy` failing every `>` gate) — now
+>   seeded neutral; the category question is now deterministically Q3; two
+>   dead colour fields removed; a recolour now cross-fades instead of
+>   snapping; a zip-hoodie's kangaroo pocket now draws a real split pouch
+>   instead of silently doing nothing. **C2's "Variant 2" (a longer mood
+>   preamble) is explicitly deferred, pending a product decision** — same
+>   category of open call as #01's intro-screen flag below. A related,
+>   non-numbered copy fix (PR #405) added a one-line "your piece begins with
+>   a feeling" kicker above the opening question, which addresses part of
+>   C2's other deferred item (the "reads like a quiz" framing gap) without
+>   building a full intro screen.
+> - **Also shipped, unrelated to either brief:** a server-rendered `/en/`
+>   English page + footer-link/asset-path fixes (#394/#397/d883b65); the
+>   site's dead contact address swapped to a real mailbox (#403 — the old
+>   `hello@revolveurban.com` had no MX record); the Handelsregister/MWST
+>   Impressum TODO resolved with an honest pre-launch note (#391); a sticky
+>   "UR Create starten" CTA fix (#399); a studio neutral-flat/sub-archetype
+>   fix (#395); and test-coverage additions (#392/#393/#398).
+> - **Two open GitHub issues are real backlog, tracked nowhere else:**
+>   **#384** — the Impressum's "Verantwortlich für diese Website" block still
+>   ships literal `[Vollständiger Name / Firmenname]` / `[Strasse und
+>   Hausnummer]` / `[PLZ] Zürich` placeholders on the live legal page (a
+>   compliance gap, not just cosmetic) — **needs real business data from the
+>   site owner, not something to build**. **#383** — an Instagram `sameAs`
+>   link/footer icon and a dedicated "credibility block" section were
+>   investigated and explicitly *not* built, pending a scope/copy decision
+>   (Instagram needs a real handle; the credibility block needs copy that
+>   doesn't read as a disclaimer).
+> - **One more stale open PR: #363**, a draft prototype preview page for
+>   this doc's original #01/#02/#03 mockups, based on a commit from
+>   2026-07-05 (before #02 shipped, before the GSAP dedupe, before all of the
+>   above) and explicitly marked "not meant to merge." Safe to close or
+>   ignore — it predates most of what's now shipped.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -165,12 +225,17 @@ The site is already conscientiously tuned: everything async/defer, fonts subset
 + preloaded, three.js/MediaPipe lazy, a CI weight budget. These are cleanups,
 not a rescue — which is why they rank last.
 
+> **Status (2026-07-13): one of three sub-items shipped.** GSAP is de-duped
+> to a single 3.15.0 everywhere (PR #389, 2026-07-12) — the version-mismatch
+> bullet below is resolved. AVIF wiring and script minification are still open.
+
 **What's wrong**
 - **AVIF made but unused.** `assets/story/` ships `.avif` and `-sm` variants,
   but `gallery/gallery.js` serves the `.jpg` only — ~1.7 MB of already-generated
   savings unrealised.
-- **GSAP loaded twice** — 3.15.0 eagerly for the landing, 3.13.0 lazily for the
-  sphere: duplicate dependency *and* version mismatch.
+- ~~**GSAP loaded twice** — 3.15.0 eagerly for the landing, 3.13.0 lazily for the
+  sphere: duplicate dependency *and* version mismatch.~~ **Fixed in #389** —
+  every load site now pins 3.15.0.
 - **36 unminified first-party scripts** (~3.5 MB on disk); two stylesheets
   (`styles.css` + `fonts.css`) block the head.
 
@@ -204,19 +269,29 @@ them would be motion for its own sake.
 
 ---
 
-## Re-ranked open work & recommended next PR (2026-07-12 review)
+## Re-ranked open work & recommended next PR (2026-07-13 review)
 
-With #02 shipped, two items remain. Re-ranked by impact/effort/risk:
+Re-ranked by impact/effort/risk, folding in everything found in the
+2026-07-13 status update above:
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Delivers most of #01's user-facing value without touching the "no onboarding" directive |
-| 2 | #03 Delivery polish | modest, mobile/slow-connection users | low | none (non-visual) | Real but small win; safe autonomous-merge candidate whenever there's a gap |
+| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 12 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
+| 2 | #03 remainder: AVIF wiring + script minification | modest, mobile/slow-connection users | low | none (non-visual) | GSAP half already done; real but small win, safe autonomous-merge candidate |
+| 3 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
+| 4 | Repo hygiene: close stale PR #402 (superseded R5 duplicate) and #363 (8-day-old prototype, explicitly "not meant to merge") | none (no user-facing effect) | trivial | none | Keeps the open-PR list honest; do whenever convenient |
 | — | #01's intro-screen bullet | unknown until decided | — | high (product-direction reversal) | Blocked on a product decision, not on engineering — raise it, don't build it speculatively |
+| — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Same category as above — flag, don't build speculatively |
+| — | Issue #383 — Instagram `sameAs`/footer icon + a dedicated credibility block | unknown until decided | low (Instagram) / medium (credibility block) | needs a real Instagram handle + on-brand copy | Explicitly flagged "not implementing, needs a decision" by the investigating session |
+| — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
 **Recommended next PR:** *"Studio journey — one commit model + phase-E
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
-re-scoped recommendation under §01 above.
+re-scoped recommendation under §01 above. **Unchanged from the 2026-07-12
+review** — nothing that landed since then touched this surface, so the
+reasoning still holds and is now stronger: every other easy win nearby (hero
+conversion, contrast, mobile machine, studio-reveal scroll, DNA/render bugs)
+has already shipped, leaving this as the one clearly load-bearing gap left.
 - **Impact:** highest available right now — journey completion is called out
   in this doc itself as "the one metric the whole site depends on," and the
   fix retires a documented workaround (`isGuardedTap`) instead of adding one.
@@ -231,4 +306,6 @@ re-scoped recommendation under §01 above.
   intro-screen work, since that work would otherwise inherit the same
   two-commit-model inconsistency it would need to unify anyway.
 - **Explicitly not this PR:** reviving `showIntro` — flag it to the user as a
-  standing-directive reversal and get an explicit answer first.
+  standing-directive reversal and get an explicit answer first. Same for C2
+  Variant 2 and the intro-screen bullet above — all three are product-decision
+  flags, not engineering tasks.

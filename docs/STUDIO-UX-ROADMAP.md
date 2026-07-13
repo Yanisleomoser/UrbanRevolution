@@ -336,6 +336,22 @@ the same phase-E cluster this doc predicted, plus the still-present
 section for the recommended next PR (single commit model + phase-E
 reweighting); it does not touch the "no onboarding" directive above.
 
+**Status update (2026-07-13):** two more studio-touching fixes landed,
+outside this roadmap's ten slices (from a separate, never-committed
+"Design-Studio-Audit" and "redesign brief" — see
+`docs/WEBSITE-IMPROVEMENTS.md`'s 2026-07-13 status update for the full
+accounting): **PR #401 (C1–C5)** fixed a skipped-first-mood-question bug that
+was silently hiding the pattern/signature/hardware nodes for the rest of the
+journey (undefined `intent.energy` failing every numeric gate), made the
+category question deterministically land on Q3, removed two render-dead
+colour fields, made a recolour cross-fade instead of snap, and fixed a
+zip-hoodie's kangaroo pocket to draw a real split pouch instead of silently
+no-op'ing; **PR #400 (R1)** fixed the studio-reveal scroll landing the first
+heading clipped behind the sticky navbar. A related copy-only fix (**PR
+#405**) added a one-line "your piece begins with a feeling" kicker above the
+opening question. None of these touch the `isGuardedTap`/phase-E items above
+— the recommended next PR is unchanged.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps
