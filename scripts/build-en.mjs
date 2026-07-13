@@ -168,11 +168,25 @@ export function buildEn(srcHtml = readFileSync(resolve(ROOT, "index.html"), "utf
   // legal links) are caught too. No <base> tag is used — it would break in-page
   // #anchors — so we assert its absence instead.
   if ($("base").length) warnings.push("<base> tag present — would change relative-path resolution");
-  $("[href], [src]").each((_, el) => {
+  $("[href], [src], [srcset]").each((_, el) => {
     const $el = $(el);
     for (const a of ["href", "src"]) {
       const v = $el.attr(a);
       if (v && RELATIVE.test(v)) $el.attr(a, "/" + v);
+    }
+    const srcset = $el.attr("srcset");
+    if (srcset) {
+      const rewritten = srcset
+        .split(",")
+        .map((part) => {
+          const trimmed = part.trim();
+          const spaceIdx = trimmed.indexOf(" ");
+          const url = spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx);
+          const descriptor = spaceIdx === -1 ? "" : trimmed.slice(spaceIdx);
+          return (RELATIVE.test(url) ? "/" + url : url) + descriptor;
+        })
+        .join(", ");
+      $el.attr("srcset", rewritten);
     }
   });
 
