@@ -442,6 +442,22 @@
     });
   }
 
+  // ── 6b · „Sei zuerst dabei" — niedrigschwellige Hero-Erfassung (R2) ─────────
+  // Dritter Aufrufer von wireCaptureForm: dieselbe Validierung/A11y/Formspree wie
+  // Join + Reservieren. Vorlaunch-Rahmen (beitreten, nicht kaufen); nutzt die
+  // bestehenden join.*-Keys, damit die Copy konsistent bleibt.
+  function firstWaveForm() {
+    wireCaptureForm({
+      form: $("#firstwave-form"),
+      emailEl: $("#firstwave-email"),
+      consentEl: $("#firstwave-consent"),
+      status: $("#firstwave-status"),
+      statusId: "firstwave-status",
+      okKey: "join.ok",
+      buildPayload: () => ({ _subject: "Urban Revolution — Sei zuerst dabei (Hero)", source: "hero" }),
+    });
+  }
+
   // ── 7 · Sticky-CTA (mobil) ─────────────────────────────────────────────────
   function stickyCta() {
     const cta = $("#sticky-create");
@@ -534,6 +550,7 @@
     ownership();
     joinForm();
     reserveForm();
+    firstWaveForm();
     stickyCta();
     makeRealLinks();
   }

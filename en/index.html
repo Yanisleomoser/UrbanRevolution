@@ -92,7 +92,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="/css/styles.css?v=20260713-hero-garment">
+    <link rel="stylesheet" href="/css/styles.css?v=20260713-hero-capture">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -368,6 +368,20 @@
                 <a class="lp-btn lp-btn--primary" href="#design" data-i18n="nav.enter">Enter UR Create</a>
                 <a class="lp-btn lp-btn--ghost" href="#machine" data-i18n="how.anchor">How it works</a>
             </div>
+            <!-- R2: niedrigschwellige „Sei zuerst dabei"-Erfassung in der ersten
+                 Ansicht (Vorlaunch: beitreten, nicht kaufen). Teilt Validierung +
+                 A11y + Formspree-Submit mit #join-form/#reserve-form über
+                 wireCaptureForm() in ur-create.js — kein neuer Server. -->
+            <form id="firstwave-form" class="lp-hero-capture" novalidate="">
+                <p class="lp-hero-capture-label mono-label" data-i18n="landing.firstwave_label">Be among the first</p>
+                <div class="lp-hero-capture-row">
+                    <label class="visually-hidden" for="firstwave-email" data-i18n="join.email_label">Email address</label>
+                    <input type="email" id="firstwave-email" name="email" required="" data-i18n-placeholder="join.email_ph" placeholder="you@email.com" autocomplete="email">
+                    <button type="submit" class="lp-hero-capture-btn" data-i18n-aria-label="landing.firstwave_submit" aria-label="Join"><span aria-hidden="true">→</span></button>
+                </div>
+                <label class="lp-hero-capture-consent"><input type="checkbox" id="firstwave-consent" required=""> <span data-i18n="join.consent">I'd like to receive updates (unsubscribe anytime). The privacy policy applies.</span></label>
+                <p class="lp-hero-capture-status mono-label" id="firstwave-status" aria-live="polite"></p>
+            </form>
             <p class="lp-hero-hint" data-i18n="landing.tap_hint">Tap anywhere — the threads weave your next piece.</p>
         </div>
         <div class="lp-scroll-cue" aria-hidden="true">
@@ -1566,7 +1580,7 @@
     <script defer="" src="/js/spec-view.js"></script>
     <script defer="" src="/js/app.js"></script>
     <script defer="" src="/js/flair.js"></script>
-    <script defer="" src="/js/ur-create.js?v=20260713-machine-mobile"></script>
+    <script defer="" src="/js/ur-create.js?v=20260713-hero-capture"></script>
     <script defer="" src="/js/ambient-ticker.js"></script>
     <script defer="" src="/js/facts-mass.js?v=20260709-reclaimed-light2"></script>
     <script defer="" src="/js/faden.js"></script>

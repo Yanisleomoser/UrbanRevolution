@@ -632,6 +632,8 @@ const I18N = (() => {
       "landing.cta_sub": "Beschreibe deine Idee — du gestaltest dein Stück, wir fertigen es. Nach Mass, aus recycelter Kleidung.",
       "landing.handoff": "Der Kreis wartet auf sein erstes Stück.",
       "landing.tap_hint": "Tipp ins Bild — die Fäden formen dein nächstes Stück.",
+      "landing.firstwave_label": "Sei unter den Ersten",
+      "landing.firstwave_submit": "Eintragen",
       "landing.orb_aria": "UR Create starten — öffnet das Studio",
       "landing.portal_opening": "Studio öffnet …",
 
@@ -1275,6 +1277,8 @@ const I18N = (() => {
       "landing.cta_sub": "Describe your idea — you design your piece, we make it. Made to measure, from recycled clothing.",
       "landing.handoff": "The circle is waiting for its first piece.",
       "landing.tap_hint": "Tap anywhere — the threads weave your next piece.",
+      "landing.firstwave_label": "Be among the first",
+      "landing.firstwave_submit": "Join",
       "landing.orb_aria": "Start UR Create — opens the studio",
       "landing.portal_opening": "Opening the studio …",
 
