@@ -194,6 +194,7 @@ const I18N = (() => {
       "engine.dock_aria": "Zur Vorschau springen",
 
       // ── Design Engine (Reise) ──
+      "engine.opening_frame": "Dein Stück beginnt mit einem Gefühl",
       "engine.back": "Zurück",
       "engine.skip": "Überspringen",
       "engine.finish_early": "Fertig",
@@ -836,6 +837,7 @@ const I18N = (() => {
       "engine.dock_aria": "Jump to the preview",
 
       // ── Design Engine (journey) ──
+      "engine.opening_frame": "Your piece begins with a feeling",
       "engine.back": "Back",
       "engine.skip": "Skip",
       "engine.finish_early": "Done",
