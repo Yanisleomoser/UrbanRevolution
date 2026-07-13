@@ -4646,6 +4646,65 @@ html:not(.fx) .lp-loader { display: none; }
 @media (prefers-reduced-motion: reduce) {
     .lp-hero-hint { display: none; }
 }
+/* R2: slim "be among the first" capture in the hero copy column. Mirrors the
+   community #join-form field (pill input, --border-field edge); reuses
+   wireCaptureForm's validation/a11y/Formspree submit. Kept restrained so it
+   doesn't crowd the cinematic hero, and legible over the photo (shadowed copy). */
+.lp-hero-capture { max-width: 400px; margin-top: clamp(22px, 3.2vh, 32px); }
+.lp-hero-capture-label {
+    font-size: 11px;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--accent-3);
+    margin-bottom: 10px;
+    text-shadow: 0 1px 10px rgba(6, 14, 22, 0.55);
+}
+.lp-hero-capture-row { display: flex; gap: 8px; align-items: stretch; }
+.lp-hero-capture-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.78rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-field);
+    background: rgba(15, 30, 46, 0.74);
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+}
+.lp-hero-capture-row input::placeholder { color: var(--text-muted); }
+.lp-hero-capture-row input:focus-visible { outline: 2px solid var(--accent-3); outline-offset: 2px; border-color: var(--accent-3); }
+.lp-hero-capture-btn {
+    flex: none;
+    width: 48px;
+    border: none;
+    border-radius: 999px;
+    background: var(--gradient);
+    color: var(--on-accent);
+    font-size: 19px;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+.lp-hero-capture-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+.lp-hero-capture-consent {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-top: 10px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--text-muted);
+    text-shadow: 0 1px 10px rgba(6, 14, 22, 0.6);
+}
+.lp-hero-capture-consent input { margin-top: 2px; flex: none; accent-color: var(--accent); }
+.lp-hero-capture-status { min-height: 1.1em; margin-top: 8px; font-size: 12px; color: var(--accent-3); text-shadow: 0 1px 10px rgba(6, 14, 22, 0.6); }
+.lp-hero-capture-status:empty { min-height: 0; margin-top: 0; }
+/* Mobile: the portrait hero is dense — trade the decorative tap hint for the
+   capture and tighten spacing so nothing overflows the pinned svh. */
+@media (max-width: 700px) {
+    .lp-hero-capture { max-width: none; margin-top: 18px; }
+    .lp-hero .lp-hero-hint { display: none; }
+}
 .lp-scroll-cue {
     position: absolute;
     left: 50%;
