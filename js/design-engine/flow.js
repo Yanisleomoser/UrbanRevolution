@@ -768,6 +768,21 @@ const DesignFlow = (() => {
         // garment reshapes. (Running it during the leave starves the leave.)
         refreshChrome();
         renderer(body, node, ctx);
+        // Opening frame (roadmap C2): on the very first question — nothing
+        // decided yet — a quiet mono line names what's happening (YOU design
+        // your piece, and it begins with the feeling), so the abstract mood
+        // opener reads as the start of designing a garment, not a mood quiz. It
+        // lives INSIDE the swapping body so it enters with the question and is
+        // simply absent from the next screen on (no separate chrome → no layout
+        // jump). The engine always surfaces a Phase-A feeling node first, so
+        // answered.size === 0 is exactly (and only) that screen.
+        if (answered.size === 0) {
+          const frame = document.createElement("p");
+          frame.className = "de-opening-frame";
+          frame.setAttribute("data-i18n", "engine.opening_frame");
+          frame.textContent = t("engine.opening_frame");
+          body.insertBefore(frame, body.firstChild);
+        }
         if (crossed) phaseFlash(node.phase);
         // A11y: each render replaces the question DOM, so the control the user
         // just activated is gone and focus falls to <body> — leaving keyboard/SR

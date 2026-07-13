@@ -3109,6 +3109,9 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    ============================================================ */
 .de-stage { max-width: 1120px; margin: 0 auto; padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; gap: var(--space-7); }
 .de-live { margin: 0; color: var(--text-dim); font-size: var(--text-sm); line-height: var(--leading-snug); }
+/* Opening frame (roadmap C2): a quiet mono kicker above the first question that
+   names what's happening — the machine voice, subordinate to the serif question. */
+.de-opening-frame { margin: 0 0 var(--space-3); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; line-height: var(--leading-snug); color: var(--text-muted); }
 .de-question { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin: 0 0 var(--space-6); color: var(--text); }
 
 .de-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); }
