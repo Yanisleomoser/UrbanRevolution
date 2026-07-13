@@ -4507,7 +4507,11 @@ html:not(.fx) .lp-loader { display: none; }
 .lp-btn--primary:hover::before { transform: translateX(100%); }
 .lp-btn--primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
 .lp-btn--ghost {
-    border: 1px solid var(--border);
+    /* R13: an interactive control's edge needs ≥3:1 (WCAG 1.4.11). --border
+       (#25415a) is only ~1.7:1 on the midnight bg, so the ghost button's outline
+       was nearly invisible to low-vision users; --border-field (#4a7196, ~3:1)
+       is the palette's dedicated interactive-edge step. Hover still ignites accent. */
+    border: 1px solid var(--border-field);
     color: var(--text-dim);
 }
 .lp-btn--ghost:hover { border-color: var(--accent); color: var(--text); }
