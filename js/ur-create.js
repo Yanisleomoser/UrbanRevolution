@@ -452,6 +452,7 @@
     if (!cta || !hero) return;
     const design = $("#design");
     const community = $("#community");
+    const machine = $("#machine");
     // Der Pill erscheint nur mobil (CSS: `.sticky-create { display:none }` ab
     // 861px). Diese Media-Query spiegelt exakt diesen Breakpoint, damit der
     // Scroll-Handler auf Desktop GAR KEIN Layout misst — vorher las er dort 2–3
@@ -466,14 +467,18 @@
     // Reflow). So misst der Scroll-Handler NULL Layout — er liest nur scrollY.
     let designInView = false;
     let communityInView = false;
+    let machineInView = false;
     let scheduled = false;
     const update = () => {
       scheduled = false;
       if (!mobileMq.matches) { if (!cta.hidden) cta.hidden = true; return; }
       const past = window.scrollY > heroH * 0.8;
       // In UR Create und in der Community-Sphäre hat der Moment eigene CTAs —
-      // dort tritt der Sticky-Button zurück.
-      cta.hidden = !past || designInView || communityInView;
+      // dort tritt der Sticky-Button zurück. Ebenso in der Maschinen-Simulation
+      // (#machine): der bodenzentrierte Pill überdeckte sonst den horizontal
+      // scrollenden Bauplan und die Stationskarten (R11), während dort ohnehin
+      // die Stationskarten selbst ins Studio führen.
+      cta.hidden = !past || designInView || communityInView || machineInView;
     };
     // Scroll-Events zu EINEM Read pro Frame zusammenfassen (rAF-Throttle);
     // der rohe Handler las bei jedem Event synchron Layout und thrashte so.
@@ -487,11 +492,13 @@
         entries.forEach((e) => {
           if (e.target === design) designInView = e.isIntersecting;
           else if (e.target === community) communityInView = e.isIntersecting;
+          else if (e.target === machine) machineInView = e.isIntersecting;
         });
         onScroll();
       });
       if (design) io.observe(design);
       if (community) io.observe(community);
+      if (machine) io.observe(machine);
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", () => { heroH = hero.offsetHeight; onScroll(); }, { passive: true });
