@@ -78,6 +78,39 @@
 >   above) and explicitly marked "not meant to merge." Safe to close or
 >   ignore — it predates most of what's now shipped.
 
+> **Status update (2026-07-14 review, read before acting):** re-checked
+> against `main` @ `c6b9a85`. Four PRs landed since the 2026-07-13 sync above
+> (#411–#414), none of them touching #01:
+> - **R4 and R10 are no longer lost.** A mobile "back to top" FAB (**R4**,
+>   PR #412 — the header deliberately scrolls away on touch per the
+>   iOS-WebKit #297779 workaround, so past the hero there was no way back up;
+>   now a bottom-anchored, mobile-only FAB that retreats near the studio dock
+>   and the machine blueprint) and a real hover vocabulary for the landing
+>   (**R10**, PR #411 — token-based depth/glow/lift on the CTAs and station
+>   cards, ≤ 250 ms, reduced-motion neutralised) both shipped. Each carries
+>   its own fresh session transcript rather than a recovery of the original
+>   2026-07-10 brief, so treat these as newly authored fixes that happened to
+>   land on those two numbers, not evidence the lost brief was found.
+>   **R6–R9, R12 and anything past R13 are still unaccounted for** — no PR,
+>   no code trace of their content anywhere.
+> - **Issue #383 is now half-resolved.** The Instagram half shipped in PR
+>   #414 — the real, owner-confirmed `@revolveeurban` handle now sits in the
+>   Organization JSON-LD `sameAs` and as a footer icon. The **credibility
+>   block** half is still explicitly deferred pending a scope/copy/placement
+>   decision, unchanged from the 2026-07-13 note (confirmed still absent by
+>   two follow-up audits on the issue itself).
+> - **Repo hygiene: PR #402 is closed** (confirmed on GitHub — the superseded
+>   R5 duplicate this doc already recommended closing). **PR #363 is still
+>   open** and now even more clearly stale (predates #02, the GSAP dedupe,
+>   and everything else listed above) — still recommend closing it.
+> - **One unrelated bugfix also landed:** #413, the `/en/` mobile hero
+>   `<source>` 404 (`build-en.mjs` rewrote `href`/`src` to root-absolute but
+>   missed `srcset`) — found by the same live-site audit that shipped #414,
+>   not part of any tracked backlog item.
+> - **#01 remains completely untouched** — `isGuardedTap`/`COMMIT_GUARD_MS`
+>   is still verbatim in `flow.js`. It is still the single largest open item;
+>   the re-ranked table at the bottom is unchanged from 2026-07-13.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -269,29 +302,31 @@ them would be motion for its own sake.
 
 ---
 
-## Re-ranked open work & recommended next PR (2026-07-13 review)
+## Re-ranked open work & recommended next PR (2026-07-14 review)
 
 Re-ranked by impact/effort/risk, folding in everything found in the
-2026-07-13 status update above:
+2026-07-14 status update above (unchanged from 2026-07-13 except the hygiene
+and #383 rows, both narrower now that #402 is closed and Instagram shipped):
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 12 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
+| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 16 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
 | 2 | #03 remainder: AVIF wiring + script minification | modest, mobile/slow-connection users | low | none (non-visual) | GSAP half already done; real but small win, safe autonomous-merge candidate |
 | 3 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
-| 4 | Repo hygiene: close stale PR #402 (superseded R5 duplicate) and #363 (8-day-old prototype, explicitly "not meant to merge") | none (no user-facing effect) | trivial | none | Keeps the open-PR list honest; do whenever convenient |
+| 4 | Repo hygiene: close stale PR #363 (8-day-old prototype, explicitly "not meant to merge"; #402 already closed) | none (no user-facing effect) | trivial | none | Keeps the open-PR list honest; do whenever convenient |
 | — | #01's intro-screen bullet | unknown until decided | — | high (product-direction reversal) | Blocked on a product decision, not on engineering — raise it, don't build it speculatively |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Same category as above — flag, don't build speculatively |
-| — | Issue #383 — Instagram `sameAs`/footer icon + a dedicated credibility block | unknown until decided | low (Instagram) / medium (credibility block) | needs a real Instagram handle + on-brand copy | Explicitly flagged "not implementing, needs a decision" by the investigating session |
+| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent on 2026-07-13 |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
 **Recommended next PR:** *"Studio journey — one commit model + phase-E
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
-re-scoped recommendation under §01 above. **Unchanged from the 2026-07-12
+re-scoped recommendation under §01 above. **Unchanged since the 2026-07-12
 review** — nothing that landed since then touched this surface, so the
 reasoning still holds and is now stronger: every other easy win nearby (hero
-conversion, contrast, mobile machine, studio-reveal scroll, DNA/render bugs)
-has already shipped, leaving this as the one clearly load-bearing gap left.
+conversion, contrast, mobile machine, studio-reveal scroll, DNA/render bugs,
+the R4/R10 landing polish, the Instagram credibility signal) has already
+shipped, leaving this as the one clearly load-bearing gap left.
 - **Impact:** highest available right now — journey completion is called out
   in this doc itself as "the one metric the whole site depends on," and the
   fix retires a documented workaround (`isGuardedTap`) instead of adding one.
