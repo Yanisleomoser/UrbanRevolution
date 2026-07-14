@@ -287,12 +287,16 @@ async function loadItems() {
 /* ---------- 3D-Boot ---------- */
 
 async function boot() {
-    const [THREE, gsapMod, items] = await Promise.all([
+    // landing.js already loads GSAP as a classic global (window.gsap) long
+    // before a visitor scrolls this far — reuse it instead of fetching a
+    // second, separately-cached ESM GSAP bundle (~69 KB) via the import map.
+    // Falls back to the dynamic import if the classic load failed/was skipped
+    // (e.g. prefers-reduced-motion removed html.fx before GSAP resolved).
+    const [THREE, gsap, items] = await Promise.all([
         import("three"),
-        import("gsap"),
+        window.gsap || import("gsap").then((m) => m.default || m.gsap),
         loadItems(),
     ]);
-    const gsap = gsapMod.default || gsapMod.gsap;
     if (!items.length) return;
 
     const RADIUS = 14;
