@@ -21,6 +21,7 @@
     const palette = Object.values((window.CONFIG && CONFIG.COLORS) || { black: "#1a1a1a", white: "#ffffff" });
     let scheme = "mono";
     let stops = ["#1a1a1a"];
+    let confirm = null;
 
     const q = V.el("h2", { class: "de-question", id: "de-scheme-q" });
     q.textContent = node.question ? node.question[lang] : "";
@@ -79,6 +80,7 @@
       sw.addEventListener("click", () => {
         if (scheme === "mono") stops = [hex];
         else { stops.push(hex); stops = stops.slice(-2); }
+        if (confirm) confirm.disabled = false;
         paint();
       });
       swatches.push(sw);
@@ -103,15 +105,17 @@
     host.appendChild(grid);
     syncHint();
 
-    const confirm = V.el("button", { type: "button", class: "de-confirm" });
+    confirm = V.el("button", { type: "button", class: "de-confirm" });
     confirm.textContent = ctx.t("engine.confirm");
+    confirm.disabled = true;
     confirm.addEventListener("click", () => ctx.commit(payloadFor(scheme, stops)));
     host.appendChild(confirm);
 
     // No initial ctx.live / no pre-selected swatch: opening the colour atelier
     // must NOT seed a colour into the DNA. That seed made an un-tapped "Fertig"
     // ship black mono as if chosen, and painted the flat before any choice. The
-    // flat keeps its neutral archetype tint until the first swatch tap.
+    // flat keeps its neutral archetype tint until the first swatch tap — confirm
+    // stays disabled (mirrors cards.js) until then, so it can't be reached at all.
   }
 
   window.DEModalities = window.DEModalities || {};
