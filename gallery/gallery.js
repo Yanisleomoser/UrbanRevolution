@@ -15,6 +15,35 @@ import gsap from "gsap";
 
 const A = (p) => `/assets/${p}`;
 
+// story/ ships pre-generated .avif + -sm JPEG/AVIF variants that used to sit
+// unused (the gallery always fetched the full 1600px .jpg). AVIF support is
+// feature-tested once (web.dev's canonical single-pixel test image, no network
+// request) so unsupported browsers (e.g. Safari < 16.4) fall through to JPEG.
+const isStoryPath = (src) => src.includes("/assets/story/");
+const toSmJpg = (src) => src.replace(/\.jpg$/, "-sm.jpg");
+const toAvif = (src) => src.replace(/\.jpg$/, ".avif");
+
+function checkAvifSupport() {
+    return new Promise((resolve) => {
+        const avif = new Image();
+        avif.onload = () => resolve(avif.width === 1);
+        avif.onerror = () => resolve(false);
+        avif.src =
+            "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABcAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAACAAIABoAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAB9tZGF0EgAKCBgABogQEAwgMg8f8D///8WfhwB8+ErK42A=";
+    });
+}
+const avifReady = checkAvifSupport();
+
+// Best URL for a given SOURCES jpg path. `small` picks the -sm variant (the
+// wall texture is downsampled to <=560px anyway, see makeCardTexture — the
+// full 1600px original was pure waste there). Non-story sources (no
+// pre-generated variants) pass through unchanged.
+async function bestSrc(jpgSrc, { small = false } = {}) {
+    if (!isStoryPath(jpgSrc)) return jpgSrc;
+    const jpg = small ? toSmJpg(jpgSrc) : jpgSrc;
+    return (await avifReady) ? toAvif(jpg) : jpg;
+}
+
 // 36 Karten aus 18 Bildern — die zweite Verwendung bekommt einen
 // engeren Bildausschnitt (crop) und liest sich als eigenes Motiv.
 const SOURCES = [
@@ -221,7 +250,7 @@ function makeCardTexture(img, zoom, ox, oy) {
 }
 
 SOURCES.forEach(([src, title, tag], i) => {
-    imageLoader.load(src, (img) => {
+    const placeCards = (img, detailSrc) => {
         const variants = [
             { naming: [title, tag], zoom: 1 },
             { naming: SECOND_TITLES[i], zoom: 0.72 },
@@ -247,14 +276,33 @@ SOURCES.forEach(([src, title, tag], i) => {
                 title: v.naming[0],
                 tag: v.naming[1],
                 year: 2024 + Math.floor(rng() * 3),
-                src,
+                src: detailSrc,
                 w,
                 h,
             };
             scene.add(mesh);
             cards.push(mesh);
         });
-    });
+    };
+
+    // The wall texture only ever needs <=560px (see makeCardTexture), so story
+    // cards fetch the much smaller -sm variant, AVIF-first with a JPEG retry
+    // if decoding unexpectedly fails; the detail-view <img> (openCard below)
+    // gets the full-resolution AVIF/JPEG instead, since it's shown large and
+    // is only ever fetched lazily on click.
+    Promise.all([bestSrc(src, { small: true }), bestSrc(src, { small: false })]).then(
+        ([textureSrc, detailSrc]) => {
+            imageLoader.load(
+                textureSrc,
+                (img) => placeCards(img, detailSrc),
+                undefined,
+                () => {
+                    const fallback = toSmJpg(src);
+                    if (textureSrc !== fallback) imageLoader.load(fallback, (img) => placeCards(img, src));
+                },
+            );
+        },
+    );
 });
 
 /* ---------- Blicksteuerung — Lenis-artiges Easing ---------- */
@@ -430,6 +478,13 @@ function openCard(mesh) {
     document.body.classList.add("is-open");
     const u = mesh.userData;
 
+    // Defensive JPEG retry: the avifReady feature test gates the initial pick,
+    // but a still-broken decode (rare, e.g. a buggy intermediary) shouldn't
+    // leave the detail hero blank.
+    detailImg.onerror = () => {
+        detailImg.onerror = null;
+        if (u.src.endsWith(".avif")) detailImg.src = u.src.replace(/\.avif$/, ".jpg");
+    };
     detailImg.src = u.src;
     detailImg.alt = u.title;
     detailTag.textContent = u.tag;
