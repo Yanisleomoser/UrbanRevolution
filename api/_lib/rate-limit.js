@@ -27,18 +27,26 @@ export function rateLimitKey(prefix, ip, windowSeconds, nowMs) {
   return `urev:rl:${prefix}:${ip}:${bucket}`;
 }
 
-// Best-effort client IP for a Vercel Edge Function. `x-forwarded-for` can
-// carry a client,proxy1,proxy2 chain — the first entry is the original
-// client. Falls back to a shared "unknown" bucket (only ever reachable
-// locally — real internet traffic reaching a deployed edge function always
-// carries this header) rather than throwing.
+// Best-effort client IP for a Vercel Edge Function. Vercel's own docs note
+// that they APPEND to `x-forwarded-for` rather than replace it — a caller can
+// send `X-Forwarded-For: <anything>` and Vercel just tacks the real
+// connecting IP on after it. Trusting the *first* entry (as this used to)
+// let a script defeat the per-IP limiter below entirely by sending a fresh
+// fake first entry on every request. `x-real-ip` is what Vercel recommends
+// instead — it's set by their edge network from the actual connection, not
+// from a client-supplied header, so it can't be spoofed the same way. Fall
+// back to the *last* `x-forwarded-for` entry (the hop closest to Vercel's own
+// edge) only when `x-real-ip` is absent (e.g. local `vercel dev`), and to a
+// shared "unknown" bucket only as a last resort.
 export function clientIp(request) {
+  const real = request.headers.get("x-real-ip");
+  if (real && real.trim()) return real.trim();
   const fwd = request.headers.get("x-forwarded-for");
   if (fwd) {
-    const first = fwd.split(",")[0].trim();
-    if (first) return first;
+    const parts = fwd.split(",").map((part) => part.trim()).filter(Boolean);
+    if (parts.length) return parts[parts.length - 1];
   }
-  return request.headers.get("x-real-ip") || "unknown";
+  return "unknown";
 }
 
 // Returns { limited, count }. On any Upstash error (incl. not configured)

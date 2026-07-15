@@ -187,9 +187,16 @@ console.log("\n— rate-limit.rateLimitKey (fixed-window bucketing) —");
 console.log("\n— rate-limit.clientIp (best-effort IP extraction) —");
 {
   const req = (headers) => ({ headers: new Headers(headers) });
-  assert(clientIp(req({ "x-forwarded-for": "203.0.113.5, 10.0.0.1" })) === "203.0.113.5", "takes the first x-forwarded-for entry");
+  assert(clientIp(req({ "x-real-ip": "198.51.100.9" })) === "198.51.100.9", "prefers x-real-ip (Vercel-set, not client-spoofable)");
+  assert(
+    clientIp(req({ "x-real-ip": "198.51.100.9", "x-forwarded-for": "9.9.9.9, 203.0.113.5" })) === "198.51.100.9",
+    "x-real-ip wins over x-forwarded-for even when both are present",
+  );
+  assert(
+    clientIp(req({ "x-forwarded-for": "203.0.113.5, 10.0.0.1" })) === "10.0.0.1",
+    "without x-real-ip, takes the LAST x-forwarded-for entry (closest to Vercel's edge, not the client-suppliable first entry)",
+  );
   assert(clientIp(req({ "x-forwarded-for": "  203.0.113.5  " })) === "203.0.113.5", "trims whitespace");
-  assert(clientIp(req({ "x-real-ip": "198.51.100.9" })) === "198.51.100.9", "falls back to x-real-ip");
   assert(clientIp(req({})) === "unknown", "no IP headers at all → 'unknown' (never throws)");
 }
 
