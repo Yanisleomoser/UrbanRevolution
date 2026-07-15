@@ -4600,6 +4600,39 @@ html:not(.fx) .lp-loader { display: none; }
     height: 100%;
     object-fit: cover;
     object-position: 80% 50%;   /* keep the model (right of the wide frame) in view */
+    /* Overscan-Basis für die Scroll-Parallaxe (initHeroParallax): der Faktor 1.08
+       gibt ~4 % Bleed an jeder Kante, den der yPercent:-4-Aufstieg beim Hero-Exit
+       genau verbraucht → nie eine transparente Unterkante. Statisch (reduced-motion/
+       no-JS) ist der Frame identisch mit dem GSAP-Startwert → kein Sprung. */
+    transform: scale(1.08);
+    will-change: transform;
+}
+/* „Reclaimed Light": warme Kupfer-Aura, tief unten links gepoolt, sie fällt vor
+   der hellen Garment-Seite (rechts) ab. mix-blend: screen lässt das Kupfer aus dem
+   Foto „leuchten". NUR Kupfer-Familie (Akt-I-Dramaturgie — Teal/Aqua erst nach der
+   Wende). z0 zwischen Foto und Faden-Canvas; Copy (z1) sitzt darüber. */
+.lp-hero-aurora {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    /* Warmes Zimmer: ein Kupfer-Pool steigt aus der unteren linken Ecke hinter CTA
+       + Headline-Fuss auf; Peach-Highlight als heissester Punkt, Kupfer-tief ankert
+       die Ecke. Fällt vor x≈55 % ab → die belichtete Garment-Seite bleibt sauber. */
+    background:
+        radial-gradient(34% 34% at 22% 74%, rgba(236, 195, 159, 0.13), rgba(236, 195, 159, 0) 60%),
+        radial-gradient(60% 62% at 18% 78%, rgba(201, 144, 111, 0.24), rgba(201, 144, 111, 0) 64%),
+        radial-gradient(50% 46% at 30% 96%, rgba(138, 95, 76, 0.17), rgba(138, 95, 76, 0) 60%);
+}
+/* Fast unmerkliches Atmen — nur unter html.fx (compositor-only: opacity/transform). */
+html.fx .lp-hero-aurora { animation: lp-hero-aurora 22s var(--ease-in-out) infinite; }
+@keyframes lp-hero-aurora {
+    0%, 100% { opacity: 0.82; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-hero-aurora { animation: none; }
 }
 .lp-hero-media::after {
     content: "";
@@ -4625,6 +4658,13 @@ html:not(.fx) .lp-loader { display: none; }
     .lp-hero-media::after {
         background:
             linear-gradient(180deg, rgba(10, 22, 34, 0.78) 0%, rgba(10, 22, 34, 0.6) 38%, rgba(10, 22, 34, 0.62) 62%, rgba(10, 22, 34, 0.72) 82%, var(--bg) 100%);
+    }
+    /* Dichtere Hochkant-Copy → Kupfer-Aura zahmer + tief gehalten, damit die
+       Headline AA-Kontrast behält. */
+    .lp-hero-aurora {
+        background:
+            radial-gradient(64% 40% at 26% 82%, rgba(201, 144, 111, 0.16), rgba(201, 144, 111, 0) 64%),
+            radial-gradient(56% 44% at 40% 94%, rgba(138, 95, 76, 0.12), rgba(138, 95, 76, 0) 64%);
     }
 }
 /* R3: the small hero copy can sit over lit areas of the photo on mobile, where
@@ -4694,6 +4734,19 @@ html:not(.fx) .lp-loader { display: none; }
     flex-wrap: wrap;
     gap: 14px;
     margin-top: 38px;
+}
+/* Magnet (initHeroMagnet): auf der Hero-Primär-CTA + dem Erfassungs-Pfeil führt
+   GSAP das transform (Zeiger-Sog + eingefalteter Lift). Für GENAU diese zwei den
+   CSS-transform (Hover-Lift + -Transition) rausnehmen, damit GSAP nicht gegen eine
+   CSS-Transition kämpft; Glow/Filter/Border-Hover bleiben. Nur Desktop-fx-Pfad —
+   ohne Magnet (Touch/reduced-motion) fehlt der Lift, Glow/Filter tragen den Hover. */
+.lp-hero-ctas .lp-btn--primary,
+.lp-hero .lp-hero-capture-btn {
+    transition: box-shadow 0.25s, border-color 0.25s, filter 0.25s;
+}
+.lp-hero-ctas .lp-btn--primary:hover,
+.lp-hero .lp-hero-capture-btn:hover {
+    transform: none;   /* GSAPs inline-transform gewinnt ohnehin; neutralisiert nur den CSS-Lift */
 }
 .lp-hero-hint {
     margin-top: 22px;

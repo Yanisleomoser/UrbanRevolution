@@ -94,7 +94,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260713-instagram">
+    <link rel="stylesheet" href="css/styles.css?v=20260714-hero-aurora">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -337,6 +337,12 @@
                 <img src="assets/hero-wide.jpg" alt="" width="1872" height="1056" fetchpriority="high" decoding="async">
             </picture>
         </div>
+        <!-- „Reclaimed Light" — eine warme Kupfer-Aura pool hinter der Headline
+             (Akt-I-Ambiente: warm/menschlich, KEIN Teal — Aqua erst nach der Wende).
+             Statisch per CSS (no-JS/reduced-motion = ruhiger Glow), atmet nur unter
+             html.fx. Liegt zwischen Foto und Faden-Canvas → die Fäden schimmern
+             durch die Aura, die Copy (z1) sitzt sauber darüber. -->
+        <div class="lp-hero-aurora" aria-hidden="true"></div>
         <canvas class="lp-hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
         <!-- Die eine Linie — der graue Maschinen-Faden, aus dem Preloader übergeben,
              läuft in der Gosse hinter der Headline weiter (fx zeichnet ihn ein). -->

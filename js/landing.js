@@ -612,6 +612,44 @@
     });
   }
 
+  /* Magnetische Hero-CTAs: dieselbe Geste wie der Orb — die Pille lehnt sich zum
+     Zeiger und federt beim Verlassen weich zurück. `lift` faltet den früheren
+     CSS-Hover-Lift (−px) in die Ruhe-y ein, sodass GSAP das transform allein führt
+     (das CSS gab transform für diese Buttons frei). Nur feiner Zeiger + html.fx —
+     auf Touch/reduced-motion aus (kein Drift/Jank). */
+  function initHeroMagnet(el, strength, lift) {
+    if (!el || !fx || !window.matchMedia("(pointer: fine)").matches) return;
+    const L = lift || 0;
+    el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2);
+      const dy = e.clientY - (r.top + r.height / 2);
+      gsap.to(el, { x: dx * strength, y: dy * strength - L, duration: 0.4, ease: "power2.out" });
+    });
+    el.addEventListener("pointerleave", () => {
+      gsap.to(el, { x: 0, y: 0, duration: 0.9, ease: "elastic.out(1, 0.45)" });
+    });
+  }
+
+  /* Hero-Tiefe: das Foto rezediert. Beim Hero-Exit steigt nur das <img> ~4 %
+     langsamer als die Seite (yPercent), auf einer 1.08-Overscan-Basis (CSS), sodass
+     nie eine transparente Unterkante auftaucht. Transform-only (Compositor), rührt
+     WEDER #weave-canvas NOCH .lp-hero-inner an → die gebackene Headline-Maske und
+     das Pointer-Mapping bleiben ausgerichtet. Der ::after-Scrim (Geschwister) bleibt
+     fix → Copy-Kontrast wandert nicht. Ohne fx bleibt der statische Scale-Frame. */
+  function initHeroParallax() {
+    if (!fx) return;
+    const img = document.querySelector(".lp-hero-media img");
+    if (!img) return;
+    const mob = window.matchMedia("(max-width: 700px)").matches;
+    gsap.fromTo(img,
+      { yPercent: 0, scale: 1.08 },
+      {
+        yPercent: mob ? -3 : -4, scale: 1.08, ease: "none",
+        scrollTrigger: { trigger: ".lp-hero", start: "top top", end: "bottom top", scrub: 0.6 },
+      });
+  }
+
   /* ── Hero-Canvas: Faden-Partikelfeld („Weave") ───────────── */
 
   function initWeave() {
@@ -1062,6 +1100,25 @@
       ctx.fillStyle = "#a6928b";
       ctx.fill(dust);
       ctx.globalAlpha = 1;
+
+      // 3) Zeiger-Lichtpool: unter der Hand sammelt das Feld warmes Licht (Akt-I-
+      //    Kupfer, additiv). Über der Headline per maskAt() auf 0 gefadet → nie
+      //    Text-Wäsche. Ein Radialverlauf + ein fillRect pro Frame, nur bei aktivem
+      //    Zeiger im Drift — reitet den emaDt-Wächter mit, kein shadowBlur.
+      if (pointer.active && mode === "drift") {
+        const a = 0.10 * dimm * maskAt(pointer.x, pointer.y);
+        if (a > 0.002) {
+          const R = 220;
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          const g = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, R);
+          g.addColorStop(0, "rgba(201, 144, 111, " + a.toFixed(3) + ")");
+          g.addColorStop(1, "rgba(201, 144, 111, 0)");
+          ctx.fillStyle = g;
+          ctx.fillRect(pointer.x - R, pointer.y - R, 2 * R, 2 * R);
+          ctx.restore();
+        }
+      }
     }
 
     // Geteilten Form-Zustand pro Frame berechnen (loop ruft das vor step/frame).
@@ -1384,6 +1441,9 @@
     initReveals();
     initCounters();
     initOrb();
+    initHeroParallax();
+    initHeroMagnet(document.querySelector(".lp-hero-ctas .lp-btn--primary"), 0.2, 3);
+    initHeroMagnet(document.querySelector(".lp-hero-capture-btn"), 0.18, 2);
     initWeave();
     // Sprachwechsel (app.js bedient den Toggle): Manifest-Spans + Verben-Stationen neu aufbauen.
     window.addEventListener("language:change", () => {
