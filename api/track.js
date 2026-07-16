@@ -15,10 +15,19 @@
  * the basis for manual (or later: optional soft-prior) node tuning.
  */
 
+import { checkRateLimit } from "./_lib/rate-limit.js";
+
 export const config = { runtime: "edge" };
 
 const EVENTS_KEY = "urev:tel:events";
 const NODES_KEY = "urev:tel:nodes";
+// Unlike the billed AI proxies, this beacon is fire-and-forget and never
+// surfaces errors to the client (see the POST handler below) — so a
+// rate-limit hit is handled the same way as any other best-effort failure:
+// skip the Redis write, still 204. The limit itself exists so a flood can't
+// exhaust the shared Upstash instance's quota, which would otherwise trip
+// _lib/rate-limit.js's fail-open behavior for the billed proxies too.
+const RATE_LIMIT = { prefix: "track-post", limit: 120, windowSeconds: 600 };
 // sanitiseId bounds each id's length but not the number of *distinct* ids —
 // without a cap, a caller posting a fresh random id on every request grows
 // urev:tel:nodes without bound (unbounded Redis storage/cost, unlike
@@ -82,6 +91,8 @@ export default async function handler(request) {
 
   // Best-effort: any problem → 204, never surface to the UI.
   if (!configured) return new Response(null, { status: 204 });
+  const { limited } = await checkRateLimit(request, { url, token, ...RATE_LIMIT });
+  if (limited) return new Response(null, { status: 204 });
   try {
     const payload = await request.json();
     const cmds = buildCommands(payload);
