@@ -132,6 +132,17 @@ Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
 > and the ghost-button border was darkened to clear WCAG 1.4.11 non-text
 > contrast. Neither changes this doc's own open item above.
 
+> **Status update (2026-07-16):** re-checked against `main` @ `5056c1d`. The
+> `#measure` trust component (`.photo-privacy`, still 11px italic in
+> `css/styles.css`) remains this doc's only open item, unchanged since
+> 2026-07-13. Nothing that landed since then (GSAP dedupe follow-ups #417/
+> #422, a rate-limiter security fix) touches the landing/studio visuals this
+> doc tracks. PR #418 ("Reclaimed Light" hero glow-up, additive scroll-
+> parallax/aura/magnetic-CTA work, `html.fx`-gated) is still open in draft,
+> still held for a real-iPhone check per its own description — see
+> `docs/WEBSITE-IMPROVEMENTS.md`'s 2026-07-16 status update for the full
+> cross-repo accounting; not duplicated here.
+
 ---
 
 ## 5. Hard guardrails (from the adversarial review — violating any kills a change)

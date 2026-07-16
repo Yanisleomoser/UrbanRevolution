@@ -352,6 +352,19 @@ heading clipped behind the sticky navbar. A related copy-only fix (**PR
 opening question. None of these touch the `isGuardedTap`/phase-E items above
 — the recommended next PR is unchanged.
 
+**Status update (2026-07-16):** a studio-touching correctness bug surfaced
+by routine code review is sitting in an open draft PR, **#416** — the colour
+atelier's (`modalities/colorGradient.js`) confirm button was never disabled
+before a swatch tap, so hitting it early silently commits
+`{scheme: "mono", stops: ["#1a1a1a"]}` at full confidence into the live
+flat/AI prompt/spec sheet/published DNA. Fix mirrors `cards.js`'s existing
+disable-until-selected pattern; all seven CI checks green, still unmerged.
+Recommend merging it *before* the `engine/unify-commit-model` work below,
+since that PR rewrites the same commit-model contract this one touches —
+see `docs/WEBSITE-IMPROVEMENTS.md`'s 2026-07-16 status update for the full
+accounting. `isGuardedTap`/`COMMIT_GUARD_MS` itself is still verbatim in
+`flow.js`; the recommended next *new* PR is otherwise unchanged.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

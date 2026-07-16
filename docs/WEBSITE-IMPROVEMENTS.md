@@ -111,6 +111,59 @@
 >   is still verbatim in `flow.js`. It is still the single largest open item;
 >   the re-ranked table at the bottom is unchanged from 2026-07-13.
 
+> **Status update (2026-07-16 review, read before acting):** re-checked
+> against `main` @ `5056c1d`. Three commits landed since the 2026-07-14 sync
+> above, none of them touching #01:
+> - **#03 is now fully shipped.** PR #422 wired the AVIF story assets:
+>   `gallery/gallery.js`'s wall texture and detail view now fetch the
+>   existing `-sm`/full-res `.avif` variants (JPEG fallback via a cached
+>   single-pixel feature probe) instead of the full-res `.jpg` — the
+>   "~1.7 MB unrealised" bullet is resolved. The same PR also caught
+>   `gallery/index.html` still pinning `gsap@3.13.0` in its own import map
+>   after the rest of the site moved to `3.15.0` — bumped, so the GSAP
+>   version is now consistent site-wide, not just landing+sphere. A second,
+>   separate fix (PR #417, `caf0083`) made `community-sphere.js` reuse
+>   `window.gsap` instead of dynamically re-importing a second ~69 KB ESM
+>   copy on lazy boot — a real dedupe beyond the version-pin fix #389 already
+>   shipped. Between #389 (single version), #417 (single instance on the
+>   landing→sphere path) and #422 (gallery pin + AVIF), **all of #03's three
+>   original sub-items are done except script minification** — see §03 below,
+>   updated.
+> - **PR #363 is confirmed closed** (2026-07-14, unmerged) — already reflected
+>   in the 2026-07-14 note above but re-confirmed here; drop it from the
+>   hygiene row.
+> - **One unrelated security fix also landed directly on `main`** (no PR
+>   wrapper found): `api/_lib/rate-limit.js`'s `clientIp()` trusted the FIRST
+>   `x-forwarded-for` entry, which is client-suppliable — Vercel's edge
+>   *appends* the real IP rather than replacing the header, so a caller could
+>   prepend any fake IP and bypass the per-IP limiter in front of the billed
+>   AI proxies and the gallery publish endpoint at will. Now tries
+>   `x-real-ip` (edge-set, not client-controlled) first, falling back to the
+>   *last* `x-forwarded-for` entry. Not part of either roadmap doc's tracked
+>   backlog; noted for completeness.
+> - **Two open draft PRs from the 2026-07-15 sync are now stale/superseded —
+>   recommend closing both:**
+>   - **#419** (a docs-review PR proposing much of this same update, based on
+>     `caf0083`) is superseded by this review, which folds in everything it
+>     found plus #422 landing since. Close in favour of this PR.
+>   - **#420** ("security audit — align gallery's pinned GSAP with main
+>     site") proposed exactly the `gallery/index.html` GSAP bump that #422
+>     already shipped (its base `caf0083` predates #422). Its audit findings
+>     (no npm vulnerabilities, headers verified, no secrets found, two Vercel
+>     runtime-error anomalies worth a look — `ANTHROPIC_API_KEY` unconfigured
+>     in production, stray `/api/waitlist` traffic despite the retired
+>     frontend) remain informative, but the code change itself is now a
+>     no-op diff against current `main`. Close it.
+> - **#416 (colour-atelier confirm-gate bug) and #418 (hero "Reclaimed
+>   Light" glow-up) are both still open, still draft, still all-seven-checks
+>   green — unchanged from the 07-15 sync.** #416 is a real, small,
+>   already-verified bug fix sitting idle; #418 is correctly held for a
+>   real-iPhone parallax/scroll check per its own description. Neither
+>   is this doc's recommended next PR to *build* — #416 just needs merging,
+>   #418 needs a device check, not more engineering.
+> - **#01 remains completely untouched** — `isGuardedTap`/`COMMIT_GUARD_MS`
+>   is still byte-identical in `flow.js`. Still the single largest open item.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -121,7 +174,7 @@ care most. Everything here stays inside the pre-launch honesty rules
 | - | ------- | ----------- | ------ | ---- | ------ |
 | 01 | The studio's front door — onboard, shorten, unify the create journey | highest | medium | high-visual (motion) | **open — see flag below** |
 | 02 | Convert at the peak — "be first" inside the ownership moment, tied to the design | high | low | low-visual, additive | **done — PR #385** |
-| 03 | Delivery polish — wire AVIF variants, de-duplicate GSAP, minify | modest | low | non-visual | open |
+| 03 | Delivery polish — wire AVIF variants, de-duplicate GSAP, minify | modest | low | non-visual | **AVIF + GSAP done (#389/#417/#422); minify remains** |
 
 ---
 
@@ -258,30 +311,35 @@ The site is already conscientiously tuned: everything async/defer, fonts subset
 + preloaded, three.js/MediaPipe lazy, a CI weight budget. These are cleanups,
 not a rescue — which is why they rank last.
 
-> **Status (2026-07-13): one of three sub-items shipped.** GSAP is de-duped
-> to a single 3.15.0 everywhere (PR #389, 2026-07-12) — the version-mismatch
-> bullet below is resolved. AVIF wiring and script minification are still open.
+> **Status (2026-07-16): two of three sub-items shipped, one remains.** GSAP
+> is de-duped to a single 3.15.0 everywhere — version-pinned (PR #389,
+> 2026-07-12), the landing→sphere path deduped to one loaded instance (PR
+> #417, `community-sphere.js` reuses `window.gsap`), and the standalone
+> `gallery/` study's stray `3.13.0` pin caught and fixed (PR #422). AVIF
+> wiring also shipped in #422 — `gallery/gallery.js` now fetches the
+> `-sm`/full-res `.avif` variants (JPEG fallback) instead of the full-res
+> `.jpg`. **Only script minification is still open.**
 
 **What's wrong**
-- **AVIF made but unused.** `assets/story/` ships `.avif` and `-sm` variants,
+- ~~**AVIF made but unused.** `assets/story/` ships `.avif` and `-sm` variants,
   but `gallery/gallery.js` serves the `.jpg` only — ~1.7 MB of already-generated
-  savings unrealised.
+  savings unrealised.~~ **Fixed in #422** — wall texture + detail view fetch
+  AVIF with a JPEG fallback.
 - ~~**GSAP loaded twice** — 3.15.0 eagerly for the landing, 3.13.0 lazily for the
-  sphere: duplicate dependency *and* version mismatch.~~ **Fixed in #389** —
-  every load site now pins 3.15.0.
+  sphere: duplicate dependency *and* version mismatch.~~ **Fixed in #389,
+  #417 and #422** — one version, one loaded instance, everywhere including
+  the standalone gallery.
 - **36 unminified first-party scripts** (~3.5 MB on disk); two stylesheets
   (`styles.css` + `fonts.css`) block the head.
 
-**The upgrade** — wrap story imagery in `<picture>` with AVIF + a `srcset` of
-the existing `-sm` variants (zero new assets); consolidate to one GSAP version;
-add a minify pass served under the existing `?v=` immutable-cache pattern.
+**The upgrade** — add a minify pass served under the existing `?v=`
+immutable-cache pattern (the AVIF/GSAP bullets above are done).
 
 **Benefit** — faster first paint and less data, felt most on mobile / slow
 connections. Incremental by nature.
 
-**How to build it** — `<picture>`/`srcset` in the gallery; one GSAP version in
-the importmap; an optional minify step (no bundler — keep "drop it on any
-host"). All non-visual → merge autonomously once the seven CI checks are green.
+**How to build it** — an optional minify step (no bundler — keep "drop it on
+any host"). Non-visual → merge autonomously once the seven CI checks are green.
 
 ---
 
@@ -302,31 +360,36 @@ them would be motion for its own sake.
 
 ---
 
-## Re-ranked open work & recommended next PR (2026-07-14 review)
+## Re-ranked open work & recommended next PR (2026-07-16 review)
 
-Re-ranked by impact/effort/risk, folding in everything found in the
-2026-07-14 status update above (unchanged from 2026-07-13 except the hygiene
-and #383 rows, both narrower now that #402 is closed and Instagram shipped):
+Re-ranked by impact/effort/risk, folding in the 2026-07-16 status update
+above: #03 is now down to one sub-item (minify), #363/#419/#420 drop out of
+the hygiene row (closed or superseded), and #416/#418 are carried forward
+unchanged from 07-15 as "merge/device-check, not build":
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 16 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
-| 2 | #03 remainder: AVIF wiring + script minification | modest, mobile/slow-connection users | low | none (non-visual) | GSAP half already done; real but small win, safe autonomous-merge candidate |
-| 3 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
-| 4 | Repo hygiene: close stale PR #363 (8-day-old prototype, explicitly "not meant to merge"; #402 already closed) | none (no user-facing effect) | trivial | none | Keeps the open-PR list honest; do whenever convenient |
+| 1 | Merge PR #416 as-is (colour-atelier confirm gate) | real correctness bug — can currently commit an unselected colour at full confidence | trivial (2-line diff, already written, all 7 checks green) | low — single file, no new UI | Sitting idle in draft since 07-14; also touches the exact commit-model surface rank 2 rewrites, so merging first avoids a rebase |
+| 2 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 19+ unrelated PRs landed around it — the largest remaining product gap by a wide margin |
+| 3 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF + GSAP both done now (#389/#417/#422); real but small win, safe autonomous-merge candidate |
+| 4 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
+| — | Close stale/superseded draft PRs: #419 (this update supersedes it), #420 (its GSAP fix already shipped in #422) | none (no user-facing effect) | trivial | none | Keeps the open-PR list honest |
+| — | PR #418 (hero "Reclaimed Light" glow-up) | unknown until seen on-device | already built, pending review | high (scroll/parallax) | Already built + CI-green, explicitly held for a real-iPhone check per its own description — an approval-and-device-check task, not an open engineering item |
 | — | #01's intro-screen bullet | unknown until decided | — | high (product-direction reversal) | Blocked on a product decision, not on engineering — raise it, don't build it speculatively |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Same category as above — flag, don't build speculatively |
-| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent on 2026-07-13 |
+| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent multiple times (07-13 ×2, 07-14) |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
-**Recommended next PR:** *"Studio journey — one commit model + phase-E
-reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
-re-scoped recommendation under §01 above. **Unchanged since the 2026-07-12
-review** — nothing that landed since then touched this surface, so the
-reasoning still holds and is now stronger: every other easy win nearby (hero
-conversion, contrast, mobile machine, studio-reveal scroll, DNA/render bugs,
-the R4/R10 landing polish, the Instagram credibility signal) has already
-shipped, leaving this as the one clearly load-bearing gap left.
+**Recommended next PR:** merge **PR #416** first (trivial, already built,
+real bug, low risk, zero dependency risk), then *"Studio journey — one
+commit model + phase-E reweighting"* (branch `engine/unify-commit-model`),
+scoped exactly as the re-scoped recommendation under §01 above. Reasoning
+unchanged since 2026-07-12, now sequenced behind #416 so the commit-model
+rewrite starts from the corrected `colorGradient.js` — every other easy win
+nearby (hero conversion, contrast, mobile machine, studio-reveal scroll,
+DNA/render bugs, the R4/R10 landing polish, the Instagram credibility
+signal, the full GSAP dedupe, the AVIF wiring) has already shipped, leaving
+this as the one clearly load-bearing gap left.
 - **Impact:** highest available right now — journey completion is called out
   in this doc itself as "the one metric the whole site depends on," and the
   fix retires a documented workaround (`isGuardedTap`) instead of adding one.
@@ -337,10 +400,12 @@ shipped, leaving this as the one clearly load-bearing gap left.
   *which* screen appears next, not what anything looks like. Still verify
   with `scripts/shoot-journey.mjs` across all six categories + the relevant
   `verify-*.mjs`, motion-sampled per the project rule, before merge.
-- **Dependencies:** none blocking. It should land *before* any future
-  intro-screen work, since that work would otherwise inherit the same
-  two-commit-model inconsistency it would need to unify anyway.
+- **Dependencies:** merge #416 first (same file family, avoids a rebase). No
+  other blockers. It should land *before* any future intro-screen work, since
+  that work would otherwise inherit the same two-commit-model inconsistency
+  it would need to unify anyway.
 - **Explicitly not this PR:** reviving `showIntro` — flag it to the user as a
   standing-directive reversal and get an explicit answer first. Same for C2
   Variant 2 and the intro-screen bullet above — all three are product-decision
-  flags, not engineering tasks.
+  flags, not engineering tasks. Also not this PR: #418, a separate,
+  already-built, already-in-review hero PR orthogonal to the studio journey.
