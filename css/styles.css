@@ -4621,6 +4621,10 @@ html:not(.fx) .lp-loader { display: none; }
        + Headline-Fuss auf; Peach-Highlight als heissester Punkt, Kupfer-tief ankert
        die Ecke. Fällt vor x≈55 % ab → die belichtete Garment-Seite bleibt sauber. */
     background:
+        /* Kühler Akzent — bewusst NUR am CTA/Erfassungs-Cluster (die eine Stelle,
+           an der Teal in Akt I sanktioniert ist: die Marke selbst), lokal + leise,
+           damit es als CTA-Halo liest, nicht als Teal-Wäsche über die Sektion. */
+        radial-gradient(22% 18% at 19% 67%, rgba(126, 224, 207, 0.09), rgba(126, 224, 207, 0) 62%),
         radial-gradient(34% 34% at 22% 74%, rgba(236, 195, 159, 0.13), rgba(236, 195, 159, 0) 60%),
         radial-gradient(60% 62% at 18% 78%, rgba(201, 144, 111, 0.24), rgba(201, 144, 111, 0) 64%),
         radial-gradient(50% 46% at 30% 96%, rgba(138, 95, 76, 0.17), rgba(138, 95, 76, 0) 60%);
@@ -4663,6 +4667,7 @@ html.fx .lp-hero-aurora { animation: lp-hero-aurora 22s var(--ease-in-out) infin
        Headline AA-Kontrast behält. */
     .lp-hero-aurora {
         background:
+            radial-gradient(30% 16% at 24% 70%, rgba(126, 224, 207, 0.06), rgba(126, 224, 207, 0) 64%),
             radial-gradient(64% 40% at 26% 82%, rgba(201, 144, 111, 0.16), rgba(201, 144, 111, 0) 64%),
             radial-gradient(56% 44% at 40% 94%, rgba(138, 95, 76, 0.12), rgba(138, 95, 76, 0) 64%);
     }
@@ -4722,6 +4727,18 @@ html.fx .lp-hero-aurora { animation: lp-hero-aurora 22s var(--ease-in-out) infin
     /* Kursiver Überhang des „l" nicht abschneiden */
     padding-right: 0.06em;
 }
+/* „Not for all." atmet: der Ozean-Verlauf driftet langsam über das Wort — EIN
+   Verlauf (var(--gradient)), kein Weiss-Band (das läse billig/neon). Grösserer
+   background-size gibt Bewegungsraum; nur die Farb-Betonung wandert sanft. Nur
+   html.fx; reduced-motion/no-JS behält den statischen Verlauf (auto-size). */
+html.fx .lp-hero-line--grad {
+    background-size: 220% 100%;
+    animation: lp-hero-grad 11s var(--ease-in-out) infinite;
+}
+@keyframes lp-hero-grad {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+}
 .lp-hero-sub {
     max-width: 540px;
     margin-top: 26px;
@@ -4741,10 +4758,12 @@ html.fx .lp-hero-aurora { animation: lp-hero-aurora 22s var(--ease-in-out) infin
    CSS-Transition kämpft; Glow/Filter/Border-Hover bleiben. Nur Desktop-fx-Pfad —
    ohne Magnet (Touch/reduced-motion) fehlt der Lift, Glow/Filter tragen den Hover. */
 .lp-hero-ctas .lp-btn--primary,
+.lp-hero-ctas .lp-btn--ghost,
 .lp-hero .lp-hero-capture-btn {
     transition: box-shadow 0.25s, border-color 0.25s, filter 0.25s;
 }
 .lp-hero-ctas .lp-btn--primary:hover,
+.lp-hero-ctas .lp-btn--ghost:hover,
 .lp-hero .lp-hero-capture-btn:hover {
     transform: none;   /* GSAPs inline-transform gewinnt ohnehin; neutralisiert nur den CSS-Lift */
 }

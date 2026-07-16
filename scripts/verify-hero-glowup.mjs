@@ -75,24 +75,40 @@ async function newPage(vp, reduced, forceFinePointer) {
   const frames = [0, 0.25, 0.5, 0.75, 1];
   let gap = false;
   const m42s = [];
+  const inner = [];
   for (const f of frames) {
     await page.evaluate((y) => window.scrollTo(0, y), Math.round(f * heroH));
-    await page.waitForTimeout(900); // let scrub 0.6 settle
+    await page.waitForTimeout(900); // let scrub settle
     const s = await page.evaluate(() => {
       const img = document.querySelector(".lp-hero-media img");
       const hero = document.querySelector(".lp-hero");
+      const inr = document.querySelector(".lp-hero-inner");
       const ir = img.getBoundingClientRect(), hr = hero.getBoundingClientRect();
       const m = new DOMMatrix(getComputedStyle(img).transform);
-      return { m42: m.m42, scale: m.m11, imgBottom: ir.bottom, heroBottom: hr.bottom };
+      const im = new DOMMatrix(getComputedStyle(inr).transform);
+      return { m42: m.m42, imgTop: ir.top, imgBottom: ir.bottom, heroTop: hr.top, heroBottom: hr.bottom,
+        innerY: im.m42, innerOp: +getComputedStyle(inr).opacity };
     });
     m42s.push(+s.m42.toFixed(1));
-    if (s.imgBottom < s.heroBottom - 1 && s.heroBottom > 0) gap = true;
+    // img must cover the hero on BOTH edges wherever the hero is visible
+    if (s.heroBottom > 0 && s.heroTop < s.heroBottom) {
+      if (s.imgBottom < s.heroBottom - 1) gap = true;
+      if (s.imgTop > s.heroTop + 1) gap = true;
+    }
+    inner.push({ f, y: +s.innerY.toFixed(1), op: +s.innerOp.toFixed(2) });
     await page.screenshot({ path: `${OUT}/parallax-${Math.round(f * 100)}.png` });
   }
   const travel = Math.abs(m42s[m42s.length - 1] - m42s[0]);
-  note(!gap, "photo parallax: NO transparent bottom-edge gap at any scroll point");
-  note(travel > 8, `photo parallax: photo rises across scroll (Δy=${travel.toFixed(1)}px, depth reads)`);
-  console.log("    m42 (translateY px):", JSON.stringify(m42s));
+  const recedes = m42s[m42s.length - 1] > m42s[0]; // photo drifts DOWN = lags behind
+  note(!gap, "photo parallax: img covers both edges at every scroll point (no gap)");
+  note(travel > 8 && recedes, `photo parallax: photo lags/recedes (Δy=+${travel.toFixed(1)}px down)`);
+  // copy = nearer, faster plane: lifts up + fades, and fully faded while lift is
+  // still inside the ~42px mask hard-core → no threads over visible text
+  const last = inner[inner.length - 1];
+  note(last.y < -12 && last.op < 0.2, `copy plane: lifts + fades on exit (end y=${last.y}px op=${last.op})`);
+  const fadePt = inner.find((s) => s.op <= 0.1);
+  note(!fadePt || Math.abs(fadePt.y) < 42, `copy faded within mask core (|y|=${fadePt ? Math.abs(fadePt.y) : 0}px < 42)`);
+  console.log("    photo m42:", JSON.stringify(m42s), "copy:", JSON.stringify(inner));
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(400);
 
@@ -110,6 +126,21 @@ async function newPage(vp, reduced, forceFinePointer) {
   await page.waitForTimeout(1200);
   const settled = await page.evaluate(() => { const m = new DOMMatrix(getComputedStyle(document.querySelector(".lp-hero-ctas .lp-btn--primary")).transform); return Math.abs(m.m41) + Math.abs(m.m42); });
   note(settled < 1.5, `magnet: settles back to rest on leave (|xy|=${settled.toFixed(2)})`);
+
+  // 3b) Ghost CTA magnet (weaker, but should also lean)
+  await page.evaluate(() => {
+    const el = document.querySelector(".lp-hero-ctas .lp-btn--ghost");
+    const r = el.getBoundingClientRect();
+    el.dispatchEvent(new PointerEvent("pointermove", { clientX: r.x + r.width * 0.85, clientY: r.y + r.height / 2, bubbles: true }));
+  });
+  await page.waitForTimeout(600);
+  const gpull = await page.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector(".lp-hero-ctas .lp-btn--ghost")).transform).m41);
+  note(gpull > 3, `magnet: ghost CTA also leans to cursor (x=${gpull.toFixed(1)})`);
+  await page.evaluate(() => document.querySelector(".lp-hero-ctas .lp-btn--ghost").dispatchEvent(new PointerEvent("pointerleave", { bubbles: true })));
+
+  // 3c) Headline shimmer (hue drift of the existing gradient, fx only)
+  const sh = await page.evaluate(() => { const cs = getComputedStyle(document.querySelector(".lp-hero-line--grad")); return { anim: cs.animationName, size: cs.backgroundSize }; });
+  note(sh.anim === "lp-hero-grad", `headline shimmer active under fx (${sh.anim}, bg-size ${sh.size})`);
 
   // 4) Pointer-bloom: move over the field (lower-left, away from headline) → screenshot
   await page.mouse.move(360, 760);
@@ -137,11 +168,15 @@ async function newPage(vp, reduced, forceFinePointer) {
   const st = await page.evaluate(() => ({
     fx: document.documentElement.classList.contains("fx"),
     anim: getComputedStyle(document.querySelector(".lp-hero-aurora")).animationName,
+    shimmer: getComputedStyle(document.querySelector(".lp-hero-line--grad")).animationName,
     imgT: getComputedStyle(document.querySelector(".lp-hero-media img")).transform,
+    innerOp: +getComputedStyle(document.querySelector(".lp-hero-inner")).opacity,
   }));
   note(!st.fx, "reduced-motion: html.fx NOT set (no JS motion)");
   note(st.anim === "none", `reduced-motion: aurora animation none (${st.anim})`);
+  note(st.shimmer === "none", `reduced-motion: headline shimmer off (${st.shimmer})`);
   note(st.imgT !== "none", "reduced-motion: photo keeps static 1.08 scale frame (no jump)");
+  note(st.innerOp === 1, `reduced-motion: copy full opacity, no lift (op=${st.innerOp})`);
   await page.screenshot({ path: `${OUT}/reduced-desktop.png` });
   note(page._errors.length === 0, `no console errors, reduced-motion (${page._errors.length})`);
   await page.close(); await page._ctx.close();

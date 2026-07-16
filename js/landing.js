@@ -631,23 +631,43 @@
     });
   }
 
-  /* Hero-Tiefe: das Foto rezediert. Beim Hero-Exit steigt nur das <img> ~4 %
-     langsamer als die Seite (yPercent), auf einer 1.08-Overscan-Basis (CSS), sodass
-     nie eine transparente Unterkante auftaucht. Transform-only (Compositor), rührt
-     WEDER #weave-canvas NOCH .lp-hero-inner an → die gebackene Headline-Maske und
-     das Pointer-Mapping bleiben ausgerichtet. Der ::after-Scrim (Geschwister) bleibt
-     fix → Copy-Kontrast wandert nicht. Ohne fx bleibt der statische Scale-Frame. */
+  /* Hero-Tiefe (drei Ebenen, korrekt gestaffelt back→front): das Foto ist die
+     HINTERSTE, LANGSAMSTE Ebene → es driftet beim Exit leicht nach UNTEN (positiv y),
+     „bleibt zurück"/rezediert wie hinter Glas; das Weave-Canvas läuft in Ruhe-Tempo
+     mit; die Copy ist die NÄCHSTE, SCHNELLSTE Ebene → sie hebt zusätzlich ab. So
+     bewegt sich jede tiefere Lage langsamer als die darüber. Alles transform/opacity
+     (Compositor). Nur das <img> + .lp-hero-inner bekommen ein eigenes transform —
+     NIE #weave-canvas/.lp-hero selbst (Maske + Pointer-Mapping bleiben ausgerichtet).
+     Ohne fx bleiben die statischen Ruhe-Frames. */
   function initHeroParallax() {
     if (!fx) return;
-    const img = document.querySelector(".lp-hero-media img");
-    if (!img) return;
     const mob = window.matchMedia("(max-width: 700px)").matches;
-    gsap.fromTo(img,
-      { yPercent: 0, scale: 1.08 },
-      {
-        yPercent: mob ? -3 : -4, scale: 1.08, ease: "none",
-        scrollTrigger: { trigger: ".lp-hero", start: "top top", end: "bottom top", scrub: 0.6 },
+    // Foto: langsamste Ebene, driftet nach unten (Overscan scale(1.08) deckt den
+    // ~4-%-Versatz am Oberrand → keine transparente Kante). Nur das <img>.
+    const img = document.querySelector(".lp-hero-media img");
+    if (img) {
+      gsap.fromTo(img,
+        { yPercent: 0, scale: 1.08 },
+        {
+          yPercent: mob ? 3 : 4, scale: 1.08, ease: "none",
+          scrollTrigger: { trigger: ".lp-hero", start: "top top", end: "bottom top", scrub: 0.6 },
+        });
+    }
+    // Copy: schnellste Ebene, hebt beim Exit ab (y) UND blendet FRÜH aus (eigener,
+    // kürzerer Trigger) — sie ist unsichtbar, lange bevor der Lift die gebackene
+    // Headline-Maske (Feather ~126px; hier zum Fade-Ende erst ~16px) verlassen
+    // könnte → nie Fäden über sichtbarem Text.
+    const inner = document.querySelector(".lp-hero-inner");
+    if (inner) {
+      gsap.fromTo(inner, { y: 0 }, {
+        y: mob ? -40 : -56, ease: "none",
+        scrollTrigger: { trigger: ".lp-hero", start: "top top", end: "bottom top", scrub: 0.5 },
       });
+      gsap.fromTo(inner, { opacity: 1 }, {
+        opacity: 0, ease: "none",
+        scrollTrigger: { trigger: ".lp-hero", start: "top top", end: "top -28%", scrub: 0.5 },
+      });
+    }
   }
 
   /* ── Hero-Canvas: Faden-Partikelfeld („Weave") ───────────── */
@@ -1443,6 +1463,7 @@
     initOrb();
     initHeroParallax();
     initHeroMagnet(document.querySelector(".lp-hero-ctas .lp-btn--primary"), 0.2, 3);
+    initHeroMagnet(document.querySelector(".lp-hero-ctas .lp-btn--ghost"), 0.16, 2);
     initHeroMagnet(document.querySelector(".lp-hero-capture-btn"), 0.18, 2);
     initWeave();
     // Sprachwechsel (app.js bedient den Toggle): Manifest-Spans + Verben-Stationen neu aufbauen.
