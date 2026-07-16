@@ -111,6 +111,49 @@
 >   is still verbatim in `flow.js`. It is still the single largest open item;
 >   the re-ranked table at the bottom is unchanged from 2026-07-13.
 
+> **Status update (2026-07-15 review, read before acting):** re-checked
+> against `main` @ `caf0083`. One PR landed since the 2026-07-14 sync above
+> (**#417** — `community-sphere.js` now reuses the already-loaded global GSAP
+> instead of re-fetching a second, separately-cached ESM copy on lazy boot) —
+> a small delivery-polish win in #03's spirit, but not one of its two
+> still-open sub-items (AVIF wiring, script minification), which are
+> unchanged.
+> - **Repo hygiene closed out:** **PR #363** is confirmed closed (unmerged,
+>   2026-07-14) — the 2026-07-13/14 recommendation to close it is done; drop
+>   it from the hygiene row below.
+> - **Two open draft PRs surfaced that this doc didn't know about — neither
+>   is the recommended next PR, and no `engine/unify-commit-model` branch (or
+>   similar) exists yet.** Both already have all seven functional CI checks
+>   green:
+>   - **#416** — a real correctness bug in the colour atelier
+>     (`modalities/colorGradient.js`): the refine-screen confirm was never
+>     disabled before a swatch tap, so hitting it early silently commits
+>     `{scheme: "mono", stops: ["#1a1a1a"]}` at full confidence — into the
+>     live flat, the AI prompt, the spec sheet, and any shared/published DNA.
+>     Found by routine code review, fixed by mirroring `cards.js`'s existing
+>     disable-until-selected pattern. Small, low-risk, still in **draft**.
+>     Recommend un-drafting and merging as-is, and doing so *before* #01
+>     below — #01 rewrites the same commit-model surface this PR touches.
+>   - **#418** — "Reclaimed Light," a hero visual glow-up (scroll parallax on
+>     the photo, a copper `mix-blend:screen` aura, magnetic CTAs) — from a
+>     "make the site sexy" instruction outside either roadmap doc. Additive
+>     and `html.fx`-gated, not a replacement of the landing film this doc's
+>     "what I would not touch" section calls finished, but it's new,
+>     uncoordinated scope worth knowing about. Explicitly flagged
+>     **high-risk visual (scroll/parallax)** in its own description and
+>     correctly held in **draft** for a real-iPhone check before merge, per
+>     the risk-based auto-merge gate — nothing to build here, just don't
+>     duplicate it.
+> - **#01 remains completely untouched** — `isGuardedTap`/`COMMIT_GUARD_MS`
+>   is still byte-identical in `flow.js`. Still the single largest open item;
+>   see the re-ranked table at the bottom, now sequenced behind #416.
+> - **Aside:** the task brief for this review also named
+>   `claude/website-review-2026-07-10.md` as a doc to reconcile — that file
+>   does not exist in this repository and never has (`git log --all` has no
+>   trace of it). This matches the 2026-07-12 note above: the 2026-07-10
+>   "redesign brief" was never committed and is confirmed permanently lost,
+>   not merely misplaced.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -302,31 +345,35 @@ them would be motion for its own sake.
 
 ---
 
-## Re-ranked open work & recommended next PR (2026-07-14 review)
+## Re-ranked open work & recommended next PR (2026-07-15 review)
 
-Re-ranked by impact/effort/risk, folding in everything found in the
-2026-07-14 status update above (unchanged from 2026-07-13 except the hygiene
-and #383 rows, both narrower now that #402 is closed and Instagram shipped):
+Re-ranked by impact/effort/risk, folding in the 2026-07-15 status update
+above: one small PR landed (#417), one stale PR closed (#363), and two open
+draft PRs (#416, #418) surfaced that neither this doc nor VISUAL-ROADMAP.md
+knew about.
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 16 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
-| 2 | #03 remainder: AVIF wiring + script minification | modest, mobile/slow-connection users | low | none (non-visual) | GSAP half already done; real but small win, safe autonomous-merge candidate |
-| 3 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
-| 4 | Repo hygiene: close stale PR #363 (8-day-old prototype, explicitly "not meant to merge"; #402 already closed) | none (no user-facing effect) | trivial | none | Keeps the open-PR list honest; do whenever convenient |
+| 1 | Merge PR #416 as-is (colour-atelier confirm gate) | real correctness bug — can currently commit an unselected colour at full confidence | trivial (2-line diff, already written, CI green) | low — single file, no new UI | Sitting idle in draft; also touches the exact commit-model surface rank 2 rewrites, so merging first avoids a rebase |
+| 2 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 17 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
+| 3 | #03 remainder: AVIF wiring + script minification | modest, mobile/slow-connection users | low | none (non-visual) | GSAP now fully de-duped (#389 + #417); real but small win, safe autonomous-merge candidate |
+| 4 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
+| — | PR #418 (hero "Reclaimed Light" glow-up) | unknown until seen on-device | already built, pending review | high (scroll/parallax) | Already built + CI-green, explicitly held for a real-iPhone check per its own description — an approval-and-device-check task, not an open engineering item |
 | — | #01's intro-screen bullet | unknown until decided | — | high (product-direction reversal) | Blocked on a product decision, not on engineering — raise it, don't build it speculatively |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Same category as above — flag, don't build speculatively |
-| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent on 2026-07-13 |
+| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent three times (07-13 ×2, 07-14) |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
-**Recommended next PR:** *"Studio journey — one commit model + phase-E
+**Recommended next PR:** merge **PR #416** first (trivial, already built,
+real bug, low risk), then *"Studio journey — one commit model + phase-E
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
-re-scoped recommendation under §01 above. **Unchanged since the 2026-07-12
-review** — nothing that landed since then touched this surface, so the
-reasoning still holds and is now stronger: every other easy win nearby (hero
-conversion, contrast, mobile machine, studio-reveal scroll, DNA/render bugs,
-the R4/R10 landing polish, the Instagram credibility signal) has already
-shipped, leaving this as the one clearly load-bearing gap left.
+re-scoped recommendation under §01 above. Reasoning unchanged since the
+2026-07-12 review, now additionally sequenced behind #416 so the
+commit-model rewrite starts from the corrected `colorGradient.js` — every
+other easy win nearby (hero conversion, contrast, mobile machine,
+studio-reveal scroll, DNA/render bugs, the R4/R10 landing polish, the
+Instagram credibility signal, the GSAP dedupe) has already shipped, leaving
+this as the one clearly load-bearing gap left.
 - **Impact:** highest available right now — journey completion is called out
   in this doc itself as "the one metric the whole site depends on," and the
   fix retires a documented workaround (`isGuardedTap`) instead of adding one.
@@ -337,10 +384,12 @@ shipped, leaving this as the one clearly load-bearing gap left.
   *which* screen appears next, not what anything looks like. Still verify
   with `scripts/shoot-journey.mjs` across all six categories + the relevant
   `verify-*.mjs`, motion-sampled per the project rule, before merge.
-- **Dependencies:** none blocking. It should land *before* any future
-  intro-screen work, since that work would otherwise inherit the same
-  two-commit-model inconsistency it would need to unify anyway.
+- **Dependencies:** merge #416 first (same file family, avoids a rebase). No
+  other blockers. It should land *before* any future intro-screen work, since
+  that work would otherwise inherit the same two-commit-model inconsistency
+  it would need to unify anyway.
 - **Explicitly not this PR:** reviving `showIntro` — flag it to the user as a
   standing-directive reversal and get an explicit answer first. Same for C2
   Variant 2 and the intro-screen bullet above — all three are product-decision
-  flags, not engineering tasks.
+  flags, not engineering tasks. Also not this PR: #418, a separate,
+  already-built, already-in-review hero PR orthogonal to the studio journey.

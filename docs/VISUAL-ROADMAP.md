@@ -132,6 +132,19 @@ Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
 > and the ghost-button border was darkened to clear WCAG 1.4.11 non-text
 > contrast. Neither changes this doc's own open item above.
 
+> **Status update (2026-07-15):** re-checked against `main` @ `caf0083`; the
+> `#measure` trust component (`.photo-privacy`, still 11px italic) remains
+> this doc's only open item, unchanged. New, adjacent scope worth knowing
+> about: an open draft PR (**#418**, "Reclaimed Light") adds a scroll-
+> parallax photo, a copper `mix-blend:screen` aura, and magnetic CTAs to the
+> hero — additive to, not a replacement of, the landing film this doc
+> considers finished (all new motion is `html.fx`-gated, reduced-motion gets
+> a static frame). It sits outside this doc's own remaining-roadmap table
+> (§4) and outside `WEBSITE-IMPROVEMENTS.md`; CI is green but the PR is
+> correctly held in draft for a real-iPhone scroll/parallax check before
+> merge — see `WEBSITE-IMPROVEMENTS.md`'s 2026-07-15 status update for the
+> full accounting.
+
 ---
 
 ## 5. Hard guardrails (from the adversarial review — violating any kills a change)
