@@ -3202,8 +3202,13 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 }
 .de-palette-swatch.is-selected .de-palette-order:not(:empty) { display: grid; }
 
-.de-confirm { margin-top: var(--space-6); padding: var(--space-4) var(--space-8); border: 0; border-radius: 999px; background: var(--gradient); color: #fff; font-size: var(--text-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-glow); transition: transform .2s var(--ease-out); }
-.de-confirm:hover { transform: translateY(-2px); }
+.de-confirm { margin-top: var(--space-6); padding: var(--space-4) var(--space-8); border: 0; border-radius: 999px; background: var(--gradient); color: #fff; font-size: var(--text-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-glow); transition: transform .2s var(--ease-out), opacity .2s var(--ease-out); }
+.de-confirm:hover:not(:disabled) { transform: translateY(-2px); }
+/* Mirrors .de-nav:disabled — cards.js (multi-select) and colorGradient.js
+   both disable this button until a choice exists; without this it looked
+   fully active (cursor: pointer, opacity 1), so a tap while gated appeared
+   to silently do nothing instead of reading as "not ready yet". */
+.de-confirm:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
 .de-summary { font-family: var(--font-display); font-size: var(--text-lg); line-height: var(--leading-snug); color: var(--text); margin: 0 0 var(--space-2); }
 
 .de-controls { display: flex; align-items: center; gap: var(--space-4); }
