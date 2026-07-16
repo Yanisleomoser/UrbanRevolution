@@ -438,5 +438,29 @@ assert(DNA.topArchetype({ archetypeWeights: { quietMinimal: -5, techAvant: null 
 assert(DNA.topArchetype({ archetypeWeights: { a: 1, b: 2 } }) === "b", "highest finite weight still wins");
 assert(DNA.topArchetype({ archetypeWeights: {} }) === null, "empty weights → null");
 
+// ─── DNA.set/setConfidence reject __proto__/constructor/prototype segments ──
+console.log("\n— DNA.set guards against prototype pollution —");
+// A path like "__proto__.polluted" walks `cur["__proto__"]` onto the real
+// Object.prototype (it's a non-null object, so walk() wouldn't otherwise
+// rebuild it) and the final assignment would then write a property onto
+// EVERY object in the process. Guards against a future data-driven or
+// inference-derived path ever reaching set()/setConfidence() with such a
+// segment (no known live call site does today).
+{
+  const before = ({}).polluted;
+  const dna = DNA.create();
+  DNA.set(dna, "__proto__.polluted", "evil", 1);
+  assert(({}).polluted === before, "path starting with __proto__ does not pollute Object.prototype");
+
+  DNA.set(dna, "category.__proto__.polluted2", "evil", 1);
+  assert(({}).polluted2 === undefined, "__proto__ mid-path does not pollute Object.prototype");
+
+  DNA.set(dna, "constructor.prototype.polluted3", "evil", 1);
+  assert(({}).polluted3 === undefined, "constructor.prototype path does not pollute Object.prototype");
+
+  DNA.setConfidence(dna, "__proto__.polluted4", 1);
+  assert(({}).polluted4 === undefined, "setConfidence rejects __proto__ the same way");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

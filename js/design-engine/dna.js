@@ -25,10 +25,18 @@ const DesignDNA = (() => {
     return { archetypeWeights: weights, _confidence: {} };
   }
 
+  // Paths can originate from data-driven content (content/nodes/*.json) that
+  // itself derives keys from shared/imported DNA (e.g. inference-based fills).
+  // Reject "__proto__"/"constructor"/"prototype" segments so a crafted path
+  // can never walk `cur[p]` onto Object.prototype and pollute it globally —
+  // mirrors the trust-boundary hardening share.js already applies to DNA values.
+  const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
   function walk(obj, parts, build) {
     let cur = obj;
     for (let i = 0; i < parts.length - 1; i++) {
       const p = parts[i];
+      if (UNSAFE_KEYS.has(p)) return undefined;
       if (cur[p] == null || typeof cur[p] !== "object") {
         if (!build) return undefined;
         cur[p] = {};
@@ -50,6 +58,7 @@ const DesignDNA = (() => {
 
   function set(dna, path, value, conf) {
     const parts = String(path).split(".");
+    if (parts.some((p) => UNSAFE_KEYS.has(p))) return dna;
     const parent = walk(dna, parts, true);
     parent[parts[parts.length - 1]] = value;
     if (conf !== undefined) setConfidence(dna, path, conf);
@@ -58,6 +67,7 @@ const DesignDNA = (() => {
 
   function setConfidence(dna, path, conf) {
     const parts = ("_confidence." + path).split(".");
+    if (parts.some((p) => UNSAFE_KEYS.has(p))) return;
     const parent = walk(dna, parts, true);
     parent[parts[parts.length - 1]] = Math.max(0, Math.min(1, conf));
   }

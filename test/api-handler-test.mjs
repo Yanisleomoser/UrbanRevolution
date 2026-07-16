@@ -90,11 +90,12 @@ try {
     r = await read(await waitlist(jsonReq("https://x/api/waitlist", "POST", { email: "dupe@example.com", consent: true })));
     assert(r.status === 200 && r.body.status === "already", "duplicate email (SADD→0) → already");
 
-    // DSGVO consent gate must reach neither the store nor a success.
+    // DSGVO consent gate must reach neither the signup write nor a success.
+    // (The per-IP rate-limit check itself still fires first, same as gallery.js.)
     const calls = spyFetch(() => resp([{ result: 1 }]));
     r = await read(await waitlist(jsonReq("https://x/api/waitlist", "POST", { email: "a@b.co", consent: false })));
     assert(r.status === 400 && r.body.code === "consent_required", "consent:false → 400 consent_required");
-    assert(calls.length === 0, "…and never writes to the store");
+    assert(!calls.some((c) => c.body.includes("SADD")), "…and never writes to the store");
 
     spyFetch(() => resp([{ result: 1 }]));
     r = await read(await waitlist(jsonReq("https://x/api/waitlist", "POST", { email: "not-an-email", consent: true })));
@@ -109,6 +110,16 @@ try {
     spyFetch(() => resp(null, { ok: false, status: 500 }));
     r = await read(await waitlist(jsonReq("https://x/api/waitlist", "POST", { email: "a@b.co", consent: true })));
     assert(r.status === 502 && r.body.code === "service_unavailable", "store write failure → neutral 502, no leak");
+
+    // Over the per-IP rate limit → 429, and the signup never reaches the store.
+    const rlCalls = spyFetch((u, body) => {
+      if (body.includes("INCR")) return resp([{ result: 11 }, { result: 1 }]); // count 11 > 10
+      if (body.includes("SADD")) throw new Error("must not write when rate-limited");
+      return resp([{ result: 1 }]);
+    });
+    r = await read(await waitlist(jsonReq("https://x/api/waitlist", "POST", { email: "a@b.co", consent: true })));
+    assert(r.status === 429 && r.body.code === "rate_limited", "over rate limit → 429 rate_limited");
+    assert(!rlCalls.some((c) => c.body.includes("SADD")), "…and the signup is never written");
 
     r = await read(await waitlist(new Request("https://x/api/waitlist", { method: "PUT" })));
     assert(r.status === 405, "unsupported method → 405");
@@ -141,21 +152,30 @@ try {
     assert(r.status === 204, "unconfigured → 204, silently swallowed");
 
     configure(true);
-    // Non-whitelisted event must NOT reach the store.
+    // Non-whitelisted event must NOT reach the store (the per-IP rate-limit
+    // check itself still fires first — one INCR pipeline call — same as
+    // gallery.js/waitlist.js).
     let calls = spyFetch(() => resp([{ result: 1 }]));
     r = await read(await track(jsonReq("https://x/api/track", "POST", { event: "definitely_not_allowed" })));
     assert(r.status === 204, "non-whitelisted event → 204");
-    assert(calls.length === 0, "…and writes nothing to Redis (whitelist gates the store)");
+    assert(!calls.some((c) => c.body.includes("HINCRBY")), "…and writes nothing to Redis (whitelist gates the store)");
 
-    // Whitelisted event with no node suffix → one write, no HEXISTS probe.
-    calls = spyFetch((u, body) => resp(body.includes("HINCRBY") ? [{ result: 1 }] : []));
+    // Whitelisted event with no node suffix → rate-limit check + one write, no HEXISTS probe.
+    calls = spyFetch((u, body) => resp(body.includes("HINCRBY") ? [{ result: 1 }] : [{ result: 1 }]));
     r = await read(await track(jsonReq("https://x/api/track", "POST", { event: "generate" })));
-    assert(r.status === 204 && calls.length === 1 && calls[0].body.includes("HINCRBY"), "whitelisted event → one counter increment");
+    assert(r.status === 204 && calls.length === 2 && calls[1].body.includes("HINCRBY"), "whitelisted event → rate check + one counter increment");
 
-    // node_shown + id → distinct-field cap probe, then the write.
+    // node_shown + id → rate-limit check, distinct-field cap probe, then the write.
     calls = spyFetch((u, body) => resp(body.includes("HEXISTS") ? [{ result: 0 }, { result: 5 }] : [{ result: 1 }, { result: 1 }]));
     r = await read(await track(jsonReq("https://x/api/track", "POST", { event: "node_shown", id: "mood_calm" })));
-    assert(r.status === 204 && calls.length === 2, "node event → cap probe + write (two round-trips)");
+    assert(r.status === 204 && calls.length === 3, "node event → rate check + cap probe + write (three round-trips)");
+
+    // Over the per-IP rate limit → still 204 (best-effort beacon, never a 429
+    // to the client), but the write must never happen.
+    calls = spyFetch((u, body) => resp(body.includes("INCR") ? [{ result: 121 }, { result: 1 }] : [{ result: 1 }]));
+    r = await read(await track(jsonReq("https://x/api/track", "POST", { event: "generate" })));
+    assert(r.status === 204, "over rate limit → still 204 (best-effort, no error surfaced)");
+    assert(!calls.some((c) => c.body.includes("HINCRBY")), "…and the counter is never incremented");
 
     // A store throw must still 204 (never surfaces to the UI).
     spyFetch(() => { throw new Error("upstash down"); });

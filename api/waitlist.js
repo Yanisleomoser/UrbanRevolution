@@ -23,10 +23,17 @@
  * UPSTASH_REDIS_REST_TOKEN. No other config.
  */
 
+import { checkRateLimit } from "./_lib/rate-limit.js";
+
 export const config = { runtime: "edge" };
 
 const SET_KEY = "urev:waitlist";
 const TS_KEY = "urev:waitlist:ts";
+// Mirrors gallery.js's POST rate limit: without it, an unthrottled loop could
+// both grow the Upstash-stored set unboundedly and exhaust the shared
+// instance's quota, which would trip _lib/rate-limit.js's fail-open behavior
+// for the billed AI proxies that share the same store.
+const RATE_LIMIT = { prefix: "waitlist-post", limit: 10, windowSeconds: 600 };
 // Basic, permissive email shape check (real validation is delivery anyway).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -74,6 +81,9 @@ export default async function handler(request) {
         console.error("[waitlist] UPSTASH_REDIS_REST_URL / _TOKEN not configured");
         return jsonError(503, "Waitlist store not configured", "service_unavailable");
     }
+
+    const { limited } = await checkRateLimit(request, { url, token, ...RATE_LIMIT });
+    if (limited) return jsonError(429, "Too many requests", "rate_limited");
 
     let payload;
     try {
