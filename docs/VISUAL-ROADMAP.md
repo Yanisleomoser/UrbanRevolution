@@ -4,6 +4,14 @@
 > session. Distilled from a 28-agent deep analysis + what's already shipped.
 > Read this together with `CLAUDE.md` (the load-bearing project rules).
 
+> **2026-07 Re-Skin-Hinweis:** Palette + Display-Typo wurden auf die
+> „Thermal Signature" des Insta-Slides umgestellt (Nachtschwarz `#0B0B0D`,
+> Periwinkle→Teal→Leucht-Grün, Glut-Familie Orange/Gold statt Kupfer,
+> Poppins-Thin-Caps statt Fraunces, Filmkorn-Auren). Farb-/Font-Nennungen
+> weiter unten („Ocean Depths", Fraunces, Midnight-Navy) beschreiben den
+> Stand VOR dem Re-Skin — die Rollen/Diagnosen gelten unverändert, die
+> Werte sind in `CLAUDE.md` § Design-System aktuell.
+
 ---
 
 ## 1. The core diagnosis

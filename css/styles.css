@@ -5867,13 +5867,15 @@ html.fil-go .fil-seam svg { clip-path: inset(0% -3% 102% -3%); }
 .lp-finale::before {
     content: "";
     position: absolute;
-    inset: -8% -10%;
+    /* Nur vertikal ausbluten — horizontaler Überhang würde die Seite breiter
+       machen (mobile no-overflow-Gate); die Radials verlaufen ohnehin aus. */
+    inset: -8% 0;
     z-index: -1;
     pointer-events: none;
     background:
         var(--grain),
-        radial-gradient(52% 58% at 50% 42%, rgba(106, 113, 214, 0.10), rgba(106, 113, 214, 0) 70%),
-        radial-gradient(30% 34% at 50% 58%, rgba(126, 220, 46, 0.07), rgba(126, 220, 46, 0) 72%);
+        radial-gradient(64% 58% at 50% 42%, rgba(106, 113, 214, 0.10), rgba(106, 113, 214, 0) 70%),
+        radial-gradient(38% 34% at 50% 58%, rgba(126, 220, 46, 0.07), rgba(126, 220, 46, 0) 72%);
 }
 /* Übergabe-Zeile — Protokoll-Klammer wie .lp-label: [ … ] statt Zier-Naht */
 .lp-handoff {

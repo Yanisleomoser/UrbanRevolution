@@ -10,6 +10,9 @@
  *
  * Answers deterministically (always the first option, slider at 0.78,
  * duo-gradient with two swatches), so runs are comparable across sessions.
+ * Pages boot with locale de-DE — the deterministic walk clicks GERMAN
+ * aria-labels ("Jacke"), and a container whose navigator.language is en-US
+ * would otherwise resolve the EN UI and hang on the first category click.
  * Also samples 10 frames of the genesis→silhouette weave right after the
  * category pick (journey/<vp>-weave-*.png), spread over the full ~1.7 s hero
  * beat — the moment must be judged from frames, not stills. Fails loudly on
@@ -41,7 +44,7 @@ console.log("Shooting journey at", base);
 const browser = await chromium.launch({ args: ["--no-sandbox"] });
 
 async function walk(vp) {
-  const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 2 });
+  const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 2, locale: "de-DE" });
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
