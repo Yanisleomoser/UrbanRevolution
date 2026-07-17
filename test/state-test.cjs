@@ -37,6 +37,9 @@ throws(() => S.set("currentType", "cape"), "unknown garment type throws");
 throws(() => S.set("currentMaterial", "kevlar"), "unknown material throws");
 throws(() => S.set("nope", 1), "unknown state key throws on set");
 throws(() => S.get("nope"), "unknown state key throws on get");
+throws(() => S.set("__proto__", { polluted: true }), "__proto__ throws on set (not an own state key)");
+throws(() => S.set("constructor", {}), "constructor throws on set (not an own state key)");
+throws(() => S.get("toString"), "toString throws on get (inherited, not an own state key)");
 
 console.log("\n— change events —");
 let typeChange = 0, stateChange = 0, lastDetail = null;
