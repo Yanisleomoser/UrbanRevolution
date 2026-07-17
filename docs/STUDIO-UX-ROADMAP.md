@@ -352,6 +352,14 @@ heading clipped behind the sticky navbar. A related copy-only fix (**PR
 opening question. None of these touch the `isGuardedTap`/phase-E items above
 — the recommended next PR is unchanged.
 
+**Status update (2026-07-17):** re-checked against `main` @ `343ad78`. **PR
+#416 merged** (2026-07-16) — the colour-atelier confirm-gate bug from a
+separate routine code-review pass, not one of this roadmap's ten slices.
+`isGuardedTap`/`COMMIT_GUARD_MS` is still byte-identical in `flow.js`; the
+recommended next PR (one commit model + phase-E reweighting, tracked in
+`docs/WEBSITE-IMPROVEMENTS.md` #01) is unchanged and, with #416 now merged,
+no longer sequenced behind anything.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

@@ -145,6 +145,15 @@ Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
 > merge — see `WEBSITE-IMPROVEMENTS.md`'s 2026-07-15 status update for the
 > full accounting.
 
+> **Status update (2026-07-17):** re-checked against `main` @ `343ad78`. The
+> `#measure` trust component remains this doc's only open item, unchanged.
+> #418 is still open/draft/CI-green, unchanged from the note above. Six
+> unrelated PRs landed since the 07-15 sync (a colour-atelier bugfix, a
+> rate-limiter IP-spoof fix, AVIF/GSAP delivery-polish, a rate-limit +
+> prototype-pollution hardening pass) — none touch this doc's tracked
+> surfaces; see `WEBSITE-IMPROVEMENTS.md`'s 2026-07-17 status update for the
+> full accounting.
+
 ---
 
 ## 5. Hard guardrails (from the adversarial review — violating any kills a change)
