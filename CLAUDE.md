@@ -68,9 +68,9 @@ Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Ve
 ## Design-System — NUR bestehende :root-Tokens („Thermal Signature")
 - Hintergrund Nachtschwarz `#0B0B0D` (Flächen mit Indigo-Schimmer: `--bg-elevated` #101016 · `--bg-card` #15151D · `--surface` #1B1B26); Akzent-Verlauf Periwinkle-Violett `#6A71D6` → Teal-Grün `#12A37A` → Leucht-Grün `#7EDC2E` (`--gradient`, der kühle Arm des Wärmebild-Blobs aus dem Insta-Slide). Interaktions-Akzente: `--accent` #8F96E8 (Periwinkle, primär) · `--accent-2` #14B885 · `--accent-3` #7EDC2E (Glow-Saum). `--gradient-thermal` (Violett→Indigo→Teal→Grün→Gold→Orange) NUR für Marken-Momente (OG, Auren). Dazu Filmkorn-Textur `--grain` (feTurbulence-Daten-URI) auf den cineastischen Beats (Hero/Pivot/Finale).
 - Fonts (drei Register, EINE Familie + Mono): Poppins Thin/ExtraLight-VERSALIEN als Display (Gewichts-Tokens `--display-weight-hero` 100 · `--display-weight` 200 · `--display-weight-mid` 300, Tracking `--display-tracking`; unter ~28 px nie 100) + Poppins 300–600 (Body/UI) + JetBrains Mono (Eyebrows/Labels/Einheiten — die „Maschinen"-Stimme). Keine Kursiven (die Slide-Sprache kennt keine). Selbst gehostet in `/assets/fonts/` (DSGVO, kein Google-CDN); Poppins via `scripts/fetch-fonts.mjs`, Mono via `scripts/fetch-fonts-extra.mjs`. Fraunces/Lora sind AUSGEMUSTERT; KEINE weiteren Fonts.
-- **Glut-Dramaturgie (Thermal-Slide → Site):** Akt I (Preloader → Hero-Weave → Manifest → #facts Beat 1+2) trägt das heisse Ende des Wärmebilds — `--warm-thread` #EF7C26 (Akt-I-Faden, fil-seam[1], #pivot-line), `--warm-deep` #9A4E12, `--warm-bright` #F5C050 (Gold), `--gradient-warm` (Protokoll-Zahlen). Das Chaos des Abfalls BRENNT warm; der kühle Arm (Periwinkle/Grün) wird ERST nach der Wende ausgegeben (#facts Beat 3 Bergungs-Faden / #pivot-Arc). In der Maschine: Scanner/Chrom/Plate = Periwinkle (analytisches Auge), Remake-Zelle/Output/DEINS = Leucht-Grün, Eingang glüht orange. Canvas-rgb-Basen: Orange 239,124,38 · Glut-tief 154,78,18 · Leucht-Grün 126,220,46 · Periwinkle 143,150,232.
+- **Glut-Dramaturgie (Thermal-Slide → Site):** Akt I (Preloader → Hero-Wave → Manifest → #facts Beat 1+2) trägt das heisse Ende des Wärmebilds — `--warm-thread` #EF7C26 (Akt-I-Faden, fil-seam[1], #pivot-line), `--warm-deep` #9A4E12, `--warm-bright` #F5C050 (Gold), `--gradient-warm` (Protokoll-Zahlen). Das Chaos des Abfalls BRENNT warm; der kühle Arm (Periwinkle/Grün) wird ERST nach der Wende ausgegeben (#facts Beat 3 Bergungs-Faden / #pivot-Arc). In der Maschine: Scanner/Chrom/Plate = Periwinkle (analytisches Auge), Remake-Zelle/Output/DEINS = Leucht-Grün, Eingang glüht orange. Canvas-rgb-Basen: Orange 239,124,38 · Glut-tief 154,78,18 · Leucht-Grün 126,220,46 · Periwinkle 143,150,232.
 - `--accent-warm` (#F0A860, Text-tauglich 9.8:1) bleibt die reservierte Text-Stufe der Glut-Familie, derzeit ungenutzt — Akt II bleibt vollständig kühl.
-- **Thermal-Blob (das Slide-Motiv als Bühne):** EIN wiederverwendbares Inline-SVG-Asset in index.html (Defs: organische Silhouette `#tb-path`, Verlaufs-Schichten, Grün-Saum via Masken-Gradient, Korn+Soft-Edge im Filter `#tb-fx`; Symbole `#tblob-cool` ohne / `#tblob-thermal` MIT Glut-Kern). Instanzen: `.thermal-field` (viewport-fix, z:-1, EIN kühler Blob aus der oberen rechten Ecke + Vollflächen-Korn — der durchgängige Hintergrund), `.lp-hero-blob` (thermal — einzige Kern-Instanz, Akt I), `.lp-pivot-blob`/`.lp-finale-blob`/`.ownership-blob` (cool, als GROSSER Umgebungs-Crop: die Silhouetten-Kerben müssen off-frame bleiben, frontal gelesen wirken sie figürlich). Wrapper immer `inset`+`overflow:hidden`+`pointer-events:none`+`aria-hidden` (Overflow-Gate!). Kühles Field hinter warmen Facts-Beats ist bewusst ambient (0.32) — die Glut liegt obendrauf. `--gradient-display` ist der hellere Text-Clip (Hero-Zeile, Hinge, em-Akzente); `--gradient` bleibt der Flächen-Verlauf (Kontrast-Pflichten).
+- **Thermal-Blob (das Slide-Motiv als Bühne):** EIN Asset in zwei Varianten (`cool` ohne / `thermal` MIT Glut-Kern) — als **Build-Raster** `assets/tblob-*.webp`, erzeugt aus `scripts/blob-comp.html` (organische Silhouette, Verlaufs-Schichten, Grün-Saum, Korn) via `scripts/render-blob.mjs`. NIE als Live-Inline-SVG-Filter einbauen: fünf feGaussianBlur+feTurbulence-Instanzen haben real Scroll-Jank erzeugt (deshalb Raster; Budget-Cap 350 KB/Bild). Instanzen: `.thermal-field` (viewport-fix, z:-1, EIN kühler Blob aus der oberen rechten Ecke + Vollflächen-Korn — der durchgängige Hintergrund), `.lp-hero-blob` (thermal — einzige Kern-Instanz, Akt I), `.lp-pivot-blob`/`.lp-finale-blob`/`.ownership-blob` (cool, als GROSSER Umgebungs-Crop: die Silhouetten-Kerben müssen off-frame bleiben, frontal gelesen wirken sie figürlich). Wrapper immer `inset`+`overflow:hidden`+`pointer-events:none`+`aria-hidden` (Overflow-Gate!). Kühles Field hinter warmen Facts-Beats ist bewusst ambient (0.32) — die Glut liegt obendrauf. `--gradient-display` ist der hellere Text-Clip (Hero-Zeile, Hinge, em-Akzente); `--gradient` bleibt der Flächen-Verlauf (Kontrast-Pflichten).
 - Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum, Schwarz als Bühne mit leuchtenden Auren + Korn; Übergänge ≤ 250 ms; kein Layout-Sprung.
 
 ## Harte Regeln (immer)
@@ -128,9 +128,12 @@ a printable production spec sheet that drives the autonomous factory.
 
 The **landing experience** (`js/landing.js`, GSAP) is the front door, told as
 a **two-act dramaturgy ("Die Linie und der Kreis")**: preloader logo-draw →
-hero with a **warp thread-field** (`initWeave`, `#weave-canvas`) that responds
-to the cursor like **plucked strings** (nearby threads pin to the pointer and
-damp-oscillate back on release) → **Act I THE LINE** (manifesto word-scrub
+hero with the **moving thermal-wave stage** (`js/thermal-waves.js`,
+`#thermal-waves` — a raw-WebGL domain-warped-fbm shader: slowly flowing
+heat-waves in the slide palette with a wandering ember core; static raster
+fallback `.lp-hero-blob` for no-JS/no-WebGL, static first frame under
+reduced-motion; the former photo pair + interactive thread-field/`initWeave`
+were removed) → **Act I THE LINE** (manifesto word-scrub
 thesis + mono verbs band → counted-up stats as the line's protocol, kickers
 Produzieren/Wegwerfen/Zurück + coda). A **single continuous machine thread**
 (`initActOneThread`, the `.lp-linie` rail) is born in the preloader and
@@ -216,6 +219,7 @@ js/
   facts-mass.js         # #facts „Die Masse": 3 Canvas-Partikel-Beats + Live-CO₂-Zähler (side effect)
   faden.js              # „Der Faden": 4 scroll-gezeichnete Nähte verbinden die Akt-II-Sektionen (side effect)
   machine.js            # #machine: Ingenieur-Simulation der autonomen Linie (side effect)
+  thermal-waves.js      # Hero: bewegte Wärmebild-Bühne (Raw-WebGL-fbm-Shader, side effect)
   community-sphere.js   # WebGL community globe (ES module — three.js + GSAP, lazy)
   design-engine/        # Data-driven adaptive journey + 2D technical-flat preview
 assets/
@@ -228,6 +232,7 @@ docs/
                         # (status + hard-won pitfalls) is REQUIRED reading before studio work
 SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·
+                        # render-blob.mjs + blob-comp.html (Thermal-Blob → assets/tblob-*.webp),
                         # build/QA: shoot* (incl. shoot-journey.mjs, the studio walkthrough),
                         # build-image-library, gen-presets, strip-hero-bg, audit*,
                         # verify-* (permanent per-beat regression checks), check-* (headless)
@@ -266,7 +271,7 @@ not two stills (project rule).
 | Anchor / id            | What it is                                   | Driven by                                                        | Motion                                  | `shoot`     |
 | ---------------------- | -------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------- | ----------- |
 | `#loader` `.lp-loader` | Preloader logo-draw                          | `landing.js` `initLoader` (`.lp-mark-arc/-dashes/-needle`)        | GSAP stroke-draw (transient)            | —           |
-| `#top` `.lp-hero`      | Hero: warp thread-field + headline (plucked-string cursor) | `landing.js` `heroIntro` + `initWeave` (`#weave-canvas`); Act I rail via `initActOneThread` (`.lp-linie`) | GSAP intro + canvas warp weave (cursor pins/plucks threads) | `hero`      |
+| `#top` `.lp-hero`      | Hero: moving thermal-wave stage + thin-caps headline | `js/thermal-waves.js` (`#thermal-waves`, WebGL-fbm, 30 fps, offscreen-paused; Fallback-Raster `.lp-hero-blob`) + `landing.js` `heroIntro`; Act I rail via `initActOneThread` (`.lp-linie`) | GSAP copy-intro + GPU heat-waves (reduced-motion/no-WebGL = statische Szene). Verify: Frames samplen | `hero`      |
 | `#manifesto`           | Manifesto word-scrub                         | `landing.js` `buildManifesto` (`.w` spans)                       | GSAP ScrollTrigger scrub                | —           |
 | `#facts` `.lp-stats`   | Cited fast-fashion evidence — „Die Masse": 3 full-height canvas-particle beats | `landing.js` `initCounters` (`[data-count]`) + `ambient-ticker.js` + `facts-mass.js` (`html.fxb-go`, `.is-live` je Beat) | count-up + live kg/CO₂ odometer + particle plume/mound/tracer (canvas, offscreen-paused) | `facts`     |
 | `#pivot` `.lp-pivot`   | Pinned "Die Wende" — line bends into circle  | `landing.js` `initPivot` / `pivotBendPath` (`#pivot-pin/-line/-arc`) | GSAP ScrollTrigger pin + path-morph scrub | `pivot`     |
@@ -376,6 +381,7 @@ window.Foo = Foo;
 | `facts-mass.js`   | (none — side effect)    | classic         |
 | `faden.js`        | (none — side effect)    | classic         |
 | `machine.js`      | (none — side effect)    | classic         |
+| `thermal-waves.js`| (none — side effect)    | classic         |
 | `community-sphere.js`| (none — side effect) | **ES module** (`type="module"`) |
 
 The **live garment preview** (inside the studio) is a **data-driven 2D
@@ -395,7 +401,7 @@ subscribe to its events). The bottom-of-body order is:
 config → i18n → state-manager → ai → measurements →
 pose → export → preferences → library → preview-fallback → focus-trap → animations →
 design-engine/* (dna … flow) → spec-view → app → flair → ur-create → ambient-ticker →
-facts-mass → faden → machine → [importmap] → gsap + ScrollTrigger (CDN) → landing →
+facts-mass → faden → machine → thermal-waves → [importmap] → gsap + ScrollTrigger (CDN) → landing →
 community-sphere (module)
 ```
 

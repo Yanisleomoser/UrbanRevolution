@@ -94,7 +94,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260717-blob">
+    <link rel="stylesheet" href="css/styles.css?v=20260717-waves">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -119,13 +119,6 @@
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/poppins-100-normal-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/poppins-200-normal-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/poppins-400-normal-latin.woff2">
-    <!-- R3: the hero photo is the LCP element — preload the viewport-matched crop
-         at high priority so it paints fast (mobile gets the portrait, desktop the wide).
-         AVIF-only preload (type-gated, so non-AVIF browsers skip it and just discover
-         the JPEG fallback via the <picture> below — avoids double-preloading both
-         formats for the ~all-modern-browsers case that does support AVIF). -->
-    <link rel="preload" as="image" href="/assets/hero-wide.avif" type="image/avif" media="(min-width: 701px)" fetchpriority="high">
-    <link rel="preload" as="image" href="/assets/hero-2.avif" type="image/avif" media="(max-width: 700px)" fetchpriority="high">
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
@@ -283,91 +276,13 @@
 <body>
     <a href="#main-content" class="skip-link" data-i18n="nav.skip">Zum Inhalt springen</a>
 
-    <!-- Thermal-Blob (Slide-Signatur): EINE Silhouette + Verlaufs-Schichten +
-         gebackenes Filmkorn als wiederverwendbare Defs. Instanzen referenzieren
-         #tblob-cool (kühler Arm, ambient) bzw. #tblob-thermal (mit Glut-Kern,
-         nur Hero — Akt-I-Wärme). Rein dekorativ, 0×0, screenreader-stumm. -->
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-        <defs>
-            <path id="tb-path" d="M70,330C55,269,133,175,180,150C227,125,295,83,370,70C445,57,496,39,520,50C544,61,552,79,575,115C598,151,617,242,645,265C673,288,712,148,745,125C778,102,804,90,850,90C896,90,975,124,1020,170C1065,216,1121,323,1140,420C1159,517,1157,660,1155,760C1153,860,1076,934,1000,1010C924,1086,806,1141,700,1190C594,1239,467,1272,420,1245C373,1218,340,1102,310,1040C280,978,175,972,120,920C65,868,64,733,60,660C56,587,297,568,290,490C283,412,95,443,100,380C105,317,85,391,70,330Z"/>
-            <clipPath id="tb-clip"><use href="#tb-path"/></clipPath>
-            <linearGradient id="tb-body" x1="0.78" y1="0.04" x2="0.16" y2="0.92">
-                <stop offset="0" stop-color="#727bd8"/>
-                <stop offset="0.38" stop-color="#5560b8"/>
-                <stop offset="0.72" stop-color="#333a78"/>
-                <stop offset="1" stop-color="#1e2246"/>
-            </linearGradient>
-            <radialGradient id="tb-hi" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0" stop-color="#9aa2ee" stop-opacity="0.95"/>
-                <stop offset="0.6" stop-color="#9aa2ee" stop-opacity="0.4"/>
-                <stop offset="1" stop-color="#9aa2ee" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="tb-steel" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0" stop-color="#7f96cf" stop-opacity="0.85"/>
-                <stop offset="0.55" stop-color="#5f86b8" stop-opacity="0.45"/>
-                <stop offset="1" stop-color="#5f86b8" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="tb-deep" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0" stop-color="#10132c" stop-opacity="0.7"/>
-                <stop offset="0.6" stop-color="#161a38" stop-opacity="0.4"/>
-                <stop offset="1" stop-color="#161a38" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="tb-green" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0" stop-color="#46c40e" stop-opacity="0.95"/>
-                <stop offset="0.5" stop-color="#7edc2e" stop-opacity="0.6"/>
-                <stop offset="1" stop-color="#7edc2e" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="tb-core" cx="0.5" cy="0.5" r="0.5">
-                <stop offset="0" stop-color="#f68f38"/>
-                <stop offset="0.4" stop-color="#ef7c26" stop-opacity="0.98"/>
-                <stop offset="0.68" stop-color="#e2a816" stop-opacity="0.85"/>
-                <stop offset="1" stop-color="#c9b70a" stop-opacity="0"/>
-            </radialGradient>
-            <linearGradient id="tb-rimgrad" x1="0.15" y1="0.95" x2="0.8" y2="0.1">
-                <stop offset="0" stop-color="#fff"/>
-                <stop offset="0.45" stop-color="#fff" stop-opacity="0.75"/>
-                <stop offset="0.72" stop-color="#000"/>
-            </linearGradient>
-            <mask id="tb-rimmask"><rect width="1200" height="1250" fill="url(#tb-rimgrad)"/></mask>
-            <filter id="tb-fx" x="-8%" y="-8%" width="116%" height="116%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="art"/>
-                <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" stitchTiles="stitch" result="turb"/>
-                <feColorMatrix in="turb" type="matrix" values="0 0 0 0 0.85  0 0 0 0 0.85  0 0 0 0 0.9  1 1 1 0 -1.15" result="gn"/>
-                <feComposite in="gn" in2="art" operator="in" result="gnClip"/>
-                <feBlend in="gnClip" in2="art" mode="overlay" result="mix"/>
-                <feComposite in="mix" in2="art" operator="in"/>
-            </filter>
-            <g id="tblob-cool" filter="url(#tb-fx)">
-                <use href="#tb-path" fill="none" stroke="#7edc2e" stroke-width="13" opacity="0.85" mask="url(#tb-rimmask)"/>
-                <use href="#tb-path" fill="url(#tb-body)"/>
-                <g clip-path="url(#tb-clip)">
-                    <ellipse cx="930" cy="300" rx="330" ry="300" fill="url(#tb-hi)"/>
-                    <ellipse cx="1030" cy="680" rx="330" ry="400" fill="url(#tb-steel)"/>
-                    <ellipse cx="600" cy="440" rx="460" ry="230" fill="url(#tb-deep)" transform="rotate(-22 600 440)"/>
-                    <ellipse cx="680" cy="1180" rx="400" ry="190" fill="url(#tb-deep)"/>
-                    <ellipse cx="330" cy="960" rx="300" ry="300" fill="url(#tb-green)"/>
-                </g>
-            </g>
-            <g id="tblob-thermal" filter="url(#tb-fx)">
-                <use href="#tb-path" fill="none" stroke="#7edc2e" stroke-width="13" opacity="0.85" mask="url(#tb-rimmask)"/>
-                <use href="#tb-path" fill="url(#tb-body)"/>
-                <g clip-path="url(#tb-clip)">
-                    <ellipse cx="930" cy="300" rx="330" ry="300" fill="url(#tb-hi)"/>
-                    <ellipse cx="1030" cy="680" rx="330" ry="400" fill="url(#tb-steel)"/>
-                    <ellipse cx="600" cy="440" rx="460" ry="230" fill="url(#tb-deep)" transform="rotate(-22 600 440)"/>
-                    <ellipse cx="680" cy="1180" rx="400" ry="190" fill="url(#tb-deep)"/>
-                    <ellipse cx="330" cy="960" rx="300" ry="300" fill="url(#tb-green)"/>
-                    <ellipse cx="680" cy="1030" rx="240" ry="210" fill="url(#tb-green)" opacity="0.75"/>
-                    <ellipse cx="480" cy="1000" rx="225" ry="260" fill="url(#tb-core)"/>
-                </g>
-            </g>
-        </defs>
-    </svg>
     <!-- Durchgängiges Thermal-Field: EIN kühler Blob, viewport-fixiert hinter
          allem Inhalt (z:-1) + Korn über die volle Fläche — die Bühne trägt die
-         Slide-Textur beim Scrollen kontinuierlich. Statisch, zeigerblind. -->
+         Slide-Textur beim Scrollen kontinuierlich. Als Build-Raster
+         (scripts/render-blob.mjs → assets/tblob-*.webp): Live-SVG-Filter
+         kosteten Scroll-Flüssigkeit. Statisch, zeigerblind. -->
     <div class="thermal-field" aria-hidden="true">
-        <svg viewBox="0 0 1200 1250" preserveAspectRatio="xMidYMid meet"><use href="#tblob-cool"/></svg>
+        <img src="/assets/tblob-cool.webp" alt="" width="1440" height="1500" decoding="async">
     </div>
 
     <!-- Preloader: Logo-Kreis zeichnet sich (nur mit GSAP + ohne reduced
@@ -416,25 +331,15 @@
          interaktivem Faden-Partikelfeld, Manifest, Kreislauf, Zahlen, Finale.
          Die CTAs öffnen das UR-Create-Studio (#studio, unten). -->
     <section class="lp-hero" id="top">
-        <!-- R3: „Reclaimed Light"-Editorial füllt die leere Hälfte des Heros — das
-             Kleidungsstück wird endlich sichtbar (Desktop: Modell rechts, Copy links;
-             Mobil: Hochkant-Fassung). Ein gerichteter Scrim hält die Textspalte lesbar
-             und blendet die Aufnahme ins Midnight-Bg. Dekorativ → alt="" + aria-hidden;
-             das Faden-Canvas bleibt als feiner Overlay darüber (Interaktion überlebt). -->
-        <div class="lp-hero-media" aria-hidden="true">
-            <picture>
-                <source media="(max-width: 700px)" srcset="assets/hero-2.avif" type="image/avif" width="768" height="1376">
-                <source media="(max-width: 700px)" srcset="assets/hero-2.jpg" width="768" height="1376">
-                <source srcset="assets/hero-wide.avif" type="image/avif" width="1872" height="1056">
-                <img src="assets/hero-wide.jpg" alt="" width="1872" height="1056" fetchpriority="high" decoding="async">
-            </picture>
-        </div>
-        <!-- Der Hero-Blob (mit Glut-Kern): das Slide-Motiv als Layout-Träger —
-             die Headline sitzt AUF der Masse, der Kern glüht am Akt-I-Fuss. -->
+        <!-- Statisches Fallback (no-JS / kein WebGL / reduced-motion vor dem
+             ersten Frame): das Slide-Motiv als Raster. Läuft der Wellen-Shader,
+             blendet html.tw-live dieses Bild aus. -->
         <div class="lp-hero-blob" aria-hidden="true">
-            <svg viewBox="0 0 1200 1250" preserveAspectRatio="xMidYMid meet"><use href="#tblob-thermal"/></svg>
+            <img src="/assets/tblob-thermal.webp" alt="" width="1440" height="1500" decoding="async">
         </div>
-        <canvas class="lp-hero-canvas" id="weave-canvas" aria-hidden="true"></canvas>
+        <!-- Die bewegte Wärmebild-Bühne: Raw-WebGL-fbm-Shader (js/thermal-waves.js),
+             fliessende Thermal-Wellen mit wanderndem Glut-Kern. -->
+        <canvas class="lp-hero-waves" id="thermal-waves" aria-hidden="true"></canvas>
         <!-- Die eine Linie — der graue Maschinen-Faden, aus dem Preloader übergeben,
              läuft in der Gosse hinter der Headline weiter (fx zeichnet ihn ein). -->
         <div class="lp-linie lp-linie--hero" aria-hidden="true">
@@ -466,7 +371,6 @@
                 <label class="lp-hero-capture-consent"><input type="checkbox" id="firstwave-consent" required> <span data-i18n="join.consent">Ich möchte Updates erhalten (jederzeit abbestellbar). Es gilt die Datenschutzerklärung.</span></label>
                 <p class="lp-hero-capture-status mono-label" id="firstwave-status" aria-live="polite"></p>
             </form>
-            <p class="lp-hero-hint" data-i18n="landing.tap_hint">Tipp ins Bild — die Fäden formen dein nächstes Stück.</p>
         </div>
         <div class="lp-scroll-cue" aria-hidden="true">
             <span data-i18n="landing.scroll">Scrollen</span>
@@ -619,7 +523,7 @@
         <div class="lp-pivot-pin" id="pivot-pin">
             <!-- Die Wende sitzt AUF dem kühlen Blob (Layout-Träger wie im Slide). -->
             <div class="lp-pivot-blob" aria-hidden="true">
-                <svg viewBox="0 0 1200 1250" preserveAspectRatio="xMidYMid meet"><use href="#tblob-cool"/></svg>
+                <img src="/assets/tblob-cool.webp" alt="" width="1440" height="1500" loading="lazy" decoding="async">
             </div>
             <!-- viewBox 560 breit: die halb gebogene Linie ist am breitesten Punkt
                  ~546 Einheiten (max von L(1−cosθ)/θ bei θ≈2.33) — nichts clippt. -->
@@ -990,7 +894,7 @@
 
     <section class="lp-finale lp-block" data-lp-reveal>
         <div class="lp-finale-blob" aria-hidden="true">
-            <svg viewBox="0 0 1200 1250" preserveAspectRatio="xMidYMid meet"><use href="#tblob-cool"/></svg>
+            <img src="/assets/tblob-cool.webp" alt="" width="1440" height="1500" loading="lazy" decoding="async">
         </div>
         <p class="lp-handoff" data-i18n="landing.handoff">Der Kreis wartet auf sein erstes Stück.</p>
         <h2 class="lp-finale-title" data-i18n-html="landing.cta_title_html">Trag etwas, das es <em>nur einmal</em> gibt.</h2>
@@ -1095,7 +999,7 @@
          existiert. Save -> Share/Publish -> Warum das zaehlt. -->
     <section class="ownership" id="ownership" aria-labelledby="own-heading" hidden>
         <div class="ownership-blob" aria-hidden="true">
-            <svg viewBox="0 0 1200 1250" preserveAspectRatio="xMidYMid meet"><use href="#tblob-cool"/></svg>
+            <img src="/assets/tblob-cool.webp" alt="" width="1440" height="1500" loading="lazy" decoding="async">
         </div>
         <div class="container ownership-inner">
             <p class="mono-label section-label" data-reveal data-i18n="own.eyebrow">[ DEIN MOMENT ]</p>
@@ -1696,6 +1600,7 @@
     <script defer src="js/facts-mass.js?v=20260717-thermal"></script>
     <script defer src="js/faden.js"></script>
     <script defer src="js/machine.js"></script>
+    <script defer src="js/thermal-waves.js"></script>
     <!-- Landing-Experience: GSAP + ScrollTrigger (CDN, build-frei wie MediaPipe),
          dann der Landing-Controller (Preloader, Partikelfeld, Kreislauf-Pin,
          Studio-Reveal). Ohne GSAP/bei reduced motion bleibt alles sichtbar. -->
