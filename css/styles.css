@@ -131,6 +131,11 @@
     --act1-pad-l: calc(var(--act1-thread-x) + clamp(20px, 3vw, 46px));
     --act1-thread: rgba(239, 124, 38, 0.42);
     --act1-thread-dim: rgba(239, 124, 38, 0.22);
+
+    /* Filmkorn der Slide-Ästhetik: getiltes feTurbulence-SVG (Daten-URI,
+       280px-Kachel), End-Alpha im SVG gebacken (~5.5%) — als oberste Lage in
+       mehrschichtigen backgrounds der Aura-Flächen. Statisch, kein Motion. */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4613,6 +4618,23 @@ html:not(.fx) .lp-loader { display: none; }
     flex-direction: column;
     justify-content: center;
 }
+/* Thermal-Aura + Korn (Signatur des Insta-Slides): ein grosses, weiches
+   Periwinkle-Leuchtfeld hinter der rechten Bildhälfte, ein Teal-Grün-Atem
+   darunter, ein Glut-Hauch am Akt-I-Fuss — überzogen mit Filmkorn. Sitzt
+   über Foto/Scrim/Canvas (späteres z0-Element im Paint), unter der Copy
+   (z1). Statisch: kein Motion-Kanal, reduced-motion-neutral. */
+.lp-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        var(--grain),
+        radial-gradient(58% 72% at 74% 36%, rgba(106, 113, 214, 0.16), rgba(106, 113, 214, 0) 68%),
+        radial-gradient(44% 52% at 84% 78%, rgba(18, 163, 122, 0.11), rgba(18, 163, 122, 0) 70%),
+        radial-gradient(34% 42% at 8% 98%, rgba(239, 124, 38, 0.08), rgba(239, 124, 38, 0) 72%);
+}
 /* R3: hero photography fills the empty half. Layer order (back→front):
    photo → directional scrim → plucked-thread canvas → copy. The scrim keeps the
    left copy column readable and dissolves the shot into the midnight bg; the
@@ -4647,13 +4669,18 @@ html:not(.fx) .lp-loader { display: none; }
     height: 100%;
 }
 /* Mobile: portrait crop (hero-2). The copy is tall and centred, so the shot
-   reads as a moody backdrop — a slightly stronger, top+bottom-weighted veil keeps
-   every line readable while the garment + light-threads still show through. */
+   reads as a moody backdrop — the thermal stage needs MORE black than the old
+   navy world: a stronger veil + desaturated, violet-cooled photo (its magenta
+   light-trails stem from the retired palette; muted they read as thread-glow
+   under the periwinkle aura instead of fighting it). */
 @media (max-width: 700px) {
-    .lp-hero-media img { object-position: 50% 24%; }
+    .lp-hero-media img {
+        object-position: 50% 24%;
+        filter: saturate(0.5) hue-rotate(18deg) brightness(0.82);
+    }
     .lp-hero-media::after {
         background:
-            linear-gradient(180deg, rgba(11, 11, 13, 0.78) 0%, rgba(11, 11, 13, 0.6) 38%, rgba(11, 11, 13, 0.62) 62%, rgba(11, 11, 13, 0.72) 82%, var(--bg) 100%);
+            linear-gradient(180deg, rgba(11, 11, 13, 0.86) 0%, rgba(11, 11, 13, 0.7) 38%, rgba(11, 11, 13, 0.72) 62%, rgba(11, 11, 13, 0.8) 82%, var(--bg) 100%);
     }
 }
 /* R3: the small hero copy can sit over lit areas of the photo on mobile, where
@@ -5409,17 +5436,20 @@ html.fx .m-tread { animation: m-tread-run 1.4s linear infinite; }
     overflow: hidden;
 }
 /* Bühnen-Vignette (gleiche Theater-Sprache wie die fxb-Beats in #facts):
-   dunkle Pools oben/unten + ein kaum wahrnehmbarer Aqua-Atem hinter dem
-   Kreis. Immer sichtbar — Tiefe, kein Zustand. */
+   dunkle Pools oben/unten + die Thermal-Aura hinter dem Kreis — Periwinkle
+   als Grundton der Wende, ein Grün-Atem im Zentrum, Filmkorn darüber.
+   Immer sichtbar — Tiefe, kein Zustand. */
 .lp-pivot-pin::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
     background:
+        var(--grain),
         radial-gradient(94% 52% at 50% -8%, rgba(4, 4, 7, 0.5), rgba(4, 4, 7, 0) 64%),
         radial-gradient(130% 44% at 50% 114%, rgba(4, 4, 7, 0.5), rgba(4, 4, 7, 0) 68%),
-        radial-gradient(46% 40% at 50% 50%, rgba(126, 220, 46, 0.045), rgba(126, 220, 46, 0) 72%);
+        radial-gradient(56% 52% at 50% 46%, rgba(106, 113, 214, 0.09), rgba(106, 113, 214, 0) 70%),
+        radial-gradient(40% 36% at 50% 52%, rgba(126, 220, 46, 0.05), rgba(126, 220, 46, 0) 72%);
 }
 .lp-pivot-svg {
     position: absolute;
@@ -5826,10 +5856,24 @@ html.fil-go .fil-seam svg { clip-path: inset(0% -3% 102% -3%); }
 
 /* ── Finale ── */
 .lp-finale {
+    position: relative;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+/* Finale-Aura: der geometrische Schlusspunkt bekommt das gleiche Leuchtfeld
+   wie Hero/Wende — Periwinkle-Grund, Grün-Kern hinter dem Orb, Filmkorn. */
+.lp-finale::before {
+    content: "";
+    position: absolute;
+    inset: -8% -10%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        var(--grain),
+        radial-gradient(52% 58% at 50% 42%, rgba(106, 113, 214, 0.10), rgba(106, 113, 214, 0) 70%),
+        radial-gradient(30% 34% at 50% 58%, rgba(126, 220, 46, 0.07), rgba(126, 220, 46, 0) 72%);
 }
 /* Übergabe-Zeile — Protokoll-Klammer wie .lp-label: [ … ] statt Zier-Naht */
 .lp-handoff {
