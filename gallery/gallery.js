@@ -44,16 +44,17 @@ async function bestSrc(jpgSrc, { small = false } = {}) {
     return (await avifReady) ? toAvif(jpg) : jpg;
 }
 
-// 36 Karten aus 18 Bildern — die zweite Verwendung bekommt einen
+// 36 Karten aus 16 Bildern — die zweite Verwendung bekommt einen
 // engeren Bildausschnitt (crop) und liest sich als eigenes Motiv.
+// (hero-2.jpg/hero-wide.jpg wurden mit dem Retire der Hero-Fotos aus
+// assets/ entfernt — hier mit den index-gleichen Titel-Einträgen mit
+// entfernt statt auf tote Assets zu verweisen.)
 const SOURCES = [
     [A("hero-1.jpg"), "Tidal Coat", "Outerwear"],
-    [A("hero-2.jpg"), "Halcyon Blazer", "Construction"],
     [A("hero-3.jpg"), "Meridian Dress", "Reclaimed"],
     [A("hero-4.jpg"), "Undertow Parka", "Outerwear"],
     [A("hero-5.jpg"), "Riptide Shirt", "Studio"],
     [A("hero-6.jpg"), "Sound & Salt", "Editorial"],
-    [A("hero-wide.jpg"), "The Factory Floor", "Archive"],
     [A("vto-example.jpg"), "Second Skin", "Fittings"],
     [A("presets/f-1.jpg"), "Fitting No. 01", "Fittings"],
     [A("presets/f-2.jpg"), "Fitting No. 02", "Fittings"],
@@ -70,12 +71,10 @@ const SOURCES = [
 // Varianten 2 + 3 jeder Quelle: engere Ausschnitte mit eigenem Titel.
 const THIRD_TITLES = [
     ["Tidal — First Toile", "Toile"],
-    ["Halcyon — Lining", "Process"],
     ["Meridian — Drape", "Toile"],
     ["Undertow — Shell", "Process"],
     ["Riptide — Collar", "Detail"],
     ["Salt Air", "Editorial"],
-    ["Cutting Table", "Archive"],
     ["Second Skin II", "Fittings"],
     ["Portrait Study 01", "Editorial"],
     ["Portrait Study 02", "Editorial"],
@@ -91,12 +90,10 @@ const THIRD_TITLES = [
 
 const SECOND_TITLES = [
     ["Tidal Coat — Detail", "Archive"],
-    ["Cut & Resolve", "Process"],
     ["Meridian, Recut", "Re-Cut"],
     ["North Passage", "Outerwear"],
     ["Riptide — Back", "Studio"],
     ["Stillwater", "Editorial"],
-    ["Floor Plan 02", "Archive"],
     ["Skin Study", "Process"],
     ["Muse No. 01", "Identity"],
     ["Muse No. 02", "Identity"],
