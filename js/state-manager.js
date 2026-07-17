@@ -49,7 +49,7 @@ const StateManager = (() => {
     }
 
     function set(key, value) {
-        if (!(key in state)) {
+        if (!Object.prototype.hasOwnProperty.call(state, key)) {
             throw new Error(`Unknown state key: ${key}`);
         }
 
@@ -102,7 +102,7 @@ const StateManager = (() => {
     }
 
     function get(key) {
-        if (!(key in state)) {
+        if (!Object.prototype.hasOwnProperty.call(state, key)) {
             throw new Error(`Unknown state key: ${key}`);
         }
         return state[key];
