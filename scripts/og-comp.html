@@ -10,24 +10,26 @@
   Sprache des Hero (Ehrlichkeits-Regeln, KI-Rolle):
   - Eyebrow: GERETTETE FASER · DEIN ENTWURF · AUTONOM GEFERTIGT
     (KI sortiert & fertigt — sie entwirft NIE; kein Preis, keine Lieferzeit)
-  - Headline: „Made for one." / Gradient-Italic „Not for all."
-  - Motiv: der Kupferfaden (Akt I, Abfall/warm) läuft nach rechts und wird
-    zum Ozean-Kreis (Akt II, Kreislauf) — die Wende der Landing-Dramaturgie.
-  Tokens wie in css/styles.css (:root) — Midnight-Navy, Ocean Depths v2,
-  Kupfer-Familie. Fonts selbst gehostet aus /assets/fonts/.
+  - Headline: Thin-Caps „MADE FOR ONE." / Thermal-Gradient „NOT FOR ALL."
+  - Motiv: der Glut-Faden (Akt I, Abfall brennt warm) läuft nach rechts und
+    wird zum kühlen Thermal-Kreis (Akt II, Kreislauf) — die Wende der
+    Landing-Dramaturgie als ein durchgehender Wärmebild-Verlauf.
+  Tokens wie in css/styles.css (:root) — Thermal Signature: Nachtschwarz,
+  Periwinkle→Teal→Leucht-Grün, Glut-Familie. Fonts selbst gehostet aus
+  /assets/fonts/ (Poppins Thin-Caps als Display).
 -->
 <style>
   @font-face {
-    font-family: "Fraunces";
-    src: url("/assets/fonts/fraunces-400-700-normal-latin.woff2") format("woff2");
-    font-weight: 400 700;
+    font-family: "Poppins";
+    src: url("/assets/fonts/poppins-100-normal-latin.woff2") format("woff2");
+    font-weight: 100;
     font-style: normal;
   }
   @font-face {
-    font-family: "Fraunces";
-    src: url("/assets/fonts/fraunces-400-700-italic-latin.woff2") format("woff2");
-    font-weight: 400 700;
-    font-style: italic;
+    font-family: "Poppins";
+    src: url("/assets/fonts/poppins-200-normal-latin.woff2") format("woff2");
+    font-weight: 200;
+    font-style: normal;
   }
   @font-face {
     font-family: "JetBrains Mono";
@@ -43,14 +45,14 @@
   }
 
   :root {
-    --bg: #0A1622;
-    --text: #F2F7F9;
-    --text-dim: #93AEBE;
-    --accent: #2F86B3;
-    --accent-2: #2FAE9E;
-    --accent-3: #7EE0CF;
-    --warm-thread: #C9906F;
-    --warm-bright: #ECC39F;
+    --bg: #0B0B0D;
+    --text: #F1F2F8;
+    --text-dim: #A9AECD;
+    --accent: #6A71D6;
+    --accent-2: #12A37A;
+    --accent-3: #7EDC2E;
+    --warm-thread: #EF7C26;
+    --warm-bright: #F5C050;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #333; display: grid; place-items: center; min-height: 100vh; }
@@ -61,8 +63,8 @@
     height: 630px;
     overflow: hidden;
     background:
-      radial-gradient(1100px 620px at 88% 30%, rgba(47, 134, 179, 0.14), transparent 62%),
-      radial-gradient(900px 700px at 8% 108%, rgba(201, 144, 111, 0.10), transparent 58%),
+      radial-gradient(1100px 620px at 88% 30%, rgba(106, 113, 214, 0.16), transparent 62%),
+      radial-gradient(900px 700px at 8% 108%, rgba(239, 124, 38, 0.10), transparent 58%),
       var(--bg);
     color: var(--text);
   }
@@ -83,7 +85,7 @@
     color: var(--text-dim);
   }
 
-  .copy { position: absolute; left: 64px; top: 200px; }
+  .copy { position: absolute; left: 64px; top: 205px; }
   .eyebrow {
     font-family: "JetBrains Mono", monospace;
     font-size: 19px;
@@ -95,21 +97,20 @@
   .eyebrow .warm { color: var(--warm-bright); }
   .eyebrow .dot { color: var(--text-dim); padding: 0 6px; }
   h1 {
-    margin-top: 30px;
-    font-family: "Fraunces", serif;
-    font-weight: 620;
-    font-size: 104px;
-    line-height: 1.06;
-    letter-spacing: -0.015em;
+    margin-top: 34px;
+    font-family: "Poppins", sans-serif;
+    font-weight: 100;
+    font-size: 93px;
+    line-height: 1.14;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
   h1 .grad {
-    font-style: italic;
-    font-weight: 560;
-    background: linear-gradient(92deg, var(--accent) 0%, var(--accent-2) 48%, var(--accent-3) 100%);
+    font-weight: 200;
+    background: linear-gradient(92deg, var(--accent) 0%, var(--accent-2) 55%, var(--accent-3) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    /* Italic-Ausläufer nicht am Clip-Rand beschneiden */
     padding-right: 0.08em;
   }
 
@@ -127,26 +128,26 @@
 </head>
 <body>
 <div id="card">
-  <!-- Der Faden: Kupfer-Linie (Akt I) läuft ein und wird rechts zum
-       Ozean-Kreis (Akt II) — ein Pfad, ein Verlauf, die Wende. -->
+  <!-- Der Faden: Glut-Linie (Akt I) läuft ein und wird rechts zum kühlen
+       Thermal-Kreis (Akt II) — ein Pfad, ein Wärmebild-Verlauf, die Wende. -->
   <svg class="thread" viewBox="0 0 1200 630" fill="none" aria-hidden="true">
     <defs>
       <linearGradient id="turn" gradientUnits="userSpaceOnUse" x1="0" y1="560" x2="1120" y2="240">
-        <stop offset="0" stop-color="#C9906F" stop-opacity="0.85"/>
-        <stop offset="0.52" stop-color="#C9906F" stop-opacity="0.9"/>
-        <stop offset="0.7" stop-color="#2F86B3"/>
-        <stop offset="0.86" stop-color="#2FAE9E"/>
-        <stop offset="1" stop-color="#7EE0CF"/>
+        <stop offset="0" stop-color="#EF7C26" stop-opacity="0.85"/>
+        <stop offset="0.5" stop-color="#EF7C26" stop-opacity="0.9"/>
+        <stop offset="0.68" stop-color="#6A71D6"/>
+        <stop offset="0.86" stop-color="#12A37A"/>
+        <stop offset="1" stop-color="#7EDC2E"/>
       </linearGradient>
       <radialGradient id="ringGlow" gradientUnits="userSpaceOnUse" cx="960" cy="330" r="230">
-        <stop offset="0.55" stop-color="#2FAE9E" stop-opacity="0"/>
-        <stop offset="0.78" stop-color="#2FAE9E" stop-opacity="0.10"/>
-        <stop offset="1" stop-color="#2FAE9E" stop-opacity="0"/>
+        <stop offset="0.55" stop-color="#12A37A" stop-opacity="0"/>
+        <stop offset="0.78" stop-color="#12A37A" stop-opacity="0.12"/>
+        <stop offset="1" stop-color="#12A37A" stop-opacity="0"/>
       </radialGradient>
     </defs>
     <!-- weicher Glow hinter dem Kreis (Zentrum = Ring-Zentrum 960/330) -->
     <circle cx="960" cy="330" r="215" fill="url(#ringGlow)"/>
-    <!-- Faden: von links unten (Kupfer) mit horizontalem Tangens in den
+    <!-- Faden: von links unten (Glut) mit horizontalem Tangens in den
          untersten Punkt des Rings (960/480), dann 330° gegen den Uhrzeiger
          (large-arc=1, sweep=0) — der Kreis bleibt 30° offen: er schliesst
          sich erst noch. Ring: Zentrum 960/330, r=150. -->
@@ -156,15 +157,15 @@
              A 150 150 0 1 0 885 460"
           stroke="url(#turn)" stroke-width="5" stroke-linecap="round"/>
     <!-- leuchtendes Fadenende -->
-    <circle cx="885" cy="460" r="7" fill="#7EE0CF"/>
-    <circle cx="885" cy="460" r="16" fill="#7EE0CF" opacity="0.22"/>
+    <circle cx="885" cy="460" r="7" fill="#7EDC2E"/>
+    <circle cx="885" cy="460" r="16" fill="#7EDC2E" opacity="0.22"/>
   </svg>
 
   <div class="brand">
     <!-- Nadel-Kreis-Marke (vereinfachte Logo-Geste der Site) -->
     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <circle cx="20" cy="20" r="15" stroke="#7EE0CF" stroke-width="2.4" stroke-dasharray="66 28" stroke-linecap="round" transform="rotate(-64 20 20)"/>
-      <line x1="20" y1="20" x2="31" y2="7" stroke="#F2F7F9" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="20" cy="20" r="15" stroke="#7EDC2E" stroke-width="2.4" stroke-dasharray="66 28" stroke-linecap="round" transform="rotate(-64 20 20)"/>
+      <line x1="20" y1="20" x2="31" y2="7" stroke="#F1F2F8" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
     URBAN REVOLUTION
   </div>

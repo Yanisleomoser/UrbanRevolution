@@ -51,16 +51,16 @@
     const BURST_EVERY = 4.6; // s zwischen den Rückkehr-Versuchen
 
     // Design-Tokens als rgb-Basen (Canvas kann keine CSS-Variablen lesen):
-    // --text #EEF4F8 · --accent-3 #7EE0CF · --warm-thread #C9906F ·
-    // --warm-deep #8A5F4C. Farb-Dramaturgie der Slides: Beat 1 + 2 (das
-    // Chaos des Abfalls) sind KUPFER/warm; Aqua wird erst in Beat 3
-    // ausgegeben — die haarfeine Linie, die den Einen birgt.
-    const C_WHITE = "238,244,248";
-    const C_AQUA = "126,224,207";
-    const C_COPPER = "201,144,111";
-    const C_COPPER_DEEP = "138,95,76";
-    const C_MOUND = "45,32,27";
-    const C_DEEP = "38,28,24";
+    // --text #F1F2F8 · --accent-3 #7EDC2E · --warm-thread #EF7C26 ·
+    // --warm-deep #9A4E12. Thermal-Dramaturgie des Slides: Beat 1 + 2 (das
+    // Chaos des Abfalls) GLÜHEN orange/warm; das Leucht-Grün wird erst in
+    // Beat 3 ausgegeben — die haarfeine Linie, die den Einen birgt.
+    const C_WHITE = "241,242,248";
+    const C_AQUA = "126,220,46";
+    const C_COPPER = "239,124,38";
+    const C_COPPER_DEEP = "154,78,18";
+    const C_MOUND = "44,26,12";
+    const C_DEEP = "36,22,10";
 
     // Schweizer Tausender-Gruppierung (wie ambient-ticker.js)
     const swiss = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
@@ -194,9 +194,9 @@
     // versinkt im Seiten-Hintergrund (--bg) — keine Naht am Beat-Boden.
     function moundGradient(b, maxH) {
         const g = b.ctx.createLinearGradient(0, b.h * (1 - maxH) - 40, 0, b.h);
-        g.addColorStop(0, "rgba(64,45,38,0.98)");   // warmer Kamm
+        g.addColorStop(0, "rgba(62,36,16,0.98)");   // warmer Kamm
         g.addColorStop(0.55, "rgba(" + C_MOUND + ",0.97)");
-        g.addColorStop(1, "rgba(10,22,34,1)");      // --bg #0A1622
+        g.addColorStop(1, "rgba(11,11,13,1)");      // --bg #0A1622
         return g;
     }
 
@@ -213,7 +213,7 @@
     ];
     /* Warme Strata (Slide-Kupferwelt): drei Kupfer-Braun-Töne + ein
        seltener Mauve-Ton — der Berg besteht aus weggeworfener Wärme. */
-    const GARMENT_TONES = ["82,55,44", "66,46,38", "51,36,31", "84,61,66"];
+    const GARMENT_TONES = ["86,52,26", "68,42,22", "52,32,16", "94,56,38"];
     function drawGarment(ctx, gi, x, y, size, rot, fill, strokeA) {
         ctx.save();
         ctx.translate(x, y);
@@ -244,7 +244,7 @@
        Bändern (nie pro Frame neu): grosszügig über den aktuellen Kamm
        hinaus vorgewärmt; wächst der Berg darüber hinaus, werden weitere
        Bänder nachgewoben (und bei Resize alles frisch). */
-    const BG_RGB = [10, 22, 34]; // --bg #0A1622
+    const BG_RGB = [11, 11, 13]; // --bg #0b0b0d
     const TONE_RGB = GARMENT_TONES.map((s) => s.split(",").map(Number));
     function sinkTone(rgb, f) {
         // Ton Richtung Hintergrund absenken (f: 0 = Ton, 1 = --bg)
@@ -306,9 +306,9 @@
     // die Tiefen-Graduierung wandert mit der wachsenden Oberfläche mit.
     function makeVeil(b, peak) {
         const g = b.ctx.createLinearGradient(0, b.h * (1 - peak), 0, b.h);
-        g.addColorStop(0, "rgba(10,22,34,0)");
-        g.addColorStop(0.45, "rgba(10,22,34,0.34)");
-        g.addColorStop(1, "rgba(10,22,34,0.64)");
+        g.addColorStop(0, "rgba(11,11,13,0)");
+        g.addColorStop(0.45, "rgba(11,11,13,0.34)");
+        g.addColorStop(1, "rgba(11,11,13,0.64)");
         return g;
     }
     // Gewebe + Schleier in die aktuelle Halden-Silhouette clippen —

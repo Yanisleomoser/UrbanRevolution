@@ -65,12 +65,12 @@ Tagline „Made for one. Not for all." · AI · AUTONOM · KREISLAUF. Deploy: Ve
 - Design-Engine unter `js/design-engine/` (engine, dna, condition, inference, render-preview, summary, flow, garment-svg, share, telemetry, modalities/, content/*.json). Datengetrieben: Nodes/Archetypen/Attribute/Bilder liegen in JSON.
 - State: `state-manager.js` (localStorage, Wiederaufnahme). KI: `ai.js` → Replicate (FLUX) / Anthropic-Proxy. Maße: `measurements.js` (9 Körpermaße). i18n: `i18n.js`. Telemetrie: `js/design-engine/telemetry.js` → `/api/track` (+ Admin-Dashboard `insights.html`). Fehler: Sentry (Loader im `<head>`).
 
-## Design-System — NUR bestehende :root-Tokens
-- Hintergrund Midnight-Navy `#0A1622`; Akzent-Verlauf Ozean-Blau `#2F86B3` → Teal `#2FAE9E` → Aqua `#7EE0CF` (`--gradient`, „Ocean Depths v2 / Reclaimed Light" — die helleren Stops der Instagram-Slides, Drive → Slide Design System).
-- Fonts (drei Register): Fraunces (Display-Serif/Headlines, variabel mit optischer Grösse, Lora als Fallback) + Poppins (Body) + JetBrains Mono (Eyebrows/Labels/Einheiten/Marquee — die „Maschinen"-Stimme neben dem „Handwerks"-Serif). Selbst gehostet in `/assets/fonts/` (DSGVO, kein Google-CDN); neue Faces via `scripts/fetch-fonts-extra.mjs`. KEINE weiteren Fonts (kein Inter, kein Playfair).
-- **Kupfer-Dramaturgie (Slides → Site):** Akt I (Preloader → Hero-Weave → Manifest → #facts Beat 1+2) trägt die warme Kupfer-Familie — `--warm-thread` #C9906F (Akt-I-Faden, fil-seam[1], #pivot-line), `--warm-deep` #8A5F4C, `--warm-bright` #ECC39F, `--gradient-warm` (Protokoll-Zahlen). Das Chaos des Abfalls ist warm/menschlich; Teal/Aqua wird ERST nach der Wende ausgegeben (#facts Beat 3 Bergungs-Faden / #pivot-Arc). Canvas-rgb-Basen: Kupfer 201,144,111 · Kupfer-tief 138,95,76 · Aqua 126,224,207.
-- Akzent-Wärme in Akt II: keine. Der Identitäts-Beat (`#your-style`), der als einziger `--accent-warm` trug, wurde entfernt — Akt II bleibt vollständig „Ocean Depths". Das Token `--accent-warm` (#D99B78, Text-tauglich 7.7:1) bleibt als reservierte Stufe der Kupfer-Familie in `:root` definiert, ist aber derzeit ungenutzt.
-- Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum; Übergänge ≤ 250 ms; kein Layout-Sprung.
+## Design-System — NUR bestehende :root-Tokens („Thermal Signature")
+- Hintergrund Nachtschwarz `#0B0B0D` (Flächen mit Indigo-Schimmer: `--bg-elevated` #101016 · `--bg-card` #15151D · `--surface` #1B1B26); Akzent-Verlauf Periwinkle-Violett `#6A71D6` → Teal-Grün `#12A37A` → Leucht-Grün `#7EDC2E` (`--gradient`, der kühle Arm des Wärmebild-Blobs aus dem Insta-Slide). Interaktions-Akzente: `--accent` #8F96E8 (Periwinkle, primär) · `--accent-2` #14B885 · `--accent-3` #7EDC2E (Glow-Saum). `--gradient-thermal` (Violett→Indigo→Teal→Grün→Gold→Orange) NUR für Marken-Momente (OG, Auren). Dazu Filmkorn-Textur `--grain` (feTurbulence-Daten-URI) auf den cineastischen Beats (Hero/Pivot/Finale).
+- Fonts (drei Register, EINE Familie + Mono): Poppins Thin/ExtraLight-VERSALIEN als Display (Gewichts-Tokens `--display-weight-hero` 100 · `--display-weight` 200 · `--display-weight-mid` 300, Tracking `--display-tracking`; unter ~28 px nie 100) + Poppins 300–600 (Body/UI) + JetBrains Mono (Eyebrows/Labels/Einheiten — die „Maschinen"-Stimme). Keine Kursiven (die Slide-Sprache kennt keine). Selbst gehostet in `/assets/fonts/` (DSGVO, kein Google-CDN); Poppins via `scripts/fetch-fonts.mjs`, Mono via `scripts/fetch-fonts-extra.mjs`. Fraunces/Lora sind AUSGEMUSTERT; KEINE weiteren Fonts.
+- **Glut-Dramaturgie (Thermal-Slide → Site):** Akt I (Preloader → Hero-Weave → Manifest → #facts Beat 1+2) trägt das heisse Ende des Wärmebilds — `--warm-thread` #EF7C26 (Akt-I-Faden, fil-seam[1], #pivot-line), `--warm-deep` #9A4E12, `--warm-bright` #F5C050 (Gold), `--gradient-warm` (Protokoll-Zahlen). Das Chaos des Abfalls BRENNT warm; der kühle Arm (Periwinkle/Grün) wird ERST nach der Wende ausgegeben (#facts Beat 3 Bergungs-Faden / #pivot-Arc). In der Maschine: Scanner/Chrom/Plate = Periwinkle (analytisches Auge), Remake-Zelle/Output/DEINS = Leucht-Grün, Eingang glüht orange. Canvas-rgb-Basen: Orange 239,124,38 · Glut-tief 154,78,18 · Leucht-Grün 126,220,46 · Periwinkle 143,150,232.
+- `--accent-warm` (#F0A860, Text-tauglich 9.8:1) bleibt die reservierte Text-Stufe der Glut-Familie, derzeit ungenutzt — Akt II bleibt vollständig kühl.
+- Gefühl: ruhig, cineastisch, eine Frage groß, viel Negativraum, Schwarz als Bühne mit leuchtenden Auren + Korn; Übergänge ≤ 250 ms; kein Layout-Sprung.
 
 ## Harte Regeln (immer)
 - Mobile-first. Höhen in `svh`/`dvh` bzw. dem gepinnten `--svh`, NICHT roh `vh`. Safe-Area via `env(safe-area-inset-*)`. Auf iPhone-Breite (≤ 480 px) testen.
@@ -440,8 +440,8 @@ grouping (`1'234'567`), bilingual via `ticker.*` i18n keys.
 
 **`js/facts-mass.js`** stages the three numbers as „Die Masse" — three
 full-height canvas-particle beats (one shared ash-like particle language;
-beats 1–2 glow copper per the slide dramaturgy, aqua answers only in
-beat 3's rescue thread):
+beats 1–2 glow ember-orange per the thermal dramaturgy, glow-green answers
+only in beat 3's rescue thread):
 a never-ending CO₂ plume behind the ≤8 % with a live "≈ +38 t seit du hier
 bist" counter (1.2 Gt/yr ÷ seconds, always marked ≈), a waste mound onto
 which one garment silhouette falls and stacks per real second (a mountain
@@ -726,12 +726,12 @@ it if you modify the flow.
 
 All styles in `css/styles.css`. Design system uses CSS variables on
 `:root` (`--bg*`, `--text*`, `--accent*`, `--warm*`, `--gradient*`,
-`--radius*`, `--shadow*`). Reuse variables instead of hardcoding hex. The
-Ocean Depths v2 `--gradient` (#2F86B3 → #2FAE9E → #7EE0CF on `--bg`
-#0A1622) is core brand; the copper family (`--warm-thread` #C9906F,
-`--warm-deep` #8A5F4C, `--warm-bright` #ECC39F, `--gradient-warm`) carries
-Act I — waste/chaos is warm, aqua is only spent after the Wende (see
-Design-System section above).
+`--radius*`, `--shadow*`, `--grain`). Reuse variables instead of hardcoding
+hex. The Thermal Signature `--gradient` (#6A71D6 → #12A37A → #7EDC2E on
+`--bg` #0B0B0D) is core brand; the ember family (`--warm-thread` #EF7C26,
+`--warm-deep` #9A4E12, `--warm-bright` #F5C050, `--gradient-warm`) carries
+Act I — waste/chaos burns warm, the cool arm is only spent after the Wende
+(see Design-System section above).
 A global `prefers-reduced-motion`
 reset, a `:focus-visible` ring, and a skip-link target (`#main-content`)
 are in place.

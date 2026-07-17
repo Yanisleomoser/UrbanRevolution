@@ -6,6 +6,8 @@
  * revert without committing), the changed part must bloom (.de-region-glow),
  * and the hotspots must enter staggered. Reduced-motion: instant snaps, no
  * glow, fully functional. Fails on page errors or a vacuous run.
+ * Pages boot with locale de-DE (the walk clicks the GERMAN "Jacke" card —
+ * an en-US container would resolve the EN UI and time out).
  *
  *   node scripts/verify-atelier.mjs
  */
@@ -61,7 +63,7 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
 
 // ── 1) Full-motion board ────────────────────────────────────────────────────
 {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: "de-DE" });
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
@@ -186,7 +188,7 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
 
 // ── 2) Reduced motion: snaps, no glow, fully functional ────────────────────
 {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", locale: "de-DE" });
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
@@ -219,7 +221,7 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
 // the picker NEVER tries an option on uninvited (the :focus-visible gate),
 // and ONE tap on an option decides — picker closes, pin set.
 {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, locale: "de-DE" });
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
