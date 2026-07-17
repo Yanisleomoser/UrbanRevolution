@@ -197,7 +197,7 @@
         // UNTERSCHIEDLICHE Stücke entstehen — der Zyklus-Takt (~12 s) rastete
         // sonst auf dasselbe Remake-Item ein und färbte jedes Stück gleich.
         // Die Palette IST die Material-Palette der Band-Items (Rezyklat).
-        let cellPiece = { type: "tshirt", hex: "#1c2c3b" };
+        let cellPiece = { type: "tshirt", hex: "#23233a" };
         const DEMO_TYPES = ["tshirt", "hoodie", "shirt", "jacket", "dress", "pants"];
         const DEMO_COLORS = ["#7c4a45", "#3e5a78", "#8a8168", "#476457", "#6e6a63"];
         let demoTypeIdx = 0;
@@ -216,7 +216,7 @@
         function garDOK() { return cellPiece.type !== "dress" && cellPiece.type !== "pants"; }
         function applyFileNow(f) {
             fileApplied = f;
-            setCellPiece(f ? f.type : "tshirt", f ? f.hex : "#1c2c3b");
+            setCellPiece(f ? f.type : "tshirt", f ? f.hex : "#23233a");
             tagT.textContent = f ? tr("machine.tag_no", { no: f.no }) : tr("machine.tag_empty");
             if (hangNo) {
                 hangNo.textContent = f ? tr("machine.no", { no: f.no }) : tr("machine.no_none");
@@ -227,7 +227,7 @@
             const hd = HPATHS[(f && f.type) || "tshirt"] || HPATHS.tshirt;
             if (hangGar) hangGar.setAttribute("d", hd);
             if (hangFill) hangFill.setAttribute("d", hd);
-            if (hangFill) hangFill.setAttribute("fill", f ? f.hex : "#1c2c3b");
+            if (hangFill) hangFill.setAttribute("fill", f ? f.hex : "#23233a");
             if (hangGar) hangGar.style.opacity = 0;
             if (hangFill) hangFill.style.opacity = 0;
             if (hangG) hangG.setAttribute("transform", "");

@@ -116,12 +116,12 @@
     --duration-base: 240ms;
     --duration-slow: 420ms;
 
-    /* Akt I — „Die Linie": die gemeinsame Gossen-x, an der der eine KUPFERNE
+    /* Akt I — „Die Linie": die gemeinsame Gossen-x, an der der eine GLÜHENDE
        Maschinen-Faden durch Preloader → Hero → Manifest → #facts läuft.
        Jedes Segment richtet sich hieran aus, damit das Auge EINE Linie liest.
-       Kupfer wie #pivot-line + fil-seam[1] (Slide-Dramaturgie: das Chaos des
-       Abfalls ist warm) — Teal/Aqua wird erst nach der Wende ausgegeben
-       (facts Beat 3 / #pivot). Safe-Area-bewusst. */
+       Orange-Glut wie #pivot-line + fil-seam[1] (Thermal-Dramaturgie: das
+       Chaos des Abfalls brennt warm) — Violett/Grün wird erst nach der Wende
+       ausgegeben (facts Beat 3 / #pivot). Safe-Area-bewusst. */
     /* Min-Gutter 28px: die zentrierte Preloader-Nadel-Marke (74px, Kreis ~25px
        links der Nadel-Achse) darf am schmalen Phone-Rand nicht anschneiden.
        Loader- UND Hero-Faden reiten auf dieser Variable → bleiben pixelgenau. */
