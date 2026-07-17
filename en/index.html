@@ -118,9 +118,12 @@
     <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/fraunces-400-700-italic-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/poppins-400-normal-latin.woff2">
     <!-- R3: the hero photo is the LCP element — preload the viewport-matched crop
-         at high priority so it paints fast (mobile gets the portrait, desktop the wide). -->
-    <link rel="preload" as="image" href="/assets/hero-wide.jpg" media="(min-width: 701px)" fetchpriority="high">
-    <link rel="preload" as="image" href="/assets/hero-2.jpg" media="(max-width: 700px)" fetchpriority="high">
+         at high priority so it paints fast (mobile gets the portrait, desktop the wide).
+         AVIF-only preload (type-gated, so non-AVIF browsers skip it and just discover
+         the JPEG fallback via the <picture> below — avoids double-preloading both
+         formats for the ~all-modern-browsers case that does support AVIF). -->
+    <link rel="preload" as="image" href="/assets/hero-wide.avif" type="image/avif" media="(min-width: 701px)" fetchpriority="high">
+    <link rel="preload" as="image" href="/assets/hero-2.avif" type="image/avif" media="(max-width: 700px)" fetchpriority="high">
     <link rel="stylesheet" href="/assets/fonts/fonts.css">
 
     <!-- Sentry Error-Monitoring + Performance — build-freier Loader, früh
@@ -349,7 +352,9 @@
              das Faden-Canvas bleibt als feiner Overlay darüber (Interaktion überlebt). -->
         <div class="lp-hero-media" aria-hidden="true">
             <picture>
+                <source media="(max-width: 700px)" srcset="/assets/hero-2.avif" type="image/avif" width="768" height="1376">
                 <source media="(max-width: 700px)" srcset="/assets/hero-2.jpg" width="768" height="1376">
+                <source srcset="/assets/hero-wide.avif" type="image/avif" width="1872" height="1056">
                 <img src="/assets/hero-wide.jpg" alt="" width="1872" height="1056" fetchpriority="high" decoding="async">
             </picture>
         </div>
