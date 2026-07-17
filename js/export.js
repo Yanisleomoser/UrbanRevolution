@@ -150,7 +150,7 @@ const Export = (() => {
 <style>
     @page { size: A4; margin: 1.5cm; }
     body { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: #111; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.6; }
-    h1 { font-family: Georgia, serif; font-size: 28px; margin-bottom: 4px; }
+    h1 { font-family: 'Poppins', system-ui, sans-serif; font-weight: 300; letter-spacing: 0.04em; text-transform: uppercase; font-size: 26px; margin-bottom: 4px; }
     h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin: 32px 0 12px; font-weight: 700; }
     .header { border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
     .id { font-family: monospace; color: #666; font-size: 12px; }
@@ -162,7 +162,7 @@ const Export = (() => {
     ul { padding-left: 20px; }
     li { margin-bottom: 6px; font-size: 14px; }
     .tag { background: #f4f4f5; padding: 3px 10px; border-radius: 100px; font-size: 11px; margin-right: 4px; display: inline-block; }
-    .drawing { background: #0a1622; border-radius: 10px; padding: 18px; margin: 8px 0 4px; }
+    .drawing { background: #0b0b0d; border-radius: 10px; padding: 18px; margin: 8px 0 4px; }
     .drawing svg { display: block; width: 100%; max-height: 380px; }
     @media print {
         /* Werkstatt-Tinte statt Bildschirm-Bühne: die helle Linienzeichnung
@@ -170,7 +170,7 @@ const Export = (() => {
         .drawing { background: #fff; padding: 0; }
         .drawing svg { filter: invert(1) hue-rotate(180deg); }
     }
-    .description { background: #fafafa; padding: 16px; border-left: 3px solid #2fae9e; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
+    .description { background: #fafafa; padding: 16px; border-left: 3px solid #8f96e8; font-style: italic; color: #444; margin-bottom: 24px; font-size: 14px; }
     .footer { margin-top: 60px; padding-top: 16px; border-top: 1px solid #eee; font-size: 11px; color: #999; text-align: center; }
 </style>
 </head>

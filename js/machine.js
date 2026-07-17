@@ -220,7 +220,7 @@
             tagT.textContent = f ? tr("machine.tag_no", { no: f.no }) : tr("machine.tag_empty");
             if (hangNo) {
                 hangNo.textContent = f ? tr("machine.no", { no: f.no }) : tr("machine.no_none");
-                hangNo.setAttribute("fill", f ? "#7ee0cf" : "rgba(238,244,248,.62)");
+                hangNo.setAttribute("fill", f ? "#7edc2e" : "rgba(241,242,248,.62)");
             }
             // Auch der DEINS-Bügel hängt den TYP der Datei auf (Kleid als
             // Kleid, Hose als Hose), nicht ein generisches T-Shirt.
@@ -242,7 +242,7 @@
             for (let i = 0; i < n; i++) {
                 const g = document.createElementNS(NS, "g");
                 const pth = document.createElementNS(NS, "path");
-                pth.setAttribute("stroke", "rgba(8,16,24,.5)");
+                pth.setAttribute("stroke", "rgba(6,6,9,.5)");
                 pth.setAttribute("stroke-width", "1");
                 g.appendChild(pth);
                 g.setAttribute("opacity", "0");

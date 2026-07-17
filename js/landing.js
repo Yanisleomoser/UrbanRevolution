@@ -618,7 +618,7 @@
     const canvas = document.getElementById("weave-canvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const COLORS = ["#2f86b3", "#2fae9e", "#7ee0cf"];
+    const COLORS = ["#6a71d6", "#8f96e8", "#14b885"];
     const TAU = Math.PI * 2;
     const WRAP = 84;                         // Rand fürs Torus-Wrap + Masken-PAD
     const DOT_ALPHA = 0.3;                   // Grund-Deckkraft der Staub-Punkte (ruhiger Lint)
@@ -819,15 +819,15 @@
           p.tx = tx; p.ty = ty; p.forming = true; p.placed = false; p.build = 0; p.seamDist = startDist + k * step;
           parts.push(p);
         }
-        // Ozean-Verlauf entlang der Konturbox (einmal cachen, nie pro Frame).
+        // Thermal-Verlauf (kühler Arm) entlang der Konturbox (einmal cachen, nie pro Frame).
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         for (const pt of smooth) { minX = Math.min(minX, pt[0]); maxX = Math.max(maxX, pt[0]); minY = Math.min(minY, pt[1]); maxY = Math.max(maxY, pt[1]); }
         const grad = (maxX - minX) >= (maxY - minY)
           ? ctx.createLinearGradient(minX, 0, maxX, 0)
           : ctx.createLinearGradient(0, minY, 0, maxY);
-        grad.addColorStop(0, "#2f86b3");
-        grad.addColorStop(0.5, "#2fae9e");
-        grad.addColorStop(1, "#7ee0cf");
+        grad.addColorStop(0, "#6a71d6");
+        grad.addColorStop(0.5, "#12a37a");
+        grad.addColorStop(1, "#7edc2e");
         return { closed: chain.closed, smooth, scum, slen, startDist, grad, parts };
       });
       free.forEach((p) => { p.forming = false; p.placed = false; p.build = 0; });
@@ -1021,7 +1021,7 @@
       const baseW = mobile ? 1.1 : 0.9;
       const H = h || 1;
       ctx.lineCap = "round";
-      ctx.strokeStyle = "#b3a09a";
+      ctx.strokeStyle = "#b5a28c";
       for (let wi = 0; wi < warp.length; wi++) {
         const th = warp[wi];
         const d = th.d;
@@ -1059,7 +1059,7 @@
         dust.rect(p.x - r, p.y - r, r + r, r + r);
       }
       ctx.globalAlpha = DOT_ALPHA * dimm;
-      ctx.fillStyle = "#a6928b";
+      ctx.fillStyle = "#a8937e";
       ctx.fill(dust);
       ctx.globalAlpha = 1;
     }
@@ -1197,7 +1197,7 @@
 
         // 2) Dekorative Knöpfe (Hemd) erscheinen mit der Naht
         if (formButtons.length && reveal > 0.6) {
-          ctx.fillStyle = `rgba(126, 224, 207, ${(0.85 * fade).toFixed(3)})`;
+          ctx.fillStyle = `rgba(126, 220, 46, ${(0.85 * fade).toFixed(3)})`;
           for (const b of formButtons) {
             ctx.beginPath();
             ctx.arc(b.x, b.y, 2.2, 0, Math.PI * 2);
@@ -1235,8 +1235,8 @@
           ctx.globalCompositeOperation = "lighter";
           if (tp && tp.x != null) {
             const tg = ctx.createLinearGradient(tp.x, tp.y, np.x, np.y);
-            tg.addColorStop(0, "rgba(126, 224, 207, 0)");
-            tg.addColorStop(1, "rgba(126, 224, 207, 0.9)");
+            tg.addColorStop(0, "rgba(126, 220, 46, 0)");
+            tg.addColorStop(1, "rgba(126, 220, 46, 0.9)");
             ctx.strokeStyle = tg;
             ctx.lineWidth = 3;
             ctx.lineCap = "round";
@@ -1245,9 +1245,9 @@
             ctx.lineTo(np.x, np.y);
             ctx.stroke();
           }
-          ctx.shadowColor = "#7ee0cf";
+          ctx.shadowColor = "#7edc2e";
           ctx.shadowBlur = 16;
-          ctx.fillStyle = "#aef2e6";
+          ctx.fillStyle = "#cdf59a";
           ctx.beginPath();
           ctx.arc(np.x, np.y, 4.5, 0, Math.PI * 2);
           ctx.fill();

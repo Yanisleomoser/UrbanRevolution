@@ -38,7 +38,7 @@ const measure = () => {
       if (c.length >= 3 && (c[3] === undefined || c[3] > 0)) return [c[0], c[1], c[2]];
       n = n.parentElement;
     }
-    return [10, 22, 34]; // --bg fallback
+    return [11, 11, 13]; // --bg fallback
   };
   const effOpacity = (el) => { let o = 1, n = el; while (n && n !== document.body) { o *= parseFloat(getComputedStyle(n).opacity || "1"); n = n.parentElement; } return o; };
   const words = [...document.querySelectorAll("#manifesto-text .w")];

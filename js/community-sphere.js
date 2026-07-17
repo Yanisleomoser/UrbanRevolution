@@ -202,11 +202,11 @@ function stageCardSvg(item) {
     const inner = flat.replace("<svg ", '<svg x="55" y="46" width="330" height="467.5" ');
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_W}" height="${CARD_H}" viewBox="0 0 ${CARD_W} ${CARD_H}">`
         + '<defs><linearGradient id="stage-bg" x1="0" y1="0" x2="0" y2="1">'
-        + '<stop offset="0" stop-color="#102231"/><stop offset="0.62" stop-color="#0C1A28"/><stop offset="1" stop-color="#0A1622"/>'
+        + '<stop offset="0" stop-color="#1b1e33"/><stop offset="0.62" stop-color="#12121c"/><stop offset="1" stop-color="#0b0b0d"/>'
         + '</linearGradient><radialGradient id="stage-glow" cx="0.5" cy="0.34" r="0.62">'
-        + '<stop offset="0" stop-color="rgba(126,224,207,0.10)"/><stop offset="1" stop-color="rgba(126,224,207,0)"/>'
+        + '<stop offset="0" stop-color="rgba(143,150,232,0.12)"/><stop offset="1" stop-color="rgba(143,150,232,0)"/>'
         + '</radialGradient></defs>'
-        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-bg)" stroke="rgba(126,224,207,0.16)" stroke-width="2"/>`
+        + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-bg)" stroke="rgba(143,150,232,0.20)" stroke-width="2"/>`
         + `<rect x="1" y="1" width="${CARD_W - 2}" height="${CARD_H - 2}" rx="22" fill="url(#stage-glow)"/>`
         + inner + "</svg>";
 }
@@ -348,7 +348,7 @@ async function boot() {
         const geo = new THREE.BufferGeometry();
         geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
         scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
-            size: 0.04, color: 0x6f93a8, transparent: true, opacity: 0.35, depthWrite: false,
+            size: 0.04, color: 0x8289b8, transparent: true, opacity: 0.35, depthWrite: false,
         })));
     }
 
