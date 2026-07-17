@@ -1,12 +1,21 @@
 :root {
-    /* Markentypografie — drei Register: Display-Serif (Fraunces, mit optischer
-       Grösse via font-optical-sizing:auto) für Headlines · Body-Sans (Poppins) ·
-       Mono (JetBrains Mono) für Eyebrows/Labels/Einheiten — die „Maschinen"-
-       Stimme neben dem „Handwerks"-Serif. Lora bleibt Fallback hinter Fraunces.
+    /* Markentypografie — drei Register (Thermal Signature, aus dem Insta-Slide):
+       Display = Poppins Thin/ExtraLight-VERSALIEN (Gewicht via --display-weight*,
+       weites Tracking — die dünne Geometrie des Slides) · Body-Sans (Poppins
+       300–600) · Mono (JetBrains Mono) für Eyebrows/Labels/Einheiten — die
+       „Maschinen"-Stimme. Fraunces/Lora sind ausgemustert.
        Familienwechsel künftig nur hier. (Skala: --text-* bleibt.) */
-    --font-display: 'Fraunces', 'Lora', Georgia, 'Times New Roman', serif;
+    --font-display: 'Poppins', system-ui, -apple-system, sans-serif;
     --font-body: 'Poppins', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    /* Display-Gewichte: 100 nur ganz gross (Hero/Display-Skala), 200 für
+       Section-Headlines, 300 für Display-Sätze in Satzschreibung (Fragen,
+       Zitate). Unter ~28px nie 100 (zu faserig). */
+    --display-weight-hero: 100;
+    --display-weight: 200;
+    --display-weight-mid: 300;
+    /* Versal-Tracking der Display-Ebene (Slide: weit gesperrte Thin-Caps). */
+    --display-tracking: 0.06em;
 
     --bg: #0a1622;
     --bg-elevated: #0f1e2e;

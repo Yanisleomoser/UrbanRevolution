@@ -101,21 +101,21 @@
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://replicate.delivery">
 
-    <!-- Markentypografie: Fraunces (Display-Serif/Headlines, aufrecht + kursiv,
-         variabel mit optischer Grösse; Lora als Fallback) + Poppins (Body/UI) +
+    <!-- Markentypografie: Poppins in zwei Registern — Thin/ExtraLight-Versalien
+         (100/200) als Display/Headlines, 300–600 als Body/UI — plus
          JetBrains Mono (Eyebrows/Labels/Einheiten). SELBST GEHOSTET
          (assets/fonts/, kein Google-CDN → keine Besucher-IP an Google, DSGVO).
          font-display:swap je @font-face. Familien sind in styles.css als
          --font-display / --font-body / --font-mono tokenisiert. Generiert via
-         scripts/fetch-fonts.mjs (Lora/Poppins) + scripts/fetch-fonts-extra.mjs
-         (Fraunces/JetBrains Mono). -->
-    <!-- Preload the LCP typography (hero "Made for one." = Fraunces normal +
-         italic, latin) + the body face (Poppins 400, latin) so they're fetched
+         scripts/fetch-fonts.mjs (Poppins 100–600) + scripts/fetch-fonts-extra.mjs
+         (JetBrains Mono). -->
+    <!-- Preload the LCP typography (hero display = Poppins Thin/ExtraLight,
+         latin) + the body face (Poppins 400, latin) so they're fetched
          at high priority before fonts.css is parsed — cuts the font-swap reflow
          on the largest element. crossorigin is required to match the (anonymous-
          CORS) font request even though the files are same-origin. -->
-    <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/fraunces-400-700-normal-latin.woff2">
-    <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/fraunces-400-700-italic-latin.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/poppins-100-normal-latin.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/poppins-200-normal-latin.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin="" href="/assets/fonts/poppins-400-normal-latin.woff2">
     <!-- R3: the hero photo is the LCP element — preload the viewport-matched crop
          at high priority so it paints fast (mobile gets the portrait, desktop the wide).
