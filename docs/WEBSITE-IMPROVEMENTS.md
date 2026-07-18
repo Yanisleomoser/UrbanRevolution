@@ -154,6 +154,79 @@
 >   "redesign brief" was never committed and is confirmed permanently lost,
 >   not merely misplaced.
 
+> **Status update (2026-07-18 review, read before acting):** re-checked
+> against `main` @ `9a3caaf`. Seven PRs landed since the 2026-07-15 sync
+> above, including a large, uncoordinated visual re-skin — full accounting:
+> - **#416 is merged** (`6d33bbf`) — the colour-atelier confirm-gate fix.
+>   Confirmed off the open-work table.
+> - **#03 is effectively done except minification.** PR #422 wired AVIF into
+>   `gallery/gallery.js` (story assets, JPEG fallback) and deduped a stray
+>   GSAP pin; **PR #427** (new since 07-15) additionally serves AVIF for the
+>   **hero LCP image** itself (`hero-wide`/`hero-2`, ~80%/32% byte savings,
+>   JPEG fallback) — a delivery-polish win never listed in the original
+>   backlog. Between #389/#417/#422, GSAP is one version/one instance
+>   everywhere. **Only "36 unminified first-party scripts" remains open.**
+> - **Security/hardening, unrelated to either doc's backlog:** #421
+>   (rate limiter trusts `x-real-ip` over spoofable `x-forwarded-for`), #424
+>   (`track.js`/`waitlist.js` gained the shared per-IP rate-limit gate; DNA
+>   path-walker gained a `__proto__`/`constructor`/`prototype` denylist), and
+>   **#426** (new — `StateManager.set`/`get` now reject prototype-chain keys,
+>   closing the same class of gap as #424's DNA guard).
+> - **A large, uncoordinated visual re-skin shipped, merged by the site
+>   owner directly** (both PRs below were flagged high-risk-visual/no-
+>   auto-merge by their own descriptions, and merged after a real-device
+>   check rather than autonomously):
+>   - **#429** — "Thermal Signature": palette (`Ocean Depths` →
+>     night-black + periwinkle/teal/glow-green thermal gradient) and display
+>     type (Fraunces serif → Poppins thin-caps) changed **site-wide**,
+>     following an uploaded reference slide. `CLAUDE.md`'s Design-System
+>     section and `VISUAL-ROADMAP.md`'s "Re-Skin-Hinweis" already reflect
+>     the new tokens — nothing further to reconcile there.
+>   - **#430** — the thermal-blob staging system moved from live inline-SVG
+>     filters to a build-time raster pipeline (jank fix), **and the hero was
+>     rebuilt**: the hero photo pair and the interactive `initWeave`
+>     thread-field/`#weave-canvas` were removed entirely, replaced by
+>     `js/thermal-waves.js`, a raw-WebGL domain-warped-fbm shader.
+>   - **#431** — same-day regression fix: #430 deleted
+>     `assets/hero-2.jpg`/`hero-wide.jpg`, but `gallery/gallery.js` (the
+>     separate standalone `/gallery/` study) still referenced them, 404ing
+>     4 requests and silently dropping 6 of 54 gallery cards. Fixed.
+> - **PR #418 is closed, but its successor #428 is now stale/conflicting,
+>   not just "pending an iPhone check."** #428 ("Reclaimed Light" hero
+>   glow-up) is the same diff as #418, reopened only so CI would re-run —
+>   its `mergeable_state` is **`dirty`**. Root cause: it patches
+>   `initHeroParallax()`, a hero `<img>` photo layer, and `initWeave`'s
+>   `drawField()` light-pool — all of which **no longer exist on `main`**
+>   after #430's hero rebuild above. This isn't a rebase away; the parallax/
+>   aurora concept was built for a hero architecture that's gone. Recommend
+>   closing #428 and, if the "make it sexy" hero glow-up is still wanted,
+>   re-scoping it against `thermal-waves.js` from scratch — don't try to
+>   merge or patch the existing diff.
+> - **New finding, not previously tracked: four permanent regression-guard
+>   scripts are broken on `main`.** #429's own PR description flags
+>   `scripts/verify-atelier.mjs`, `verify-a11y-studio.mjs`,
+>   `verify-community.mjs` and `verify-gallery.mjs` as failing, confirmed
+>   reproducible independent of that PR's own changes (walk-drift no longer
+>   reaching the atelier board, a removed `DEModalities.hotspot` handle, an
+>   internal `.vel` probe handle, and a script that expects an
+>   externally-started server). These are exactly the load-bearing regression
+>   guards `docs/STUDIO-UX-ROADMAP.md` §12 tells future sessions to run
+>   before touching those surfaces — right now they'd pass or fail
+>   meaninglessly. Small, non-visual, safe autonomous-merge chore once fixed;
+>   see the re-ranked table below.
+> - **#01 remains completely untouched** — `isGuardedTap`/`COMMIT_GUARD_MS`
+>   is still byte-identical in `flow.js`. With #416 long merged, it remains
+>   the single largest open item, unblocked, after 25+ unrelated PRs have
+>   landed around it since it was first flagged (2026-07-12).
+> - **Repo hygiene:** a stale docs-review PR, **#425** (proposed much of this
+>   same update against `main` @ `343ad78`, before the re-skin/hardening
+>   commits above landed), is superseded by this update — close it. It in
+>   turn had already closed **#423**, which had already closed **#419**/
+>   **#420** — the review-PR chain stays self-cleaning.
+> - **Aside:** `claude/website-review-2026-07-10.md`, named in this review's
+>   scope, still does not exist in the repository and never has — unchanged
+>   since the 2026-07-12 note above.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -164,7 +237,7 @@ care most. Everything here stays inside the pre-launch honesty rules
 | - | ------- | ----------- | ------ | ---- | ------ |
 | 01 | The studio's front door — onboard, shorten, unify the create journey | highest | medium | high-visual (motion) | **open — see flag below** |
 | 02 | Convert at the peak — "be first" inside the ownership moment, tied to the design | high | low | low-visual, additive | **done — PR #385** |
-| 03 | Delivery polish — wire AVIF variants, de-duplicate GSAP, minify | modest | low | non-visual | open |
+| 03 | Delivery polish — wire AVIF variants, de-duplicate GSAP, minify | modest | low | non-visual | open — only minification left |
 
 ---
 
@@ -301,30 +374,34 @@ The site is already conscientiously tuned: everything async/defer, fonts subset
 + preloaded, three.js/MediaPipe lazy, a CI weight budget. These are cleanups,
 not a rescue — which is why they rank last.
 
-> **Status (2026-07-13): one of three sub-items shipped.** GSAP is de-duped
-> to a single 3.15.0 everywhere (PR #389, 2026-07-12) — the version-mismatch
-> bullet below is resolved. AVIF wiring and script minification are still open.
+> **Status (2026-07-18): two of three sub-items shipped, one left.** GSAP is
+> de-duped to a single 3.15.0/one-instance everywhere (PR #389, 2026-07-12;
+> #417 and #422 closed the remaining double-fetch sites). AVIF is now wired
+> into `gallery/gallery.js` (PR #422, 2026-07-15) **and** into the hero LCP
+> image itself (PR #427, 2026-07-17 — ~80%/32% byte savings desktop/mobile).
+> **Only script minification is still open.**
 
 **What's wrong**
-- **AVIF made but unused.** `assets/story/` ships `.avif` and `-sm` variants,
-  but `gallery/gallery.js` serves the `.jpg` only — ~1.7 MB of already-generated
-  savings unrealised.
+- ~~**AVIF made but unused.**~~ **Fixed in #422 + #427** — `gallery/gallery.js`'s
+  wall texture/detail view and the hero LCP image both fetch AVIF with a JPEG
+  fallback now.
 - ~~**GSAP loaded twice** — 3.15.0 eagerly for the landing, 3.13.0 lazily for the
-  sphere: duplicate dependency *and* version mismatch.~~ **Fixed in #389** —
-  every load site now pins 3.15.0.
+  sphere: duplicate dependency *and* version mismatch.~~ **Fixed in #389,
+  #417, #422** — one version, one loaded instance, everywhere (including
+  `gallery/index.html`'s own import map).
 - **36 unminified first-party scripts** (~3.5 MB on disk); two stylesheets
   (`styles.css` + `fonts.css`) block the head.
 
-**The upgrade** — wrap story imagery in `<picture>` with AVIF + a `srcset` of
-the existing `-sm` variants (zero new assets); consolidate to one GSAP version;
-add a minify pass served under the existing `?v=` immutable-cache pattern.
+**The upgrade** — add a minify pass served under the existing `?v=`
+immutable-cache pattern (the AVIF/GSAP bullets above are both done; no
+bundler — keep "drop it on any host").
 
 **Benefit** — faster first paint and less data, felt most on mobile / slow
 connections. Incremental by nature.
 
-**How to build it** — `<picture>`/`srcset` in the gallery; one GSAP version in
-the importmap; an optional minify step (no bundler — keep "drop it on any
-host"). All non-visual → merge autonomously once the seven CI checks are green.
+**How to build it** — an optional minify step (no bundler — keep "drop it on
+any host"). Non-visual → merge autonomously once the seven CI checks are
+green.
 
 ---
 
@@ -345,35 +422,39 @@ them would be motion for its own sake.
 
 ---
 
-## Re-ranked open work & recommended next PR (2026-07-15 review)
+## Re-ranked open work & recommended next PR (2026-07-18 review)
 
-Re-ranked by impact/effort/risk, folding in the 2026-07-15 status update
-above: one small PR landed (#417), one stale PR closed (#363), and two open
-draft PRs (#416, #418) surfaced that neither this doc nor VISUAL-ROADMAP.md
-knew about.
+Re-ranked by impact/effort/risk, folding in the 2026-07-18 status update
+above: **#416 is merged**, so it drops off this table entirely; #03 is down
+to one sub-item; a large visual re-skin shipped outside either doc's scope;
+PR #418's successor (#428) is now stale/conflicting rather than
+"pending review"; a new QA-hygiene item (four broken verify scripts)
+surfaced.
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 1 | Merge PR #416 as-is (colour-atelier confirm gate) | real correctness bug — can currently commit an unselected colour at full confidence | trivial (2-line diff, already written, CI green) | low — single file, no new UI | Sitting idle in draft; also touches the exact commit-model surface rank 2 rewrites, so merging first avoids a rebase |
-| 2 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 17 unrelated PRs landed around it — the largest remaining product gap by a wide margin |
-| 3 | #03 remainder: AVIF wiring + script minification | modest, mobile/slow-connection users | low | none (non-visual) | GSAP now fully de-duped (#389 + #417); real but small win, safe autonomous-merge candidate |
-| 4 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
-| — | PR #418 (hero "Reclaimed Light" glow-up) | unknown until seen on-device | already built, pending review | high (scroll/parallax) | Already built + CI-green, explicitly held for a real-iPhone check per its own description — an approval-and-device-check task, not an open engineering item |
+| 1 | #01, re-scoped: one commit model + phase-E reweighting (drop the intro-screen bullet) | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 25+ unrelated PRs landed around it, and no longer sequenced behind anything (#416 merged) — the largest remaining product gap by a wide margin |
+| 2 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
+| 3 | VISUAL-ROADMAP.md `#measure` trust component (see that doc) | modest, trust/privacy framing | low | none (static, no motion) | Only remaining item in the sibling landing roadmap; equally low-risk filler |
+| 4 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Newly surfaced (flagged in #429's own PR body); safe autonomous-merge candidate once fixed |
+| — | PR #428 ("Reclaimed Light" hero glow-up, successor to closed #418) | unknown until rebuilt | **not** "pending review" — `mergeable_state: dirty`; its `initHeroParallax`/`initWeave` targets were removed by #430's hero rebuild | high (scroll/parallax, and now a from-scratch rebuild against `thermal-waves.js`) | Recommend closing; if the glow-up is still wanted, re-scope against the current WebGL hero rather than patching the old diff |
 | — | #01's intro-screen bullet | unknown until decided | — | high (product-direction reversal) | Blocked on a product decision, not on engineering — raise it, don't build it speculatively |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Same category as above — flag, don't build speculatively |
-| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent three times (07-13 ×2, 07-14) |
+| — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision," reconfirmed absent on every re-audit since 07-13 (five passes, latest 07-17) |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
-**Recommended next PR:** merge **PR #416** first (trivial, already built,
-real bug, low risk), then *"Studio journey — one commit model + phase-E
+**Recommended next PR:** *"Studio journey — one commit model + phase-E
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
 re-scoped recommendation under §01 above. Reasoning unchanged since the
-2026-07-12 review, now additionally sequenced behind #416 so the
-commit-model rewrite starts from the corrected `colorGradient.js` — every
-other easy win nearby (hero conversion, contrast, mobile machine,
-studio-reveal scroll, DNA/render bugs, the R4/R10 landing polish, the
-Instagram credibility signal, the GSAP dedupe) has already shipped, leaving
-this as the one clearly load-bearing gap left.
+2026-07-12 review; #416, the one thing it was ever sequenced behind, has
+been merged since 2026-07-16. Every other easy win nearby (hero conversion,
+contrast, mobile machine, studio-reveal scroll, DNA/render bugs, the R4/R10
+landing polish, the Instagram credibility signal, the GSAP dedupe, the
+colour-atelier confirm bug, both AVIF wirings, the rate-limit/prototype-
+pollution hardening, and now a full visual re-skin) has already shipped,
+leaving this as the one clearly load-bearing gap left — it has been the
+top-ranked recommendation across six consecutive reviews (07-12 → 07-18)
+without a single unit of engineering effort spent on it.
 - **Impact:** highest available right now — journey completion is called out
   in this doc itself as "the one metric the whole site depends on," and the
   fix retires a documented workaround (`isGuardedTap`) instead of adding one.
@@ -384,12 +465,13 @@ this as the one clearly load-bearing gap left.
   *which* screen appears next, not what anything looks like. Still verify
   with `scripts/shoot-journey.mjs` across all six categories + the relevant
   `verify-*.mjs`, motion-sampled per the project rule, before merge.
-- **Dependencies:** merge #416 first (same file family, avoids a rebase). No
-  other blockers. It should land *before* any future intro-screen work, since
-  that work would otherwise inherit the same two-commit-model inconsistency
-  it would need to unify anyway.
+- **Dependencies:** none — #416 (the one thing this was ever sequenced
+  behind) is merged. It should land *before* any future intro-screen work,
+  since that work would otherwise inherit the same two-commit-model
+  inconsistency it would need to unify anyway.
 - **Explicitly not this PR:** reviving `showIntro` — flag it to the user as a
   standing-directive reversal and get an explicit answer first. Same for C2
   Variant 2 and the intro-screen bullet above — all three are product-decision
-  flags, not engineering tasks. Also not this PR: #418, a separate,
-  already-built, already-in-review hero PR orthogonal to the studio journey.
+  flags, not engineering tasks. Also not this PR: #428, a separate, now-stale
+  hero PR orthogonal to the studio journey that needs its own triage
+  (close-or-rebuild) independent of this recommendation.

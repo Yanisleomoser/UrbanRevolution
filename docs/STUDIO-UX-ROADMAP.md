@@ -352,6 +352,28 @@ heading clipped behind the sticky navbar. A related copy-only fix (**PR
 opening question. None of these touch the `isGuardedTap`/phase-E items above
 — the recommended next PR is unchanged.
 
+**Status update (2026-07-18):** re-checked against `main` @ `9a3caaf`.
+**PR #416 merged** (2026-07-16) — the colour-atelier confirm-gate bug from a
+separate routine code-review pass, not one of this roadmap's ten slices.
+`isGuardedTap`/`COMMIT_GUARD_MS` is still byte-identical in `flow.js`; the
+recommended next PR (one commit model + phase-E reweighting, tracked in
+`docs/WEBSITE-IMPROVEMENTS.md` #01) is unchanged and has been the top
+recommendation across six consecutive reviews without landing. Separately, a
+large visual re-skin ("Thermal Signature," PRs #429/#430) changed the site's
+palette/type and rebuilt the hero as a WebGL shader — orthogonal to this
+roadmap's ten slices, doesn't touch the studio journey's interaction layer,
+and doesn't change any of the above. **New, worth flagging here
+specifically:** #429's own PR description found four of this doc's permanent
+regression guards broken on `main`, independent of that PR's own changes —
+`scripts/verify-atelier.mjs` (walk-drift no longer reaching the atelier
+board), `verify-a11y-studio.mjs` (references a removed
+`DEModalities.hotspot` handle), plus `verify-community.mjs` and
+`verify-gallery.mjs` (probe/server-dependency issues, outside the studio
+proper). Until fixed, changes to the Detail-Atelier/regions modality or
+studio a11y are **not** covered by their intended guard — read the actual
+script before trusting a green/red result on those surfaces, and treat
+fixing them as a small, non-visual, autonomous-mergeable chore.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

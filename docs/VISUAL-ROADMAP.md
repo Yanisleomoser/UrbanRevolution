@@ -153,6 +153,28 @@ Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
 > merge — see `WEBSITE-IMPROVEMENTS.md`'s 2026-07-15 status update for the
 > full accounting.
 
+> **Status update (2026-07-18):** re-checked against `main` @ `9a3caaf`. The
+> `#measure` trust component remains this doc's only open item from §4,
+> unchanged (`.photo-privacy` is still 11px italic in `css/styles.css`). The
+> **Re-Skin-Hinweis at the top of this doc is now fully shipped**: PR #429
+> landed the Thermal Signature palette + Poppins thin-caps type site-wide,
+> and PR #430 rebuilt the hero itself — the photo pair + interactive
+> `initWeave` thread-field are gone, replaced by `js/thermal-waves.js` (a
+> raw-WebGL fbm shader) plus a build-raster thermal-blob staging system
+> (`assets/tblob-*.webp`, replacing live SVG filters that caused scroll
+> jank). Both were correctly held for a real-device check rather than
+> auto-merged, per their own high-risk-visual classification, and were
+> merged after that check. Adjacent delivery-polish: PR #427 added AVIF to
+> the hero LCP image itself (~80%/32% byte savings desktop/mobile).
+> **#418 is closed; its reopened successor #428 is now stale, not merely
+> pending review** — it patches `initHeroParallax()` and `initWeave`'s
+> `drawField()`, both removed by #430's hero rebuild above, so its
+> `mergeable_state` is `dirty`. If the "Reclaimed Light" hero glow-up is
+> still wanted, it needs a from-scratch re-scope against
+> `js/thermal-waves.js`, not a rebase of the existing diff — see
+> `WEBSITE-IMPROVEMENTS.md`'s 2026-07-18 status update for the full
+> accounting.
+
 ---
 
 ## 5. Hard guardrails (from the adversarial review — violating any kills a change)
