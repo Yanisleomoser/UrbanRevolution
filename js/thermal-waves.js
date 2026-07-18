@@ -18,7 +18,9 @@
  * (.lp-hero-blob, assets/tblob-thermal.webp) die komplette Szene. Erst wenn
  * der erste Frame gezeichnet ist, setzt das Modul html.tw-live und blendet
  * das Raster aus. Klassisches Side-Effect-Modul (kein Global), wie
- * facts-mass.js / faden.js.
+ * facts-mass.js / faden.js. Verliert das Gerät den WebGL-Kontext (Handy im
+ * Hintergrund, GPU-Prozess-Reset), fällt die Bühne auf das Raster zurück und
+ * baut Shader/Programm bei webglcontextrestored neu auf.
  */
 (() => {
     "use strict";
@@ -96,30 +98,38 @@ void main(){
     gl_FragColor = vec4(col, 1.0);
 }`;
 
-        const compile = (type, src) => {
-            const sh = gl.createShader(type);
-            gl.shaderSource(sh, src);
-            gl.compileShader(sh);
-            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) return null;
-            return sh;
+        /* In eine Funktion gefasst, damit webglcontextrestored Shader/Programm/
+           Buffer neu aufbauen kann — nach Kontextverlust sind alle GL-Objekte
+           des alten Kontexts ungültig, auch wenn `gl` dasselbe Objekt bleibt. */
+        let uRes = null, uT = null;
+        const setupProgram = () => {
+            const compile = (type, src) => {
+                const sh = gl.createShader(type);
+                gl.shaderSource(sh, src);
+                gl.compileShader(sh);
+                if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) return null;
+                return sh;
+            };
+            const vs = compile(gl.VERTEX_SHADER, VERT);
+            const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+            if (!vs || !fs) return false;
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs);
+            gl.attachShader(prog, fs);
+            gl.linkProgram(prog);
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return false;
+            gl.useProgram(prog);
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+            const aP = gl.getAttribLocation(prog, "aP");
+            gl.enableVertexAttribArray(aP);
+            gl.vertexAttribPointer(aP, 2, gl.FLOAT, false, 0, 0);
+            uRes = gl.getUniformLocation(prog, "uRes");
+            uT = gl.getUniformLocation(prog, "uT");
+            return true;
         };
-        const vs = compile(gl.VERTEX_SHADER, VERT);
-        const fs = compile(gl.FRAGMENT_SHADER, FRAG);
-        if (!vs || !fs) return;
-        const prog = gl.createProgram();
-        gl.attachShader(prog, vs);
-        gl.attachShader(prog, fs);
-        gl.linkProgram(prog);
-        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
-        gl.useProgram(prog);
-        const buf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-        const aP = gl.getAttribLocation(prog, "aP");
-        gl.enableVertexAttribArray(aP);
-        gl.vertexAttribPointer(aP, 2, gl.FLOAT, false, 0, 0);
-        const uRes = gl.getUniformLocation(prog, "uRes");
-        const uT = gl.getUniformLocation(prog, "uT");
+        if (!setupProgram()) return;
 
         /* Halbe Auflösung, DPR-gedeckelt — Weichheit gewollt, Kosten klein. */
         const SCALE = 0.5;
@@ -144,11 +154,35 @@ void main(){
         /* Erster Frame sofort (ruhende Szene), dann Übergabe an die Schleife. */
         draw(34.0);
         document.documentElement.classList.add("tw-live");
+
+        let raf = 0;
+
+        /* Resize/Rotation muss auch unter reduced-motion neu zeichnen, sonst
+           bleibt die Bitmap-Auflösung vom ersten Frame stehen und wird per CSS
+           verzerrt hochskaliert (z. B. nach einer Drehung am Handy). */
+        window.addEventListener("resize", () => { if (!raf) draw(34.0 + performance.now() / 1000); });
+
+        /* WebGL-Kontextverlust (Handy im Hintergrund, GPU-Prozess-Reset) —
+           sonst bliebe die Bühne dauerhaft schwarz statt zum Fallback-Raster
+           zurückzufallen (der Kontext ist mit alpha:false erzeugt, das
+           Drawing-Buffer-Clear nach Verlust ist opak Schwarz). */
+        canvas.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            document.documentElement.classList.remove("tw-live");
+            if (raf) cancelAnimationFrame(raf);
+            raf = 0;
+        });
+        canvas.addEventListener("webglcontextrestored", () => {
+            if (!setupProgram()) return;
+            draw(34.0 + performance.now() / 1000);
+            document.documentElement.classList.add("tw-live");
+            if (!reduced) wake();
+        });
+
         if (reduced) return; /* reduced-motion: der stehende Frame IST die Szene */
 
         let visible = true;
         let tabVisible = !document.hidden;
-        let raf = 0;
         let last = 0;
         const STEP = 1000 / 30; /* ~30 fps genügen der trägen Bewegung */
         const loop = (ms) => {
@@ -172,7 +206,6 @@ void main(){
             tabVisible = !document.hidden;
             wake();
         });
-        window.addEventListener("resize", () => { if (!raf) draw(34.0 + performance.now() / 1000); });
         wake();
     };
 
