@@ -60,7 +60,8 @@ console.log("\n— waitlist.validateSignup (consent gate) —");
 }
 
 console.log("\n— gallery.validateDna (URL-safe base64 filter) —");
-assert(validateDna("AbC0-_=%.") === "AbC0-_=%.", "URL-safe base64 alphabet passes through");
+assert(validateDna("AbC0-_") === "AbC0-_", "URL-safe base64 alphabet passes through");
+assert(validateDna("AbC0-_==") === "AbC0-_==", "trailing base64 padding ('=', up to 2) passes through");
 assert(validateDna("  AbC123  ") === "AbC123", "trims surrounding whitespace");
 assert(validateDna("") === null, "empty → null");
 assert(validateDna("   ") === null, "whitespace-only → null");
@@ -68,6 +69,8 @@ assert(validateDna(42) === null, "non-string → null");
 assert(validateDna("has space") === null, "space (illegal char) → null");
 assert(validateDna("<script>") === null, "angle brackets (injection) → null");
 assert(validateDna("a/b+c") === null, "raw base64 '+'/'/' rejected (must be URL-safe)");
+assert(validateDna("AbC%20") === null, "'%' is not in the base64url alphabet → null");
+assert(validateDna("AbC.def") === null, "'.' is not in the base64url alphabet → null");
 assert(validateDna("x".repeat(4001)) === null, "over 4000 chars → null");
 assert(typeof validateDna("x".repeat(4000)) === "string", "exactly 4000 chars allowed");
 

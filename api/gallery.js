@@ -29,8 +29,11 @@ const PAGE = 24;        // pro GET ausgeliefert
 const MAX_DNA = 4000;   // Share-Strings sind ~200–600 Zeichen; Schutzlimit
 const MAX_NAME = 48;
 const MAX_BY = 24;
-// Share-Strings sind URL-sicheres Base64 (siehe share.js) — alles andere ablehnen.
-const DNA_RE = /^[A-Za-z0-9\-_=%.]+$/;
+// Share-Strings sind URL-sicheres Base64 (siehe share.js): A-Za-z0-9-_ plus
+// optionales "="-Padding (bis zu 2 Zeichen, für ältere gespeicherte DNA —
+// decode() streift es vor dem Re-Padding). "%"/"." sind NIE Teil des
+// Alphabets — alles andere ablehnen.
+const DNA_RE = /^[A-Za-z0-9\-_]+={0,2}$/;
 
 function jsonError(status, message, code) {
   const body = code ? { error: message, code } : { error: message };
