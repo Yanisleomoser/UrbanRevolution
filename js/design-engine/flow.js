@@ -1159,6 +1159,12 @@ const DesignFlow = (() => {
       const shared = window.DesignShare ? DesignShare.read() : null;
       if (shared && typeof shared === "object" && shared.archetypeWeights !== undefined) {
         dna = shared;
+        // A crafted #dna= link can carry archetypeWeights: null (sanitize()
+        // only guards color.stops) — same repair as the resume path below,
+        // or the first refine warmer/colder tap throws inside applyEffects().
+        if (!dna.archetypeWeights || typeof dna.archetypeWeights !== "object") {
+          dna.archetypeWeights = DesignDNA.create().archetypeWeights;
+        }
         if (!dna._confidence) dna._confidence = {};
         DesignShare.clear();
         try { hostEl.scrollIntoView({ block: "start" }); } catch (_e) { /* no-op */ }

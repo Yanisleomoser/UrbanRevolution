@@ -152,5 +152,19 @@ console.log("\n— adjust guards: unknown axis + no colour stops —");
   assert(DNA.get(empty, "color.value") === undefined, "…and writes no derived colour when there was nothing to repaint");
 }
 
+console.log("\n— applyEffects survives a null archetypeWeights (crafted #dna= share link) —");
+{
+  // DesignShare.sanitize() only guards color.stops, so a link built via
+  // DesignShare.buildUrl({archetypeWeights: null}) reaches flow.js with
+  // archetypeWeights: null. Before this fix, the first refine warmer/colder
+  // tap (Inference.adjust → DNA.applyEffects) threw a TypeError reading the
+  // archetype key off null, breaking the studio for anyone who opened the link.
+  const dna = { archetypeWeights: null };
+  let threw = false;
+  try { DNA.applyEffects(dna, { weight: { techAvant: 2 } }); } catch (_e) { threw = true; }
+  assert(!threw, "applyEffects with weight effects does not throw on a null archetypeWeights");
+  assert(dna.archetypeWeights && dna.archetypeWeights.techAvant === 2, "…and still applies the weight delta");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
