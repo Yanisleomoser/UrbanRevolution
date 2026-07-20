@@ -87,6 +87,7 @@ const DesignDNA = (() => {
       }
     }
     if (effects.weight) {
+      if (!dna.archetypeWeights || typeof dna.archetypeWeights !== "object") dna.archetypeWeights = {};
       for (const [arch, delta] of Object.entries(effects.weight)) {
         if (dna.archetypeWeights[arch] == null) dna.archetypeWeights[arch] = 0;
         dna.archetypeWeights[arch] += delta;
