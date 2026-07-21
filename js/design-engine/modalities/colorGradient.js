@@ -20,7 +20,13 @@
     const lang = ctx.lang;
     const palette = Object.values((window.CONFIG && CONFIG.COLORS) || { black: "#1a1a1a", white: "#ffffff" });
     let scheme = "mono";
-    let stops = ["#1a1a1a"];
+    // Empty, not a pre-seeded ["#1a1a1a"]: #416 gated confirm until a swatch
+    // is tapped, but left this placeholder default in place, which the
+    // duo-gradient branch below (`stops.push(hex)`) appends to rather than
+    // replaces — switching to "Verlauf" and tapping ONE swatch silently
+    // committed a two-stop gradient anchored on unchosen black. Starting
+    // empty means the first tap is the first real stop in either scheme.
+    let stops = [];
     let confirm = null;
 
     const q = V.el("h2", { class: "de-question", id: "de-scheme-q" });
