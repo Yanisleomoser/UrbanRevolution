@@ -169,18 +169,25 @@ wall holds floating creations.
 
 **Stack:** vanilla HTML / CSS / JS. No bundler, no transpiler. The
 `package.json` only exists so Vercel runs `npm install` to pull
-`@vercel/speed-insights` (+ `css-tree`/`htmlhint` dev deps for CI); the app
-itself has no build step. MediaPipe, GSAP, three.js and Vercel analytics
+`@vercel/speed-insights` (+ `css-tree`/`htmlhint`/`cheerio`/`c8` dev deps for
+CI); the app itself has **no deploy build step** (the `build` npm script is a
+no-op). The one codegen step, `npm run build:en`, regenerates the committed
+`en/index.html` offline — it is not part of the deploy (see i18n below).
+MediaPipe, GSAP, three.js and Vercel analytics
 load from CDNs at runtime (three.js + GSAP via an `importmap`). Seven Vercel
 Edge Functions (`api/`) proxy the AI/storage calls.
-UI copy is **bilingual German/English** (`I18N`; language resolves at load as
-`?lang=` URL param (persisted) → saved choice → `navigator.language` → `de`;
-`toLocaleDateString` follows the active locale).
+UI copy is **bilingual German/English** (`I18N`): the language resolves at load
+as URL path `/en/` (the prerendered English page, see Internationalisation) →
+`?lang=` param (persisted) → saved choice → `navigator.languages` → `de`, and
+the header toggle **navigates** to the per-language URL (`/` ↔ `/en/`) rather
+than only swapping copy client-side; `toLocaleDateString` follows the active
+locale.
 
 ## Layout
 
 ```
-index.html              # The main app; landing + studio + sections, import map + script tags
+index.html              # The main app (German source); landing + studio + sections, import map + script tags
+en/index.html           # Prerendered English page served at /en/ — GENERATED from index.html by scripts/build-en.mjs, committed (SEO)
 impressum.html          # German legal page (Impressum)
 datenschutz.html        # German privacy policy (DSGVO + Swiss)
 insights.html           # Design-Engine telemetry dashboard (admin, behind ?key=, noindex)
@@ -230,12 +237,15 @@ docs/
   VISUAL-ROADMAP.md     # Landing visual roadmap & diagnosis (handoff note, read with CLAUDE.md)
   STUDIO-UX-ROADMAP.md  # Studio-journey UX roadmap — all 10 slices shipped; §12
                         # (status + hard-won pitfalls) is REQUIRED reading before studio work
+  WEBSITE-IMPROVEMENTS.md # Website-review handoff note — high-impact upgrades ranked by user impact (read with CLAUDE.md)
+README.md               # Bilingual (DE-lead) project overview — vision, features, stack, setup
 SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·
                         # render-blob.mjs + blob-comp.html (Thermal-Blob → assets/tblob-*.webp),
-                        # build/QA: shoot* (incl. shoot-journey.mjs, the studio walkthrough),
-                        # build-image-library, gen-presets, strip-hero-bg, audit*,
-                        # verify-* (permanent per-beat regression checks), check-* (headless)
+                        # build/QA: build-en.mjs (codegen → en/index.html), shoot* (incl.
+                        # shoot-journey.mjs, the studio walkthrough), build-image-library,
+                        # gen-presets, strip-hero-bg, audit*, verify-* (permanent per-beat
+                        # regression checks, incl. verify-lang), check-* (headless)
 .github/workflows/      # CI: deno(test), test.yml(validate = build-no-op + npm test),
                         # validate-css, validate-html, validate-assets, e2e, coverage
                         # — see Deployment
@@ -249,7 +259,8 @@ encode/decode, pose math, garment-flat builder, measurement capture
 modal focus-trap containment, design-engine inference — archetype ranking,
 inferred-fill suggestions, warmer/colder refine axes, journey-flow helpers,
 render-preview mappers, $0 preview fallback, client telemetry/DNT, waste-ticker
-math, landing studio-reveal predicate, API error mapping + input validation, and
+math, landing studio-reveal predicate, the prerendered `/en/` page render + its
+staleness-vs-generator guard, API error mapping + input validation, and
 edge-function handler flows — waitlist/track/gallery GET+POST, graceful
 no-Upstash degradation, the consent/rate-limit/whitelist gates),
 run via `npm test` in CI (test.yml). No network needed. A separate `npm run e2e`
@@ -420,7 +431,34 @@ The whole UI is **DE/EN bilingual**. `window.I18N` (loaded right after
   directly — never hardcode user-facing copy.
 - `I18N.setLang(lang)` persists to `localStorage` (`urev_lang`), updates
   `<html lang>`, re-applies the DOM, and fires a `language:change` event.
-  `app.js` listens and re-renders dynamic UI.
+  `app.js` listens and re-renders dynamic UI. The header **language toggle**
+  now also **navigates** to that language's own URL — `I18N.langPath(lang)`
+  (`/` for DE, `/en/` for EN) plus the current `#hash` — so switching language
+  is a real navigation to a crawlable page, not just a client-side copy swap.
+- **Load-time resolution order** (`resolveLang`): URL path `/en/` → `?lang=`
+  param → saved choice (`localStorage`) → `navigator.languages` → `de`. The
+  `/en/` path wins on purpose, so the prerendered English page is never
+  clobbered by a stale saved choice or a German-locale browser. An explicit
+  `?lang=` is persisted like a toggle choice.
+
+**The prerendered `/en/` English page (SEO — load-bearing).** `/?lang=en` used
+to return byte-for-byte the German HTML (`lang="de"`, German `<title>`,
+canonical → `/`), so Google indexed German only and treated `?lang=en` as a
+duplicate of the root. `en/index.html` fixes that: a **real, server-rendered
+English page** at `/en/` — `<html lang="en">`, English `<head>`/title, a
+self-referencing canonical, English JSON-LD — a distinct URL crawlers can
+index. It is **generated, not hand-maintained**: `scripts/build-en.mjs`
+(exported `buildEn()`, run via `npm run build:en`) mirrors `I18N.apply()`
+exactly against the single German source `index.html`, translating via the
+English half of the `i18n.js` dictionary (with `cheerio`), then rewrites the
+SEO head. It is a **codegen step, not a bundler** — the app still ships
+vanilla, and committing `en/index.html` keeps Vercel's "no build" property
+literally true. **Hard rule: whenever you change `index.html` or a dictionary
+string, re-run `npm run build:en` and commit the regenerated `en/index.html`.**
+CI enforces it — `en-parity-test.mjs` regenerates the page in memory and fails
+if the committed file drifted, `en-i18n-render-test.mjs` + `verify-lang.mjs`
+guard the render, `validate-html` lints `en/index.html`, and `e2e` asserts
+`/en/` boots as a clean, self-canonical English page.
 
 When you add user-facing copy, add a key to **both** `de` and `en` in
 `i18n.js` and reference it via `data-i18n*` or `I18N.t()`.
@@ -592,7 +630,8 @@ strings** — the same URL-safe base64 format as `js/design-engine/share.js`,
   `waitlist.js`), a `urev:gallery` ring buffer (max 60, 24 per GET).
   `GET /api/gallery → { ok, items: [{ d, name, by, ts }] }` (newest first);
   `POST /api/gallery { d, name?, by? }`. `validateDna` (exported, pure,
-  unit-testable) rejects empty / over-long / non-base64 strings. Graceful:
+  unit-testable) rejects empty / over-long / non-base64url strings (the exact
+  `A-Za-z0-9-_` + `=` padding alphabet `share.js` emits). Graceful:
   without Upstash env, GET returns `{ ok, items: null }` (client shows the
   **curated fallback** `content/gallery-curated.json`) and POST returns the
   neutral coded error.
@@ -785,7 +824,11 @@ run on Vercel (or `vercel dev`).
 
 ## Deployment
 
-- **Vercel** (`vercel.json`) — no build, root is output. Speed Insights +
+- **Vercel** (`vercel.json`) — no build, root is output. The one generated
+  file, `en/index.html` (the `/en/` page), is **committed**, so the deploy
+  stays build-free — regenerate it locally with `npm run build:en` after
+  touching `index.html` or a dictionary string (CI's `en-parity` guard fails
+  the build otherwise). Speed Insights +
   Web Analytics load from Vercel's `/_vercel/*` script endpoints (script tags
   in `index.html`). The seven `/api/` functions run as Edge Functions. **This is the
   only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
@@ -813,7 +856,7 @@ The functional PR checks (check name = job id):
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
 | `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (28 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
-| `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404)   |
+| `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404, en/index)   |
 | `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
 | `e2e`          | `e2e.yml`          | "E2E"         | `npm run e2e` — headless-Chromium browser smoke test (`scripts/e2e.mjs`) |
 | `coverage`     | `coverage.yml`     | "Coverage"    | `npm run coverage` — c8 over the unit suites, fails below the `.c8rc.json` floor |
