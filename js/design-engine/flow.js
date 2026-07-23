@@ -274,7 +274,10 @@ const DesignFlow = (() => {
   // Distanz zum warmen Pol (30° Rot-Orange) auf dem Farbkreis — sinkt sie,
   // wurde die Variante wärmer.
   const warmDist = (h) => { const d = Math.abs(h - 30); return Math.min(d, 360 - d); };
-  function conceptDeltas(base, variant) {
+  // Alle Achsen-Deltas einer Variante, nach Stärke sortiert. `strong` markiert
+  // die alten Sichtbarkeits-Schwellen; darunterliegende Deltas bleiben als
+  // Tie-Breaker für die Namens-Eindeutigkeit verfügbar (conceptLabelSets).
+  function conceptCandidates(base, variant) {
     const gb = (p) => DesignDNA.get(base, p);
     const gv = (p) => DesignDNA.get(variant, p);
     const cand = [];
@@ -282,21 +285,43 @@ const DesignFlow = (() => {
     const hv = hexHue((gv("color.stops") || [])[0]);
     if (hb != null && hv != null) {
       const dw = warmDist(hv) - warmDist(hb);
-      if (Math.abs(dw) >= 10) cand.push({ k: dw < 0 ? "concept.warmer" : "concept.cooler", m: Math.abs(dw) / 180 + 0.1 });
+      if (dw) cand.push({ k: dw < 0 ? "concept.warmer" : "concept.cooler", m: Math.abs(dw) / 180 + 0.1, strong: Math.abs(dw) >= 10 });
     }
     const fb = gb("silhouette.fit"), fv = gv("silhouette.fit");
-    if (typeof fb === "number" && typeof fv === "number" && Math.abs(fv - fb) >= 0.06)
-      cand.push({ k: fv > fb ? "concept.wider" : "concept.slimmer", m: Math.abs(fv - fb) * 1.4 });
+    if (typeof fb === "number" && typeof fv === "number" && fv !== fb)
+      cand.push({ k: fv > fb ? "concept.wider" : "concept.slimmer", m: Math.abs(fv - fb) * 1.4, strong: Math.abs(fv - fb) >= 0.06 });
     const nb = gb("fabric.finishWeight"), nv = gv("fabric.finishWeight");
-    if (typeof nb === "number" && typeof nv === "number" && Math.abs(nv - nb) >= 0.08)
-      cand.push({ k: nv > nb ? "concept.sheen" : "concept.matte", m: Math.abs(nv - nb) });
+    if (typeof nb === "number" && typeof nv === "number" && nv !== nb)
+      cand.push({ k: nv > nb ? "concept.sheen" : "concept.matte", m: Math.abs(nv - nb), strong: Math.abs(nv - nb) >= 0.08 });
     const pb = gb("pattern.type") || "none", pv = gv("pattern.type") || "none";
-    if (pb !== pv) cand.push({ k: pv === "none" ? "concept.cleaner" : "concept.pattern", m: 0.42 });
+    if (pb !== pv) cand.push({ k: pv === "none" ? "concept.cleaner" : "concept.pattern", m: 0.42, strong: true });
     const lb = gb("length"), lv = gv("length");
-    if (lb !== lv && lv) cand.push({ k: "concept.len_" + lv, m: 0.4 });
+    if (lb !== lv && lv) cand.push({ k: "concept.len_" + lv, m: 0.4, strong: true });
     cand.sort((a, b) => b.m - a.m);
-    const keys = cand.slice(0, 2).map((c) => c.k);
+    return cand;
+  }
+  function conceptDeltas(base, variant) {
+    const keys = conceptCandidates(base, variant).filter((c) => c.strong).slice(0, 2).map((c) => c.k);
     return keys.length ? keys : ["concept.subtle"];
+  }
+  // Eindeutige Namen für ALLE Richtungen einer Runde: zwei von vier Kacheln
+  // hiessen real identisch „Muster gewagt · Kühler" (jeder Branch, U6). Bei
+  // Kollision kommt die nächststärkste, noch ungenutzte Achse dazu (max. 3),
+  // danach ersetzt sie die schwächste. Zwei wirklich identische Deltas dürfen
+  // identisch heissen — das wäre dann ehrlich.
+  function conceptLabelSets(base, variants) {
+    const seen = new Set();
+    return (variants || []).map((v) => {
+      const K = conceptCandidates(base, v).map((c) => c.k);
+      let keys = conceptDeltas(base, v);
+      for (let n = 0; seen.has(keys.join("|")) && n < K.length + 1; n++) {
+        const extra = K.find((k) => !keys.includes(k));
+        if (!extra) break;
+        keys = keys.length < 3 ? keys.concat(extra) : [keys[0], extra];
+      }
+      seen.add(keys.join("|"));
+      return keys;
+    });
   }
 
   // ── "Made for one" (roadmap §9) ────────────────────────────────────────────
@@ -595,9 +620,14 @@ const DesignFlow = (() => {
       if (!el) return;
       if (!fxOn() || reduceMotion()) { el.textContent = text; return; }
       el.classList.add("is-typing");
-      let i = 0;
+      // Wall-clock statt Frame-Zählung: bei ~13 fps (Headless, Low-End) tippte
+      // der Satz sonst sekundenlang und stand in jedem Standbild „abgeschnitten"
+      // mitten im Wort (Atelier-Analyse U6). Jetzt ist die Dauer geräte-
+      // unabhängig: ~110 Zeichen/s ≙ den bisherigen 2 Zeichen pro 60-fps-Frame.
+      const CPS = 110;
+      const startedAt = nowMs();
       const step = () => {
-        i = Math.min(text.length, i + 2);
+        const i = Math.min(text.length, Math.ceil(((nowMs() - startedAt) / 1000) * CPS));
         el.textContent = text.slice(0, i);
         if (i < text.length) typeRaf = requestAnimationFrame(step);
         else { typeRaf = 0; el.classList.remove("is-typing"); }
@@ -655,7 +685,12 @@ const DesignFlow = (() => {
         // weaves it into the silhouette. progress staggers the materialisation.
         const catConf = DesignDNA.confidence(dna, "category");
         window.DesignPreview.renderInto(previewEl, previewDna, {
-          realism: atRefine,
+          // Refine-Held ist das ECHTE Flat des Users, nicht mehr das kuratierte
+          // Foto: trotz Honesty-Gate zeigte der Shirt-Branch ein rosa Preset
+          // gegen einen Burgunder-Build (Atelier-Analyse U6). Der Flat ist
+          // immer korrekt — das Foto-Moment gehört dem generierten Render im
+          // Ownership-Beat. (Gate + Manifest bleiben für die Zukunft im Code.)
+          realism: false,
           photoManifest: content.photoManifest,
           mirror: dockFlat,
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
@@ -973,6 +1008,9 @@ const DesignFlow = (() => {
       };
       const renderConcepts = () => {
         if (!grid) return;
+        // Namen für ALLE Richtungen in einem Zug — paarweise eindeutig (U6):
+        // bei Kollision zieht conceptLabelSets die nächststärkste Achse hinzu.
+        const labelSets = conceptLabelSets(baseDna, concepts.map((c) => c.history[c.history.length - 1]));
         grid.innerHTML = concepts.map((c, i) => {
           const cur = c.history[c.history.length - 1];
           // Jede Richtung trägt ihren Namen aus dem eigenen Delta (§8.2):
@@ -980,7 +1018,7 @@ const DesignFlow = (() => {
           // Nur i18n-Wörter (kein User-Input) → sicher im Template.
           const name = (i === 0 && c.version === 1)
             ? t("engine.concept_original")
-            : conceptDeltas(baseDna, cur).map((k) => t(k)).join(" · ");
+            : labelSets[i].map((k) => t(k)).join(" · ");
           return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
             <button type="button" class="de-concept-pick" data-pick="${i}" aria-pressed="${i === selected}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}: ${name}">
               <span class="de-concept-stage">${tileSvg(cur)}</span>
@@ -1284,7 +1322,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

@@ -96,7 +96,21 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   })));
   check(tiles.length === 4, "four concept directions render");
   check(tiles.every((t) => t.name.trim().length > 0), "every tile carries a name");
-  check(new Set(tiles.map((t) => t.name)).size >= 3, `directions are distinguishable by name (${tiles.map((t) => t.name).join(" | ")})`);
+  // U6: früher hiessen zwei von vier Richtungen identisch — jetzt Pflicht auf
+  // volle Eindeutigkeit (conceptLabelSets zieht bei Kollision die dritte Achse).
+  check(new Set(tiles.map((t) => t.name)).size === 4, `all four direction names are unique (${tiles.map((t) => t.name).join(" | ")})`);
+  // U6: der Satz TIPPT wall-clock-basiert und muss vollständig enden — ein
+  // abgeschnittener Satz („…Verlauf von Bu") war der sichtbarste Defekt des
+  // Crescendos in Headless-Frames.
+  const finalText = await page.$eval("#de-refine-summary", (el) => el.textContent);
+  check(/\.\s*$/.test(finalText), `typed sentence completes with a full stop ("…${finalText.slice(-24)}")`);
+  // U6: der Refine-Held ist das ECHTE Flat (SVG), kein kuratiertes Preset-Foto.
+  const hero = await page.evaluate(() => {
+    const stage = document.querySelector(".de-preview-stage") || document.querySelector("#de-preview");
+    const img = stage && stage.querySelector("img");
+    return { hasSvg: !!(stage && stage.querySelector("svg")), photoVisible: !!(img && img.offsetParent && getComputedStyle(img).opacity !== "0") };
+  });
+  check(hero.hasSvg && !hero.photoVisible, "refine hero is the user's SVG flat — no preset photo layer visible");
   check(tiles.filter((t) => t.hasEvolve).length === 1 && tiles.find((t) => t.selected).hasEvolve,
     "exactly ONE evolve control, and it sits on the selected tile");
   check(tiles.find((t) => t.selected).pressed === "true", "selected tile announces aria-pressed=true");

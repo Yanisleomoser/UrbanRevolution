@@ -369,6 +369,40 @@ console.log("\n— seedDefaults: a skipped mood must not kill pattern/signature 
   assert(hasPattern(b) && hasSig(b), "an explicit 'bold' (0.8) opens both pattern and signature");
 }
 
+console.log("\n— conceptLabelSets · direction names are pairwise unique (U6) —");
+{
+  const D = global.DesignDNA;
+  const mk = (stops, pattern, fit) => {
+    const d = D.create();
+    D.set(d, "color.stops", stops, 1);
+    D.set(d, "pattern.type", pattern, 1);
+    D.set(d, "silhouette.fit", fit, 1);
+    return d;
+  };
+  const base = mk(["#a03030"], "none", 0.5);
+  // Two variants whose TOP-2 deltas collide (both: pattern + cooler) but whose
+  // weaker fit axis differs — exactly the shipped 'Muster gewagt · Kühler ×2'.
+  const v1 = mk(["#3050a0"], "check", 0.52);
+  const v2 = mk(["#3060a0"], "camo", 0.7);
+  const sets = Flow.conceptLabelSets(base, [v1, v2]);
+  assert(sets[0].join("|") !== sets[1].join("|"),
+    "two variants with identical top-2 deltas get distinct names (third axis pulled in)");
+  assert(sets[0].length <= 3 && sets[1].length <= 3, "names stay at most three axes long");
+  // A twin extends by its OWN next-weakest axis — still a true delta of the
+  // twin, so the longer name stays honest while becoming distinct.
+  const twin = JSON.parse(JSON.stringify(v1));
+  const twinSets = Flow.conceptLabelSets(base, [v1, twin]);
+  assert(twinSets[0].join("|") !== twinSets[1].join("|") && twinSets[1].length === 3,
+    "a twin gets a distinct name via its next (true) axis");
+  // Zero-delta variants have no axis to extend by → honestly share 'subtle'.
+  const zero = Flow.conceptLabelSets(base, [base, JSON.parse(JSON.stringify(base))]);
+  assert(zero[0].join("|") === zero[1].join("|") && zero[0][0] === "concept.subtle",
+    "zero-delta variants share the honest 'subtle' name (nothing to extend by)");
+  // conceptDeltas keeps its old contract for single variants.
+  assert(Flow.conceptDeltas(base, v1).length >= 1 && Flow.conceptDeltas(base, base)[0] === "concept.subtle",
+    "conceptDeltas API unchanged (top strong axes; 'subtle' for no delta)");
+}
+
 console.log("\n— syncDerivedFinish · the finish slider drives the categorical finish (U1a) —");
 {
   const D = global.DesignDNA;
