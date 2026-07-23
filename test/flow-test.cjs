@@ -369,5 +369,82 @@ console.log("\n— seedDefaults: a skipped mood must not kill pattern/signature 
   assert(hasPattern(b) && hasSig(b), "an explicit 'bold' (0.8) opens both pattern and signature");
 }
 
+console.log("\n— syncDerivedFinish · the finish slider drives the categorical finish (U1a) —");
+{
+  const D = global.DesignDNA;
+  // Confident slider (0.8) + contradicting archetype string → derived sheen.
+  const d = D.create();
+  D.set(d, "fabric.finishWeight", 0.78, 0.8);
+  D.set(d, "fabric.finish", "matte", 0.4); // archetype soft-fill
+  Flow.syncDerivedFinish(d);
+  assert(D.get(d, "fabric.finish") === "sheen", "finishWeight 0.78 (conf 0.8) derives fabric.finish 'sheen' over the soft-filled 'matte'");
+  assert(D.confidence(d, "fabric.finish") === 0.8, "derived finish carries the slider's confidence (counts as decided — no inferred chip)");
+
+  // Matte side of the slider.
+  const m = D.create();
+  D.set(m, "fabric.finishWeight", 0.2, 0.8);
+  Flow.syncDerivedFinish(m);
+  assert(D.get(m, "fabric.finish") === "matte", "finishWeight 0.2 derives 'matte'");
+
+  // Unanswered slider (low conf) → hands off, archetype value untouched.
+  const u = D.create();
+  D.set(u, "fabric.finishWeight", 0.9, 0.3);
+  D.set(u, "fabric.finish", "matte", 0.4);
+  Flow.syncDerivedFinish(u);
+  assert(D.get(u, "fabric.finish") === "matte", "a low-confidence finishWeight (0.3) does not override — only real answers derive");
+}
+
+console.log("\n— protectExplicit · secondary card effects can no longer clobber explicit answers (U1b) —");
+{
+  const D = global.DesignDNA;
+  const d = D.create();
+  D.set(d, "silhouette.fit", 0.9, 0.8); // explicit slider answer (Oversized)
+  const node = { id: "pants_subarch", modality: "cards" }; // no bind — fit is a side-effect
+  const eff = { set: { subArchetype: "tailored", "silhouette.fit": 0.45 }, weight: { softCouture: 0.15 } };
+  const safe = Flow.protectExplicit(d, node, eff);
+  assert(!("silhouette.fit" in safe.set), "Tailored's silhouette.fit side-effect is evicted — the user's 0.9 stays");
+  assert(safe.set.subArchetype === "tailored", "the card's own subject (subArchetype) still commits");
+  assert(eff.set["silhouette.fit"] === 0.45, "the original effects object is NOT mutated (may be a content-JSON reference)");
+
+  // The node's own bind is exempt — re-answering the asked question is allowed.
+  const bindNode = { id: "pants_fit", modality: "slider", bind: "silhouette.fit" };
+  const bindEff = { set: { "silhouette.fit": 0.2 } };
+  assert("silhouette.fit" in Flow.protectExplicit(d, bindNode, bindEff).set,
+    "the node's own bind path is exempt from protection (that IS the question)");
+
+  // Low-confidence (inferred) values stay overridable.
+  const soft = D.create();
+  D.set(soft, "silhouette.fit", 0.5, 0.4);
+  assert("silhouette.fit" in Flow.protectExplicit(soft, node, eff).set,
+    "an inferred fit (conf 0.4) is still overridable by a card side-effect");
+}
+
+console.log("\n— scrubImpossibleFills · inferred closures must be buildable per category (U1c) —");
+{
+  const D = global.DesignDNA;
+  const allowed = (cat, v) => !(cat === "tshirt" && v !== "none");
+  // Inferred button on a tee → scrubbed to none at the same (low) confidence.
+  const d = D.create();
+  D.set(d, "category", "tshirt", 1);
+  D.set(d, "construction.closure", "button", 0.4); // archetype soft-fill
+  Flow.scrubImpossibleFills(d, 0.5, allowed);
+  assert(D.get(d, "construction.closure") === "none", "inferred closure 'button' on a tshirt is scrubbed to 'none'");
+  assert(D.confidence(d, "construction.closure") === 0.4, "scrub keeps the low confidence — it stays visibly inferred");
+
+  // An EXPLICIT value (conf > threshold) is never scrubbed.
+  const e = D.create();
+  D.set(e, "category", "tshirt", 1);
+  D.set(e, "construction.closure", "button", 1);
+  Flow.scrubImpossibleFills(e, 0.5, allowed);
+  assert(D.get(e, "construction.closure") === "button", "an explicit closure answer is never scrubbed (only inferred fills are)");
+
+  // No allowedFn → graceful no-op (test harness without GarmentSVG).
+  const g = D.create();
+  D.set(g, "category", "tshirt", 1);
+  D.set(g, "construction.closure", "button", 0.4);
+  Flow.scrubImpossibleFills(g, 0.5, undefined);
+  assert(D.get(g, "construction.closure") === "button", "without an allowedFn the scrub is a graceful no-op");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

@@ -60,6 +60,64 @@ const DesignFlow = (() => {
   // in ATTR_LABELS).
   function seedDefaults(d) { DesignDNA.set(d, "intent.energy", 0.5, 0.05); return d; }
 
+  // ── Widerspruchs-Eviction (Atelier-Analyse 2026-07-23, Ursache 1) ─────────
+  // Drei chirurgische Regeln, damit die Maschine dem User nie widerspricht.
+
+  // (1) fabric.finishWeight ist die explizite Finish-Antwort (Slider, conf
+  // 0.8). Der kategorische fabric.finish (Archetyp-Default, Material-
+  // Nebeneffekt) darf ihr nicht widersprechen — real passiert: Refine-Chip
+  // „Finish: matt" unter einem Satz „aus glänzendem …", alle sechs Branches.
+  // Ab conf ≥ 0.6 wird fabric.finish abgeleitet und trägt die Confidence des
+  // Gewichts, womit completeFrom/suggestions ihn als entschieden behandeln.
+  function syncDerivedFinish(d) {
+    const wConf = DesignDNA.confidence(d, "fabric.finishWeight");
+    if (wConf < 0.6) return d;
+    const w = DesignDNA.get(d, "fabric.finishWeight");
+    if (typeof w !== "number") return d;
+    const derived = w > 0.5 ? "sheen" : "matte";
+    if (DesignDNA.get(d, "fabric.finish") !== derived || DesignDNA.confidence(d, "fabric.finish") < wConf) {
+      DesignDNA.set(d, "fabric.finish", derived, wConf);
+    }
+    return d;
+  }
+
+  // (2) Sekundäre set-Effekte (z. B. Hosen-„Tailored" → silhouette.fit 0.45)
+  // überschreiben keine Dimension, die der User bereits selbst beantwortet hat
+  // (conf ≥ 0.75: Karten/Farbe/Ranking/Regionen 1.0, Slider 0.8 — Inferenz
+  // ≤ 0.5 bleibt überschreibbar). Der Bind des Nodes ist ausgenommen: das IST
+  // die gestellte Frage. Gibt einen bereinigten Klon zurück — eff kann eine
+  // Referenz in die geladene content-JSON sein und darf nie mutiert werden.
+  const PROTECT_CONF = 0.75;
+  function protectExplicit(d, node, eff) {
+    if (!eff || !eff.set) return eff;
+    const out = { ...eff, set: { ...eff.set } };
+    Object.keys(out.set).forEach((p) => {
+      if (node && node.bind === p) return;
+      if (DesignDNA.confidence(d, p) >= PROTECT_CONF && DesignDNA.get(d, p) !== out.set[p]) {
+        delete out.set[p];
+      }
+    });
+    return out;
+  }
+
+  // (3) Inferenz-Füllungen (conf ≤ threshold) müssen baubar sein: ein T-Shirt
+  // bekommt keine Knopfleiste, nur weil der Archetyp-Default „button" sagt.
+  // allowedFn kommt vom Renderer (GarmentSVG.closureAllowed — der weiss, was
+  // seine Kategorie zeichnen kann); ohne ihn passiert nichts (graceful, z. B.
+  // im Test-Harness ohne GarmentSVG).
+  function scrubImpossibleFills(d, threshold, allowedFn) {
+    if (typeof allowedFn !== "function") return d;
+    const cat = DesignDNA.get(d, "category");
+    if (!cat) return d;
+    const th = threshold == null ? 0.5 : threshold;
+    const v = DesignDNA.get(d, "construction.closure");
+    const conf = DesignDNA.confidence(d, "construction.closure");
+    if (v != null && conf <= th && !allowedFn(cat, v)) {
+      DesignDNA.set(d, "construction.closure", "none", conf);
+    }
+    return d;
+  }
+
   // Every garment category now has its own node branch (each gated by
   // `when: category=='X'`), so the journey goes deep for all six — not just the
   // jacket. All branches load upfront; the engine only surfaces matching nodes.
@@ -576,6 +634,12 @@ const DesignFlow = (() => {
       // not a static placeholder until the last question.
       const previewDna = JSON.parse(JSON.stringify(dna));
       DesignEngine.finalize(previewDna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+      // Inferenz-Füllungen, die die Kategorie nicht zeichnen kann, fliegen auch
+      // aus dem Preview-Klon (Ursache 1 — sonst trägt das Tee im Preview die
+      // Knopfleiste, die der Refine-Scrub später entfernt).
+      syncDerivedFinish(previewDna);
+      scrubImpossibleFills(previewDna, content.attributes.confidenceThreshold,
+        window.GarmentSVG && window.GarmentSVG.closureAllowed);
       // The user's own choices ALWAYS win over the archetype inference — incl.
       // live slider drags (set at confidence 0), which finalize would otherwise
       // overwrite, making the Passform/Finish sliders feel dead. Overlay them.
@@ -728,11 +792,15 @@ const DesignFlow = (() => {
       },
       commit(payload) {
         if (swapping || isGuardedTap(nowMs(), lastRenderAt)) return;
-        const { eff, conf } = resolveEffects(currentNode, payload);
+        const { eff: rawEff, conf } = resolveEffects(currentNode, payload);
+        // Explizit schlägt Nebeneffekt: bereits selbst beantwortete Dimensionen
+        // bleiben stehen (Ursache 1 der Atelier-Analyse).
+        const eff = protectExplicit(dna, currentNode, rawEff);
         if (currentNode) T("node_choice", { id: currentNode.id, modality: currentNode.modality });
         snapshot();
         flash("✓ " + changeLabel(currentNode, payload, lang()));
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
+        syncDerivedFinish(dna);
         mirror(dna, content.attributes);
         pendingLive = null;
         persist();
@@ -823,7 +891,12 @@ const DesignFlow = (() => {
         if (v !== undefined && v !== null) DesignDNA.set(dna, path, v, 1);
       });
       pendingLive = null;
+      syncDerivedFinish(dna);
       DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+      // Nach dem Füllen: unbaubare Inferenz-Werte raus, BEVOR Chips/Satz/
+      // Spec/Share sie je sehen (Ursache 1 der Atelier-Analyse).
+      scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
+        window.GarmentSVG && window.GarmentSVG.closureAllowed);
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
@@ -894,6 +967,8 @@ const DesignFlow = (() => {
         const c = concepts[selected];
         dna = JSON.parse(JSON.stringify(c.history[c.history.length - 1]));
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+        scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
+          window.GarmentSVG && window.GarmentSVG.closureAllowed);
         mirror(dna, content.attributes); persist(); updatePreview(); reSummary();
       };
       const renderConcepts = () => {
@@ -945,6 +1020,8 @@ const DesignFlow = (() => {
       body.querySelectorAll(".de-nudge").forEach((btn) => btn.addEventListener("click", () => {
         const r = DesignInference.adjust(dna, btn.dataset.ax, parseInt(btn.dataset.dir, 10), lang());
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+        scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
+          window.GarmentSVG && window.GarmentSVG.closureAllowed);
         mirror(dna, content.attributes); persist(); updatePreview(); reSummary(); refreshChrome();
         if (r) flash("✓ " + r.label);
       }));
@@ -1207,7 +1284,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors, seedDefaults };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

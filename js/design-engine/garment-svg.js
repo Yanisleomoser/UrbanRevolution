@@ -67,6 +67,25 @@ const GarmentSVG = (() => {
     tshirt: { sleeveLen: 56, hem: { cropped: 200, regular: 256, long: 290 }, defCollar: "crew", closure: "none", splay: 22, cuffW: 24, armDepth: 50, neckHalf: 20, shBase: 48, shFit: 20 },
   };
 
+  // Was eine Kategorie an Verschlüssen ZEICHNEN kann (Whitelist gegen
+  // Inferenz-Füllungen — Atelier-Analyse Ursache 1: Archetyp-Defaults tragen
+  // closure-Werte, die auf T-Shirt/Kleid als Knopfleiste über der Brust
+  // landeten). Explizite User-Antworten laufen nicht hier durch — flow.js
+  // prüft nur conf ≤ threshold; der Param-Mapper in render-preview nutzt
+  // dieselbe Liste als Defense-in-depth für geteilte #dna=-Links.
+  const ALLOWED_CLOSURES = {
+    jacket: ["zip", "button", "none"],
+    hoodie: ["zip", "none"],
+    shirt: ["button", "half", "none"],
+    tshirt: ["none"],
+    pants: ["zip", "button", "none"],
+    dress: ["none"],
+  };
+  function closureAllowed(category, value) {
+    if (!hasOwn(ALLOWED_CLOSURES, category)) return true;
+    return ALLOWED_CLOSURES[category].includes(value);
+  }
+
   // Sleeve-length attribute → the limb's own length (per category, so a "long"
   // tee reads as a longsleeve and a "short" shirt as rolled short sleeves).
   // "sleeveless" collapses the limb entirely (tank / slip silhouette).
@@ -1314,7 +1333,7 @@ const GarmentSVG = (() => {
     return build(category, params).replace(`viewBox="0 0 ${VB} ${VH}"`, `viewBox="${x} ${y} ${r(cw)} ${r(ch)}"`);
   }
 
-  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, closureAllowed, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

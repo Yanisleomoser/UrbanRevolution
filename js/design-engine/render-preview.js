@@ -115,8 +115,15 @@ const DesignPreview = (() => {
 
   function params(dna) {
     const g = (p) => DesignDNA.get(dna, p);
+    // Verschluss nur, wenn die Kategorie ihn zeichnen kann (Whitelist im
+    // Renderer): ein inferiertes/geteiltes closure:"button" darf auf einem
+    // T-Shirt/Kleid keine Knopfleiste mehr erzeugen (Atelier-Analyse U1).
+    const cat = g("category");
+    const rawClosure = g("construction.closure");
+    const G = typeof window !== "undefined" ? window.GarmentSVG : (typeof GarmentSVG !== "undefined" ? GarmentSVG : null);
+    const closure = (G && G.closureAllowed && !G.closureAllowed(cat, rawClosure)) ? "none" : rawClosure;
     return {
-      category: g("category"),
+      category: cat,
       fit: g("silhouette.fit"),
       structure: g("silhouette.structure"),
       volume: g("silhouette.volume"),
@@ -124,7 +131,7 @@ const DesignPreview = (() => {
       collar: g("construction.collar"),
       sleeve: g("construction.sleeve"),
       sleeveLength: g("construction.sleeveLength"),
-      closure: g("construction.closure"),
+      closure: closure,
       pockets: g("construction.pockets"),
       cuffs: g("construction.cuffs"),
       hem: g("construction.hem"),

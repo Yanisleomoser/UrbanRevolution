@@ -465,5 +465,17 @@ console.log("\n— kangaroo pocket honours the closure (roadmap C5) —");
   });
 }
 
+console.log("\n— closureAllowed · per-category closure whitelist (Atelier-Analyse U1) —");
+{
+  assert(GarmentSVG.closureAllowed("jacket", "zip") && GarmentSVG.closureAllowed("jacket", "button"),
+    "a jacket may zip or button");
+  assert(!GarmentSVG.closureAllowed("tshirt", "button"), "a tshirt never gets a button placket");
+  assert(GarmentSVG.closureAllowed("tshirt", "none"), "a tshirt's only closure is 'none'");
+  assert(!GarmentSVG.closureAllowed("dress", "button") && !GarmentSVG.closureAllowed("dress", "zip"),
+    "the dress flat draws no front closure at all");
+  assert(!GarmentSVG.closureAllowed("hoodie", "button"), "a hoodie zips or stays closed — no buttons");
+  assert(GarmentSVG.closureAllowed("unknown-cat", "button"), "unknown categories are permissive (graceful for future JSON)");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);
