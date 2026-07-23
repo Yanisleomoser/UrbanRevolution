@@ -38,13 +38,20 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
 }
 
 // ── 2) Typing the example idea reads back and truly skips questions ────────
-{
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: "de-DE" });
+// Läuft auf Desktop UND Mobil (390 px) — die Modalität muss auf beiden
+// Breiten lesen, zurückspielen und committen (Tap-Ziele, kein Overflow).
+for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile", width: 390, height: 844 }]) {
+  const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, locale: "de-DE" });
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(base + "/#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  console.log(`  — describe path @ ${vp.name} (${vp.width}px) —`);
   await page.waitForSelector(".de-describe-input", { timeout: 20000 });
+  if (vp.name === "mobile") {
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check(overflow <= 1, `no horizontal overflow with the describe surface open (${overflow}px)`);
+  }
   await page.fill(".de-describe-input", "eine kastige, kurze Jacke in tiefem Rot, matt, viele Taschen");
   await page.click(".de-describe-read");
   await page.waitForSelector(".de-understood-row", { timeout: 5000 });
