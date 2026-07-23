@@ -1165,6 +1165,12 @@
       generatedAt: new Date().toISOString(),
     };
 
+    // Entwurfs-Zustand des Bogens: ohne echtes Design bleibt der Blueprint
+    // geisterhaft (.is-draft, Default im Markup) — erst ein generiertes
+    // Design füllt das weisse Papier.
+    const sheetEl = document.getElementById("spec-sheet");
+    if (sheetEl) sheetEl.classList.toggle("is-draft", !S.get("currentDesign"));
+
     const specData = Export.buildSpecData(design, measurements, currentType);
 
     document.getElementById("spec-title").textContent =
