@@ -999,9 +999,40 @@ input[aria-invalid="true"] {
     margin-bottom: 4px;
 }
 
-.photo-privacy {
-    color: var(--text-muted) !important;
-    font-size: 11px !important;
+/* Vertrauens-Siegel: die Client-Side-Privacy-Garantie als gestaltetes
+   Element neben dem Upload (vorher 11px-Fussnote .photo-privacy). */
+.privacy-seal {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: var(--space-4);
+    padding: 10px 14px;
+    border: 1px solid rgba(143, 150, 232, 0.28);
+    border-radius: calc(var(--radius) - 4px);
+    background: rgba(143, 150, 232, 0.05);
+}
+.privacy-seal-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--accent);
+}
+.privacy-seal-body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--text-sm);
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+.privacy-seal-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
 }
 
 /* Quiet Erwartungs-Notiz am Masse-Schritt (gilt für ALLE Methoden — Foto,
@@ -1339,12 +1370,48 @@ input[aria-invalid="true"] {
 }
 
 .spec-sheet {
+    position: relative;
     background: white;
     color: #111;
     border-radius: var(--radius);
     padding: 48px;
     font-family: var(--font-body);
     box-shadow: var(--shadow-soft);
+}
+
+/* Entwurfs-Zustand: solange kein Design existiert, ist der Bogen ein
+   geisterhafter Blueprint (gedimmt, gestrichelte Kante, Mono-Stempel im
+   Stil des SIMULATION-Stamps der Maschine) — der volle weisse Papier-Moment
+   wird erst durch ein echtes Design verdient. app.js entfernt .is-draft. */
+.spec-sheet.is-draft {
+    /* Graues Papier statt Deck-Opacity: eine globale Text-Dimmung würde die
+       axe-Kontrast-Schwelle reissen — der Geist-Effekt kommt aus Papierton,
+       gestrichelter Kante, entsättigter Zeichnung und dem Stempel. */
+    background: #d7d8de;
+    box-shadow: none;
+    outline: 1px dashed rgba(106, 113, 214, 0.55);
+    outline-offset: -8px;
+}
+.spec-sheet.is-draft .spec-drawing { filter: saturate(0.35) opacity(0.75); }
+.spec-draft-stamp { display: none; }
+.spec-sheet.is-draft .spec-draft-stamp {
+    display: block;
+    position: absolute;
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-7deg);
+    z-index: 2;
+    margin: 0;
+    padding: 10px 22px;
+    border: 2px solid rgba(106, 113, 214, 0.6);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 2.4vw, 16px);
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: rgba(106, 113, 214, 0.75);
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 .spec-header {
@@ -2926,76 +2993,95 @@ main { display: block; }
 
 .faq-section { padding-top: var(--space-11); padding-bottom: var(--space-12); }
 
+/* FAQ als Register statt Karten-Stapel: Mono-Index, Haarlinien, +/×-Marker —
+   die generischen Accordion-Boxen waren die letzte Fläche ohne die
+   Maschinen-Stimme des restlichen Systems. Markup unverändert. */
 .faq-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 0;
     max-width: 800px;
+    counter-reset: faq;
+    border-top: 1px solid var(--border);
 }
 
 .faq-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
     overflow: hidden;
-    transition:
-        border-color var(--duration-base) var(--ease-out),
-        background var(--duration-base) var(--ease-out);
+    transition: border-color var(--duration-base) var(--ease-out);
 }
 
-.faq-item:hover { border-color: rgba(255, 255, 255, 0.10); }
+.faq-item:hover { border-bottom-color: rgba(143, 150, 232, 0.35); }
 
-.faq-item[open] {
-    border-color: rgba(143, 150, 232, 0.35);
-    background: linear-gradient(180deg, var(--bg-card) 0%, rgba(143, 150, 232, 0.03) 100%);
-}
+.faq-item[open] { border-bottom-color: rgba(143, 150, 232, 0.35); }
 
 .faq-item summary {
     list-style: none;
     cursor: pointer;
-    padding: var(--space-6) var(--space-7);
+    padding: var(--space-6) var(--space-2);
     font-size: var(--text-md);
     font-weight: 600;
     color: var(--text);
     letter-spacing: -0.005em;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-5);
     transition: color var(--duration-fast) var(--ease-out);
 }
 
 .faq-item summary::-webkit-details-marker { display: none; }
 
-.faq-item summary::after {
-    content: "";
-    width: 14px;
-    height: 14px;
+/* Laufender Mono-Index (01–…): reine CSS-Counter, keine i18n-Pflicht. */
+.faq-item summary::before {
+    counter-increment: faq;
+    content: "0" counter(faq);
     flex-shrink: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3 5 L7 9 L11 5' fill='none' stroke='%238f96e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
+    width: 2.2em;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+
+.faq-item[open] summary::before,
+.faq-item summary:hover::before { color: var(--accent); }
+
+.faq-item summary::after {
+    content: "+";
+    flex-shrink: 0;
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--accent);
     transition: transform var(--duration-base) var(--ease-out);
 }
 
-.faq-item[open] summary::after { transform: rotate(180deg); }
+.faq-item[open] summary::after { transform: rotate(45deg); }
 
 .faq-item summary:hover { color: var(--accent); }
 
 .faq-item p {
-    padding: 0 var(--space-7) var(--space-6);
+    padding: 0 var(--space-2) var(--space-6) calc(var(--space-2) + 2.2em + var(--space-5));
     color: var(--text-dim);
     font-size: var(--text-base);
     line-height: var(--leading-normal);
     text-wrap: pretty;
     margin: 0;
+    max-width: 62ch;
 }
 
 /* Make sure the FAQ shows up in the nav at the same level as other sections */
 @media (max-width: 600px) {
     .faq-section { padding-top: var(--space-9); padding-bottom: var(--space-10); }
-    .faq-item summary { padding: var(--space-5) var(--space-5); font-size: var(--text-base); }
-    .faq-item p { padding: 0 var(--space-5) var(--space-5); }
+    .faq-item summary { padding: var(--space-5) var(--space-1); font-size: var(--text-base); }
+    .faq-item p { padding: 0 var(--space-1) var(--space-5) calc(var(--space-1) + 2.2em + var(--space-5)); }
 }
 
 /* ============================================================
@@ -4468,6 +4554,32 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
    nowrap zwingt die Ein-Zeilen-Breite, translateX(-50%) zentriert sie wieder. */
 .sticky-create { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 60; padding: 0.9rem 1.6rem; border-radius: 999px; background: var(--gradient); color: var(--on-accent); font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
 .sticky-create[hidden] { display: none; }
+/* Boden-Scrim hinter dem Sticky-Band: Fliesstext lief bisher ungeschützt
+   unter Pill + FAB durch (Quellen-/Caption-Zeilen wurden unlesbar überdeckt).
+   Als html::after-Layer UNTER dem Pill (z 59 < 60) — ein Pseudo im Pill
+   selbst würde dessen eigenen Verlauf übermalen (negative z-Kinder liegen
+   über dem Eltern-Background), und body::after trägt bereits den
+   Marken-Verlauf (Kollision real passiert: geerbtes top:0 machte den Scrim
+   zum Top-Band). :has-Gate: Scrim nur, solange der Pill wirklich sichtbar
+   ist; ohne :has-Support entfällt er sauber. */
+@media (max-width: 860px) {
+    html:has(.sticky-create:not([hidden]))::after {
+        content: "";
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        height: calc(118px + env(safe-area-inset-bottom));
+        z-index: 59;
+        pointer-events: none;
+        background: linear-gradient(to top,
+            rgba(11, 11, 13, 0.94) 0%,
+            rgba(11, 11, 13, 0.78) 40%,
+            rgba(11, 11, 13, 0.36) 70%,
+            rgba(11, 11, 13, 0) 100%);
+    }
+}
 @media (min-width: 861px) { .sticky-create { display: none; } }
 
 /* R4 · „Nach oben"-FAB (mobil): bodenverankert wie .sticky-create — ein oben
@@ -5623,6 +5735,17 @@ html.fx .lp-pivot-arc { opacity: 0; }
 }
 /* Bühnen-Vignetten (immer sichtbar — Tiefe, kein Zustand). Beat 1 + 2
    glimmen warm (Kupfer-Chaos der Slides); erst Beat 3 kühlt nach Aqua. */
+/* Die dunklen Radials sind an der Beat-Kante noch fast voll deckend, und
+   overflow:hidden schneidet sie dort hart ab — sichtbare horizontale Naht
+   gegen das durchlaufende .thermal-field. Eine Maske federt beide Kanten. */
+.fxb-vignette {
+    -webkit-mask-image: linear-gradient(to bottom,
+        transparent 0, #000 clamp(90px, 12svh, 150px),
+        #000 calc(100% - clamp(70px, 9svh, 120px)), transparent 100%);
+    mask-image: linear-gradient(to bottom,
+        transparent 0, #000 clamp(90px, 12svh, 150px),
+        #000 calc(100% - clamp(70px, 9svh, 120px)), transparent 100%);
+}
 .fxb-beat--produce .fxb-vignette {
     background:
         radial-gradient(120% 66% at 50% 110%, rgba(239, 124, 38, 0.10), rgba(239, 124, 38, 0) 62%),
