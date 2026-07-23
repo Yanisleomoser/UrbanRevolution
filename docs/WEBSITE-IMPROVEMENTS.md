@@ -299,6 +299,41 @@
 >   phase-E reweighting) remains the top pick — now unaddressed across
 >   **eight consecutive reviews (07-12 → 07-22)**.
 
+> **Status update (2026-07-23 review, read before acting):** re-checked
+> against `main` @ `8ed3e97`. Two commits landed since the 07-22 sync above,
+> neither touching this doc's tracked backlog: `4a6087d` (chore: widen the
+> `?v=`-gated immutable-cache rule to images + fonts, not just css/js — the
+> two `tblob-*.webp` thermal-blob backgrounds and self-hosted `woff2` fonts
+> were falling through to Vercel's `max-age=0` default; a delivery-polish
+> win adjacent to but not part of item #03's tracked scope, same pattern as
+> #427's hero-AVIF win) and `8ed3e97` (fix: `api/_lib/rate-limit.js`'s
+> `checkRateLimit` only inspected the pipeline's `INCR` result for an error,
+> not `EXPIRE` — a transient Upstash hiccup could leave a rate-limit key
+> without a TTL, a slow unbounded key leak; now retries `EXPIRE` standalone,
+> best-effort, fail-open contract unaffected).
+> - **Nothing on the open-work list moved.** Re-verified directly against
+>   code: `isGuardedTap`/`COMMIT_GUARD_MS` still byte-identical in `flow.js`;
+>   `.photo-privacy` still plain 11px text in `css/styles.css`; no commit
+>   since 07-18 touches `verify-atelier.mjs`/`verify-a11y-studio.mjs`/
+>   `verify-community.mjs`/`verify-gallery.mjs` — independently reconfirmed
+>   broken this pass (`verify-a11y-studio.mjs` still calls
+>   `window.DEModalities.hotspot`, which doesn't exist; only `.regions` does).
+>   `api/preview-design.js` still has no caller anywhere in `js/*.js` or
+>   `index.html`. Issues #383 and #384 are both still open (#383's last
+>   audit comment, 07-21, proposed cutting its own re-audit cadence — still
+>   no reply). PR #428 is still open, still draft, still stale against the
+>   post-#430 hero.
+> - **Repo hygiene: PR #440 was left open and unmerged** despite all seven
+>   functional CI checks green (plus CodeQL/Vercel preview/Actions-analyze) —
+>   the same oversight pattern as #436 in the 07-22 review. It was a small,
+>   well-tested, non-visual backend fix (see `8ed3e97` above) with nothing to
+>   gate on, so it was merged as part of this review rather than left to
+>   linger further.
+> - **Recommendation unchanged:** the rescoped `#01` (one commit model +
+>   phase-E reweighting) remains the top pick — now unaddressed across
+>   **nine consecutive reviews (07-12 → 07-23)**, the longest-standing item
+>   in this doc.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -494,11 +529,12 @@ them would be motion for its own sake.
 
 ---
 
-## Re-ranked open work & recommended next PR (2026-07-22 review)
+## Re-ranked open work & recommended next PR (2026-07-23 review)
 
-Re-ranked by impact/effort/risk, folding in the 2026-07-22 status update
+Re-ranked by impact/effort/risk, folding in the 2026-07-23 status update
 above: the table is unchanged since 07-21 — nothing shipped against it
-since 07-18 (all PRs since are unrelated hardening/docs); the orphaned,
+since 07-18 (all PRs since, including this pass's caching win #441 and
+rate-limit fix #440, are unrelated hardening/delivery-polish); the orphaned,
 unauthenticated, billed `api/preview-design.js` endpoint (surfaced 07-21)
 remains rank 2.
 
@@ -519,12 +555,13 @@ remains rank 2.
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
 re-scoped recommendation under §01 above. Reasoning unchanged since the
 2026-07-12 review — it has now been the top-ranked recommendation across
-**eight consecutive reviews (07-12 → 07-22)** without a single unit of
-engineering effort spent on it, while 28+ unrelated PRs landed around it
+**nine consecutive reviews (07-12 → 07-23)** without a single unit of
+engineering effort spent on it, while 29+ unrelated PRs landed around it
 (hero conversion, contrast, mobile machine, studio-reveal scroll, DNA/render
 bugs, the R4/R10 landing polish, the Instagram credibility signal, the GSAP
 dedupe, the colour-atelier confirm bug (and its 07-21 duo-gradient follow-up),
-both AVIF wirings, rate-limit/prototype-pollution hardening, a full visual
+both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
+EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
 re-skin, and assorted hardening fixes). If a quick, low-risk win is wanted
 *alongside* it rather than instead of it, rank 2 (the orphaned
 `preview-design.js` endpoint) is small enough to ship same-day without
