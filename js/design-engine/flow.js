@@ -483,6 +483,7 @@ const DesignFlow = (() => {
             <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
           </div>
           <div class="de-preview-chips" id="de-preview-chips"></div>
+          <p class="de-body-caption" id="de-body-caption" hidden data-i18n="engine.body_caption">${t("engine.body_caption")}</p>
           <button type="button" class="de-preview-dock" id="de-preview-dock" hidden aria-label="${t("engine.dock_aria")}">
             <span class="de-dock-flat" aria-hidden="true"></span>
           </button>
@@ -684,6 +685,9 @@ const DesignFlow = (() => {
         // the abstract thread-flow builds up instead, and the category answer
         // weaves it into the silhouette. progress staggers the materialisation.
         const catConf = DesignDNA.confidence(dna, "category");
+        // "Made for one" (§9): once measurements exist, the flat carries the
+        // user's own proportions — the brand thesis made visible.
+        const body = bodyFactors(window.StateManager ? window.StateManager.get("measurements") : null);
         window.DesignPreview.renderInto(previewEl, previewDna, {
           // Refine-Held ist das ECHTE Flat des Users, nicht mehr das kuratierte
           // Foto: trotz Honesty-Gate zeigte der Shirt-Branch ein rosa Preset
@@ -696,10 +700,13 @@ const DesignFlow = (() => {
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
-          // "Made for one" (§9): once measurements exist, the flat carries the
-          // user's own proportions — the brand thesis made visible.
-          body: bodyFactors(window.StateManager ? window.StateManager.get("measurements") : null),
+          body,
         });
+        // U2: das personalisierte Zeichnen war komplett stumm — eine leise
+        // Mono-Zeile benennt es, sobald echte Masse einfliessen (und ein
+        // Kleidungsstück sichtbar ist, nicht die Genesis-Wolke).
+        const bodyCap = hostEl.querySelector("#de-body-caption");
+        if (bodyCap) bodyCap.hidden = !(body && catConf >= (content.attributes.confidenceThreshold || 0.5));
       }
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
       // sichtbares Feedback (Subarch/Fit/Länge/Material/Muster), nicht ins Foto.
@@ -833,9 +840,19 @@ const DesignFlow = (() => {
         const eff = protectExplicit(dna, currentNode, rawEff);
         if (currentNode) T("node_choice", { id: currentNode.id, modality: currentNode.modality });
         snapshot();
-        flash("✓ " + changeLabel(currentNode, payload, lang()));
+        // Gutgeschriebene Sprünge (U2 „die Maschine liest mit"): Fragen, die
+        // durch DIESE Antwort wegfallen (when-Gates/Konfidenz — nicht die
+        // beantwortete selbst), werden im Flash benannt statt still
+        // verschluckt. Das ist der billigste sichtbare Beweis des Zuhörens.
+        const beforeIds = new Set(DesignEngine.eligible(content.nodes, dna, answered).map((n) => n.id));
+        const answeredId = currentNode && currentNode.id;
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
         syncDerivedFinish(dna);
+        const afterIds = new Set(DesignEngine.eligible(content.nodes, dna, answered).map((n) => n.id));
+        let saved = 0;
+        beforeIds.forEach((nid) => { if (nid !== answeredId && !afterIds.has(nid)) saved++; });
+        flash("✓ " + changeLabel(currentNode, payload, lang()) +
+          (saved ? " · " + t(saved === 1 ? "engine.saved_one" : "engine.saved_many", { n: saved }) : ""));
         mirror(dna, content.attributes);
         pendingLive = null;
         persist();

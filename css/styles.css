@@ -3718,6 +3718,18 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-preview-duo { position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.9; transition: background .24s var(--ease-out); }
 .de-preview-badge { position: absolute; top: var(--space-4); left: var(--space-4); z-index: 2; font-size: var(--text-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); background: rgba(11, 11, 13,0.55); backdrop-filter: blur(8px); padding: 4px var(--space-3); border-radius: 999px; }
 .de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
+/* U2 „Auf deine Masse gezeichnet" — leise Mono-Zeile unter den Chips, sobald
+   bodyFactors das Flat personalisiert. */
+.de-body-caption {
+    margin: 6px 0 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+}
+.de-body-caption[hidden] { display: none; }
 .de-preview-chip { font-size: var(--text-xs); color: var(--text-dim); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 3px var(--space-3); }
 /* Dimensions-Mikrolabel im Chip (Maschinen-Stimme): unterscheidet gleichlautende
    Werte ("FIT Regular · LÄNGE Regular") statt zwei identischer Pillen. */

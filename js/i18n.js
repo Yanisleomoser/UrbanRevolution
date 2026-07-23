@@ -195,6 +195,9 @@ const I18N = (() => {
 
       // ── Design Engine (Reise) ──
       "engine.opening_frame": "Dein Stück beginnt mit einem Gefühl",
+      "engine.saved_one": "1 Frage gespart",
+      "engine.saved_many": "{n} Fragen gespart",
+      "engine.body_caption": "Auf deine Masse gezeichnet",
       "engine.back": "Zurück",
       "engine.skip": "Überspringen",
       "engine.finish_early": "Fertig",
@@ -842,6 +845,9 @@ const I18N = (() => {
 
       // ── Design Engine (journey) ──
       "engine.opening_frame": "Your piece begins with a feeling",
+      "engine.saved_one": "1 question saved",
+      "engine.saved_many": "{n} questions saved",
+      "engine.body_caption": "Drawn to your measurements",
       "engine.back": "Back",
       "engine.skip": "Skip",
       "engine.finish_early": "Done",
