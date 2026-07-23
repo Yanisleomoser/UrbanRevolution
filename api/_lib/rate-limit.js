@@ -68,6 +68,16 @@ export async function checkRateLimit(request, { url, token, prefix, limit, windo
     const data = await res.json();
     if (!Array.isArray(data) || data[0]?.error) throw new Error("Unexpected pipeline response");
     const count = Number(data[0]?.result) || 0;
+    if (data[1]?.error) {
+      // INCR landed but EXPIRE didn't — the key would otherwise never expire
+      // (a slow, unbounded key leak in the shared Upstash instance). Retry the
+      // EXPIRE alone, best-effort: not awaited-for-correctness, doesn't affect
+      // the rate-limit result either way.
+      console.error(`[rate-limit:${prefix}] EXPIRE failed for ${key}, retrying: ${data[1].error}`);
+      fetch(`${url}/EXPIRE/${encodeURIComponent(key)}/${windowSeconds + 5}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
     return { limited: count > limit, count };
   } catch (err) {
     console.error(`[rate-limit:${prefix}] check failed, failing open: ${err.message}`);

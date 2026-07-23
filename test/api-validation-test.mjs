@@ -233,6 +233,22 @@ console.log("\n— rate-limit.checkRateLimit (fails open, never blocks without U
   const upstash500 = await checkRateLimit(req, { url: "https://x", token: "t", prefix: "t", limit: 5, windowSeconds: 60 });
   assert(upstash500.limited === false, "Upstash non-2xx response → fails open");
 
+  // INCR succeeds but EXPIRE fails within the pipeline → the count/limited
+  // result still reflects the successful INCR (not a hard failure), and a
+  // standalone EXPIRE retry is fired so the key doesn't leak without a TTL.
+  let expireRetryUrl = null;
+  globalThis.fetch = async (u) => {
+    if (typeof u === "string" && u.includes("/EXPIRE/")) {
+      expireRetryUrl = u;
+      return { ok: true, json: async () => ({ result: 1 }) };
+    }
+    return { ok: true, json: async () => [{ result: 3 }, { error: "EXPIRE failed" }] };
+  };
+  const expireFailed = await checkRateLimit(req, { url: "https://x", token: "t", prefix: "t", limit: 5, windowSeconds: 60 });
+  assert(expireFailed.limited === false && expireFailed.count === 3, "pipeline EXPIRE error doesn't affect the INCR-based result");
+  await Promise.resolve(); // let the fire-and-forget retry's microtask run
+  assert(expireRetryUrl && expireRetryUrl.includes("/EXPIRE/"), "a failed pipeline EXPIRE triggers a standalone retry");
+
   globalThis.fetch = originalFetch;
 }
 
