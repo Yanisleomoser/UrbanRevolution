@@ -28,7 +28,9 @@ const phaseOf = (id) => (nodes.find((n) => n.id === id) || {}).phase;
 const CORE_MOOD = ["mood_calm_bold", "mood_soft_sharp"];
 function moodSpineOk(order) {
   const catIdx = order.indexOf("category_select");
-  if (catIdx === -1 || catIdx > 2) return false;
+  // U4: idea_describe schiebt das Rückgrat um genau eine Position (Kategorie
+  // spätestens Frage 4 statt 3).
+  if (catIdx === -1 || catIdx > 3) return false;
   return CORE_MOOD.every((id) => {
     const idx = order.indexOf(id);
     return idx !== -1 && idx < catIdx && order.lastIndexOf(id) === idx;
@@ -151,7 +153,10 @@ const C = run("calm", calm);
 console.log("  order:", C.order.join(" → "));
 console.log("  top archetype:", DNA.topArchetype(C.dna));
 console.log("  summary:", DesignSummary.toSentence(C.dna, "en"));
-assert(C.order[0].indexOf("mood") === 0, "starts with a mood node (phase A)");
+// U4: der Auftakt in eigenen Worten (idea_describe) ist jetzt deterministisch
+// Q1; die Mood-Paare folgen direkt dahinter.
+assert(C.order[0] === "idea_describe", "starts with the describe opener (own words, Q1)");
+assert(C.order[1].indexOf("mood") === 0, "the first mood node follows the opener");
 const catIdx = C.order.indexOf("category_select");
 const firstJacket = C.order.findIndex((id) => id.startsWith("jacket_"));
 assert(catIdx !== -1 && catIdx < firstJacket, "category resolved before any jacket node");
@@ -178,8 +183,8 @@ assert(DNA.get(B.dna, "construction.pockets") === "cargo" && DNA.get(B.dna, "con
 // 15, not 14: the fixed mood_rank bug (see below) restores one real, previously
 // unreachable question (a ranking node) to this path — the ceiling moves by
 // exactly that +1, not because the board stopped compressing phase E.
-assert(B.order.length <= 15,
-  `the board compresses phase E: even the answer-everything bold path fits in 15 screens, was 19 (${B.order.length})`);
+assert(B.order.length <= 16,
+  `the board compresses phase E: even the answer-everything bold path fits in 16 screens incl. the describe opener, was 19 (${B.order.length})`);
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
 assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
 
@@ -210,10 +215,13 @@ console.log("\n— category lands on Q3 DETERMINISTICALLY, not by array order (r
   };
   const normal = openingOrder(intent);
   const reversed = openingOrder([...intent].reverse());
-  assert(normal.indexOf("category_select") === 2, "category is Q3 with the nodes in file order");
-  assert(reversed.indexOf("category_select") === 2, "category is STILL Q3 with the intent nodes reversed (tie broken deterministically)");
+  // U4: idea_describe ist deterministisch Q1 → das ganze Rückgrat rückt um
+  // eine Position (Kategorie Q4 statt Q3), bleibt aber deterministisch.
+  assert(normal[0] === "idea_describe", "the describe opener is deterministically Q1");
+  assert(normal.indexOf("category_select") === 3, "category is Q4 with the nodes in file order");
+  assert(reversed.indexOf("category_select") === 3, "category is STILL Q4 with the intent nodes reversed (tie broken deterministically)");
   assert(JSON.stringify(normal) === JSON.stringify(reversed), "the whole opening is identical regardless of node array order");
-  assert(normal[1] === "mood_soft_sharp", "the second mood pair reliably wins Q2 over the category node");
+  assert(normal[2] === "mood_soft_sharp", "the second mood pair reliably wins Q3 over the category node");
 }
 
 console.log("\n— Bug 1: pure express (only category) → 100% —");

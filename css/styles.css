@@ -3711,6 +3711,29 @@ html.is-touch .de-region-opt { min-height: 48px; }
 
 @media (prefers-reduced-motion: reduce) { .de-freetext-input { transition: none; } }
 
+/* U4 · Modalität „describe" — der Auftakt in den eigenen Worten. Baut auf der
+   Freitext-Sprache auf; das Verstanden-Playback spricht Mono (Maschinenstimme). */
+.de-describe { display: flex; flex-direction: column; gap: 0; border: 1px solid rgba(143, 150, 232, 0.4); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; }
+.de-describe-input { width: 100%; box-sizing: border-box; background: transparent; border: 0; color: var(--text); padding: var(--space-4) var(--space-5); font-family: inherit; font-size: var(--text-md); font-weight: 300; resize: vertical; min-height: 64px; }
+.de-describe-input:focus { outline: none; }
+.de-describe:focus-within { border-color: var(--accent); }
+.de-describe-input::placeholder { color: var(--text-muted); }
+.de-describe-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4); border-top: 1px solid var(--border); flex-wrap: wrap; }
+.de-describe-hint { font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); }
+.de-describe-read[disabled] { opacity: 0.45; cursor: default; }
+.de-describe-alts { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+.de-describe-skip { appearance: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; padding: 8px 16px; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out); }
+.de-describe-skip:hover, .de-describe-skip:focus-visible { border-color: var(--accent); color: var(--text); }
+.de-describe-last { border-color: rgba(126, 220, 46, 0.4); color: var(--accent-3); }
+.de-understood { margin-top: var(--space-5); border-top: 1px dashed var(--border); padding-top: var(--space-4); }
+.de-understood[hidden] { display: none; }
+.de-understood-h { display: block; font-size: 11px; letter-spacing: 0.18em; color: var(--accent); margin: 0 0 var(--space-3); text-transform: uppercase; }
+.de-understood-row { display: inline-flex; align-items: center; gap: 6px; margin: 0 var(--space-2) var(--space-2) 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; font-size: var(--text-sm); color: var(--text); background: var(--bg-elevated); }
+.de-understood-row b { font-weight: 400; font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); }
+.de-understood-x { appearance: none; background: none; border: 0; color: var(--text-muted); font-size: 15px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.de-understood-x:hover, .de-understood-x:focus-visible { color: var(--accent); }
+.de-understood-apply { display: block; margin-top: var(--space-3); }
+
 /* §3.1 — Hero-Foto + Live-Recolor (Duotone) in der Vorschau + Material/Muster-Chips */
 .de-preview-proxy, .de-preview-photo { position: absolute; inset: 0; }
 .de-preview-photo { isolation: isolate; }

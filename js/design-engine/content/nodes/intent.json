@@ -2,6 +2,19 @@
   "_comment": "Phase A (mood + intent) and the category pivot. Soft thisOrThat/slider nodes only nudge archetype weights; the category node is the first hard attribute. Image paths are placeholders — modalities fall back to on-brand SVG until real assets land in content/img/.",
   "nodes": [
     {
+      "id": "idea_describe",
+      "_comment": "Der Auftakt in den eigenen Worten (Atelier-Analyse U4). bind intent.idea gibt dem Node einen echten attrGain von 1 (nie beantwortet → einmalig via answered-Set), also score 1.1×1×1.0 — vor mood_calm_bold (≈0.9) und category_select (≈0.855). Ein Skip ist EIN Tap — kein Onboarding-Screen, eine Frage.",
+      "phase": "A",
+      "modality": "describe",
+      "when": "true",
+      "bind": "intent.idea",
+      "priority": 1.1,
+      "question": {
+        "de": "Beschreib es. Die Maschine liest mit.",
+        "en": "Describe it. The machine reads along."
+      }
+    },
+    {
       "id": "mood_calm_bold",
       "phase": "A",
       "modality": "thisOrThat",

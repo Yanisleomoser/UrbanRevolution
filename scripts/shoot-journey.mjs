@@ -70,7 +70,12 @@ async function walk(vp) {
     const slug = (q || "q").toLowerCase().replace(/[^a-z0-9äöü]+/g, "-").slice(0, 40);
     await shoot(slug || "question");
 
-    if (await page.$(".de-tot")) {
+    if (await page.$(".de-describe")) {
+      // Auftakts-Modalität „describe": der deterministische Referenz-Walk
+      // nimmt den Skip-Chip (klassischer Pfad); die Describe-Interaktion
+      // selbst prüft scripts/verify-describe.mjs.
+      await page.click(".de-describe-skip");
+    } else if (await page.$(".de-tot")) {
       await page.click(".de-tot .de-tot-panel:first-child");
     } else if (await page.$(".de-regions")) {
       // Detail atelier: open every hotspot in DOM order, pick the LAST option

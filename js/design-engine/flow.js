@@ -138,6 +138,15 @@ const DesignFlow = (() => {
   }
 
   function resolveEffects(node, payload) {
+    if (node.modality === "describe") {
+      // „Beschreib es" (U4): geparste Worte des Users seeden die DNA bei
+      // conf 0.62 — ÜBER der Entscheidungs-Schwelle (0.5) und den üblichen
+      // when-Gates (< 0.6), damit der Motor beantwortete Fragen wirklich
+      // überspringt; UNTER protectExplicit (0.75), damit jede spätere echte
+      // Antwort das gelesene Wort überstimmen darf. Skip = keine Effekte.
+      const set = payload && payload.set && typeof payload.set === "object" ? payload.set : {};
+      return { eff: { set, weight: {} }, conf: 0.62 };
+    }
     if (node.modality === "slider") {
       const eff = { set: { [node.bind]: payload }, weight: {} };
       if (node.weightAt) {
@@ -418,6 +427,9 @@ const DesignFlow = (() => {
 
   // Short human label of what a choice just changed (micro-feedback, brief §7).
   function changeLabel(node, payload, l) {
+    if (node.modality === "describe") {
+      return payload && payload.skip ? t("engine.dsc_skipped") : t("engine.dsc_read_label");
+    }
     if (node.modality === "ranking") {
       const top = (node.options || []).find((o) => o.id === (payload || [])[0]);
       return top && top.label ? top.label[l] : "";
@@ -1092,6 +1104,28 @@ const DesignFlow = (() => {
           navigator.clipboard.writeText(url).then(() => flash(t("engine.share_copied")), () => window.prompt(t("engine.share"), url));
         } else { window.prompt(t("engine.share"), url); }
       });
+      // U4: der Refine-Freitext läuft durch DENSELBEN Parser wie der Auftakt —
+      // erkannte Worte formen das Flat sichtbar um, BEVOR generiert wird
+      // (vorher wurde der Text nur unparsed an den KI-Prompt gehängt und
+      // konnte dem Stück auf dem Screen stumm widersprechen).
+      const ftLive = body.querySelector("#de-freetext-input");
+      if (ftLive && window.DEModalities && window.DEModalities.describeParse) {
+        ftLive.addEventListener("change", () => {
+          const found = window.DEModalities.describeParse(ftLive.value, lang());
+          if (!found.length) return;
+          const set = {};
+          found.forEach((en) => Object.assign(set, en.set));
+          // protectExplicit-Semantik von Hand: bereits selbst Entschiedenes
+          // (conf ≥ 0.75) gewinnt gegen das nachgereichte Wort.
+          Object.entries(set).forEach(([p, v]) => {
+            if (DesignDNA.confidence(dna, p) < 0.75) DesignDNA.set(dna, p, v, 0.62);
+          });
+          syncDerivedFinish(dna);
+          mirror(dna, content.attributes);
+          persist(); updatePreview(); reSummary();
+          flash("✓ " + t("engine.dsc_read_label"));
+        });
+      }
       body.querySelector("#de-generate").addEventListener("click", (e) => {
         // The generate button sits where a question's confirm just was — a
         // double-tap on the last answer must never fire the AI run.
