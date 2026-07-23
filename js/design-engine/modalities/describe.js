@@ -53,7 +53,10 @@
 
     const col = A.detectColorStrict ? A.detectColorStrict(t) : null;
     if (typeof col === "string" && HEX_RE.test(col)) {
-      push("color", "engine.dsc_color", col, { "color.scheme": "mono", "color.stops": [col] });
+      // Farbname statt roher Hex im Verstanden-Chip (I18N.colorName —
+      // dieselbe Stimme wie das Farb-Atelier: „Tiefrot", nicht „#dc2626").
+      const colWord = (window.I18N && window.I18N.colorName) ? window.I18N.colorName(col) : col;
+      push("color", "engine.dsc_color", colWord, { "color.scheme": "mono", "color.stops": [col] });
     }
     const mat = A.detectMaterialStrict ? A.detectMaterialStrict(t) : null;
     if (mat) {
