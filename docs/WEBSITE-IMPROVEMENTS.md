@@ -397,6 +397,55 @@
 > tests, `CLAUDE.md`, and `README.md` referencing the removed route were
 > corrected in the same pass. Rank 2 drops off the table below.
 
+> **Status update (2026-07-24, later same-day follow-up):** two more PRs
+> landed after the sync above — **#448** ("Atelier-Runde 3," high-risk-visual
+> per its own gate, real-iPhone-checked before merge) and **#449**
+> ("Atelier-Wow-Roadmap," docs-only).
+> - **#448** is a large Cockpit/atelier content pass: an 8px-grid layout
+>   cleanup, the photo-duell now filling the full sheet with a derived
+>   "→ archetype" line per side, a live slider readout, compact grids for
+>   5+-choice sets, a sixth jacket style (Trucker, wired to an
+>   already-built renderer branch), all 7 `CONFIG` materials now reachable
+>   across categories, a new dress Detail-Atelier (`regions` board matching
+>   the jacket/shirt/pants pattern), stackable multi-select signatures with
+>   an exclusive "none," a seeded order-jitter (`?dseed=`, active only after
+>   the category decision) and archetype-fed refine directions — plus a
+>   same-PR adversarial-review round (7 confirmed fixes: a describe/refine
+>   free-text contradiction gap at conf 0.62, missing "trucker" vocabulary in
+>   summary/AI prompt, describe a11y, and a sticky-action-bar selector fix).
+>   **None of it touches this doc's #01.** Reconfirmed directly against code
+>   this pass: `js/design-engine/flow.js:41-42`
+>   (`isGuardedTap`/`COMMIT_GUARD_MS`) is still byte-identical. The two
+>   `verify-*.mjs` edits inside #448 (`verify-atelier.mjs`,
+>   `verify-describe.mjs`) only pin a `?dseed=7` query so the new
+>   order-jitter doesn't break their deterministic walk — they do **not**
+>   fix the underlying failures. Ran both broken guards fresh against this
+>   commit rather than just reading the diff: `verify-atelier.mjs` still
+>   fails identically ("the walk reaches the detail atelier (jacket)" —
+>   throws on a null hotspot handle); `verify-a11y-studio.mjs` still throws
+>   `window.DEModalities.hotspot is not a function`. Both remain open
+>   chores, unchanged. **New permanent guard from this PR:**
+>   `scripts/verify-signature-stack.mjs` (stacking, exclusive "none," DNA +
+>   flat) — add it to the guard list alongside `verify-describe`.
+> - **#449** adds a new planning document, `docs/ATELIER-WOW-ROADMAP.md` —
+>   an owner brief ("studio atelier like Nike Football/Apple, with its own
+>   Liquid-Glass dialect") translated into five PR-sized building blocks (B1
+>   stage-first Cockpit v4, B2 studio light, B3 material-reality macro
+>   backdrops, B4 a starting-point gallery, B5 instrument-glass +
+>   carousels); the owner's own recommendation is B1+B5 first. Pure docs, no
+>   code touched, no item on this doc's table resolved or superseded — noted
+>   here only so a future session doesn't mistake it for engineering
+>   progress against this doc's own open items.
+> - Nothing else moved: `api/preview-design.js` stays deleted (see the entry
+>   above); issues #383/#384 unchanged; **PR #428 reconfirmed still open,
+>   still draft, still stale** (`mergeable_state: dirty`, no new activity
+>   since 07-17).
+> - **Recommendation unchanged:** the rescoped `#01` remains the top pick,
+>   now unaddressed across **ten consecutive reviews (07-12 → 07-24)**, with
+>   two large PRs landed since the count was last stated — #444 and now
+>   #448 — each adding a new question surface to the very two-commit-model
+>   split this item would retire.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -603,13 +652,15 @@ opener, #444 — a differently-shaped answer the owner explicitly approved)
 and also drops off as an open flag. Everything else is unchanged from 07-23
 — #444 touched the studio journey extensively (new opener, mobile Cockpit)
 without addressing the actual top-ranked item (commit-model unification) or
-either remaining rank below.
+either remaining rank below. **#448 (Cockpit-Runde 3) landed the same day,
+also without touching either remaining rank** — see the later same-day
+status update above for the full accounting.
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 1 | #01, re-scoped: one commit model + phase-E reweighting | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 30+ unrelated PRs landed around it since first flagged — including #444, which added a *new* modality inside the very two-commit-model split this item would unify — the largest remaining product gap by a wide margin |
+| 1 | #01, re-scoped: one commit model + phase-E reweighting | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 30+ unrelated PRs landed around it since first flagged — including #444 and now #448, each adding a *new* modality/content surface inside the very two-commit-model split this item would unify — the largest remaining product gap by a wide margin |
 | 2 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
-| 3 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23 and 07-24 (`verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`); safe autonomous-merge candidate once fixed |
+| 3 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23, 07-24, and again after #448 (which only added a `?dseed=7` pin to two of them, not a fix) — ran both this pass: `verify-atelier.mjs` still fails to reach the board, `verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`; safe autonomous-merge candidate once fixed |
 | — | PR #428 ("Reclaimed Light" hero glow-up, successor to closed #418) | unknown until rebuilt | **not** "pending review" — `mergeable_state` still unresolved/`dirty`; its `initHeroParallax`/`initWeave` targets were removed by #430's hero rebuild | high (scroll/parallax, and now a from-scratch rebuild against `thermal-waves.js`) | Recommend closing; if the glow-up is still wanted, re-scope against the current WebGL hero rather than patching the old diff |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Product-decision flag, not an engineering task — raise it, don't build it speculatively |
 | — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision"; no new comment since 07-21 |
@@ -627,7 +678,8 @@ dedupe, the colour-atelier confirm bug (and its 07-21 duo-gradient follow-up),
 both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
 EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
 re-skin, the `#measure` trust seal, the orphaned `preview-design.js`
-endpoint removal, and now the atelier/Cockpit PR itself).
+endpoint removal, the atelier/Cockpit PR (#444), and now Cockpit-Runde 3's
+atelier/materials/signature expansion (#448) itself).
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
 rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
@@ -642,7 +694,8 @@ same-day without displacing this recommendation.
   with `scripts/shoot-journey.mjs` across all six categories + the relevant
   `verify-*.mjs`, motion-sampled per the project rule, before merge.
 - **Dependencies:** none — #416 (the one thing this was ever sequenced
-  behind) is merged. #444's describe-first opener and Cockpit both now live
+  behind) is merged. #444's describe-first opener and Cockpit, plus #448's
+  stackable signatures/order-jitter/refine-direction additions, all now live
   inside the current two-commit-model split; this item should still land
   before any further journey-surface work inherits the same inconsistency.
 - **Explicitly not this PR:** C2 Variant 2 is still a live product-decision
