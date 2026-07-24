@@ -3359,7 +3359,11 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-tot-panel { position: relative; min-height: 280px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; color: var(--text); cursor: pointer; display: flex; align-items: flex-end; padding: var(--space-5); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .de-tot-panel .de-visual { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
 .de-tot-panel:hover, .de-tot-panel:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-glow); outline: none; }
-.de-tot-label { position: relative; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+.de-tot-label { position: relative; z-index: 1; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; background: rgba(11, 11, 13, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 4px var(--space-4); border-radius: 999px; }
+/* Lesbarkeits-Scrim hinter dem Panel-Label: auf hellen Mood-Fotos (Dunst,
+   Himmel) war der weisse Schriftzug real unsichtbar — der Verlauf garantiert
+   Kontrast auf jedem Bild, ohne das Foto zu verdecken. */
+.de-tot-panel::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: linear-gradient(180deg, rgba(11, 11, 13, 0), rgba(11, 11, 13, 0.88)); pointer-events: none; }
 
 /* Slider → Couture (roadmap §6): Haarlinien-Spur mit Live-Füllung (--val vom
    Input), Ring-Daumen, und der Pol, dem sich der Regler nähert, hellt auf —
@@ -3450,7 +3454,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 /* Design Engine integration — Reise als Hauptfokus, Prompt als optionales <details> */
 .design-grid > .design-journey,
 .design-grid > .prompt-fallback,
-.design-grid > .result-panel { grid-column: 1 / -1; }
+.design-grid > .result-panel { grid-column: 1 / -1; min-width: 0; }
 .design-journey { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); }
 .prompt-fallback { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elevated); overflow: hidden; }
 .prompt-fallback-summary { cursor: pointer; padding: var(--space-4) var(--space-5); color: var(--text-dim); font-size: var(--text-sm); list-style: none; user-select: none; transition: color .2s var(--ease-out); }
@@ -3643,11 +3647,10 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-preview { height: 64svh; height: calc(var(--svh, 1svh) * 64); }
     .de-ask-col { min-height: 60svh; min-height: calc(var(--svh, 1svh) * 60); justify-content: center; }
 }
-/* iPad-Hochformat (481–899): große sticky Vorschau bleibt — sieht dort gut aus */
-@media (max-width: 899px) and (min-width: 481px) {
-    .de-preview-col { position: sticky; top: calc(64px + env(safe-area-inset-top)); z-index: 2; }
-    .de-preview { height: 46svh; height: calc(var(--svh, 1svh) * 46); min-height: 260px; }
-}
+/* 481–899: KEIN sticky mehr — die sticky Vorschau (z-index 2) legte sich real
+   über Frage/Weiter-Pill (Owner-Screenshot 2026-07-24: Chips begruben den
+   Confirm). Diese Bandbreite fährt jetzt DAS COCKPIT (Block am Ende der
+   Studio-Styles): ein Rahmen, Bühne fix, Blatt mit eigenem Scroll. */
 @media (prefers-reduced-motion: reduce) {
     .de-preview.is-fade { animation: none; }
 }
@@ -3711,6 +3714,204 @@ html.is-touch .de-region-opt { min-height: 48px; }
 
 @media (prefers-reduced-motion: reduce) { .de-freetext-input { transition: none; } }
 
+/* U4 · Modalität „describe" — der Auftakt in den eigenen Worten. Baut auf der
+   Freitext-Sprache auf; das Verstanden-Playback spricht Mono (Maschinenstimme). */
+.de-describe { display: flex; flex-direction: column; gap: 0; border: 1px solid rgba(143, 150, 232, 0.4); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; }
+.de-describe-input { width: 100%; box-sizing: border-box; background: transparent; border: 0; color: var(--text); padding: var(--space-4) var(--space-5); font-family: inherit; font-size: var(--text-md); font-weight: 300; resize: vertical; min-height: 64px; }
+.de-describe-input:focus { outline: none; }
+.de-describe:focus-within { border-color: var(--accent); }
+.de-describe-input::placeholder { color: var(--text-muted); }
+.de-describe-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4); border-top: 1px solid var(--border); flex-wrap: wrap; }
+.de-describe-hint { font-size: 11px; letter-spacing: 0.02em; color: var(--text-muted); }
+.de-describe-read[disabled] { opacity: 0.45; cursor: default; }
+.de-describe-alts { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+.de-describe-skip { appearance: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; padding: 8px 16px; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out); }
+.de-describe-skip:hover, .de-describe-skip:focus-visible { border-color: var(--accent); color: var(--text); }
+.de-describe-last { border-color: rgba(126, 220, 46, 0.4); color: var(--accent-3); }
+.de-understood { margin-top: var(--space-5); border-top: 1px dashed var(--border); padding-top: var(--space-4); }
+.de-understood[hidden] { display: none; }
+.de-understood-h { display: block; font-size: 11px; letter-spacing: 0.18em; color: var(--accent); margin: 0 0 var(--space-3); text-transform: uppercase; }
+.de-understood-row { display: inline-flex; align-items: center; gap: 6px; margin: 0 var(--space-2) var(--space-2) 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; font-size: var(--text-sm); color: var(--text); background: var(--bg-elevated); }
+.de-understood-row b { font-weight: 400; font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); }
+.de-understood-x { appearance: none; background: none; border: 0; color: var(--text-muted); font-size: 15px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.de-understood-x:hover, .de-understood-x:focus-visible { color: var(--accent); }
+.de-understood-apply { display: block; margin-top: var(--space-3); }
+
+/* ============================================================
+   DAS COCKPIT (≤899px) — das Atelier als eigenes Instrument.
+   Owner-Feedback 2026-07-24 (Screenshot): auf Kompakt-Breiten war ALLES
+   scrollen — Frage nie mit Bühne im Bild, der Weiter-Pill real unter den
+   Chips begraben (sticky Vorschau z2 über der Ask-Spalte). Konzept jetzt:
+   EIN Rahmen in Viewport-Höhe. Bühne oben, fix. Blatt darunter mit EIGENEM
+   Scroll (nur die Optionen bewegen sich, overscroll-contained). Confirm
+   klebt am Blatt-Boden, die Navigation liegt IMMER in der Daumenzone.
+   Die Seite selbst bewegt sich während der Reise nicht.
+   ============================================================ */
+@media (max-width: 899px) {
+    .de-stage {
+        height: calc(var(--svh, 1svh) * 100 - 20px);
+        min-height: 480px;
+        padding: var(--space-3) var(--space-4);
+        padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+        gap: var(--space-3);
+        overflow: hidden;
+        scroll-margin-top: 10px;
+    }
+    /* min-width:0 auf der ganzen Flex-Kette: die nowrap-Chipzeile trug sonst
+       ihre min-content-Breite (Summe aller Chips ≈ 500px) den Baum hinauf und
+       der GANZE Rahmen wurde breiter als der Viewport (real: 502px @ 390). */
+    .de-stage { width: 100%; max-width: 100%; }
+    /* align-items:stretch überschreibt das Grid-„start" der Basisregel —
+       in der Flex-SPALTE ist align-items die Breitenachse; „start" ließe
+       die Bühne auf ihren 2px-Rahmen kollabieren, sobald nur absolute
+       Kinder (Weave-Beat) drinstehen. */
+    .de-stage-grid { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; gap: var(--space-3); align-items: stretch; }
+    .de-preview-col { position: relative; flex: none; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; max-width: 100%; }
+    .de-preview {
+        height: calc(var(--svh, 1svh) * 30);
+        min-height: 168px;
+        max-height: 340px;
+    }
+    /* Instrumenten-Rahmen: Mono-Eckwinkel auf der Bühne (die Registratur-
+       Sprache der Maschine — vier stille Passermarken). */
+    .de-preview-stage::after {
+        content: "";
+        position: absolute;
+        inset: 7px;
+        pointer-events: none;
+        opacity: 0.4;
+        background:
+            linear-gradient(var(--accent), var(--accent)) left top / 12px 1.5px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) left top / 1.5px 12px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) right top / 12px 1.5px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) right top / 1.5px 12px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) left bottom / 12px 1.5px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) left bottom / 1.5px 12px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) right bottom / 12px 1.5px no-repeat,
+            linear-gradient(var(--accent), var(--accent)) right bottom / 1.5px 12px no-repeat;
+    }
+    /* Chips: EINE ruhige Zeile, seitlich wischbar, rechts ausfadend.
+       width:0 + min-width:100% löscht den intrinsischen Min-Content der
+       nowrap-Zeile — sonst drückt sie das Grid-Item .design-journey über
+       den Viewport hinaus (die 502px-Falle). */
+    .de-stage .de-preview-chips {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        width: 0;
+        min-width: 100%;
+        margin-top: 0;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent);
+        mask-image: linear-gradient(90deg, #000 86%, transparent);
+    }
+    .de-stage .de-preview-chips::-webkit-scrollbar { display: none; }
+    .de-stage .de-preview-chip { flex: none; white-space: nowrap; }
+    /* Masse-Zeile wird Bühnen-Overlay (oben rechts, unter niemandem). */
+    .de-stage .de-body-caption {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        margin: 0;
+        z-index: 2;
+        font-size: 9px;
+        text-align: right;
+        pointer-events: none;
+    }
+    /* Das Blatt: eigener Scroll, Seite bleibt stehen. */
+    .de-ask-col { flex: 1; min-height: 0; min-width: 0; gap: var(--space-2); }
+    .de-body { min-width: 0; }
+    .de-stepper { flex: none; }
+    .de-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        padding: 2px 2px var(--space-2);
+    }
+    /* Volle Blattbreite statt links klebender Pill: nichts lugt seitlich
+       unter dem Knopf hervor, größeres Daumenziel — eine App-Aktionsleiste.
+       (Kein ::before-Scrim: negative z-index-Pseudos malen ÜBER den eigenen
+       Button-Hintergrund und verdunkeln die Pill.) */
+    .de-body .de-confirm,
+    .de-body #de-generate {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        display: block;
+        width: 100%;
+        box-shadow: 0 -16px 26px rgba(11, 11, 13, 0.9), var(--shadow-soft, 0 4px 14px rgba(0,0,0,0.4));
+    }
+    /* Der Live-Satz wandert im Cockpit ab (Chips + Flash tragen das Feedback;
+       der Satz hat seinen Auftritt im Refine) — Blatt-Höhe ist Gold. */
+    .de-live { display: none; }
+    .de-controls {
+        flex: none;
+        margin-top: 0;
+        padding-top: var(--space-2);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+    }
+    .de-question { font-size: clamp(17px, 4.9vw, 20px); line-height: 1.3; margin-top: 0; margin-bottom: var(--space-3); }
+    .de-opening-frame { font-size: 10.5px; margin-bottom: var(--space-2); }
+
+    /* Cockpit v2 — Verdichtung (Owner-iPhone-Runde 2): kleinere, ruhigere
+       Frage-Typo + kompakte Reihen/Karten/Panels, damit die HÄUFIGEN Screens
+       (4er-Ranking, Foto-Duell, Slider, 3–4 Karten, Describe) komplett OHNE
+       Blatt-Scroll im Rahmen stehen. Scroll bleibt nur für die grossen Sets
+       (6 Karten, Detail-Brett) — die Auswahlvielfalt selbst bleibt unberührt. */
+    .de-cards { gap: var(--space-2); grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
+    .de-card { padding: var(--space-2); gap: var(--space-2); }
+    .de-card-label { font-size: var(--text-sm); }
+    .de-tot { gap: var(--space-2); }
+    .de-tot-panel { min-height: 128px; padding: var(--space-3) var(--space-4); }
+    .de-tot-label { font-size: var(--text-lg); }
+    .de-rank { gap: var(--space-2); }
+    .de-rank-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+    .de-rank-label { font-size: var(--text-sm); }
+    .de-rank-num { width: 22px; height: 22px; font-size: 11px; }
+    .de-body .de-confirm,
+    .de-body #de-generate { margin-top: var(--space-3); padding-top: var(--space-3); padding-bottom: var(--space-3); font-size: var(--text-sm); }
+    .de-controls { gap: var(--space-3); }
+    .de-nav { font-size: 13px; }
+    .de-describe-input { min-height: 88px; font-size: var(--text-sm); padding: var(--space-3) var(--space-4); }
+    /* Refine im Cockpit: der Höhepunkt-Screen war kopflastig (Bühne + Satz
+       füllten den Rahmen, die vier Richtungen kamen erst nach Scroll).
+       Kompakterer Mono-Satz + 2-spaltige Richtungs-Kacheln bringen den
+       VERGLEICH in den ersten Blick — die Vielfalt bleibt, sie steht nur da. */
+    .de-summary { font-size: var(--text-md); }
+    /* .de-stage-Präfix: die Basisregeln (.de-summary-type, .de-concept-grid)
+       stehen SPÄTER in der Datei — ohne höhere Spezifität verliert der
+       Cockpit-Block die Kaskade (gleiche Falle wie bei den Chips). */
+    .de-stage .de-summary-type { font-size: 12.5px; line-height: 1.5; min-height: 0; }
+    .de-inferred-h { font-size: 10.5px; margin-bottom: var(--space-2); }
+    /* 136px: das Blatt misst real 304px (340er-Host minus Padding) — 148er
+       Tracks verfehlten die zweite Spalte um 2px; 136 trägt bis iPhone SE. */
+    .de-stage .de-concept-grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 10px; }
+
+    /* Modalitäts-Regie über data-de-mod am Host: */
+    /* Regions — das Detail-Atelier TRÄGT das Flat selbst: Bühne aus, das
+       Board bekommt das ganze Blatt (löst zugleich das Doppel-Flat, U8). */
+    .de-stage[data-de-mod="regions"] .de-preview-col { display: none; }
+    /* Der Mikro-Picker wird im Cockpit eine volle Blatt-Karte: die Anker-
+       Klemmen (min-width 208px in einem 340px-Board) ragten links real aus
+       dem Rahmen. Vertikal bleibt er am getippten Punkt (Inline-top/bottom). */
+    .de-region-picker { left: 0 !important; right: 0 !important; min-width: 0; max-width: none; }
+    /* Describe/Refine — kompaktere Bühne, mehr Raum für Eingabe bzw. Kacheln. */
+    .de-stage[data-de-mod="describe"] .de-preview { height: calc(var(--svh, 1svh) * 22); min-height: 140px; }
+    .de-stage[data-de-mod="refine"] .de-preview { height: calc(var(--svh, 1svh) * 24); min-height: 150px; }
+}
+/* Flache Querformate (Landscape-Phones): Cockpit-Höhe freigeben, klassischer
+   Fluss — ein 100svh-Rahmen unter 500px Höhe würde alles zerquetschen. */
+@media (max-width: 899px) and (max-height: 500px) {
+    .de-stage { height: auto; min-height: 0; overflow: visible; }
+    .de-body { overflow: visible; }
+}
+
 /* §3.1 — Hero-Foto + Live-Recolor (Duotone) in der Vorschau + Material/Muster-Chips */
 .de-preview-proxy, .de-preview-photo { position: absolute; inset: 0; }
 .de-preview-photo { isolation: isolate; }
@@ -3718,6 +3919,18 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-preview-duo { position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.9; transition: background .24s var(--ease-out); }
 .de-preview-badge { position: absolute; top: var(--space-4); left: var(--space-4); z-index: 2; font-size: var(--text-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); background: rgba(11, 11, 13,0.55); backdrop-filter: blur(8px); padding: 4px var(--space-3); border-radius: 999px; }
 .de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
+/* U2 „Auf deine Masse gezeichnet" — leise Mono-Zeile unter den Chips, sobald
+   bodyFactors das Flat personalisiert. */
+.de-body-caption {
+    margin: 6px 0 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+}
+.de-body-caption[hidden] { display: none; }
 .de-preview-chip { font-size: var(--text-xs); color: var(--text-dim); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 3px var(--space-3); }
 /* Dimensions-Mikrolabel im Chip (Maschinen-Stimme): unterscheidet gleichlautende
    Werte ("FIT Regular · LÄNGE Regular") statt zwei identischer Pillen. */

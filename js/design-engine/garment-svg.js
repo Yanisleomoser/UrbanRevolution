@@ -67,6 +67,25 @@ const GarmentSVG = (() => {
     tshirt: { sleeveLen: 56, hem: { cropped: 200, regular: 256, long: 290 }, defCollar: "crew", closure: "none", splay: 22, cuffW: 24, armDepth: 50, neckHalf: 20, shBase: 48, shFit: 20 },
   };
 
+  // Was eine Kategorie an Verschlüssen ZEICHNEN kann (Whitelist gegen
+  // Inferenz-Füllungen — Atelier-Analyse Ursache 1: Archetyp-Defaults tragen
+  // closure-Werte, die auf T-Shirt/Kleid als Knopfleiste über der Brust
+  // landeten). Explizite User-Antworten laufen nicht hier durch — flow.js
+  // prüft nur conf ≤ threshold; der Param-Mapper in render-preview nutzt
+  // dieselbe Liste als Defense-in-depth für geteilte #dna=-Links.
+  const ALLOWED_CLOSURES = {
+    jacket: ["zip", "button", "none"],
+    hoodie: ["zip", "none"],
+    shirt: ["button", "half", "none"],
+    tshirt: ["none"],
+    pants: ["zip", "button", "none"],
+    dress: ["none"],
+  };
+  function closureAllowed(category, value) {
+    if (!hasOwn(ALLOWED_CLOSURES, category)) return true;
+    return ALLOWED_CLOSURES[category].includes(value);
+  }
+
   // Sleeve-length attribute → the limb's own length (per category, so a "long"
   // tee reads as a longsleeve and a "short" shirt as rolled short sleeves).
   // "sleeveless" collapses the limb entirely (tank / slip silhouette).
@@ -455,8 +474,17 @@ const GarmentSVG = (() => {
       s.push(ribBand(L(g.neckHalf + 4), R(g.neckHalf + 4), bt + 1.5, bb - 1, 0.65));
     }
     if (g.collar === "shirt") {
+      // U3: Kragensteg (stand) unter den Kragenspitzen — ohne ihn wuchsen die
+      // Spitzen direkt aus dem Halsloch und das Hemd las sich als Tunika.
+      s.push(`<path d="M ${L(g.neckHalf + 2)} ${Y(cy0 - 4)} Q ${CX} ${Y(cy0 - 9)} ${R(g.neckHalf + 2)} ${Y(cy0 - 4)} L ${R(g.neckHalf)} ${Y(cy0 + 1)} Q ${CX} ${Y(cy0 - 3)} ${L(g.neckHalf)} ${Y(cy0 + 1)} Z" fill="rgba(255,255,255,0.04)" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>`);
       s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0 + 1)} L ${L(g.neckHalf + 11)} ${Y(cy0 + 20)} L ${L(2)} ${Y(cy0 + 8)} Z" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
       s.push(`<path d="M ${R(g.neckHalf)} ${Y(cy0 + 1)} L ${R(g.neckHalf + 11)} ${Y(cy0 + 20)} L ${R(2)} ${Y(cy0 + 8)} Z" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
+    }
+    // U3: Hemd-Konstruktion — Schulter-Passe (Yoke) quer über die obere Brust;
+    // der Overshirt-Subarchetyp zeichnet seine eigene, tiefere Passe (unten).
+    if (cfg.defCollar === "shirt" && p.subArchetype !== "overshirt") {
+      const yy = g.shoulderY + (g.armpitY - g.shoulderY) * 0.3;
+      line(`M ${L(g.chestHalf - 2)} ${Y(yy)} L ${R(g.chestHalf - 2)} ${Y(yy)}`, 1.2, 0.5);
     }
     if (g.collar === "notched") {
       s.push(`<path d="M ${L(g.neckHalf)} ${Y(cy0 + 1)} L ${L(6)} ${Y(cy0 + 22)} L ${L(g.neckHalf + 13)} ${Y(cy0 + 30)}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>`);
@@ -474,15 +502,17 @@ const GarmentSVG = (() => {
       }
     }
     if (g.collar === "hood") {
-      // A rounded hood DOME springing continuously from the neckline (closed at
-      // its base so it attaches to the neck, not a wide balloon floating above
-      // it), kept well inside the shoulders. Inner face-opening line + a
-      // drawcord through two front eyelets ending in aglets — the UR hood.
-      const peakY = Math.max(8, cy0 - 52);
+      // Die Kapuzen-SILHOUETTE ist jetzt Teil der gefüllten Pfade (hoodPath in
+      // paintTop — U3: als Seam-Overlay las sie sich als hohler Ballon-Ring).
+      // Hier nur noch das Innenleben: Gesichtsöffnung, Mittelnaht des
+      // Zwei-Panel-Schnitts, Kordelzug mit Ösen und Nadeln.
+      const peakY = Math.max(14, cy0 - 40);
       const midY = (cy0 + peakY) / 2;
-      const baseX = g.neckHalf + 8, bellyX = g.neckHalf + 14;
-      s.push(`<path d="M ${L(baseX)} ${Y(cy0 + 3)} C ${L(bellyX)} ${Y(midY + 4)} ${L(bellyX - 6)} ${Y(peakY + 3)} ${CX} ${Y(peakY)} C ${R(bellyX - 6)} ${Y(peakY + 3)} ${R(bellyX)} ${Y(midY + 4)} ${R(baseX)} ${Y(cy0 + 3)} Z" fill="rgba(255,255,255,0.05)" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>`);
-      s.push(`<path d="M ${L(baseX - 3)} ${Y(cy0 + 1)} C ${L(bellyX - 5)} ${Y(midY + 7)} ${L(bellyX - 10)} ${Y(peakY + 13)} ${CX} ${Y(peakY + 10)} C ${R(bellyX - 10)} ${Y(peakY + 13)} ${R(bellyX - 5)} ${Y(midY + 7)} ${R(baseX - 3)} ${Y(cy0 + 1)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+      const baseX = g.neckHalf + 9;
+      // Gesichtsöffnung: parallel zur Aussenkante, nach innen versetzt.
+      s.push(`<path d="M ${L(baseX - 4)} ${Y(cy0 + 2)} C ${L(baseX + 1)} ${Y(midY + 3)} ${L(baseX - 6)} ${Y(peakY + 13)} ${CX} ${Y(peakY + 10)} C ${R(baseX - 6)} ${Y(peakY + 13)} ${R(baseX + 1)} ${Y(midY + 3)} ${R(baseX - 4)} ${Y(cy0 + 2)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+      // Mittelnaht des Kapuzen-Panels (zwei Bahnen, wie real genäht).
+      s.push(`<path d="M ${CX} ${Y(peakY)} L ${CX} ${Y(peakY + 10)}" fill="none" stroke="${SEAM}" stroke-width="1.3" opacity="0.55"/>`);
       // front eyelets → drawcord → aglets
       s.push(`<circle cx="${L(6)}" cy="${Y(cy0 + 13)}" r="1.4" fill="none" stroke="${SEAM}" stroke-width="1"/><circle cx="${R(6)}" cy="${Y(cy0 + 13)}" r="1.4" fill="none" stroke="${SEAM}" stroke-width="1"/>`);
       line(`M ${L(6)} ${Y(cy0 + 15)} L ${L(5)} ${Y(cy0 + 40)} M ${R(6)} ${Y(cy0 + 15)} L ${R(5)} ${Y(cy0 + 40)}`, 1.8);
@@ -564,7 +594,9 @@ const GarmentSVG = (() => {
     // Cargo = larger utility patch pockets low on the body, also kept inboard.
     if (p.pockets === "cargo") { s.push(patch(CX - g.chestHalf * 0.5, py, 24, 22, true, p.hardware)); s.push(patch(CX + g.chestHalf * 0.5, py, 24, 22, true, p.hardware)); }
     if (p.pockets === "side") line(`M ${L(g.waistHalf - 4)} ${Y(py + 4)} l 18 5 M ${R(g.waistHalf - 4)} ${Y(py + 4)} l -18 5`, 1.8);
-    if (p.pockets === "chest") s.push(patch(CX - (g.chestHalf - 8), g.armpitY + 12, 18, 16, false, p.hardware));
+    // U3: Brusttasche sass mit x = chestHalf−8 praktisch IN der Achsel — jetzt
+    // klassisch auf dem linken Brustpanel, unterhalb der Armscye-Höhe.
+    if (p.pockets === "chest") s.push(patch(CX - g.chestHalf * 0.52, g.armpitY + 22, 18, 16, false, p.hardware));
 
     // Cuffs (only when there are sleeves to cuff). Ribbed = a real knit band.
     if (!g.sleeveless) {
@@ -593,6 +625,9 @@ const GarmentSVG = (() => {
     if (p.hem === "ribbed" || (g.collar === "hood" && !p.hem)) s.push(ribBand(L(g.hemHalf), R(g.hemHalf), g.hemY - 13, g.hemY - 2, 0.7));
     else if (p.hem === "drawcord") { line(`M ${L(g.hemHalf)} ${Y(g.hemY - 6)} L ${R(g.hemHalf)} ${Y(g.hemY - 6)}`, 1.6, 0.6); s.push(topstitch(`M ${L(g.hemHalf - 2)} ${Y(g.hemY - 2.5)} L ${R(g.hemHalf - 2)} ${Y(g.hemY - 2.5)}`, 0.45)); }
     else if (p.hem === "curved") { line(`M ${L(g.hemHalf)} ${Y(g.hemY - 12)} Q ${CX} ${Y(g.hemY - 2)} ${R(g.hemHalf)} ${Y(g.hemY - 12)}`, 1.6, 0.6); }
+    // U3: Hemden ohne explizite Saum-Wahl tragen den klassischen Shirttail
+    // (gerundete Saumkurve) — der gerade Jersey-Saum las sich als Tunika.
+    else if (cfg.defCollar === "shirt" && !p.hem) { line(`M ${L(g.hemHalf)} ${Y(g.hemY - 12)} Q ${CX} ${Y(g.hemY - 2)} ${R(g.hemHalf)} ${Y(g.hemY - 12)}`, 1.6, 0.6); }
     else { line(`M ${L(g.hemHalf)} ${Y(g.hemY - 5)} L ${R(g.hemHalf)} ${Y(g.hemY - 5)}`, 1.2, 0.4); s.push(topstitch(`M ${L(g.hemHalf - 1)} ${Y(g.hemY - 2.5)} L ${R(g.hemHalf - 1)} ${Y(g.hemY - 2.5)}`, 0.4)); }
 
     // Signature detail (Phase-E choice, now visible on the flat).
@@ -607,8 +642,23 @@ const GarmentSVG = (() => {
       s.push(`<rect x="${L(g.chestHalf - 6)}" y="${Y(g.armpitY + 10)}" width="14" height="9" rx="1.5" fill="none" stroke="${INK}" stroke-width="1.6"/>`);
     }
     // Puffer subarchetype → horizontal quilting channels make it unmistakable.
+    // U3: Kanäle auch auf Brust UND Ärmeln (vorher vier blasse Linien nur
+    // unterhalb der Achsel — der Puffer las sich als glatte Weste mit Röhren).
     if (p.subArchetype === "puffer") {
-      for (let i = 1; i <= 4; i++) { const y = g.armpitY + ((g.hemY - g.armpitY) * i) / 5; line(`M ${L(g.chestHalf - 3)} ${Y(y)} L ${R(g.chestHalf - 3)} ${Y(y)}`, 1.2, 0.5); }
+      const qTop = g.shoulderY + (g.armpitY - g.shoulderY) * 0.55;
+      for (let i = 0; i <= 5; i++) {
+        const y = qTop + ((g.hemY - 14 - qTop) * i) / 5;
+        const half = y < g.armpitY ? Math.min(g.neckHalf + 16, g.chestHalf - 3) : g.chestHalf - 3;
+        line(`M ${L(half)} ${Y(y)} L ${R(half)} ${Y(y)}`, 1.3, 0.6);
+      }
+      if (!g.sleeveless && g.wristY - g.shoulderY > 60) {
+        for (const X of [L, R]) {
+          for (let i = 1; i <= 3; i++) {
+            const y = lerp(g.shoulderY + 26, g.wristY - 20, i / 4);
+            line(`M ${X(g.coX - 1)} ${Y(y)} L ${X(g.ciX + 1)} ${Y(y)}`, 1.2, 0.55);
+          }
+        }
+      }
     }
     // Trucker / denim jacket → the defining horizontal yoke seam across the upper
     // chest + two vertical front-panel seams (the seams its chest pockets hang
@@ -760,8 +810,23 @@ const GarmentSVG = (() => {
     return out.join("");
   }
 
+  // Kapuze als GEFÜLLTER Teil der Silhouette (Atelier-Analyse U3): als reiner
+  // Seam-Overlay sass sie transparent ÜBER dem gefüllten Körper und las sich
+  // als schwebender Ballon-Ring. Als eigener Pfad VOR dem Körper bekommt sie
+  // Fill, AO, Rim und Outline wie jedes echte Bauteil. Form: breite Basis in
+  // die Schulterlinie, flacherer Scheitel — ein Kapuzen-Profil, kein Kreis.
+  function hoodPath(g) {
+    const cy0 = g.neckY;
+    const peakY = Math.max(14, cy0 - 40);
+    const baseX = g.neckHalf + 9;
+    const midY = (cy0 + peakY) / 2;
+    return `M ${L(baseX)} ${Y(cy0 + 5)} ` +
+      `C ${L(baseX + 7)} ${Y(midY)} ${L(baseX + 1)} ${Y(peakY + 5)} ${CX} ${Y(peakY)} ` +
+      `C ${R(baseX + 1)} ${Y(peakY + 5)} ${R(baseX + 7)} ${Y(midY)} ${R(baseX)} ${Y(cy0 + 5)} Z`;
+  }
   function paintTop(p, cfg, g) {
-    return renderFlat(p, [outline(g)], seams(g, p, cfg), topFolds(g, p), { y: g.hemY, half: Math.max(g.hemHalf, g.shoulderHalf * 0.66) });
+    const paths = g.collar === "hood" ? [hoodPath(g), outline(g)] : [outline(g)];
+    return renderFlat(p, paths, seams(g, p, cfg), topFolds(g, p), { y: g.hemY, half: Math.max(g.hemHalf, g.shoulderHalf * 0.66) });
   }
   function topFlat(category, p) {
     const cfg = hasOwn(CFG, category) ? CFG[category] : CFG.jacket;
@@ -845,8 +910,19 @@ const GarmentSVG = (() => {
       line(`M ${L(7)} ${Y(topY + 16)} L ${L(5)} ${Y(topY + 34)} M ${R(7)} ${Y(topY + 16)} L ${R(5)} ${Y(topY + 34)}`, 1.6, 0.85);
     } else if (p.waistband === "elastic") {
       for (let i = 0; i < 3; i++) line(`M ${L(waistHalf - 3)} ${Y(topY + 4 + i * 4.5)} L ${R(waistHalf - 3)} ${Y(topY + 4 + i * 4.5)}`, 1, 0.55);
+    } else if (p.waistband == null) {
+      // U3: unentschiedener Bund → klassischer genähter Bund (Bundnaht +
+      // Knopf), statt gar nichts (die Hose las sich als Leggings-Icon).
+      line(`M ${L(waistHalf - 2)} ${Y(topY + 14)} L ${R(waistHalf - 2)} ${Y(topY + 14)}`, 1.3, 0.6);
+      seam.push(`<circle cx="${CX}" cy="${Y(topY + 8)}" r="2.2" fill="none" stroke="${hwStroke(p.hardware)}" stroke-width="1.5"/>`);
     }
     seam.push(`<path d="M ${CX} ${Y(topY + 16)} L ${CX} ${Y(crotchY)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.6"/>`);
+    // U3: Hosenschlitz — die J-Naht rechts der Mittelfront, bis kurz vor den
+    // Schritt gerundet. Nur bei genähtem Bund (Jogger mit Gummizug/Kordel
+    // haben keinen Schlitz).
+    if (p.waistband !== "elastic" && p.waistband !== "drawcord") {
+      seam.push(`<path d="M ${r(CX + 5)} ${Y(topY + 16)} L ${r(CX + 5)} ${Y(crotchY - 16)} Q ${r(CX + 5)} ${Y(crotchY - 5)} ${CX} ${Y(crotchY - 3)}" fill="none" stroke="${SEAM}" stroke-width="1.2" opacity="0.6"/>`);
+    }
     // Creases (tailored) or plain inseam fall lines.
     if (p.structure != null && clamp(num(p.structure, 0.5), 0, 1) > 0.66) {
       line(`M ${L((thighHalf + ankleHalf) * 0.32)} ${Y(crotchY + 4)} L ${L(ankleHalf * 0.55)} ${Y(hemY - 4)}`, 1.3, 0.7);
@@ -868,8 +944,10 @@ const GarmentSVG = (() => {
         seam.push(patch(CX + dir * legMid, py, pw, ph, true, p.hardware));
       }
     } else if (p.pockets && p.pockets !== "none") {
-      // side: slash pockets at the hip
+      // side: slash pockets at the hip — mit Doppelnaht (Topstitch), damit die
+      // Tasche als genähtes Bauteil liest, nicht als Kratzer (U3).
       seam.push(`<path d="M ${L(legTop - 4)} ${Y(topY + 20)} l -10 12 M ${R(legTop - 4)} ${Y(topY + 20)} l 10 12" fill="none" stroke="${SEAM}" stroke-width="1.6"/>`);
+      seam.push(topstitch(`M ${L(legTop - 6.5)} ${Y(topY + 21.5)} l -8.5 10.5 M ${R(legTop - 6.5)} ${Y(topY + 21.5)} l 8.5 10.5`, 0.5));
     }
     // Leg hem finish: cuffed turn-up band / elastic rib / raw default.
     const hx = ankleHalf, ix = thighHalf * 0.05;
@@ -891,7 +969,9 @@ const GarmentSVG = (() => {
   }
 
   // ---- dress (bodice → skirt) ---------------------------------------------
-  const DRESS_CFG = { sleeveLen: 58, hem: { cropped: 250, regular: 300, long: 322 }, defCollar: "vneck", closure: "none", splay: 14, cuffW: 22, armDepth: 50, neckHalf: 18 };
+  // U3: cropped (Mini) von 250 → 234 — bei 250 lag der Mini-Saum nur 17 %
+  // über regular und las sich unverändert („Mini kürzt nie").
+  const DRESS_CFG = { sleeveLen: 58, hem: { cropped: 234, regular: 300, long: 322 }, defCollar: "vneck", closure: "none", splay: 14, cuffW: 22, armDepth: 50, neckHalf: 18 };
   function dressGeom(p) {
     const cfg = DRESS_CFG;
     const w = topWidths(p, cfg);
@@ -960,14 +1040,20 @@ const GarmentSVG = (() => {
       // armhole from each strap down to the bust — no sharp "horn" spikes.
       const strapX = clamp(g.chestHalf * 0.55, g.neckHalf + 7, g.chestHalf - 5);
       const sTop = g.neckY - 2, sMid = (sTop + g.armpitY) / 2, neckDip = g.neckY + 24;
+      // U3: ein ENTSCHIEDENER V-Ausschnitt gilt auch auf dem ärmellosen
+      // Bodice — vorher zeichnete der Slip immer denselben Scoop und die
+      // Kragen-Wahl verschwand kommentarlos.
+      const neckSeg = g.collar === "vneck"
+        ? `L ${CX} ${Y(neckDip + 9)} L ${L(strapX - 3)} ${Y(sTop)} Z`
+        : `Q ${R(g.neckHalf - 2)} ${Y(neckDip)} ${CX} ${Y(neckDip)} ` +
+          `Q ${L(g.neckHalf - 2)} ${Y(neckDip)} ${L(strapX - 3)} ${Y(sTop)} Z`;
       d =
         `M ${L(strapX + 3)} ${Y(sTop)} ` +
         `Q ${L(g.chestHalf + 3)} ${Y(sMid)} ${L(g.chestHalf)} ${Y(g.armpitY)} ` + skirt +
         `L ${R(g.chestHalf)} ${Y(g.armpitY)} ` +
         `Q ${R(g.chestHalf + 3)} ${Y(sMid)} ${R(strapX + 3)} ${Y(sTop)} ` +
         `L ${R(strapX - 3)} ${Y(sTop)} ` +
-        `Q ${R(g.neckHalf - 2)} ${Y(neckDip)} ${CX} ${Y(neckDip)} ` +
-        `Q ${L(g.neckHalf - 2)} ${Y(neckDip)} ${L(strapX - 3)} ${Y(sTop)} Z`;
+        neckSeg;
     } else {
       // A wrap suppresses the symmetric centre-V and reads its crossover from the
       // two panel seams below; other dresses use their neckline.
@@ -1314,7 +1400,7 @@ const GarmentSVG = (() => {
     return build(category, params).replace(`viewBox="0 0 ${VB} ${VH}"`, `viewBox="${x} ${y} ${r(cw)} ${r(ch)}"`);
   }
 
-  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, closureAllowed, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

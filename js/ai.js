@@ -438,6 +438,15 @@ Antworte NUR mit JSON:
     return Array.from(tags);
   }
 
+  // Strict-Varianten für die Studio-Modalität „Beschreib es": null statt
+  // Fallback, damit nur WIRKLICH erwähnte Dimensionen die DNA seeden — der
+  // Fallback (#1a1a1a / cotton / 0.5) wäre von einem echten Schwarz-/
+  // Baumwolle-Wunsch nicht unterscheidbar.
+  function detectColorStrict(prompt) { return extractFromPrompt(prompt, COLOR_DICT); }
+  function detectMaterialStrict(prompt) { return extractFromPrompt(prompt, MATERIAL_DICT); }
+  function detectFitStrict(prompt) { return extractFromPrompt(prompt, FIT_DICT); }
+  function detectPatternStrict(prompt) { return extractFromPrompt(prompt, PATTERN_KEYWORDS); }
+
   return {
     generateDesign,
     detectType,
@@ -445,6 +454,10 @@ Antworte NUR mit JSON:
     detectMaterial,
     detectFit,
     detectPattern,
+    detectColorStrict,
+    detectMaterialStrict,
+    detectFitStrict,
+    detectPatternStrict,
   };
 })();
 

@@ -60,6 +60,64 @@ const DesignFlow = (() => {
   // in ATTR_LABELS).
   function seedDefaults(d) { DesignDNA.set(d, "intent.energy", 0.5, 0.05); return d; }
 
+  // ── Widerspruchs-Eviction (Atelier-Analyse 2026-07-23, Ursache 1) ─────────
+  // Drei chirurgische Regeln, damit die Maschine dem User nie widerspricht.
+
+  // (1) fabric.finishWeight ist die explizite Finish-Antwort (Slider, conf
+  // 0.8). Der kategorische fabric.finish (Archetyp-Default, Material-
+  // Nebeneffekt) darf ihr nicht widersprechen — real passiert: Refine-Chip
+  // „Finish: matt" unter einem Satz „aus glänzendem …", alle sechs Branches.
+  // Ab conf ≥ 0.6 wird fabric.finish abgeleitet und trägt die Confidence des
+  // Gewichts, womit completeFrom/suggestions ihn als entschieden behandeln.
+  function syncDerivedFinish(d) {
+    const wConf = DesignDNA.confidence(d, "fabric.finishWeight");
+    if (wConf < 0.6) return d;
+    const w = DesignDNA.get(d, "fabric.finishWeight");
+    if (typeof w !== "number") return d;
+    const derived = w > 0.5 ? "sheen" : "matte";
+    if (DesignDNA.get(d, "fabric.finish") !== derived || DesignDNA.confidence(d, "fabric.finish") < wConf) {
+      DesignDNA.set(d, "fabric.finish", derived, wConf);
+    }
+    return d;
+  }
+
+  // (2) Sekundäre set-Effekte (z. B. Hosen-„Tailored" → silhouette.fit 0.45)
+  // überschreiben keine Dimension, die der User bereits selbst beantwortet hat
+  // (conf ≥ 0.75: Karten/Farbe/Ranking/Regionen 1.0, Slider 0.8 — Inferenz
+  // ≤ 0.5 bleibt überschreibbar). Der Bind des Nodes ist ausgenommen: das IST
+  // die gestellte Frage. Gibt einen bereinigten Klon zurück — eff kann eine
+  // Referenz in die geladene content-JSON sein und darf nie mutiert werden.
+  const PROTECT_CONF = 0.75;
+  function protectExplicit(d, node, eff) {
+    if (!eff || !eff.set) return eff;
+    const out = { ...eff, set: { ...eff.set } };
+    Object.keys(out.set).forEach((p) => {
+      if (node && node.bind === p) return;
+      if (DesignDNA.confidence(d, p) >= PROTECT_CONF && DesignDNA.get(d, p) !== out.set[p]) {
+        delete out.set[p];
+      }
+    });
+    return out;
+  }
+
+  // (3) Inferenz-Füllungen (conf ≤ threshold) müssen baubar sein: ein T-Shirt
+  // bekommt keine Knopfleiste, nur weil der Archetyp-Default „button" sagt.
+  // allowedFn kommt vom Renderer (GarmentSVG.closureAllowed — der weiss, was
+  // seine Kategorie zeichnen kann); ohne ihn passiert nichts (graceful, z. B.
+  // im Test-Harness ohne GarmentSVG).
+  function scrubImpossibleFills(d, threshold, allowedFn) {
+    if (typeof allowedFn !== "function") return d;
+    const cat = DesignDNA.get(d, "category");
+    if (!cat) return d;
+    const th = threshold == null ? 0.5 : threshold;
+    const v = DesignDNA.get(d, "construction.closure");
+    const conf = DesignDNA.confidence(d, "construction.closure");
+    if (v != null && conf <= th && !allowedFn(cat, v)) {
+      DesignDNA.set(d, "construction.closure", "none", conf);
+    }
+    return d;
+  }
+
   // Every garment category now has its own node branch (each gated by
   // `when: category=='X'`), so the journey goes deep for all six — not just the
   // jacket. All branches load upfront; the engine only surfaces matching nodes.
@@ -80,6 +138,15 @@ const DesignFlow = (() => {
   }
 
   function resolveEffects(node, payload) {
+    if (node.modality === "describe") {
+      // „Beschreib es" (U4): geparste Worte des Users seeden die DNA bei
+      // conf 0.62 — ÜBER der Entscheidungs-Schwelle (0.5) und den üblichen
+      // when-Gates (< 0.6), damit der Motor beantwortete Fragen wirklich
+      // überspringt; UNTER protectExplicit (0.75), damit jede spätere echte
+      // Antwort das gelesene Wort überstimmen darf. Skip = keine Effekte.
+      const set = payload && payload.set && typeof payload.set === "object" ? payload.set : {};
+      return { eff: { set, weight: {} }, conf: 0.62 };
+    }
     if (node.modality === "slider") {
       const eff = { set: { [node.bind]: payload }, weight: {} };
       if (node.weightAt) {
@@ -216,7 +283,10 @@ const DesignFlow = (() => {
   // Distanz zum warmen Pol (30° Rot-Orange) auf dem Farbkreis — sinkt sie,
   // wurde die Variante wärmer.
   const warmDist = (h) => { const d = Math.abs(h - 30); return Math.min(d, 360 - d); };
-  function conceptDeltas(base, variant) {
+  // Alle Achsen-Deltas einer Variante, nach Stärke sortiert. `strong` markiert
+  // die alten Sichtbarkeits-Schwellen; darunterliegende Deltas bleiben als
+  // Tie-Breaker für die Namens-Eindeutigkeit verfügbar (conceptLabelSets).
+  function conceptCandidates(base, variant) {
     const gb = (p) => DesignDNA.get(base, p);
     const gv = (p) => DesignDNA.get(variant, p);
     const cand = [];
@@ -224,21 +294,43 @@ const DesignFlow = (() => {
     const hv = hexHue((gv("color.stops") || [])[0]);
     if (hb != null && hv != null) {
       const dw = warmDist(hv) - warmDist(hb);
-      if (Math.abs(dw) >= 10) cand.push({ k: dw < 0 ? "concept.warmer" : "concept.cooler", m: Math.abs(dw) / 180 + 0.1 });
+      if (dw) cand.push({ k: dw < 0 ? "concept.warmer" : "concept.cooler", m: Math.abs(dw) / 180 + 0.1, strong: Math.abs(dw) >= 10 });
     }
     const fb = gb("silhouette.fit"), fv = gv("silhouette.fit");
-    if (typeof fb === "number" && typeof fv === "number" && Math.abs(fv - fb) >= 0.06)
-      cand.push({ k: fv > fb ? "concept.wider" : "concept.slimmer", m: Math.abs(fv - fb) * 1.4 });
+    if (typeof fb === "number" && typeof fv === "number" && fv !== fb)
+      cand.push({ k: fv > fb ? "concept.wider" : "concept.slimmer", m: Math.abs(fv - fb) * 1.4, strong: Math.abs(fv - fb) >= 0.06 });
     const nb = gb("fabric.finishWeight"), nv = gv("fabric.finishWeight");
-    if (typeof nb === "number" && typeof nv === "number" && Math.abs(nv - nb) >= 0.08)
-      cand.push({ k: nv > nb ? "concept.sheen" : "concept.matte", m: Math.abs(nv - nb) });
+    if (typeof nb === "number" && typeof nv === "number" && nv !== nb)
+      cand.push({ k: nv > nb ? "concept.sheen" : "concept.matte", m: Math.abs(nv - nb), strong: Math.abs(nv - nb) >= 0.08 });
     const pb = gb("pattern.type") || "none", pv = gv("pattern.type") || "none";
-    if (pb !== pv) cand.push({ k: pv === "none" ? "concept.cleaner" : "concept.pattern", m: 0.42 });
+    if (pb !== pv) cand.push({ k: pv === "none" ? "concept.cleaner" : "concept.pattern", m: 0.42, strong: true });
     const lb = gb("length"), lv = gv("length");
-    if (lb !== lv && lv) cand.push({ k: "concept.len_" + lv, m: 0.4 });
+    if (lb !== lv && lv) cand.push({ k: "concept.len_" + lv, m: 0.4, strong: true });
     cand.sort((a, b) => b.m - a.m);
-    const keys = cand.slice(0, 2).map((c) => c.k);
+    return cand;
+  }
+  function conceptDeltas(base, variant) {
+    const keys = conceptCandidates(base, variant).filter((c) => c.strong).slice(0, 2).map((c) => c.k);
     return keys.length ? keys : ["concept.subtle"];
+  }
+  // Eindeutige Namen für ALLE Richtungen einer Runde: zwei von vier Kacheln
+  // hiessen real identisch „Muster gewagt · Kühler" (jeder Branch, U6). Bei
+  // Kollision kommt die nächststärkste, noch ungenutzte Achse dazu (max. 3),
+  // danach ersetzt sie die schwächste. Zwei wirklich identische Deltas dürfen
+  // identisch heissen — das wäre dann ehrlich.
+  function conceptLabelSets(base, variants) {
+    const seen = new Set();
+    return (variants || []).map((v) => {
+      const K = conceptCandidates(base, v).map((c) => c.k);
+      let keys = conceptDeltas(base, v);
+      for (let n = 0; seen.has(keys.join("|")) && n < K.length + 1; n++) {
+        const extra = K.find((k) => !keys.includes(k));
+        if (!extra) break;
+        keys = keys.length < 3 ? keys.concat(extra) : [keys[0], extra];
+      }
+      seen.add(keys.join("|"));
+      return keys;
+    });
   }
 
   // ── "Made for one" (roadmap §9) ────────────────────────────────────────────
@@ -335,6 +427,9 @@ const DesignFlow = (() => {
 
   // Short human label of what a choice just changed (micro-feedback, brief §7).
   function changeLabel(node, payload, l) {
+    if (node.modality === "describe") {
+      return payload && payload.skip ? t("engine.dsc_skipped") : t("engine.dsc_read_label");
+    }
     if (node.modality === "ranking") {
       const top = (node.options || []).find((o) => o.id === (payload || [])[0]);
       return top && top.label ? top.label[l] : "";
@@ -400,6 +495,7 @@ const DesignFlow = (() => {
             <span class="de-flash" id="de-flash" role="status" aria-live="polite"></span>
           </div>
           <div class="de-preview-chips" id="de-preview-chips"></div>
+          <p class="de-body-caption" id="de-body-caption" hidden data-i18n="engine.body_caption">${t("engine.body_caption")}</p>
           <button type="button" class="de-preview-dock" id="de-preview-dock" hidden aria-label="${t("engine.dock_aria")}">
             <span class="de-dock-flat" aria-hidden="true"></span>
           </button>
@@ -452,6 +548,13 @@ const DesignFlow = (() => {
     let stageInView = true;
     const syncDock = () => {
       if (!dockBtn) return;
+      // Im Regions-Cockpit ist die Bühne bewusst aus (das Board zeigt das
+      // Flat selbst) — der Dock darf dann nicht über dem Board aufpoppen.
+      if (hostEl.dataset.deMod === "regions") {
+        dockBtn.hidden = true;
+        dockBtn.classList.remove("is-on");
+        return;
+      }
       const show = dockShouldShow(smallScreen(), previewInView, stageInView);
       dockBtn.hidden = !show;
       // .is-on drives the CSS entrance (fade/rise) after unhide.
@@ -537,9 +640,14 @@ const DesignFlow = (() => {
       if (!el) return;
       if (!fxOn() || reduceMotion()) { el.textContent = text; return; }
       el.classList.add("is-typing");
-      let i = 0;
+      // Wall-clock statt Frame-Zählung: bei ~13 fps (Headless, Low-End) tippte
+      // der Satz sonst sekundenlang und stand in jedem Standbild „abgeschnitten"
+      // mitten im Wort (Atelier-Analyse U6). Jetzt ist die Dauer geräte-
+      // unabhängig: ~110 Zeichen/s ≙ den bisherigen 2 Zeichen pro 60-fps-Frame.
+      const CPS = 110;
+      const startedAt = nowMs();
       const step = () => {
-        i = Math.min(text.length, i + 2);
+        const i = Math.min(text.length, Math.ceil(((nowMs() - startedAt) / 1000) * CPS));
         el.textContent = text.slice(0, i);
         if (i < text.length) typeRaf = requestAnimationFrame(step);
         else { typeRaf = 0; el.classList.remove("is-typing"); }
@@ -576,6 +684,12 @@ const DesignFlow = (() => {
       // not a static placeholder until the last question.
       const previewDna = JSON.parse(JSON.stringify(dna));
       DesignEngine.finalize(previewDna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+      // Inferenz-Füllungen, die die Kategorie nicht zeichnen kann, fliegen auch
+      // aus dem Preview-Klon (Ursache 1 — sonst trägt das Tee im Preview die
+      // Knopfleiste, die der Refine-Scrub später entfernt).
+      syncDerivedFinish(previewDna);
+      scrubImpossibleFills(previewDna, content.attributes.confidenceThreshold,
+        window.GarmentSVG && window.GarmentSVG.closureAllowed);
       // The user's own choices ALWAYS win over the archetype inference — incl.
       // live slider drags (set at confidence 0), which finalize would otherwise
       // overwrite, making the Passform/Finish sliders feel dead. Overlay them.
@@ -590,17 +704,28 @@ const DesignFlow = (() => {
         // the abstract thread-flow builds up instead, and the category answer
         // weaves it into the silhouette. progress staggers the materialisation.
         const catConf = DesignDNA.confidence(dna, "category");
+        // "Made for one" (§9): once measurements exist, the flat carries the
+        // user's own proportions — the brand thesis made visible.
+        const body = bodyFactors(window.StateManager ? window.StateManager.get("measurements") : null);
         window.DesignPreview.renderInto(previewEl, previewDna, {
-          realism: atRefine,
+          // Refine-Held ist das ECHTE Flat des Users, nicht mehr das kuratierte
+          // Foto: trotz Honesty-Gate zeigte der Shirt-Branch ein rosa Preset
+          // gegen einen Burgunder-Build (Atelier-Analyse U6). Der Flat ist
+          // immer korrekt — das Foto-Moment gehört dem generierten Render im
+          // Ownership-Beat. (Gate + Manifest bleiben für die Zukunft im Code.)
+          realism: false,
           photoManifest: content.photoManifest,
           mirror: dockFlat,
           genesis: catConf < (content.attributes.confidenceThreshold || 0.5),
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
-          // "Made for one" (§9): once measurements exist, the flat carries the
-          // user's own proportions — the brand thesis made visible.
-          body: bodyFactors(window.StateManager ? window.StateManager.get("measurements") : null),
+          body,
         });
+        // U2: das personalisierte Zeichnen war komplett stumm — eine leise
+        // Mono-Zeile benennt es, sobald echte Masse einfliessen (und ein
+        // Kleidungsstück sichtbar ist, nicht die Genesis-Wolke).
+        const bodyCap = hostEl.querySelector("#de-body-caption");
+        if (bodyCap) bodyCap.hidden = !(body && catConf >= (content.attributes.confidenceThreshold || 0.5));
       }
       // Attribut-Chips unter der Vorschau (brief §3.1) — geben pro Wahl
       // sichtbares Feedback (Subarch/Fit/Länge/Material/Muster), nicht ins Foto.
@@ -728,11 +853,25 @@ const DesignFlow = (() => {
       },
       commit(payload) {
         if (swapping || isGuardedTap(nowMs(), lastRenderAt)) return;
-        const { eff, conf } = resolveEffects(currentNode, payload);
+        const { eff: rawEff, conf } = resolveEffects(currentNode, payload);
+        // Explizit schlägt Nebeneffekt: bereits selbst beantwortete Dimensionen
+        // bleiben stehen (Ursache 1 der Atelier-Analyse).
+        const eff = protectExplicit(dna, currentNode, rawEff);
         if (currentNode) T("node_choice", { id: currentNode.id, modality: currentNode.modality });
         snapshot();
-        flash("✓ " + changeLabel(currentNode, payload, lang()));
+        // Gutgeschriebene Sprünge (U2 „die Maschine liest mit"): Fragen, die
+        // durch DIESE Antwort wegfallen (when-Gates/Konfidenz — nicht die
+        // beantwortete selbst), werden im Flash benannt statt still
+        // verschluckt. Das ist der billigste sichtbare Beweis des Zuhörens.
+        const beforeIds = new Set(DesignEngine.eligible(content.nodes, dna, answered).map((n) => n.id));
+        const answeredId = currentNode && currentNode.id;
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
+        syncDerivedFinish(dna);
+        const afterIds = new Set(DesignEngine.eligible(content.nodes, dna, answered).map((n) => n.id));
+        let saved = 0;
+        beforeIds.forEach((nid) => { if (nid !== answeredId && !afterIds.has(nid)) saved++; });
+        flash("✓ " + changeLabel(currentNode, payload, lang()) +
+          (saved ? " · " + t(saved === 1 ? "engine.saved_one" : "engine.saved_many", { n: saved }) : ""));
         mirror(dna, content.attributes);
         pendingLive = null;
         persist();
@@ -744,6 +883,10 @@ const DesignFlow = (() => {
       atRefine = false; // back to the morphing flat for any question
       currentNode = node;
       pendingLive = null;
+      // Cockpit-Regie (≤899px): das CSS liest die aktive Modalität am Host —
+      // Regions blendet die Bühne aus (das Board TRÄGT das Flat), Describe/
+      // Refine bekommen eine kompaktere Bühne für mehr Blatt-Raum.
+      hostEl.dataset.deMod = node.modality;
       updateStepper(node.phase);
       const crossed = lastPhase !== null && node.phase !== lastPhase;
       lastPhase = node.phase;
@@ -793,10 +936,30 @@ const DesignFlow = (() => {
         const q = body.querySelector(".de-question");
         if (q) {
           q.setAttribute("tabindex", "-1");
-          if (firstQuestionShown) q.focus();
+          if (firstQuestionShown) focusQuestion(q);
           else firstQuestionShown = true;
         }
       });
+    }
+
+    // Cockpit (≤899px): der A11y-Fokus auf die neue Frage darf die SEITE nicht
+    // verschieben — real geschah genau das (Frage-Fokus scrollte den Rahmen
+    // 250px+ nach oben, die Bühne verschwand, der Dock sprang ein). Im
+    // Cockpit steht der Rahmen; nur das Blatt (de-body) springt für die neue
+    // Frage auf Anfang. Desktop (Zwei-Spalten, sticky Bühne) behält den
+    // normalen Fokus-Scroll.
+    const cockpitActive = () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia("(max-width: 899px)").matches
+        : false;
+    function focusQuestion(q) {
+      if (!cockpitActive()) { q.focus(); return; }
+      try { q.focus({ preventScroll: true }); } catch (_e) { q.focus(); }
+      body.scrollTop = 0;
+      // Rahmen bündig nachziehen, falls doch etwas bewegt hat (Tastatur zu,
+      // alte Engines ohne preventScroll) — nur bei echter Verschiebung.
+      const top = hostEl.getBoundingClientRect().top;
+      if (Math.abs(top) > 48) hostEl.scrollIntoView({ block: "start" });
     }
 
     function renderNext() {
@@ -823,11 +986,17 @@ const DesignFlow = (() => {
         if (v !== undefined && v !== null) DesignDNA.set(dna, path, v, 1);
       });
       pendingLive = null;
+      syncDerivedFinish(dna);
       DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+      // Nach dem Füllen: unbaubare Inferenz-Werte raus, BEVOR Chips/Satz/
+      // Spec/Share sie je sehen (Ursache 1 der Atelier-Analyse).
+      scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
+        window.GarmentSVG && window.GarmentSVG.closureAllowed);
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
       lastPhase = "F";
+      hostEl.dataset.deMod = "refine";
       atRefine = true; // Phase F → crossfade the flat to the realism photo
       updateStepper("F"); // the arc is traversed; the user is refining/generating
       finishBtn.hidden = true;
@@ -894,10 +1063,15 @@ const DesignFlow = (() => {
         const c = concepts[selected];
         dna = JSON.parse(JSON.stringify(c.history[c.history.length - 1]));
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+        scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
+          window.GarmentSVG && window.GarmentSVG.closureAllowed);
         mirror(dna, content.attributes); persist(); updatePreview(); reSummary();
       };
       const renderConcepts = () => {
         if (!grid) return;
+        // Namen für ALLE Richtungen in einem Zug — paarweise eindeutig (U6):
+        // bei Kollision zieht conceptLabelSets die nächststärkste Achse hinzu.
+        const labelSets = conceptLabelSets(baseDna, concepts.map((c) => c.history[c.history.length - 1]));
         grid.innerHTML = concepts.map((c, i) => {
           const cur = c.history[c.history.length - 1];
           // Jede Richtung trägt ihren Namen aus dem eigenen Delta (§8.2):
@@ -905,7 +1079,7 @@ const DesignFlow = (() => {
           // Nur i18n-Wörter (kein User-Input) → sicher im Template.
           const name = (i === 0 && c.version === 1)
             ? t("engine.concept_original")
-            : conceptDeltas(baseDna, cur).map((k) => t(k)).join(" · ");
+            : labelSets[i].map((k) => t(k)).join(" · ");
           return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
             <button type="button" class="de-concept-pick" data-pick="${i}" aria-pressed="${i === selected}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}: ${name}">
               <span class="de-concept-stage">${tileSvg(cur)}</span>
@@ -945,6 +1119,8 @@ const DesignFlow = (() => {
       body.querySelectorAll(".de-nudge").forEach((btn) => btn.addEventListener("click", () => {
         const r = DesignInference.adjust(dna, btn.dataset.ax, parseInt(btn.dataset.dir, 10), lang());
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
+        scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
+          window.GarmentSVG && window.GarmentSVG.closureAllowed);
         mirror(dna, content.attributes); persist(); updatePreview(); reSummary(); refreshChrome();
         if (r) flash("✓ " + r.label);
       }));
@@ -960,6 +1136,28 @@ const DesignFlow = (() => {
           navigator.clipboard.writeText(url).then(() => flash(t("engine.share_copied")), () => window.prompt(t("engine.share"), url));
         } else { window.prompt(t("engine.share"), url); }
       });
+      // U4: der Refine-Freitext läuft durch DENSELBEN Parser wie der Auftakt —
+      // erkannte Worte formen das Flat sichtbar um, BEVOR generiert wird
+      // (vorher wurde der Text nur unparsed an den KI-Prompt gehängt und
+      // konnte dem Stück auf dem Screen stumm widersprechen).
+      const ftLive = body.querySelector("#de-freetext-input");
+      if (ftLive && window.DEModalities && window.DEModalities.describeParse) {
+        ftLive.addEventListener("change", () => {
+          const found = window.DEModalities.describeParse(ftLive.value, lang());
+          if (!found.length) return;
+          const set = {};
+          found.forEach((en) => Object.assign(set, en.set));
+          // protectExplicit-Semantik von Hand: bereits selbst Entschiedenes
+          // (conf ≥ 0.75) gewinnt gegen das nachgereichte Wort.
+          Object.entries(set).forEach(([p, v]) => {
+            if (DesignDNA.confidence(dna, p) < 0.75) DesignDNA.set(dna, p, v, 0.62);
+          });
+          syncDerivedFinish(dna);
+          mirror(dna, content.attributes);
+          persist(); updatePreview(); reSummary();
+          flash("✓ " + t("engine.dsc_read_label"));
+        });
+      }
       body.querySelector("#de-generate").addEventListener("click", (e) => {
         // The generate button sits where a question's confirm just was — a
         // double-tap on the last answer must never fire the AI run.
@@ -1207,7 +1405,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, hexHue, bodyFactors, seedDefaults };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;
