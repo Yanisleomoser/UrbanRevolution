@@ -431,6 +431,57 @@ open items (commit-model unification, the four broken `verify-*.mjs`
 guards) — noted here only because the paragraph above, written before
 #446 landed, would otherwise read as current.
 
+**Status update (2026-07-24, later same-day follow-up):** **PR #448**
+("Atelier-Runde 3," high-risk-visual per its own gate, real-iPhone-checked
+before merge) landed a large Cockpit/atelier content pass, outside this
+roadmap's original ten slices but a direct sequel to #444's Cockpit and
+Detail-Atelier work above:
+- **Layout:** a consequent 8px grid across the Cockpit (frame slack,
+  paddings/gaps on tokens instead of scattered 4–18px values), the
+  photo-duell now fills the sheet's full height with a derived
+  "→ archetype" line per side (from `effects.weight`, can't drift out of
+  sync), a live slider readout, and a denser portrait-tile grid for
+  5+-choice sets (jacket's sixth style, Trucker, wired to an
+  already-existing but previously unreachable renderer branch).
+- **Content breadth:** all 7 `CONFIG` materials are now reachable across
+  categories (curated per garment type); a dress Detail-Atelier
+  (`regions` board) matching the existing jacket/shirt/pants/hoodie
+  pattern, cutting the dress journey from 12 to ~10 screens; multi-select
+  signatures are now stackable (exclusive "none" clears the stack);
+  question order gets a session-seeded ±9% jitter *after* the category
+  decision (`?dseed=` pins it for bots/tests); refine directions 1–3 now
+  pull toward the user's rank-2–4 archetypes instead of fixed deltas.
+- **Same-PR adversarial-review round** (7 confirmed fixes): closed a
+  describe/refine free-text contradiction gap (values could seed at conf
+  0.62 — above the 0.5 finalize-scrub threshold — and reach the sentence/
+  share link for an unbuildable closure); added "trucker" to
+  `summary.js`'s vocabulary; made the describe "Verstanden" playback
+  `role=status`/focus-correct for screen readers; scoped the sticky
+  action-bar selector to a child combinator so nested describe buttons
+  stopped inheriting it.
+- **What #448 does NOT touch, reconfirmed by re-running the guards this
+  pass, not just reading the diff:** `isGuardedTap`/`COMMIT_GUARD_MS`
+  (`js/design-engine/flow.js:41-42`) is still byte-identical — the
+  commit-model unification remains untouched. The two `verify-*.mjs` edits
+  inside #448 (`verify-atelier.mjs`, `verify-describe.mjs`) only add a
+  `?dseed=7` query so the new order-jitter doesn't break their
+  deterministic walk; they do **not** fix the underlying failures.
+  Confirmed by running both against this commit: `verify-atelier.mjs`
+  still fails to reach the detail atelier board (throws on a null hotspot
+  handle); `verify-a11y-studio.mjs` still throws on the removed
+  `window.DEModalities.hotspot`. Both remain exactly as broken as the
+  07-18 entry above documented.
+- **New permanent guard from this PR:** `scripts/verify-signature-stack.mjs`
+  (stacking, exclusive "none," DNA + flat, 10 checks) — add it to the
+  "run before touching the studio" list alongside `verify-weave`/
+  `verify-threshold`/`verify-refine`/`verify-sewing`/`verify-describe`.
+- Separately, **PR #449** ("Atelier-Wow-Roadmap") added a new planning
+  document, `docs/ATELIER-WOW-ROADMAP.md` — a Nike/Apple/Liquid-Glass
+  owner brief translated into five PR-sized building blocks (stage-first
+  Cockpit v4, studio light, material-reality macro backdrops, a
+  starting-point gallery, instrument-glass + carousels). Pure docs, no
+  code touched; it doesn't resolve or supersede any item tracked here.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps
