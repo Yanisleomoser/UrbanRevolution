@@ -431,6 +431,46 @@ open items (commit-model unification, the four broken `verify-*.mjs`
 guards) — noted here only because the paragraph above, written before
 #446 landed, would otherwise read as current.
 
+**Status update (2026-07-24, later same-day — PR #448, "Atelier-Runde 3"):**
+re-checked against `main` @ `ae47783`, triggered by this PR's merge. High-risk-
+visual per the repo's own gate (Cockpit layout, the photo-duel flex, large
+card-set tap targets) — merged directly by the repo owner, same pattern as
+#444. Six pieces, mostly orthogonal to this roadmap's ten slices:
+
+- **Cockpit (≤899px) moved to a consistent 8px grid** — frame slack, gaps and
+  padding that were 7/10/18px one-offs are now spacing tokens; the photo-duel
+  panels now share the full sheet height (no dead space) and each side grew a
+  derived "→ archetype" line straight from its own `effects.weight` (no
+  hand-copy to drift). Extends slice 3's docked-preview mobile-fidelity work
+  and the 07-18 "Cockpit v2" round, doesn't replace either.
+- **Detail-Atelier extended to dresses** (`dress_details`, a `regions` board
+  for neckline/sleeve/waist) — the same slice-8 pattern (#341) applied to a
+  fourth category; a new sleeve anchor was added to the dress branch of
+  `regionAnchors()`. Dress spine drops from 12 to ~10 screens per the PR's own
+  count — a genuine move toward §7's 8–10-tap target, unlike #444's opener
+  which moved the jacket count the other way.
+- **Stackable signatures, order-jitter, archetype-fed refine directions** —
+  content/engine features (multi-select signatures with a union-merge in
+  `resolveEffects`; a seeded post-category score jitter in `nextNode`, pinned
+  via `?dseed=`; refine variants 1–3 now pull toward the user's rank-2–4
+  archetypes instead of fixed axes). None of these touch the interaction
+  contract in §12's open items.
+- **What #448 does NOT touch, reconfirmed directly against code this pass:**
+  `isGuardedTap`/`COMMIT_GUARD_MS` (`js/design-engine/flow.js:41-42`) is still
+  byte-identical — the commit-model unification remains untouched across
+  **eleven consecutive reviews (07-12 → 07-24)**. Of the four broken
+  regression guards, `verify-atelier.mjs` got a one-line compatibility fix
+  (adds `?dseed=7` to its own walk so the new order-jitter doesn't send it
+  off-script) but its underlying walk-drift bug is **not** fixed — the PR's
+  own description says so explicitly ("waren schon vor dieser Runde kaputt …
+  hier unangetastet"); `verify-a11y-studio.mjs`, `verify-community.mjs` and
+  `verify-gallery.mjs` are untouched. Read the actual script before trusting
+  a green/red result on any of the four.
+- **New permanent guard:** `scripts/verify-signature-stack.mjs` (stacking,
+  exclusive "None", DNA + flat, 10/10) — add it to the "run before touching
+  the studio" list alongside `verify-weave`/`verify-threshold`/`verify-refine`/
+  `verify-sewing`/`verify-describe`.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

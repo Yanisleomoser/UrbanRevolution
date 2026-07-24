@@ -397,6 +397,39 @@
 > tests, `CLAUDE.md`, and `README.md` referencing the removed route were
 > corrected in the same pass. Rank 2 drops off the table below.
 
+> **Status update (2026-07-24, later same-day — PR #448 merged):** triggered
+> by this PR's merge (`main` @ `ae47783`). **"Atelier-Runde 3"** — high-risk-
+> visual per the repo's own gate (Cockpit spacing, the photo-duel flex layout,
+> large-card-set tap targets), merged directly by the repo owner rather than
+> autonomously, same pattern as #444. CI was fully green pre-merge (all 7
+> functional checks + CodeQL). Content is mostly orthogonal to this doc's
+> tracked backlog: an 8px-grid pass on the Cockpit, a 6th jacket style
+> (Trucker), all 7 `CONFIG` materials now reachable in the question set, a
+> dress Detail-Atelier (extends slice 8's `regions` pattern to a 4th
+> category — dress spine 12 → ~10 screens, a real move toward this doc's own
+> §7 8–10-tap target), stackable multi-select signatures, and archetype-fed
+> refine directions. Full accounting in `STUDIO-UX-ROADMAP.md`'s matching
+> 2026-07-24 update.
+> - **This doc's #01 (commit-model unification) is still untouched.**
+>   Reconfirmed directly against code: `js/design-engine/flow.js:41-42`
+>   (`isGuardedTap`/`COMMIT_GUARD_MS`) is byte-identical to every prior
+>   review — now unaddressed across **eleven consecutive reviews
+>   (07-12 → 07-24)**, with #448 the latest of 30+ unrelated PRs to land
+>   around it.
+> - Rank 3 (the four broken `verify-*.mjs` guards) is **not** resolved by
+>   this PR either: `verify-atelier.mjs` got a one-line compatibility patch
+>   (pins `?dseed=7` so the new question-order jitter doesn't send its
+>   deterministic walk off-script) but its underlying walk-drift bug is
+>   explicitly left unfixed per the PR's own description; `verify-a11y-studio`,
+>   `verify-community` and `verify-gallery` are untouched. A new permanent
+>   guard, `scripts/verify-signature-stack.mjs`, was added for the new
+>   stacking feature — that one is green, it's just not one of the four.
+> - Nothing else on the ranked table moved: script minification (rank 2,
+>   post-#446) is still the only open item there; issues #383 and #384 are
+>   unchanged (see the live-site audit thread on #383 for current status);
+>   PR #428 is still open, draft, and stale.
+> - **Recommendation unchanged:** the rescoped `#01` remains the top pick.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -619,7 +652,7 @@ either remaining rank below.
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
 re-scoped recommendation under §01 above. Reasoning unchanged since the
 2026-07-12 review — it has now been the top-ranked recommendation across
-**ten consecutive reviews (07-12 → 07-24)** without a single unit of
+**eleven consecutive reviews (07-12 → 07-24)** without a single unit of
 engineering effort spent on it, while 30+ unrelated PRs landed around it
 (hero conversion, contrast, mobile machine, studio-reveal scroll, DNA/render
 bugs, the R4/R10 landing polish, the Instagram credibility signal, the GSAP
@@ -627,7 +660,8 @@ dedupe, the colour-atelier confirm bug (and its 07-21 duo-gradient follow-up),
 both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
 EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
 re-skin, the `#measure` trust seal, the orphaned `preview-design.js`
-endpoint removal, and now the atelier/Cockpit PR itself).
+endpoint removal, the atelier/Cockpit PR (#444), and now its follow-up
+round, #448, "Atelier-Runde 3").
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
 rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
