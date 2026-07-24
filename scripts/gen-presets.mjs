@@ -1,7 +1,7 @@
 /**
  * One-off generator for the 6 photoreal preset persons used in the
  * Ownership/Try-on moment (male/female × 3 skin tones). Runs FLUX 1.1 Pro
- * (same engine as api/preview-design.js) and writes full-body neutral studio
+ * (same engine as api/try-on.js) and writes full-body neutral studio
  * portraits to assets/presets/. These ship as static assets; at runtime a
  * selected preset is sent to /api/try-on as the "userPhoto" base the VTO
  * edits the garment onto.

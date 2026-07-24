@@ -1,12 +1,11 @@
 /**
  * Urban Revolution — Free $0 design preview fallback (window.PreviewFallback)
  *
- * When the paid photoreal render (/api/preview-design → Replicate) is
- * unavailable — no token, no credit, rate-limited, network down — the design
- * preview must never dead-end. This module renders a tasteful, fully
- * client-side **studio illustration** of the garment from the data we already
- * have (type, colour, material, pattern, name): zero cost, instant, offline,
- * no API. It gives a real "do I like this colour / silhouette?" signal.
+ * A tasteful, fully client-side **studio illustration** of the garment from
+ * the data we already have (type, colour, material, pattern, name): zero
+ * cost, instant, offline, no API. `render-preview.js`'s `silhouette()` uses
+ * it as the defensive fallback silhouette when `window.GarmentSVG` isn't
+ * available, so the live 2D flat preview never dead-ends.
  *
  * Pure functions, no eval-time globals — `PreviewFallback.svg({...})` returns
  * an inline SVG string the caller injects into the preview slot.

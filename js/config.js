@@ -36,8 +36,8 @@ const CONFIG = (() => {
     // fabric impact in PRODUCTION_ESTIMATES.lengthFabricFactor below.
     const LENGTHS = ['cropped', 'regular', 'long'];
 
-    // Safe, coded errors the render Edge Functions (api/try-on.js,
-    // preview-design.js) return → the i18n key app.js (codedErrorMessage) shows
+    // Safe, coded errors the render Edge Functions (api/try-on.js)
+    // return → the i18n key app.js (codedErrorMessage) shows
     // the user. The raw upstream reason (billing/credit/auth) stays server-side;
     // the browser only ever sees one of these neutral messages. Keep in sync
     // with the `err.*` keys in i18n.js (the coded-error test pins this).
@@ -155,7 +155,7 @@ const CONFIG = (() => {
     }
 
     // Guard for image URLs returned by the upstream render API (Replicate, via
-    // our /api/try-on + /api/preview-design edge proxies). That URL is the only
+    // our /api/try-on edge proxy). That URL is the only
     // externally-sourced value that reaches img.src / fetch() / window.open(),
     // so if the upstream response were ever compromised, a non-HTTPS URL
     // (javascript:, data:, blob:, http:) must never be used. Accept only a

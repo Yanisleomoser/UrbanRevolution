@@ -174,7 +174,7 @@ CI); the app itself has **no deploy build step** (the `build` npm script is a
 no-op). The one codegen step, `npm run build:en`, regenerates the committed
 `en/index.html` offline — it is not part of the deploy (see i18n below).
 MediaPipe, GSAP, three.js and Vercel analytics
-load from CDNs at runtime (three.js + GSAP via an `importmap`). Seven Vercel
+load from CDNs at runtime (three.js + GSAP via an `importmap`). Six Vercel
 Edge Functions (`api/`) proxy the AI/storage calls.
 UI copy is **bilingual German/English** (`I18N`): the language resolves at load
 as URL path `/en/` (the prerendered English page, see Internationalisation) →
@@ -197,7 +197,6 @@ css/styles.css          # Single stylesheet; dark theme, CSS vars in :root
 manifest.webmanifest    # PWA manifest · icon.svg · robots.txt · sitemap.xml
 api/
   generate-design.js    # Edge Function — Anthropic proxy for design JSON
-  preview-design.js     # Edge Function — Replicate (FLUX 1.1 Pro) garment render
   try-on.js             # Edge Function — Replicate proxy for photoreal VTO
   gen-image.js          # Edge Function — KEY-gated raw FLUX text→image (build the image library)
   gallery.js            # Edge Function — community creations (DNA strings) → Upstash Redis
@@ -214,7 +213,7 @@ js/
   export.js             # Builds spec data, downloads JSON/HTML, simulates orders
   preferences.js        # localStorage usage history → personalised suggestions
   library.js            # localStorage saved designs (max 20, + optional VTO url)
-  preview-fallback.js   # Client-side $0 studio SVG when the paid render is down
+  preview-fallback.js   # Client-side $0 studio SVG fallback when GarmentSVG isn't available
   focus-trap.js         # Accessible focus containment for overlays (window.FocusTrap)
   animations.js         # IntersectionObserver scroll-reveal (side effect)
   spec-view.js          # DOM-safe spec-sheet fragment renderer (window.SpecView, no innerHTML)
@@ -548,54 +547,24 @@ generated image URL.
   (`service_unavailable` / `rate_limited` / `failed`) which `app.js`
   (`codedErrorMessage`) turns into a friendly localised message via the
   shared `err.*` i18n keys. The raw upstream text only goes to
-  `console.error` (Vercel runtime logs). Same for `preview-design.js`.
+  `console.error` (Vercel runtime logs).
 - **Privacy:** unlike measurement extraction (100 % client-side), VTO sends
   the photo to Replicate's US servers. The disclaimer below the button
   states this; the user opts in by clicking. The photo lives only in memory
   (`StateManager.userPhoto`), never persisted.
 - **Cost:** ~$0.04 per generation; only on explicit click.
 
-## Design Preview / garment render (`api/preview-design.js`)
-
-The cheap "do I like it?" gate **before** the photo-based try-on. Inside
-the design card (`#design-preview-slot`, wired in `app.js`) the user can
-click "Entwurf visualisieren"; `app.js` `generateDesignPreview()` POSTs
-`{ designPrompt }` (the same garment description `buildVtoPrompt` builds,
-no user photo) to `/api/preview-design`. The Edge Function wraps it in a
-**ghost-mannequin studio brief** and calls Replicate's **FLUX 1.1 Pro**
-text-to-image (swap the single `MODEL_ENDPOINT` const to change engines,
-e.g. Recraft V3). Same success/`pending`/`error` response shape and
-`Prefer: wait=20` polling fallback as `try-on.js`.
-
-- **Why:** most users can judge a design from a no-photo studio render and
-  only reach for the (more expensive, photo-based) `/api/try-on` once the
-  piece appeals — saving wasted try-on runs and the privacy cost of sending
-  their photo.
-- **Setup:** reuses `REPLICATE_API_TOKEN` (no new env var).
-- **Rate limit:** client-side `urev_preview_count` in localStorage,
-  `PREVIEW_LIMIT = 30`/browser, charged only on a billable success (mirrors
-  the VTO limit). **Cost** ~$0.04/render, only on explicit click. That
-  localStorage counter is UI-only — a script POSTing straight to the endpoint
-  skips it, so a **shared server-side per-IP limiter** (`api/_lib/rate-limit.js`,
-  `checkRateLimit`) sits in front of the billed/storage proxies
-  (`generate-design`, `preview-design`, `try-on`, `gallery`): a fixed-window
-  `INCR`+`EXPIRE` counter in the same Upstash Redis the gallery/track/waitlist
-  functions already use (no new env var). It **fails open** — without Upstash
-  configured, or on any store hiccup, requests are never blocked (a transient
-  store issue must not take down a revenue-relevant flow).
-- **Caching:** the render URL is stored on the in-memory design object and,
-  if the design is saved, on its `Library` entry (`previewImageUrl`,
-  `Library.setPreviewImage`); library tiles fall back to it when there's no
-  VTO image. Restored on recall so re-views are free.
-- **$0 fallback (`preview-fallback.js`):** if the paid render is unavailable
-  (no token/credit, rate-limited, network down, pending timeout), the slot
-  never dead-ends — `app.js` calls `PreviewFallback.svg({type, color,
-  material, pattern, name})` to draw a fully client-side **studio
-  illustration** of the garment (the six type silhouettes, filled with the
-  chosen colour + a volume gradient, material sheen and woven pattern
-  overlay). Free, instant, offline; carries a neutral "Stilvorschau" badge
-  and a retry button to re-attempt the photoreal render. No billable count is
-  charged for it.
+`js/preview-fallback.js` (`window.PreviewFallback`) is a tasteful, fully
+client-side **$0 studio illustration** fallback (the six type silhouettes,
+filled with the chosen colour + a volume gradient, material sheen and woven
+pattern overlay) — `js/design-engine/render-preview.js`'s `silhouette()` uses
+it when `window.GarmentSVG` isn't available, so the live 2D flat preview
+never dead-ends. (A previous no-photo "visualise the draft" render via
+`api/preview-design.js`, a Replicate FLUX 1.1 Pro proxy, was never wired to
+any caller in `app.js`/`index.html` — an orphaned, unauthenticated, billed
+endpoint reachable directly by anyone who POSTed to it. Removed rather than
+wired up: reviving that feature is a product decision — a real UI surface,
+i18n copy, rate-limit UX — not something to build speculatively.)
 
 ## Waitlist backend (`api/waitlist.js`) — frontend retired
 
@@ -830,7 +799,7 @@ run on Vercel (or `vercel dev`).
   touching `index.html` or a dictionary string (CI's `en-parity` guard fails
   the build otherwise). Speed Insights +
   Web Analytics load from Vercel's `/_vercel/*` script endpoints (script tags
-  in `index.html`). The seven `/api/` functions run as Edge Functions. **This is the
+  in `index.html`). The six `/api/` functions run as Edge Functions. **This is the
   only deploy target** (live at `revolveurban.com`). GitHub Pages was dropped
   — the repo no longer has a Pages workflow.
 - **Security headers** (`vercel.json` `headers`, applied to `/(.*)`):

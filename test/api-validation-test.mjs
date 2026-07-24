@@ -178,7 +178,7 @@ console.log("\n— rate-limit.rateLimitKey (fixed-window bucketing) —");
     "a full window later → different key (fresh bucket)",
   );
   assert(
-    rateLimitKey("try-on", "1.2.3.4", 600, now) !== rateLimitKey("preview-design", "1.2.3.4", 600, now),
+    rateLimitKey("try-on", "1.2.3.4", 600, now) !== rateLimitKey("gallery", "1.2.3.4", 600, now),
     "different prefix → different key (endpoints don't share a budget)",
   );
   assert(

@@ -55,7 +55,6 @@ Build-Schritt; gehostet auf Vercel, KI-Aufrufe laufen über Edge Functions in `a
 ├── css/styles.css          # Komplettes Styling (Ocean-Depths-Dark-Theme, :root-Tokens)
 ├── api/                    # Vercel Edge Functions (laufen nur auf Vercel / `vercel dev`)
 │   ├── generate-design.js  # Anthropic-Proxy (claude-opus-4-8) → Design-JSON
-│   ├── preview-design.js   # Replicate FLUX 1.1 Pro → Studio-Render
 │   ├── try-on.js           # Replicate → fotorealistische Anprobe
 │   ├── gen-image.js        # Bild-Generierung für die Design-Engine-Bibliothek
 │   ├── waitlist.js         # Warteliste → Upstash Redis
@@ -105,7 +104,7 @@ Vercel → Project Settings → Environment Variables → ANTHROPIC_API_KEY
 ```
 
 Ohne Key generiert ein lokaler, semantischer Fallback die Designs (komplett offline).
-Die fotorealistischen Renders (`preview-design.js`, `try-on.js`) nutzen
+Die fotorealistische Anprobe (`try-on.js`) nutzt
 `REPLICATE_API_TOKEN`. Ein direkter Browser-Key (`window.URBAN_REVOLUTION_API_KEY`)
 existiert nur für Demos — nicht für Produktion.
 

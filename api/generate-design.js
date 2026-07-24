@@ -92,7 +92,7 @@ export default async function handler(request) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
         // Log the setup hint server-side only; never leak config state to the
-        // browser (same neutral-error pattern as try-on.js / preview-design.js).
+        // browser (same neutral-error pattern as try-on.js).
         // The client falls back to its local keyword generator on any non-OK.
         console.error("[generate-design] ANTHROPIC_API_KEY not configured — set it in Vercel → Project Settings → Environment Variables.");
         // Distinct code (not "service_unavailable") so js/ai.js can tell this
