@@ -122,15 +122,11 @@ see the status column for what to actually act on:
 | **Your style** | `#your-style` | ~~The identity climax + the ONE `--accent-warm` use.~~ | **removed (2026-07)** — identity message now lives inside `#machine` (AI-role contrast + user steps); machine hands off to the finale directly. |
 | **How it works** | ~~`#how`~~ → `#machine` | The four steps become self-drawing "artifact vignettes" the needle stitches along. | **done, simpler than scoped** — shipped as a compact `how.*` protocol rail inside `#machine`, not standalone self-drawing vignettes. If the vignette treatment still matters, it's a *new*, smaller-scope idea against the current rail, not a resumption of this row. |
 | **Finale** | `.lp-finale` | The orb CTA becomes the point where the loop visibly *completes*. | **done** — the magnetic circle CTA is the page's geometric conclusion, tying back to `#pivot`'s circle. |
-| Studio headers | `#design`/`#measure`/`#production`/`#faq` | `#measure`: promote the buried privacy line into a designed trust component. `#production`+`#faq`: spec sheet as engineering blueprint. | **split:** `#production`/`#faq` **done** (`.spec-drawing` "Werkstatt-Tinte" print/export treatment, PR #356). `#measure` **still open** — `.photo-privacy` is still 11px italic text (`css/styles.css`), not a designed component. |
+| Studio headers | `#design`/`#measure`/`#production`/`#faq` | `#measure`: promote the buried privacy line into a designed trust component. `#production`+`#faq`: spec sheet as engineering blueprint. | **done** — `#production`/`#faq`: `.spec-drawing` "Werkstatt-Tinte" print/export treatment (PR #356). `#measure`: `.privacy-seal` designed trust card (PR #443, 2026-07-23). |
 
-**Only open item from this table: the `#measure` privacy trust component.**
-Low effort (one section, existing tokens, no new mechanism — promote the
-existing `measure.photo_privacy` string into a small designed component next
-to the upload control), low risk (static, no motion, no `svh`/scroll
-concerns) — a good low-risk-visual autonomous-merge candidate once built.
-Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
-11px italic text in `css/styles.css` — unchanged.
+**All rows in this table are now done** (last one, the `#measure` privacy
+trust component, shipped in PR #443 on 2026-07-23 — see the 2026-07-24 status
+update below). Kept for history.
 
 > **Status update (2026-07-13):** two accessibility fixes landed on surfaces
 > this doc discusses, from a separate never-committed review (see
@@ -174,6 +170,24 @@ Re-checked 2026-07-13 against `main` @ `5e5cbf3`: `.photo-privacy` is still
 > `js/thermal-waves.js`, not a rebase of the existing diff — see
 > `WEBSITE-IMPROVEMENTS.md`'s 2026-07-18 status update for the full
 > accounting.
+
+> **Status update (2026-07-24 review, read before acting):** re-checked
+> against `main` @ `052f2e5`. **The `#measure` trust component — this doc's
+> last open item — is done.** PR #443 (2026-07-23, "polish pass") replaced
+> `.photo-privacy` (11px italic footnote) with `.privacy-seal` in
+> `css/styles.css`: a bordered card (icon + mono `measure.privacy_label` +
+> body copy) next to the photo upload control — static, no motion, exactly
+> the low-risk shape this doc recommended. Confirmed directly against code
+> (`.photo-privacy` selector no longer exists; `.privacy-seal`/
+> `.privacy-seal-icon`/`.privacy-seal-body`/`.privacy-seal-label` do).
+> **§4's table has no remaining open rows.** PR #444 (2026-07-24, the
+> "atelier" engine PR — contradiction eviction, flat anatomy, describe-first
+> opener, mobile Cockpit restructuring) landed the same day but is entirely
+> inside the studio journey, not the landing narrative this doc tracks — see
+> `STUDIO-UX-ROADMAP.md`'s 2026-07-24 status update for its accounting.
+> PR #428 ("Reclaimed Light") is still open, still draft, still stale
+> against the post-#430 hero — unchanged, see `WEBSITE-IMPROVEMENTS.md` for
+> the recommended disposition.
 
 ---
 

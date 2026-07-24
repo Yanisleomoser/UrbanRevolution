@@ -374,6 +374,50 @@ studio a11y are **not** covered by their intended guard — read the actual
 script before trusting a green/red result on those surfaces, and treat
 fixing them as a small, non-visual, autonomous-mergeable chore.
 
+**Status update (2026-07-24):** re-checked against `main` @ `052f2e5`. PR
+#444 ("the atelier reads your mind," merged same day as #443 above) landed
+five slices from an 11-agent deep analysis, outside this roadmap's original
+ten but directly responsive to gaps this doc and `WEBSITE-IMPROVEMENTS.md`
+both flagged:
+- **Contradiction eviction + refine integrity + flat anatomy** — bug fixes
+  in the same family as this roadmap's §3 defect inventory (derived-value
+  drift, impossible closures on archetype defaults, refine-tile label
+  collisions), not new roadmap scope.
+- **The describe-first opener** (`idea_describe`, a new, skippable first
+  question — one free-text sentence, parsed 100% client-side into editable
+  "Verstanden" chips) is a **partial, differently-shaped answer to
+  `WEBSITE-IMPROVEMENTS.md` #01's "revive the intro" flag**, not the
+  one-quiet-card intro screen originally scoped there. It's a real question
+  with a one-tap skip, not an explanatory intro — the PR's own description
+  flags the "kein Onboarding" directive tension and states the owner
+  green-lit this specific direction in-session (confirmed: merged directly
+  by the repo owner, not autonomously). Net effect on journey length: **+1
+  screen** (jacket path's spine assertion moved to ≤16, was ≤14 after slice
+  8's regions board) — pulls against §7's 8–10-tap target even as it adds a
+  new capability; worth weighing next time #01's phase-E reweighting is
+  scoped.
+- **Das Cockpit** — a mobile restructuring beyond slice 3's docked
+  mini-preview: on ≤899px the whole studio becomes a fixed-frame app (stage
+  pinned, question sheet scrolls internally, actions pinned in the thumb
+  zone). Addresses the same mobile-fidelity goal as §4 but goes further than
+  that section scoped (a fixed *frame*, not just a docked preview).
+- **What #444 does NOT touch, reconfirmed directly against code this pass:**
+  `isGuardedTap`/`COMMIT_GUARD_MS` (`js/design-engine/flow.js:41-42`) is
+  still byte-identical — the commit-model unification that's been
+  `WEBSITE-IMPROVEMENTS.md`'s top-ranked recommendation across **ten
+  consecutive reviews (07-12 → 07-24)** remains untouched. The four broken
+  regression guards are still broken exactly as documented in the 07-18
+  entry above — reconfirmed: `verify-a11y-studio.mjs` still calls
+  `window.DEModalities.hotspot`, which doesn't exist (only
+  `DEModalities.regions` does, shipped in slice 8). `api/preview-design.js`
+  still has no caller in `app.js`/`index.html` (only stale comments
+  referencing it). Both were already flagged in #444's own PR description as
+  "known, untouched here."
+- New permanent guards from this PR: `scripts/verify-describe.mjs` (24
+  checks, includes the cockpit contract) — add it to the "run before
+  touching the studio" list alongside the existing `verify-weave`/
+  `verify-threshold`/`verify-refine`/`verify-sewing`.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps
