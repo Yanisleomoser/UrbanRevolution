@@ -79,6 +79,21 @@ for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile
   check(!/beschreib/i.test(state.q), "the journey moved on to a real next question");
   check(/jacke|puffer|blazer|trench|bomber|work/i.test(state.chips) || /STIL|FIT|LÄNGE/i.test(state.chips),
     `the preview chips carry the read piece (${state.chips.trim().slice(0, 60) || "—"})`);
+  if (vp.name === "mobile") {
+    // Cockpit-Vertrag (Owner-Feedback 2026-07-24): Bühne UND Aktionsleiste
+    // stehen nach jeder Antwort GEMEINSAM im Viewport — die Seite bewegt
+    // sich nicht, der Fokus-Scroll darf den Rahmen nie verschieben.
+    const cockpit = await page.evaluate(() => {
+      const pv = document.getElementById("de-preview").getBoundingClientRect();
+      const controls = document.querySelector(".de-controls").getBoundingClientRect();
+      return {
+        stageVisible: pv.top >= -8 && pv.bottom > 100,
+        controlsInView: controls.top >= 0 && controls.bottom <= window.innerHeight + 1,
+      };
+    });
+    check(cockpit.stageVisible, "cockpit: the stage stays in frame after the commit (no focus-scroll drift)");
+    check(cockpit.controlsInView, "cockpit: the action row sits inside the viewport (thumb zone)");
+  }
   check(errors.length === 0, `no page errors on the describe path (${errors.join(" | ") || "clean"})`);
   await page.close();
 }

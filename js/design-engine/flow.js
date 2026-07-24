@@ -548,6 +548,13 @@ const DesignFlow = (() => {
     let stageInView = true;
     const syncDock = () => {
       if (!dockBtn) return;
+      // Im Regions-Cockpit ist die Bühne bewusst aus (das Board zeigt das
+      // Flat selbst) — der Dock darf dann nicht über dem Board aufpoppen.
+      if (hostEl.dataset.deMod === "regions") {
+        dockBtn.hidden = true;
+        dockBtn.classList.remove("is-on");
+        return;
+      }
       const show = dockShouldShow(smallScreen(), previewInView, stageInView);
       dockBtn.hidden = !show;
       // .is-on drives the CSS entrance (fade/rise) after unhide.
@@ -876,6 +883,10 @@ const DesignFlow = (() => {
       atRefine = false; // back to the morphing flat for any question
       currentNode = node;
       pendingLive = null;
+      // Cockpit-Regie (≤899px): das CSS liest die aktive Modalität am Host —
+      // Regions blendet die Bühne aus (das Board TRÄGT das Flat), Describe/
+      // Refine bekommen eine kompaktere Bühne für mehr Blatt-Raum.
+      hostEl.dataset.deMod = node.modality;
       updateStepper(node.phase);
       const crossed = lastPhase !== null && node.phase !== lastPhase;
       lastPhase = node.phase;
@@ -925,10 +936,30 @@ const DesignFlow = (() => {
         const q = body.querySelector(".de-question");
         if (q) {
           q.setAttribute("tabindex", "-1");
-          if (firstQuestionShown) q.focus();
+          if (firstQuestionShown) focusQuestion(q);
           else firstQuestionShown = true;
         }
       });
+    }
+
+    // Cockpit (≤899px): der A11y-Fokus auf die neue Frage darf die SEITE nicht
+    // verschieben — real geschah genau das (Frage-Fokus scrollte den Rahmen
+    // 250px+ nach oben, die Bühne verschwand, der Dock sprang ein). Im
+    // Cockpit steht der Rahmen; nur das Blatt (de-body) springt für die neue
+    // Frage auf Anfang. Desktop (Zwei-Spalten, sticky Bühne) behält den
+    // normalen Fokus-Scroll.
+    const cockpitActive = () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia("(max-width: 899px)").matches
+        : false;
+    function focusQuestion(q) {
+      if (!cockpitActive()) { q.focus(); return; }
+      try { q.focus({ preventScroll: true }); } catch (_e) { q.focus(); }
+      body.scrollTop = 0;
+      // Rahmen bündig nachziehen, falls doch etwas bewegt hat (Tastatur zu,
+      // alte Engines ohne preventScroll) — nur bei echter Verschiebung.
+      const top = hostEl.getBoundingClientRect().top;
+      if (Math.abs(top) > 48) hostEl.scrollIntoView({ block: "start" });
     }
 
     function renderNext() {
@@ -965,6 +996,7 @@ const DesignFlow = (() => {
       persist();
       currentNode = null;
       lastPhase = "F";
+      hostEl.dataset.deMod = "refine";
       atRefine = true; // Phase F → crossfade the flat to the realism photo
       updateStepper("F"); // the arc is traversed; the user is refining/generating
       finishBtn.hidden = true;
