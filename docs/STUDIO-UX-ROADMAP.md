@@ -409,14 +409,27 @@ both flagged:
   regression guards are still broken exactly as documented in the 07-18
   entry above — reconfirmed: `verify-a11y-studio.mjs` still calls
   `window.DEModalities.hotspot`, which doesn't exist (only
-  `DEModalities.regions` does, shipped in slice 8). `api/preview-design.js`
-  still has no caller in `app.js`/`index.html` (only stale comments
-  referencing it). Both were already flagged in #444's own PR description as
-  "known, untouched here."
+  `DEModalities.regions` does, shipped in slice 8). At the time #444 merged,
+  `api/preview-design.js` still had no caller in `app.js`/`index.html`
+  (only stale comments referencing it) — see the same-day follow-up below,
+  this is no longer the case. Both were already flagged in #444's own PR
+  description as "known, untouched here."
 - New permanent guards from this PR: `scripts/verify-describe.mjs` (24
   checks, includes the cockpit contract) — add it to the "run before
   touching the studio" list alongside the existing `verify-weave`/
   `verify-threshold`/`verify-refine`/`verify-sewing`.
+
+**Status update (2026-07-24, same-day follow-up):** PR #446 **deleted**
+`api/preview-design.js` outright (the orphaned, unauthenticated, billed
+Replicate proxy flagged above and across three prior reviews) rather than
+wiring it to a UI trigger — see `WEBSITE-IMPROVEMENTS.md`'s matching
+same-day entry for the full accounting. `js/preview-fallback.js` is
+unrelated and unaffected: it remains a live caller from
+`render-preview.js`'s `silhouette()` as the defensive fallback when
+`window.GarmentSVG` isn't available. Doesn't touch this roadmap's own
+open items (commit-model unification, the four broken `verify-*.mjs`
+guards) — noted here only because the paragraph above, written before
+#446 landed, would otherwise read as current.
 
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
