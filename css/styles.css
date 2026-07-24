@@ -3373,7 +3373,10 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-tot-panel::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: linear-gradient(180deg, rgba(11, 11, 13, 0), rgba(11, 11, 13, 0.88)); pointer-events: none; }
 /* Label + abgeleitete „zieht zu …"-Zeile als Spalte über dem Scrim. */
 .de-tot-copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
-.de-tot-hint { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); background: rgba(11, 11, 13, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 2px var(--space-2); border-radius: 999px; }
+/* --text auf dichterer Pill (nicht --text-dim auf 0.55): die Zeile liegt über
+   unbekannten Mood-Fotos — auf dem hellen Dunst-Bild fiel dim real unter die
+   Lesbarkeit. Die Leisheit kommt aus 10px-Mono-Tracking, nicht aus Grau. */
+.de-tot-hint { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); background: rgba(11, 11, 13, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 2px var(--space-2); border-radius: 999px; }
 
 /* Slider → Couture (roadmap §6): Haarlinien-Spur mit Live-Füllung (--val vom
    Input), Ring-Daumen, und der Pol, dem sich der Regler nähert, hellt auf —
