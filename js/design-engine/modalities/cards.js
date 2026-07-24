@@ -73,6 +73,19 @@
 
     let confirm = null;
     const grid = V.el("div", { class: "de-cards", role: "group" });
+    // Grosssets (≥5 Wahlen) wechseln in ein dichteres Raster mit
+    // Hochformat-Kacheln — das 240×340-Flat nutzt die Kachel voll aus,
+    // alle Optionen bleiben (Vielfalt kompakt, nicht beschnitten).
+    if ((node.choices || []).length >= 5) grid.classList.add("de-cards-many");
+    // Multi-select: id → { btn, choice } für die Exklusiv-Logik („Keins"
+    // räumt die Stapel-Auswahl, ein Stapel-Pick räumt „Keins").
+    const tiles = new Map();
+    const setPressed = (id, on) => {
+      const entry = tiles.get(id);
+      if (!entry) return;
+      entry.btn.classList.toggle("is-selected", on);
+      entry.btn.setAttribute("aria-pressed", on ? "true" : "false");
+    };
     (node.choices || []).forEach((choice) => {
       // Name the button explicitly so its accessible name never depends on the
       // image loading or the visible label's DOM position (matches
@@ -85,10 +98,19 @@
       btn.appendChild(label);
       btn.addEventListener("click", () => {
         if (!multi) { ctx.commit(choice.id); return; }
-        if (selected.has(choice.id)) { selected.delete(choice.id); btn.classList.remove("is-selected"); btn.setAttribute("aria-pressed", "false"); }
-        else { selected.add(choice.id); btn.classList.add("is-selected"); btn.setAttribute("aria-pressed", "true"); }
+        if (selected.has(choice.id)) { selected.delete(choice.id); setPressed(choice.id, false); }
+        else {
+          // Eine exklusive Wahl (z. B. „Keins") verträgt sich mit nichts:
+          // sie leert die Auswahl — und jede andere Wahl entfernt sie.
+          [...selected].forEach((id) => {
+            const other = tiles.get(id);
+            if (choice.exclusive || (other && other.choice.exclusive)) { selected.delete(id); setPressed(id, false); }
+          });
+          selected.add(choice.id); setPressed(choice.id, true);
+        }
         if (confirm) confirm.disabled = selected.size === 0;
       });
+      tiles.set(choice.id, { btn, choice });
       grid.appendChild(btn);
     });
     host.appendChild(grid);

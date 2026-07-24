@@ -480,5 +480,74 @@ console.log("\n— scrubImpossibleFills · inferred closures must be buildable p
   assert(D.get(g, "construction.closure") === "button", "without an allowedFn the scrub is a graceful no-op");
 }
 
+console.log("\n— resolveEffects · cards multi UNION-merges array values (stapelbare Signaturen) —");
+{
+  const node = { modality: "cards", choices: [
+    { id: "none", exclusive: true, effects: { set: { signature: [] } } },
+    { id: "zip", effects: { set: { signature: ["asymmetric-zip"] }, weight: { techAvant: 0.15 } } },
+    { id: "stitch", effects: { set: { signature: ["contrast-stitch"] }, weight: { utility: 0.1 } } },
+  ] };
+  const two = Flow.resolveEffects(node, ["zip", "stitch"]);
+  assert(eq(two.eff.set.signature, ["asymmetric-zip", "contrast-stitch"]),
+    "two stacked signature picks UNION on the same path (last tap no longer wins)");
+  assert(two.eff.weight.techAvant === 0.15 && two.eff.weight.utility === 0.1, "both picks' weights accumulate");
+  const dup = Flow.resolveEffects(node, ["zip", "zip"]);
+  assert(eq(dup.eff.set.signature, ["asymmetric-zip"]), "duplicate ids dedupe (Set semantics)");
+  const none = Flow.resolveEffects(node, ["none"]);
+  assert(eq(none.eff.set.signature, []), "an exclusive 'none' commits the empty stack");
+}
+
+console.log("\n— mutateDna · Archetyp-Zug (Runde 3: Richtungen mit benannter Heimat) —");
+{
+  const D = global.DesignDNA;
+  const mkBase = () => {
+    const b = D.create();
+    D.set(b, "color.stops", ["#2779a8"], 1);
+    D.set(b, "silhouette.fit", 0.2, 1);
+    D.set(b, "silhouette.structure", 0.5, 1);
+    D.set(b, "fabric.finishWeight", 0.2, 1);
+    return b;
+  };
+  const soft = { id: "softCouture", defaults: {
+    "silhouette.fit": 0.9, "silhouette.structure": 0.3,
+    "fabric.finish": "sheen", "color.stops": ["#831843"], "pattern.type": "none",
+  } };
+  const plain = Flow.mutateDna(mkBase(), 2, 1);
+  const noArch = Flow.mutateDna(mkBase(), 2, 1, null);
+  assert(eq(plain, noArch), "without an archetype the variant is byte-identical (backwards compatible)");
+
+  const pulled = Flow.mutateDna(mkBase(), 2, 1, soft);
+  assert(!eq(plain, pulled), "an archetype visibly reshapes the variant");
+  const fitPlain = D.get(plain, "silhouette.fit"), fitPulled = D.get(pulled, "silhouette.fit");
+  assert(fitPulled > fitPlain, "fit moves TOWARD the archetype's default (0.2 → toward 0.9)");
+  const finPulled = D.get(pulled, "fabric.finishWeight");
+  assert(finPulled > D.get(plain, "fabric.finishWeight"), "a 'sheen' archetype lifts the finish weight");
+  assert(Flow.hexHue(D.get(pulled, "color.stops")[0]) !== null, "pulled stops remain valid hex colours");
+  assert(eq(Flow.mutateDna(mkBase(), 2, 1, soft), pulled), "the archetype pull is deterministic (same in, same out)");
+
+  // Ein ENTSCHIEDENES „kein Muster" übersteht auch den Muster-Archetyp.
+  const street = { id: "y2kStreet", defaults: { "pattern.type": "graphic", "pattern.scale": 0.7, "color.stops": ["#2a9d8f"] } };
+  let reintroduced = false;
+  for (let idx = 1; idx <= 3; idx++) {
+    for (let v = 1; v <= 4; v++) {
+      const b = mkBase();
+      D.set(b, "pattern.type", "none", 1);
+      if (D.get(Flow.mutateDna(b, idx, v, street), "pattern.type") !== "none") reintroduced = true;
+    }
+  }
+  assert(!reintroduced, "explicit pattern.type 'none' (conf 1) survives every archetype-fed concept × version");
+}
+
+console.log("\n— orderRand (Session-Seed → node-id → 0..1, stabil und seed-verschieden) —");
+{
+  const r7 = Flow.orderRand(7);
+  const ids = ["jacket_fit", "jacket_length", "jacket_material", "jacket_color", "jacket_details"];
+  assert(ids.every((id) => r7(id) === Flow.orderRand(7)(id)), "same seed → same value per node (Zurück/Resume stabil)");
+  assert(ids.every((id) => { const v = r7(id); return v >= 0 && v < 1; }), "values stay in [0,1)");
+  const r8 = Flow.orderRand(8);
+  assert(ids.some((id) => r7(id) !== r8(id)), "a different seed shifts at least one node's draw");
+  assert(typeof Flow.orderRand(NaN)("x") === "number", "a broken seed degrades to a number, never throws");
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

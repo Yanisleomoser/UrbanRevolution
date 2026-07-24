@@ -111,9 +111,20 @@ const DesignEngine = (() => {
         (node.modality === "thisOrThat" && /^(mood_|inspo_)/.test(node.id)));
   }
 
-  function nextNode(nodes, dna, answered, minGain) {
+  // Session-Variation: Stärke des optionalen Score-Jitters (±9 %) — genug, um
+  // Beinahe-Gleichstände zwischen Branch-Fragen pro Session unterschiedlich zu
+  // brechen, zu wenig, um eine bewusst hoch priorisierte Frage zu entthronen.
+  const ORDER_JITTER = 0.18;
+
+  // `rand` (optional): node-id → 0..1, seed-stabil pro Session. Der Jitter
+  // greift erst NACH dem Kategorie-Entscheid, damit die bewusst gesetzte
+  // Eröffnungs-Dramaturgie (describe → mood → category, roadmap C2)
+  // deterministisch bleibt. Ohne `rand` ist das Verhalten byte-identisch —
+  // Tests und alle Alt-Aufrufer laufen unverändert.
+  function nextNode(nodes, dna, answered, minGain, rand) {
     const floor = minGain == null ? MIN_GAIN : minGain;
     const entropy = archetypeEntropy(dna);
+    const jitterOn = typeof rand === "function" && DesignDNA.get(dna, "category") != null;
     let best = null;
     let bestScore = floor;
     eligible(nodes, dna, answered).forEach((n) => {
@@ -121,7 +132,8 @@ const DesignEngine = (() => {
       // category is chosen (brief §7 Bug 2) — so an abstract "this or that" mood
       // pair never resurfaces between specific detail questions.
       if (isPureSoftMood(n) && (entropy < SOFT_RETRACT_ENTROPY || DesignDNA.get(dna, "category") != null)) return;
-      const score = (n.priority == null ? 0.5 : n.priority) * informationGain(dna, n) * phaseBias(n);
+      let score = (n.priority == null ? 0.5 : n.priority) * informationGain(dna, n) * phaseBias(n);
+      if (jitterOn) score *= 1 + (rand(n.id) - 0.5) * ORDER_JITTER;
       if (score > bestScore) { bestScore = score; best = n; }
     });
     return best;

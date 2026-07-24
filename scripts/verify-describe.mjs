@@ -24,7 +24,7 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.goto(base + "/#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
   const q1 = await page.$eval("#de-body .de-question", (n) => n.textContent);
   check(/beschreib/i.test(q1), `the journey opens with the describe question ("${q1.trim().slice(0, 40)}…")`);
@@ -45,7 +45,7 @@ for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.goto(base + "/#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   console.log(`  — describe path @ ${vp.name} (${vp.width}px) —`);
   await page.waitForSelector(".de-describe-input", { timeout: 20000 });
   if (vp.name === "mobile") {

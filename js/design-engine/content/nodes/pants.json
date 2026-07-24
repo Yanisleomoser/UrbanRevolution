@@ -216,6 +216,40 @@
             }
           },
           "image": "/js/design-engine/content/img/material/wool.jpg"
+        },
+        {
+          "id": "linen",
+          "label": {
+            "de": "Leinen",
+            "en": "Linen"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "linen"
+            },
+            "weight": {
+              "quietMinimal": 0.1,
+              "softCouture": 0.1
+            }
+          },
+          "image": "/js/design-engine/content/img/material/linen.jpg"
+        },
+        {
+          "id": "polyester",
+          "label": {
+            "de": "Recycled Tech",
+            "en": "Recycled tech"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "polyester",
+              "fabric.finish": "matte"
+            },
+            "weight": {
+              "techAvant": 0.15
+            }
+          },
+          "image": "/js/design-engine/content/img/material/polyester.jpg"
         }
       ]
     },
@@ -308,9 +342,10 @@
       "modality": "cards",
       "when": "category == 'pants' && intent.energy > 0.5 && _confidence.signature < 0.4",
       "priority": 0.3,
-      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "multi": true,
+      "question": { "de": "Signature-Details? Stapelbar.", "en": "Signature details? Stackable." },
       "choices": [
-        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "none", "exclusive": true, "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
         { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "utility": 0.1 } } },
         { "id": "branding", "label": { "de": "Branding-Patch", "en": "Branding patch" }, "effects": { "set": { "signature": ["branding-patch"] }, "weight": { "y2kStreet": 0.1, "sport": 0.1 } } }
       ]
