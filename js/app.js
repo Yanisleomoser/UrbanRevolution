@@ -1439,7 +1439,7 @@
     // cap trims it before the user's own words if a prompt is very long.
     const fabric = FABRIC_DESCRIPTORS[material];
     if (fabric) parts.push(`Fabric: ${fabric}`);
-    // Both /api/try-on and /api/preview-design reject a designPrompt over
+    // /api/try-on rejects a designPrompt over
     // 1000 chars (400). A detailed prompt + a verbose AI description can
     // exceed that, so cap the joined string with a small safety margin —
     // the trailing type/colour/material clause is the least important to

@@ -11,7 +11,7 @@
  *
  * On any failure (store not configured yet, upstream error) the real reason
  * is logged server-side and the browser gets a neutral, coded message — same
- * pattern as preview-design.js / try-on.js. The site never breaks: GET just
+ * pattern as try-on.js. The site never breaks: GET just
  * returns { count: null } and the page hides the number.
  *
  * Storage (DSGVO-minimal — only what a waitlist needs):

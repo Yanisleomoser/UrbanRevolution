@@ -1,6 +1,6 @@
 /* Test for the API-error → user-message seam.
 
-   The Edge Functions (api/try-on.js, preview-design.js) return a SAFE coded
+   The Edge Functions (api/try-on.js) return a SAFE coded
    error — service_unavailable / rate_limited / failed — and app.js's
    codedErrorMessage() turns that code into a localised string. That mapping was
    buried in app.js (untestable: app.js can't load headless). It now lives in

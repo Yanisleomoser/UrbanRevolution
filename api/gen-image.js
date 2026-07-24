@@ -4,7 +4,7 @@
  * One-off, KEY-GATED raw text→image route used to build the Design-Engine image
  * library (Hero / Mood / Material) WITHOUT exposing the Replicate token outside
  * Vercel. Calls FLUX 1.1 Pro with the same server-side REPLICATE_API_TOKEN as
- * preview-design.js / try-on.js, but — unlike preview-design — passes the prompt
+ * try-on.js, but — unlike try-on.js — passes the prompt
  * through verbatim (no ghost-mannequin garment wrapper), so atmospheric mood and
  * fabric-macro prompts render correctly.
  *
@@ -76,7 +76,7 @@ export default async function handler(request) {
   }
   const { prompt, aspect } = valid;
 
-  // Edge functions get ~25 s total; unlike try-on.js/preview-design.js this
+  // Edge functions get ~25 s total; unlike try-on.js this
   // route then *also* polls, so a fixed 25 s abort on the initial request
   // left no room for the poll loop below and could run the whole handler
   // past the platform timeout (raw 500 instead of any jsonError path).

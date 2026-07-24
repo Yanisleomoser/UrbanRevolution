@@ -2,7 +2,7 @@
  * Urban Revolution — Shared Upstash-backed rate limiter (Edge Functions)
  *
  * A cost-DoS safety net for the billed AI proxies (generate-design.js,
- * preview-design.js, try-on.js). The only existing throttle on those was
+ * try-on.js). The only existing throttle on those was
  * `urev_preview_count` in the BROWSER's localStorage — a script that POSTs
  * to the endpoint directly, skipping the UI entirely, never sets it, so it
  * can run up the Anthropic/Replicate bill without limit. This adds a

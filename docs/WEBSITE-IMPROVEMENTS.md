@@ -382,9 +382,20 @@
 >   pattern) remains the top pick — now unaddressed across **ten consecutive
 >   reviews (07-12 → 07-24)**, having watched 30+ unrelated PRs land around
 >   it, including one (#444) that added a *new* modality surface inside the
->   very inconsistency it would unify. Rank 2 (`preview-design.js`
->   decide-and-fix) is unchanged and still ships same-day alongside it if a
->   quick win is wanted.
+>   very inconsistency it would unify.
+>
+> **Status update (2026-07-24, same-day follow-up): rank 2 shipped.** The
+> orphaned `api/preview-design.js` endpoint — unauthenticated, billed,
+> flagged with no caller across three consecutive reviews (07-21 → 07-24) —
+> is **deleted** rather than wired up: reviving that "visualise the draft
+> before try-on" feature is a product-shape decision (new UI, i18n copy,
+> rate-limit UX), not something to build speculatively during a routine
+> review. `js/preview-fallback.js` is kept — it turned out to still be a
+> live caller from `js/design-engine/render-preview.js`'s `silhouette()` as
+> the defensive fallback when `window.GarmentSVG` isn't available, unrelated
+> to the deleted endpoint. All stale comments across `api/*.js`, `js/*.js`,
+> tests, `CLAUDE.md`, and `README.md` referencing the removed route were
+> corrected in the same pass. Rank 2 drops off the table below.
 
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
@@ -584,21 +595,21 @@ them would be motion for its own sake.
 ## Re-ranked open work & recommended next PR (2026-07-24 review)
 
 Re-ranked by impact/effort/risk, folding in the 2026-07-24 status update
-above: **rank 4 (the `VISUAL-ROADMAP.md` `#measure` trust component) shipped
-in #443** and drops off this table; **the `#01` intro-screen bullet is
-resolved by product decision** (the describe-first opener, #444 — a
-differently-shaped answer the owner explicitly approved) and also drops off
-as an open flag. Everything else is unchanged from 07-23 — #444 touched the
-studio journey extensively (new opener, mobile Cockpit) without addressing
-the actual top-ranked item (commit-model unification) or any of ranks 2–4
-below.
+above: **rank 2 (the orphaned `preview-design.js` endpoint) shipped
+same-day**, and **rank 4 (the `VISUAL-ROADMAP.md` `#measure` trust
+component) shipped in #443** — both drop off this table; **the `#01`
+intro-screen bullet is resolved by product decision** (the describe-first
+opener, #444 — a differently-shaped answer the owner explicitly approved)
+and also drops off as an open flag. Everything else is unchanged from 07-23
+— #444 touched the studio journey extensively (new opener, mobile Cockpit)
+without addressing the actual top-ranked item (commit-model unification) or
+either remaining rank below.
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
 | 1 | #01, re-scoped: one commit model + phase-E reweighting | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 30+ unrelated PRs landed around it since first flagged — including #444, which added a *new* modality inside the very two-commit-model split this item would unify — the largest remaining product gap by a wide margin |
-| 2 | Chore: decide-and-fix the orphaned `api/preview-design.js` endpoint (delete the route, or wire it to a real caller) | low direct user impact, but stops live spend on an unreachable feature and fixes stale `CLAUDE.md` docs | low (one route + one doc section, or a small `app.js` wiring if kept) | none (non-visual, no studio-journey touch) | Flagged 07-21, independently reconfirmed no caller exists (07-23, 07-24); small, self-contained, safe autonomous-merge candidate |
-| 3 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
-| 4 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23 and 07-24 (`verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`); safe autonomous-merge candidate once fixed |
+| 2 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
+| 3 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23 and 07-24 (`verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`); safe autonomous-merge candidate once fixed |
 | — | PR #428 ("Reclaimed Light" hero glow-up, successor to closed #418) | unknown until rebuilt | **not** "pending review" — `mergeable_state` still unresolved/`dirty`; its `initHeroParallax`/`initWeave` targets were removed by #430's hero rebuild | high (scroll/parallax, and now a from-scratch rebuild against `thermal-waves.js`) | Recommend closing; if the glow-up is still wanted, re-scope against the current WebGL hero rather than patching the old diff |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Product-decision flag, not an engineering task — raise it, don't build it speculatively |
 | — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision"; no new comment since 07-21 |
@@ -615,9 +626,10 @@ bugs, the R4/R10 landing polish, the Instagram credibility signal, the GSAP
 dedupe, the colour-atelier confirm bug (and its 07-21 duo-gradient follow-up),
 both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
 EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
-re-skin, the `#measure` trust seal, and now the atelier/Cockpit PR itself).
+re-skin, the `#measure` trust seal, the orphaned `preview-design.js`
+endpoint removal, and now the atelier/Cockpit PR itself).
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
-rank 2 (the orphaned `preview-design.js` endpoint) is small enough to ship
+rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
 - **Impact:** highest available right now — journey completion is called out
   in this doc itself as "the one metric the whole site depends on," and the
