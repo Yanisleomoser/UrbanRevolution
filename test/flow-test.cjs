@@ -538,6 +538,30 @@ console.log("\n— mutateDna · Archetyp-Zug (Runde 3: Richtungen mit benannter 
   assert(!reintroduced, "explicit pattern.type 'none' (conf 1) survives every archetype-fed concept × version");
 }
 
+console.log("\n— scrubImpossibleFills räumt Describe-/Freitext-Saat (conf 0.62) aus —");
+{
+  const D = global.DesignDNA;
+  const allowed = (cat, v) => (cat === "tshirt" ? v === "none" : true);
+  // „mit Reissverschluss" ohne Garment-Wort passiert das Parser-Gate und
+  // landet bei 0.62 — über der Finalize-Schwelle 0.5. Der Commit-/Freitext-
+  // Scrub läuft deshalb mit 0.62 und muss genau diese Saat ausräumen.
+  const d = D.create();
+  D.set(d, "category", "tshirt", 1);
+  D.set(d, "construction.closure", "zip", 0.62);
+  Flow.scrubImpossibleFills(d, 0.62, allowed);
+  assert(D.get(d, "construction.closure") === "none", "ein unbaubarer 0.62-Verschluss wird auf 'none' ausgeräumt");
+  const e = D.create();
+  D.set(e, "category", "tshirt", 1);
+  D.set(e, "construction.closure", "zip", 1);
+  Flow.scrubImpossibleFills(e, 0.62, allowed);
+  assert(D.get(e, "construction.closure") === "zip", "eine explizite Antwort (conf 1) bleibt unangetastet");
+  const f = D.create();
+  D.set(f, "category", "hoodie", 1);
+  D.set(f, "construction.closure", "zip", 0.62);
+  Flow.scrubImpossibleFills(f, 0.62, allowed);
+  assert(D.get(f, "construction.closure") === "zip", "eine für die Kategorie baubare Saat bleibt stehen");
+}
+
 console.log("\n— orderRand (Session-Seed → node-id → 0..1, stabil und seed-verschieden) —");
 {
   const r7 = Flow.orderRand(7);

@@ -962,6 +962,12 @@ const DesignFlow = (() => {
         const answeredId = currentNode && currentNode.id;
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
         syncDerivedFinish(dna);
+        // Describe/Freitext säen bei conf 0.62 — ÜBER der Finalize-Scrub-
+        // Schwelle (0.5). Ein vor der Kategorie gesäter, für sie unbaubarer
+        // Verschluss (z. B. „Reissverschluss" → später T-Shirt) muss beim
+        // nächsten Commit raus, sonst widersprechen Satz/Prompt/Share dem
+        // Flat (U1-Klasse). Explizite Antworten (conf ≥ 0.75) bleiben.
+        scrubImpossibleFills(dna, 0.62, window.GarmentSVG && window.GarmentSVG.closureAllowed);
         const afterIds = new Set(DesignEngine.eligible(content.nodes, dna, answered).map((n) => n.id));
         let saved = 0;
         beforeIds.forEach((nid) => { if (nid !== answeredId && !afterIds.has(nid)) saved++; });
@@ -1264,6 +1270,11 @@ const DesignFlow = (() => {
             if (DesignDNA.confidence(dna, p) < 0.75) DesignDNA.set(dna, p, v, 0.62);
           });
           syncDerivedFinish(dna);
+          // Der Parser kennt die committete Kategorie nicht („mit Reissverschluss"
+          // ohne Garment-Wort passiert sein Gate) — ein fürs Stück unbaubarer
+          // Verschluss bei 0.62 stünde sonst in Satz/Prompt/Share, während das
+          // Flat offen zeichnet (U1-Klasse). Sofort ausräumen.
+          scrubImpossibleFills(dna, 0.62, window.GarmentSVG && window.GarmentSVG.closureAllowed);
           mirror(dna, content.attributes);
           persist(); updatePreview(); reSummary();
           flash("✓ " + t("engine.dsc_read_label"));

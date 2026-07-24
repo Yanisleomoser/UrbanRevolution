@@ -3858,8 +3858,13 @@ html.is-touch .de-region-opt { min-height: 48px; }
     /* Volle Blattbreite statt links klebender Pill: nichts lugt seitlich
        unter dem Knopf hervor, größeres Daumenziel — eine App-Aktionsleiste.
        (Kein ::before-Scrim: negative z-index-Pseudos malen ÜBER den eigenen
-       Button-Hintergrund und verdunkeln die Pill.) */
-    .de-body .de-confirm,
+       Button-Hintergrund und verdunkeln die Pill.)
+       KIND-Kombinator, nicht Nachfahre: die Regel meint die EINE Aktionsleiste
+       am Blatt-Ende (jede Modalität hängt ihren Confirm direkt an de-body) —
+       Describes verschachtelte Lesen/Übernehmen-Buttons im Karten-Inneren
+       dürfen nicht zu Sticky-Leisten werden. #de-generate bleibt Nachfahre
+       (liegt bewusst in .de-refine-actions). */
+    .de-body > .de-confirm,
     .de-body #de-generate {
         position: sticky;
         bottom: 0;
@@ -3910,7 +3915,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-rank-num { width: 22px; height: 22px; font-size: 11px; }
     /* padding 12px vertikal bleibt: Daumenziel-Höhe der Aktionsleiste geht vor
        Raster-Purismus (Touch-Target ≥ 44px mit Text). */
-    .de-body .de-confirm,
+    .de-body > .de-confirm,
     .de-body #de-generate { margin-top: var(--space-2); padding-top: var(--space-3); padding-bottom: var(--space-3); font-size: var(--text-sm); }
     .de-nav { font-size: 13px; }
     .de-describe-input { min-height: 88px; font-size: var(--text-sm); padding: var(--space-3) var(--space-4); }

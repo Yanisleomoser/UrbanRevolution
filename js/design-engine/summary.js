@@ -20,6 +20,7 @@ const DesignSummary = (() => {
       puffer: { de: "Puffer-", en: "puffer " }, bomber: { de: "Bomber-", en: "bomber " },
       trench: { de: "Trench-", en: "trench " }, blazer: { de: "Blazer-", en: "blazer " },
       work: { de: "Workwear-", en: "work " },
+      trucker: { de: "Trucker-", en: "trucker " },
       pullover: { de: "Pullover-", en: "pullover " }, zip: { de: "Zip-", en: "zip " },
       oversized: { de: "Oversized-", en: "oversized " },
       classic: { de: "", en: "" }, boxy: { de: "Boxy-", en: "boxy " }, fitted: { de: "tailliertes ", en: "fitted " },
