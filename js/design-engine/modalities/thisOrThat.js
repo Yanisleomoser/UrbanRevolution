@@ -17,11 +17,11 @@
   };
 
   // Top-2 archetype labels a side's weights pull toward, strongest first.
-  // Pure data → text; returns "" when the side carries no weights.
-  function pullLine(side, archetypes, lang) {
+  // Pure data → names; returns [] when the side carries no weights.
+  function pullNames(side, archetypes, lang) {
     const w = side.effects && side.effects.weight;
-    if (!w) return "";
-    const names = Object.entries(w)
+    if (!w) return [];
+    return Object.entries(w)
       .filter(([, v]) => typeof v === "number" && v > 0)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 2)
@@ -30,7 +30,6 @@
         return a && a.label ? a.label[lang] || a.label.de : null;
       })
       .filter(Boolean);
-    return names.length ? "→ " + names.join(" · ") : "";
   }
 
   function render(host, node, ctx) {
@@ -50,10 +49,19 @@
       const label = V.el("span", { class: "de-tot-label" });
       label.textContent = (side.label && side.label[lang]) || side.id;
       copy.appendChild(label);
-      const pull = pullLine(side, archetypes, lang);
-      if (pull) {
+      // Der zweite Archetyp steht in einem eigenen Span: schmale Panels
+      // (Cockpit) blenden ihn per CSS aus, statt die Unterschrift dreizeilig
+      // umbrechen zu lassen. Die Zeile bleibt in beiden Fällen ABGELEITET —
+      // sie IST die effects.weight-Daten, nie eine Hand-Kopie.
+      const names = pullNames(side, archetypes, lang);
+      if (names.length) {
         const hint = V.el("span", { class: "de-tot-hint" });
-        hint.textContent = pull;
+        hint.appendChild(document.createTextNode("→ " + names[0]));
+        if (names[1]) {
+          const more = V.el("span", { class: "de-tot-hint-more" });
+          more.textContent = " · " + names[1];
+          hint.appendChild(more);
+        }
         copy.appendChild(hint);
       }
       btn.appendChild(copy);

@@ -79,7 +79,12 @@ const GarmentSVG = (() => {
     shirt: ["button", "half", "none"],
     tshirt: ["none"],
     pants: ["zip", "button", "none"],
-    dress: ["none"],
+    // Das Kleid kann jetzt eine Knopfleiste ZEICHNEN (paintDress) — das
+    // Hemdblusenkleid ist damit baubar, und ein getipptes „Kleid mit Knöpfen"
+    // wird nicht länger stumm verschluckt. "zip" bleibt draussen: der
+    // Kleid-Reissverschluss sitzt hinten und wäre auf dem Vorder-Flat eine
+    // Behauptung, die das Bild nicht einlöst.
+    dress: ["button", "none"],
   };
   function closureAllowed(category, value) {
     if (!hasOwn(ALLOWED_CLOSURES, category)) return true;
@@ -1032,7 +1037,25 @@ const GarmentSVG = (() => {
     return out.join("");
   }
   function paintDress(p, g) {
-    const skirt = `L ${L(g.waistHalf)} ${Y(g.waistY)} L ${L(g.hemHalf)} ${Y(g.hemY)} L ${R(g.hemHalf)} ${Y(g.hemY)} L ${R(g.waistHalf)} ${Y(g.waistY)} `;
+    // Der Rock war das EINZIGE Polygon im ganzen Flat-Vokabular: harte
+    // Taillen-Ecke, kerzengerade Seiten, schnurgerader Saum ohne Stärke — als
+    // die Bühne (Cockpit v4) auf ~⅔ des Rahmens wuchs, las sich das Kleid
+    // dadurch als Papiertüte. Jetzt spricht es dieselbe Sprache wie die Tops
+    // (vgl. topFlat: C-Seitennaht + 8er-Saumkante): die Naht verlässt die
+    // Taille senkrecht und öffnet sich in die Weite, der Saum bekommt eine
+    // Kante (Stoffdicke) und einen flachen Schwung — Tuch hängt, es steht nicht.
+    // Column-Kleider (hemHalf ≈ waistHalf) bleiben dabei automatisch gerade:
+    // die Kurve ist dann fast senkrecht, kein Artefakt.
+    const drop = g.hemY - g.waistY;
+    const face = Math.min(9, drop * 0.05);          // Saumkante
+    const sweep = Math.min(7, g.hemHalf * 0.05);    // Saumschwung (Mitte tiefer)
+    const skirt =
+      `L ${L(g.waistHalf)} ${Y(g.waistY)} ` +
+      `C ${L(g.waistHalf)} ${Y(g.waistY + drop * 0.3)} ${L(g.hemHalf)} ${Y(g.hemY - drop * 0.32)} ${L(g.hemHalf)} ${Y(g.hemY - face)} ` +
+      `L ${L(g.hemHalf)} ${Y(g.hemY)} ` +
+      `Q ${CX} ${Y(g.hemY + sweep)} ${R(g.hemHalf)} ${Y(g.hemY)} ` +
+      `L ${R(g.hemHalf)} ${Y(g.hemY - face)} ` +
+      `C ${R(g.hemHalf)} ${Y(g.hemY - drop * 0.32)} ${R(g.waistHalf)} ${Y(g.waistY + drop * 0.3)} ${R(g.waistHalf)} ${Y(g.waistY)} `;
     let d;
     if (g.sleeveless) {
       // Slip / tank bodice: two real straps (a band with width) over the
@@ -1066,6 +1089,24 @@ const GarmentSVG = (() => {
     const seam = [];
     if (!g.sleeveless) seam.push(`<path d="M ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} M ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.chestHalf)} ${Y(g.armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
     seam.push(`<path d="M ${L(g.waistHalf)} ${Y(g.waistY)} L ${R(g.waistHalf)} ${Y(g.waistY)}" fill="none" stroke="${SEAM}" stroke-width="${p.waist === "fitted" ? 1.9 : 1.4}" opacity="${p.waist === "fitted" ? 0.85 : 0.6}"/>`);
+    // Knopfleiste (Hemdblusenkleid). Bis hierher konnte das Kleid als EINZIGE
+    // Kategorie gar keinen Verschluss tragen (ALLOWED_CLOSURES.dress war
+    // ["none"]) — ein getipptes „Kleid mit Knöpfen" wurde deshalb still
+    // verworfen, obwohl das Hemdblusenkleid eines der verbreitetsten Kleider
+    // überhaupt ist. Das war eine Zeichen-LÜCKE, keine Ehrlichkeits-Haltung.
+    // Dieselbe Vokabel wie bei Hemd/Jacke (Mittellinie + Knopfreihe, Hardware
+    // tönt sie), nur über die volle Kleidlänge geführt.
+    if (p.closure === "button") {
+      const hw = hwStroke(p.hardware);
+      const top = g.neckY + (g.collar === "crew" || g.collar === "vneck" ? 26 : 12);
+      const bot = g.hemY - Math.max(10, (g.hemY - g.waistY) * 0.12);
+      seam.push(`<path d="M ${CX} ${Y(top)} L ${CX} ${Y(bot)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.5"/>`);
+      const n = 8;
+      for (let i = 0; i < n; i++) {
+        const y = top + 8 + (i * (bot - top - 16)) / (n - 1);
+        seam.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${hw}" stroke-width="1.8"/>`);
+      }
+    }
     // Wrap dress: the ASYMMETRIC overlapping front — one bold top-panel edge
     // draping from a shoulder across to the opposite waist and down the skirt
     // front, a faint under-panel hint from the other shoulder, and the waist tie.
@@ -1357,6 +1398,12 @@ const GarmentSVG = (() => {
       a.collar = cl(CX, g.neckY - 6);
       a.waist = cl(CX, g.waistY);
       a.hem = cl(CX, g.hemY - 8);
+      // Knopfleisten-Marke auf der Mittelfront, mittig zwischen Ausschnitt und
+      // Taille — dort, wo paintDress die Leiste wirklich zeichnet. Leicht nach
+      // links gerückt, damit ihre Wertzeile nicht auf der Taillen-Marke sitzt
+      // (beide liegen sonst exakt auf CX, dieselbe Stapel-Falle wie bei den
+      // Tops: Verschluss ↔ Saum).
+      a.closure = cl(CX - g.chestHalf * 0.34, lerp(g.neckY, g.waistY, 0.52));
       // Sleeve marker on the right limb (same formula as the tops branch);
       // on a sleeveless bodice it sits on the strap/armhole edge instead.
       if (g.sleeveless) {
