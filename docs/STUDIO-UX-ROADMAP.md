@@ -431,6 +431,46 @@ open items (commit-model unification, the four broken `verify-*.mjs`
 guards) — noted here only because the paragraph above, written before
 #446 landed, would otherwise read as current.
 
+**Status update (2026-07-24, second same-day follow-up):** re-checked
+against `main` @ `100217a`. Two more PRs landed same day:
+- **#448** ("Atelier-Runde 3," high-risk-visual per the repo's own gate,
+  checked on a real iPhone before merge — confirmed: merged directly by the
+  repo owner, not autonomously): another round outside this roadmap's
+  original ten slices, same pattern as #444 — a consistent 8px grid across
+  the Cockpit, the photo-duel panels filling the sheet, a live slider
+  readout, denser large-card sets, a sixth jacket style, all seven
+  `CONFIG.MATERIALS` reachable from the question tree, a dress Detail-Atelier
+  on the `regions` modality, stackable (`multi: true`) signature nodes with
+  a union-merge in `resolveEffects`, real per-session question-order jitter
+  (`orderRand`/`dseed`, seeded post-category so the opener stays
+  deterministic), and archetype-pulled refine directions. A 42-agent
+  adversarial-review round on top fixed 7 confirmed findings (an 0.62-conf
+  free-text contradiction-eviction gap, missing "trucker" vocabulary in
+  `summary.js`, describe-playback a11y, a sticky-scope selector).
+  **Reconfirmed directly against code this pass: `isGuardedTap`/
+  `COMMIT_GUARD_MS` (`js/design-engine/flow.js`) is still byte-identical** —
+  #448 touches `flow.js` extensively (union-merge, session-seed jitter,
+  archetype-pull `mutateDna`) but not the two-commit-model split itself, so
+  `WEBSITE-IMPROVEMENTS.md`'s top-ranked recommendation remains open. The
+  four broken regression guards (`verify-atelier`, `verify-a11y-studio`,
+  `verify-community`, `verify-gallery`) are explicitly reconfirmed still
+  broken in #448's own PR description — untouched by this round. **New
+  permanent guard:** `scripts/verify-signature-stack.mjs` (stacking two
+  signatures, the exclusive "Keins" clearing the stack, DNA + flat both
+  carrying the union) — add it to the "run before touching the studio" list
+  alongside `verify-describe`/`verify-weave`/`verify-threshold`/
+  `verify-refine`/`verify-sewing`.
+- **#449** ("Atelier-Wow-Roadmap," docs-only, no code touched): a new
+  companion handoff doc, `docs/ATELIER-WOW-ROADMAP.md`, translating an
+  owner brief (*"an atelier like Nike Football/Apple, maybe Liquid Glass"*)
+  into five PR-sized building blocks (stage-dominance layout, studio
+  lighting for the flat, material-macro backdrops, a resolved-piece
+  starting gallery, an "instrument-glass" control material). Explicitly
+  scoped as a **future** pass — no block started, ordering left to the
+  owner (B1+B5 recommended first). Doesn't touch this roadmap's own open
+  items or its ten shipped slices; read alongside this doc's §11/§12 per
+  its own header.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

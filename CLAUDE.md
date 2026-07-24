@@ -237,6 +237,8 @@ docs/
   STUDIO-UX-ROADMAP.md  # Studio-journey UX roadmap — all 10 slices shipped; §12
                         # (status + hard-won pitfalls) is REQUIRED reading before studio work
   WEBSITE-IMPROVEMENTS.md # Website-review handoff note — high-impact upgrades ranked by user impact (read with CLAUDE.md)
+  ATELIER-WOW-ROADMAP.md # Post-Runde-3 atelier handoff (Owner-Brief 2026-07-24) — five PR-sized
+                        # building blocks (B1-B5) for stage-dominance/materiality; unstarted, owner-prioritised
 README.md               # Bilingual (DE-lead) project overview — vision, features, stack, setup
 SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·

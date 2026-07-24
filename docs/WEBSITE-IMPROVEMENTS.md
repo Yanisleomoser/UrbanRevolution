@@ -397,6 +397,37 @@
 > tests, `CLAUDE.md`, and `README.md` referencing the removed route were
 > corrected in the same pass. Rank 2 drops off the table below.
 
+> **Status update (2026-07-24, second same-day follow-up):** re-checked
+> against `main` @ `100217a`. Three more PRs landed same day, none moving
+> this table:
+> - **#447** — doc-only, `STUDIO-UX-ROADMAP.md`'s own same-day accounting of
+>   #446. No overlap with this doc's tracked backlog.
+> - **#448** ("Atelier-Runde 3," high-risk-visual, checked on a real iPhone
+>   before merge — confirmed: merged directly by the repo owner, not
+>   autonomously): a large Cockpit/engine round (8px grid, photo-duel/slider/
+>   card-set density, a sixth jacket style, all seven materials reachable, a
+>   dress Detail-Atelier, stackable signatures, seeded question-order
+>   variation, archetype-pulled refine) — full accounting in
+>   `STUDIO-UX-ROADMAP.md`'s matching second same-day entry. **Reconfirmed
+>   directly against code: `isGuardedTap`/`COMMIT_GUARD_MS` in `flow.js` is
+>   still byte-identical** — #448 touches `flow.js` heavily but not the
+>   two-commit-model split itself, so this doc's rescoped `#01` stays open.
+>   The four broken `verify-*.mjs` guards are explicitly reconfirmed still
+>   broken in #448's own PR description. Script minification (#03's last
+>   sub-item) is untouched. Issues #383/#384 unchanged; PR #428 still open,
+>   still stale.
+> - **#449** ("Atelier-Wow-Roadmap," docs-only): a forward-looking companion
+>   doc (`docs/ATELIER-WOW-ROADMAP.md`) scoping a further five-block visual
+>   pass (stage-dominance, studio lighting, material backdrops, a starting
+>   gallery, "instrument-glass" controls) from an owner brief. Nothing
+>   started yet, owner-prioritised — doesn't touch this doc's ranked items.
+> - **Recommendation unchanged:** the rescoped `#01` remains the top pick —
+>   still unaddressed across **ten consecutive reviews (07-12 → 07-24)**,
+>   now having watched 30+ unrelated PRs land around it including *two*
+>   large studio/Cockpit rounds (#444, #448) that each extended the very
+>   journey surfaces this item would unify without touching the unification
+>   itself.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
