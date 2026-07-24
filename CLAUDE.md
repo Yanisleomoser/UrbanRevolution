@@ -237,6 +237,8 @@ docs/
   STUDIO-UX-ROADMAP.md  # Studio-journey UX roadmap — all 10 slices shipped; §12
                         # (status + hard-won pitfalls) is REQUIRED reading before studio work
   WEBSITE-IMPROVEMENTS.md # Website-review handoff note — high-impact upgrades ranked by user impact (read with CLAUDE.md)
+  ATELIER-WOW-ROADMAP.md # Post-Runde-3 atelier handoff (Owner-Brief 2026-07-24) — five PR-sized
+                        # building blocks (B1-B5) for stage-dominance/materiality; unstarted, owner-prioritised
 README.md               # Bilingual (DE-lead) project overview — vision, features, stack, setup
 SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·
@@ -250,7 +252,7 @@ scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smok
                         # — see Deployment
 ```
 
-Unit tests: 28 offline suites in `test/` (DNA roundtrip, seam formulas, AI
+Unit tests: 29 offline suites in `test/` (DNA roundtrip, seam formulas, AI
 fallback + assembled-design contract, export scaling, i18n parity + t()
 interpolation, coded API-error → message, state, persistence, share-link
 encode/decode, pose math, garment-flat builder, measurement capture
@@ -824,18 +826,20 @@ The functional PR checks (check name = job id):
 | PR check       | File               | Workflow name | What it runs                                        |
 | -------------- | ------------------ | ------------- | --------------------------------------------------- |
 | `test`         | `deno.yml`         | "Deno"        | `deno lint` (Deno 2.x)                               |
-| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (28 offline suites) |
+| `validate`     | `test.yml`         | "Tests"       | `npm run build` (no-op) + `npm test` (29 offline suites) |
 | `validate-css` | `validate-css.yml` |               | css-tree check                                       |
 | `validate-html`| `validate-html.yml`|               | htmlhint (index, impressum, datenschutz, insights, 404, en/index)   |
 | `validate-assets`| `validate-assets.yml`|           | image-weight budget (`scripts/check-asset-budget.mjs`) — anti-bloat ceilings per path |
 | `e2e`          | `e2e.yml`          | "E2E"         | `npm run e2e` — headless-Chromium browser smoke test (`scripts/e2e.mjs`) |
 | `coverage`     | `coverage.yml`     | "Coverage"    | `npm run coverage` — c8 over the unit suites, fails below the `.c8rc.json` floor |
 
-The `coverage` job runs `c8 npm test` and enforces a floor (lines/statements
-73 %, branches 77 %, functions 72 % — a few points below the current ~76 %
-baseline, so it ratchets up, never down). Scope lives in `.c8rc.json`: `js/**` +
-`api/**`, **excluding** the DOM/WebGL/animation controllers (`app.js`,
-`ur-create.js`, `community-sphere.js`, `flair.js`, `animations.js`, `landing.js`,
+The `coverage` job runs `c8 npm test` and enforces a floor (statements/lines
+78 %, branches 80 %, functions 82 % — statements/lines sit right at the
+current ~78.2 % baseline, branches/functions a few points below their
+~83.5 %/~86 % baseline, so it ratchets up, never down). Scope lives in
+`.c8rc.json`: `js/**` + `api/**`, **excluding** the DOM/WebGL/animation
+controllers (`app.js`, `ur-create.js`, `community-sphere.js`, `flair.js`,
+`animations.js`, `landing.js`, `facts-mass.js`, `faden.js`, `machine.js`,
 `design-engine/modalities/**`) — those are e2e-covered, not unit-covered, so
 counting them would mislead. c8 is a normal devDependency (no browser, no
 network); `coverage/` is gitignored. Raise the floor as coverage improves.
