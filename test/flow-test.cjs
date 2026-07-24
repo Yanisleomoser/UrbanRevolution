@@ -562,6 +562,26 @@ console.log("\n— scrubImpossibleFills räumt Describe-/Freitext-Saat (conf 0.6
   assert(D.get(f, "construction.closure") === "zip", "eine für die Kategorie baubare Saat bleibt stehen");
 }
 
+console.log("\n— changeLabel · Commit-Flash-Worte (inkl. Multi-Select-Stapel) —");
+{
+  // t() liest window.I18N zur Laufzeit — im Node-Harness genügt der Key-Echo.
+  global.window = global.window || {};
+  global.window.I18N = global.window.I18N || { t: (k) => k };
+  const node = { modality: "cards", choices: [
+    { id: "a", label: { de: "Kontrastnaht", en: "Contrast stitch" } },
+    { id: "b", label: { de: "Patch", en: "Patch" } },
+    { id: "c", label: { de: "Zip", en: "Zip" } },
+  ] };
+  assert(Flow.changeLabel(node, "b", "de") === "Patch", "Single-Select: das getippte Wort");
+  assert(Flow.changeLabel(node, ["a", "b"], "de") === "Kontrastnaht · Patch", "Stapel: zwei Worte mit Mittelpunkt");
+  assert(Flow.changeLabel(node, ["a", "b", "c"], "de") === "Kontrastnaht · Patch +1", "Stapel: ab drei Worten gezählt (+n)");
+  assert(Flow.changeLabel(node, [], "de") === "engine.changed_details", "leerer Stapel fällt auf den i18n-Key zurück");
+  const slider = { modality: "slider", axis: { de: ["Matt", "Glanz"], en: ["Matte", "Sheen"] } };
+  assert(Flow.changeLabel(slider, 0.9, "de") === "Glanz", "Slider: hoher Wert nennt den Hi-Pol");
+  assert(Flow.changeLabel(slider, 0.1, "de") === "Matt", "Slider: tiefer Wert nennt den Lo-Pol");
+  assert(Flow.changeLabel(slider, 0.5, "de") === "·", "Slider: Mitte bleibt der stille Punkt");
+}
+
 console.log("\n— orderRand (Session-Seed → node-id → 0..1, stabil und seed-verschieden) —");
 {
   const r7 = Flow.orderRand(7);

@@ -513,7 +513,6 @@ const DesignFlow = (() => {
       const top = (node.options || []).find((o) => o.id === (payload || [])[0]);
       return top && top.label ? top.label[l] : "";
     }
-    if (node.modality === "cards" && Array.isArray(payload)) return payload.length + "×";
     if (node.modality === "regions") {
       const n = payload && typeof payload === "object" ? Object.keys(payload).length : 0;
       return n ? n + "×" : t("engine.changed_details");
@@ -1537,7 +1536,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand, changeLabel };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;
