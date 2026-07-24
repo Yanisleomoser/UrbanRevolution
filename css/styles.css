@@ -140,6 +140,17 @@
        die „poppende" Stufe des kühlen Arms — NUR für grosse Verlaufs-
        Schriften auf dunkler Bühne, nie als Flächen-Fill unter weissem Text. */
     --gradient-display: linear-gradient(105deg, #9aa2f2 0%, #2fd6a0 55%, #9dee55 100%);
+
+    /* Instrumenten-Glas (Atelier-Wow B5) — das Control-Material des Ateliers:
+       schwebende, leicht refraktive Panels in Thermal-Palette. Fläche +
+       1px-Lichtkante oben (Periwinkle-Schimmer) + Korn (--grain als oberste
+       background-Lage) + Blur. Budget-Vertrag: backdrop-filter NUR auf
+       Dock-/Sheet-Ebene (max. 1–2 gleichzeitig sichtbar), NIE pro Kachel;
+       ohne Support fällt die Fläche auf opakes --bg-elevated (Feature-Query
+       bei den Glas-Flächen). */
+    --glass-bg: rgba(21, 21, 29, 0.62);
+    --glass-edge: rgba(176, 181, 240, 0.26);
+    --glass-blur: blur(14px) saturate(1.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3574,7 +3585,8 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 .de-hotspot[data-side="l"] .de-hotspot-val { top: calc(50% + 6px); left: auto; right: calc(50% + 13px); transform: none; }
 .de-hotspot[data-side="r"] .de-hotspot-tag { top: auto; bottom: calc(50% - 4px); left: calc(50% + 13px); right: auto; transform: none; }
 .de-hotspot[data-side="r"] .de-hotspot-val { top: calc(50% + 6px); left: calc(50% + 13px); right: auto; transform: none; }
-.de-region-picker { position: absolute; z-index: 4; min-width: 208px; max-width: min(262px, 96%); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; gap: var(--space-2); }
+/* Fläche/Kante/Korn kommen aus dem Instrumenten-Glas-Block (B5, unten). */
+.de-region-picker { position: absolute; z-index: 4; min-width: 208px; max-width: min(262px, 96%); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 /* display:flex würde sonst das UA-[hidden]{display:none} überstimmen — der
    „geschlossene" Picker bliebe sichtbar und finge Taps ab. */
 .de-region-picker[hidden] { display: none; }
@@ -3748,7 +3760,8 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-describe-skip { appearance: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; padding: 8px 16px; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out); }
 .de-describe-skip:hover, .de-describe-skip:focus-visible { border-color: var(--accent); color: var(--text); }
 .de-describe-last { border-color: rgba(126, 220, 46, 0.4); color: var(--accent-3); }
-.de-understood { margin-top: var(--space-5); border-top: 1px dashed var(--border); padding-top: var(--space-4); }
+/* Fläche/Kante/Korn + Padding aus dem Instrumenten-Glas-Block (B5, unten). */
+.de-understood { margin-top: var(--space-5); }
 .de-understood[hidden] { display: none; }
 .de-understood-h { display: block; font-size: 11px; letter-spacing: 0.18em; color: var(--accent); margin: 0 0 var(--space-3); text-transform: uppercase; }
 .de-understood-row { display: inline-flex; align-items: center; gap: var(--space-1); margin: 0 var(--space-2) var(--space-2) 0; padding: var(--space-1) var(--space-3); border: 1px solid var(--border); border-radius: 999px; font-size: var(--text-sm); color: var(--text); background: var(--bg-elevated); }
@@ -3756,6 +3769,42 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-understood-x { appearance: none; background: none; border: 0; color: var(--text-muted); font-size: 15px; line-height: 1; cursor: pointer; padding: 0 2px; }
 .de-understood-x:hover, .de-understood-x:focus-visible { color: var(--accent); }
 .de-understood-apply { display: block; margin-top: var(--space-3); }
+
+/* ============================================================
+   INSTRUMENTEN-GLAS (Atelier-Wow B5) — EIN Material für die
+   Steuerflächen des Ateliers: das Cockpit-Dock (unten im Cockpit-Block),
+   der Region-Picker, der Verstanden-Block, die Refine-Aktionsleiste.
+   Kein iOS-Zitat: die Maschine in Akt II hat eine gläserne Remake-Zelle —
+   diese Panels sind ihr Cockpit-HUD. Kacheln bleiben bewusst opak (Budget).
+   ============================================================ */
+.de-region-picker,
+.de-understood,
+.de-refine-actions {
+    background-color: var(--glass-bg);
+    background-image: var(--grain);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 0 var(--glass-edge), var(--shadow-soft);
+}
+/* Der Verstanden-Block wird vom gestrichelten Abschnitt zur Glas-Karte im
+   Describe-Blatt; die Refine-Leiste zur Instrumenten-Bar des Crescendos. */
+.de-understood { padding: var(--space-4); }
+.de-refine-actions { padding: var(--space-3) var(--space-4); }
+/* Refraktive Tiefe NUR, wo wirklich Inhalt hinter der Fläche liegt: der
+   Picker schwebt über dem Detail-Brett (das Dock über der Bühne — im
+   Cockpit-Block). Verstanden-Block/Refine-Leiste liegen IM Blatt und
+   tragen das Material ohne eigene Blur-Ebene (nie Glas hinter Glas). */
+.de-region-picker {
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+}
+/* Verschachtelte @supports = NICHT(A ODER B): css-tree (CI-Validator)
+   parst die `not ((A) or (B))`-Klammerform nicht. */
+@supports not (backdrop-filter: blur(1px)) {
+    @supports not (-webkit-backdrop-filter: blur(1px)) {
+        .de-region-picker { background-color: var(--bg-elevated); }
+    }
+}
 
 /* ============================================================
    DAS COCKPIT (≤899px) — das Atelier als eigenes Instrument.
@@ -3790,11 +3839,19 @@ html.is-touch .de-region-opt { min-height: 48px; }
        die Bühne auf ihren 2px-Rahmen kollabieren, sobald nur absolute
        Kinder (Weave-Beat) drinstehen. */
     .de-stage-grid { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; gap: var(--space-2); align-items: stretch; }
-    .de-preview-col { position: relative; flex: none; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; max-width: 100%; }
+    /* B1 · Bühne zuerst (Cockpit v4, Atelier-Wow-Roadmap): das Stück bekommt
+       ~⅔ des Rahmens, permanent — die Bühne wächst auf den Rest-Raum
+       (flex:1), das Blatt wird zum kompakten Glas-Dock am unteren Rand
+       (max-height-Cap unten). Nike/Apple-Verhältnis: erst das Objekt,
+       dann die Instrumente. Sonderlayouts (describe/regions/refine) drehen
+       die Regie weiter unten zurück. */
+    .de-preview-col { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; max-width: 100%; }
+    .de-preview-stage { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
     .de-preview {
-        height: calc(var(--svh, 1svh) * 30);
+        flex: 1 1 auto;
+        height: auto;
         min-height: 168px;
-        max-height: 340px;
+        max-height: none;
     }
     /* Instrumenten-Rahmen: Mono-Eckwinkel auf der Bühne (die Registratur-
        Sprache der Maschine — vier stille Passermarken). */
@@ -3814,16 +3871,20 @@ html.is-touch .de-region-opt { min-height: 48px; }
             linear-gradient(var(--accent), var(--accent)) right bottom / 12px 1.5px no-repeat,
             linear-gradient(var(--accent), var(--accent)) right bottom / 1.5px 12px no-repeat;
     }
-    /* Chips: EINE ruhige Zeile, seitlich wischbar, rechts ausfadend.
-       width:0 + min-width:100% löscht den intrinsischen Min-Content der
-       nowrap-Zeile — sonst drückt sie das Grid-Item .design-journey über
-       den Viewport hinaus (die 502px-Falle). */
+    /* Chips: EINE ruhige Zeile, seitlich wischbar, rechts ausfadend — als
+       BÜHNEN-OVERLAY am unteren Rand (B1): die Spalte gehört ganz der Bühne,
+       die Chips lesen sich als Registratur-Zeile ÜBER dem Bühnen-Boden.
+       Absolut positioniert entfällt die 502px-Min-Content-Falle der alten
+       Flow-Zeile (absolute Boxen tragen keinen Min-Content in den Baum). */
     .de-stage .de-preview-chips {
+        position: absolute;
+        left: var(--space-2);
+        right: var(--space-2);
+        bottom: var(--space-2);
+        z-index: 2;
         flex-wrap: nowrap;
         justify-content: flex-start;
         overflow-x: auto;
-        width: 0;
-        min-width: 100%;
         margin-top: 0;
         padding-bottom: 2px;
         scrollbar-width: none;
@@ -3843,8 +3904,61 @@ html.is-touch .de-region-opt { min-height: 48px; }
         text-align: right;
         pointer-events: none;
     }
-    /* Das Blatt: eigener Scroll, Seite bleibt stehen. */
-    .de-ask-col { flex: 1; min-height: 0; min-width: 0; gap: var(--space-2); }
+    /* Das GLAS-DOCK (B1+B5): Frage + Optionen + Aktionen als kompaktes
+       Instrumenten-Panel am unteren Rand. flex:none + Cap bei 36% des
+       Rahmens — die Bühne (flex:1) nimmt den Rest und steht damit bei
+       ~63% auf JEDEM Standard-Frage-Screen (der Vertrag in
+       verify-describe). Inhalt über dem Cap scrollt im Blatt (de-body);
+       Confirm klebt am Blatt-Boden, Navigation bleibt in der Daumenzone.
+       Das Dock trägt die EINE sanktionierte backdrop-filter-Ebene des
+       Cockpits (Budget-Vertrag im :root-Token-Block). */
+    .de-ask-col {
+        flex: none;
+        max-height: 36%;
+        min-height: 0;
+        min-width: 0;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        background-color: var(--glass-bg);
+        background-image: var(--grain);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: inset 0 1px 0 var(--glass-edge), 0 -12px 32px rgba(4, 4, 7, 0.45);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+    @supports not (backdrop-filter: blur(1px)) {
+        @supports not (-webkit-backdrop-filter: blur(1px)) {
+            .de-ask-col { background-color: var(--bg-elevated); }
+        }
+    }
+    /* „Dock hebt sich" (B1-Risiko-Ausweich aus der Wow-Roadmap): hohe
+       Inhalte (Farb-Atelier, Ranking) heben das Dock wie ein Bottom-Sheet
+       über die gedimmte Bühne, statt intern unter dem sticky Confirm zu
+       scrollen. flow.js setzt die Klasse pro Render (Sonderlayouts
+       ausgenommen); das Dock bleibt content-sized — nur der Cap steigt.
+       Bewusst ohne Transition: der Wechsel geschieht unter dem
+       Fragen-Swap, und reduced-motion bliebe ohnehin statisch. */
+    .de-stage.is-dock-lift .de-ask-col { max-height: 58%; }
+    .de-stage.is-dock-lift .de-preview { opacity: 0.6; }
+    /* Der Kapitel-Stempel (dekorativ, aria-hidden) wandert als Overlay auf
+       die Bühne: seine permanent reservierte Dock-Zeile war Blatt-Gold, und
+       der Kino-Screen ist der natürliche Ort eines Kapitel-Titels. Unten
+       zentriert über der Chip-Zeile — die Rahmen-Oberkante liegt teils
+       hinter der fixen Navbar (Kapitel-Titel wäre dort unsichtbar); das
+       Namensschild (bottom 14, nur nach Generieren) kollidiert nie mit dem
+       Frage-Stempel (kein Interstitial auf dem Weg ins Refine). */
+    .de-stage { position: relative; }
+    .de-stage .de-phase-flash {
+        position: absolute;
+        bottom: calc(var(--space-8) + var(--space-2));
+        left: 0;
+        right: 0;
+        text-align: center;
+        z-index: 2;
+        min-height: 0;
+        pointer-events: none;
+    }
     .de-body { min-width: 0; }
     .de-stepper { flex: none; }
     .de-body {
@@ -3885,7 +3999,20 @@ html.is-touch .de-region-opt { min-height: 48px; }
         align-items: center;
         gap: var(--space-4);
     }
-    .de-question { font-size: clamp(17px, 4.9vw, 20px); line-height: 1.3; margin-top: 0; margin-bottom: var(--space-2); }
+    /* Dock-Kopf (B1): die Frage wird zur STILLEN Zeile im Panel — das laute
+       Display-Register gehört der Bühne, das Dock spricht leise. Body-
+       Schnitt statt Display, gedimmt (AA bleibt: --text-dim ≈ 8:1 auf der
+       Glas-Fläche). */
+    .de-question {
+        font-family: var(--font-body);
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 1.35;
+        letter-spacing: 0.01em;
+        color: var(--text-dim);
+        margin-top: 0;
+        margin-bottom: var(--space-2);
+    }
     .de-opening-frame { font-size: 10.5px; margin-bottom: var(--space-2); }
 
     /* Cockpit v2 — Verdichtung (Owner-iPhone-Runde 2): kleinere, ruhigere
@@ -3893,14 +4020,79 @@ html.is-touch .de-region-opt { min-height: 48px; }
        (4er-Ranking, Foto-Duell, Slider, 3–4 Karten, Describe) komplett OHNE
        Blatt-Scroll im Rahmen stehen. Scroll bleibt nur für die grossen Sets
        (6 Karten, Detail-Brett) — die Auswahlvielfalt selbst bleibt unberührt. */
-    .de-cards { gap: var(--space-2); grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
-    .de-card { padding: var(--space-2); gap: var(--space-2); }
+    /* B5 · Karussell im Dock (Apple-Watch-Studio-Muster): Karten-Sets werden
+       EINE daumen-wischbare Rail mit Scroll-Snap und Peek der nächsten
+       Kachel — auch Grosssets passen ins Dock, ohne dass das Blatt wächst.
+       width:0 + min-width:100% löscht den intrinsischen Min-Content der
+       Reihe (dieselbe 502px-Falle wie bei den Chips). A11y: Tab-Folge
+       bleibt DOM-Folge; der Fokus zieht die Rail via scroll-margin nach;
+       6px Kopfraum für den translateY(-3px)-Fokus-Lift der Kacheln. */
+    .de-stage .de-cards {
+        display: flex;
+        gap: var(--space-2);
+        overflow-x: auto;
+        width: 0;
+        min-width: 100%;
+        padding: 6px 2px var(--space-2);
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: var(--space-2);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+        mask-image: linear-gradient(90deg, #000 92%, transparent);
+    }
+    .de-stage .de-cards::-webkit-scrollbar { display: none; }
+    .de-stage .de-card {
+        flex: 0 0 clamp(128px, 39vw, 168px);
+        scroll-snap-align: start;
+        scroll-margin-inline: var(--space-2);
+        padding: var(--space-2);
+        gap: var(--space-2);
+    }
+    /* Kachel-Visuals folgen der RAHMEN-Höhe statt der Kachel-Breite
+       (svh-Clamp): so passt die Rail auch auf kurze Phones (SE 667) ohne
+       Blatt-Scroll ins 36%-Dock — contain lässt das Flat sauber stehen. */
+    .de-stage .de-cards .de-visual {
+        aspect-ratio: auto;
+        height: clamp(68px, calc(var(--svh, 1svh) * 11), 108px);
+    }
     .de-card-label { font-size: var(--text-sm); }
-    /* Grosssets: drei Hochformat-Spalten — sechs Stile in zwei Reihen statt
-       drei Scroll-Reihen; das Flat steht grösser als in der alten 4:3-Kachel. */
-    .de-cards-many { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .de-cards-many .de-card { padding: var(--space-1); gap: var(--space-1); }
+    /* Grosssets: gleiche Rail, schmalere Kacheln — alle sechs Stile stehen
+       in EINER wischbaren Reihe, das Flat bleibt präsent. */
+    .de-stage .de-cards-many .de-card { flex-basis: clamp(96px, 24vw, 120px); padding: var(--space-1); gap: var(--space-1); }
     .de-cards-many .de-card-label { font-size: var(--text-xs); }
+    /* Farb-Atelier als Rail: die Stoff-Swatches in einer Reihe — die Bühne
+       färbt live, das Dock bleibt flach (der Nike-Colorway-Moment). */
+    .de-stage .de-palette {
+        display: flex;
+        gap: var(--space-2);
+        overflow-x: auto;
+        width: 0;
+        min-width: 100%;
+        padding: 6px 2px var(--space-2);
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: var(--space-2);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+        mask-image: linear-gradient(90deg, #000 92%, transparent);
+    }
+    .de-stage .de-palette::-webkit-scrollbar { display: none; }
+    .de-stage .de-palette-swatch {
+        flex: 0 0 clamp(92px, 27vw, 120px);
+        scroll-snap-align: start;
+        scroll-margin-inline: var(--space-2);
+    }
+    /* Farb-Atelier kompakt: die Hinweiszeile spricht nur, wenn sie etwas
+       sagt (min-height 0), flachere Stoff-Felder — die Rail + das live
+       gefärbte Flat auf der Bühne tragen den Colorway-Moment. */
+    .de-scheme-tabs { margin-bottom: var(--space-1); }
+    .de-scheme-hint { min-height: 0; margin-bottom: var(--space-1); }
+    .de-stage .de-fabric-field { height: 48px; }
+    /* Slider kompakt: das Desktop-Luftpolster (20px oben+unten) hob im Dock
+       real den Lift aus — der kleinste Screen soll die Bühne nicht dimmen. */
+    .de-slider { padding: var(--space-2) 0; }
+    .de-slider-read { margin-top: var(--space-2); }
     .de-tot { gap: var(--space-2); }
     .de-tot-panel { min-height: 128px; padding: var(--space-3) var(--space-4); }
     .de-tot-label { font-size: var(--text-lg); }
@@ -3933,23 +4125,42 @@ html.is-touch .de-region-opt { min-height: 48px; }
        Tracks verfehlten die zweite Spalte um 2px; 136 trägt bis iPhone SE. */
     .de-stage .de-concept-grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: var(--space-2); }
 
-    /* Modalitäts-Regie über data-de-mod am Host: */
+    /* Modalitäts-Regie über data-de-mod am Host (B1: Sonderlayouts drehen
+       die Bühne-zuerst-Regie zurück — Regions und Describe behalten ihre
+       Sonderformen, das Refine-Crescendo braucht das Blatt): */
     /* Regions — das Detail-Atelier TRÄGT das Flat selbst: Bühne aus, das
        Board bekommt das ganze Blatt (löst zugleich das Doppel-Flat, U8). */
     .de-stage[data-de-mod="regions"] .de-preview-col { display: none; }
+    .de-stage[data-de-mod="regions"] .de-ask-col { flex: 1 1 auto; max-height: none; }
     /* Der Mikro-Picker wird im Cockpit eine volle Blatt-Karte: die Anker-
        Klemmen (min-width 208px in einem 340px-Board) ragten links real aus
        dem Rahmen. Vertikal bleibt er am getippten Punkt (Inline-top/bottom). */
     .de-region-picker { left: 0 !important; right: 0 !important; min-width: 0; max-width: none; }
-    /* Describe/Refine — kompaktere Bühne, mehr Raum für Eingabe bzw. Kacheln. */
-    .de-stage[data-de-mod="describe"] .de-preview { height: calc(var(--svh, 1svh) * 22); min-height: 140px; }
-    .de-stage[data-de-mod="refine"] .de-preview { height: calc(var(--svh, 1svh) * 24); min-height: 150px; }
+    /* Describe/Refine — kompakte, FESTE Bühne (kein flex-Wachsen), das Dock
+       öffnet sich auf den Rest: Eingabe bzw. Richtungs-Kacheln brauchen Raum. */
+    .de-stage[data-de-mod="describe"] .de-preview-col,
+    .de-stage[data-de-mod="refine"] .de-preview-col { flex: none; }
+    .de-stage[data-de-mod="describe"] .de-preview-stage,
+    .de-stage[data-de-mod="refine"] .de-preview-stage { flex: none; display: block; }
+    .de-stage[data-de-mod="describe"] .de-preview { flex: none; height: calc(var(--svh, 1svh) * 22); min-height: 140px; }
+    .de-stage[data-de-mod="refine"] .de-preview { flex: none; height: calc(var(--svh, 1svh) * 24); min-height: 150px; }
+    .de-stage[data-de-mod="describe"] .de-ask-col,
+    .de-stage[data-de-mod="refine"] .de-ask-col { flex: 1 1 auto; max-height: none; }
+    /* Foto-Duell im Dock: die zwei Panels stehen nebeneinander (das Duell
+       liest sich als Gegenüber), kompakt — die Bühne bleibt dominant. */
+    .de-stage[data-de-mod="thisOrThat"] .de-tot { grid-template-columns: 1fr 1fr; }
 }
 /* Flache Querformate (Landscape-Phones): Cockpit-Höhe freigeben, klassischer
    Fluss — ein 100svh-Rahmen unter 500px Höhe würde alles zerquetschen. */
 @media (max-width: 899px) and (max-height: 500px) {
     .de-stage { height: auto; min-height: 0; overflow: visible; }
     .de-body { overflow: visible; }
+    /* B1-Regie zurückdrehen: ohne definierte Rahmenhöhe kollabierte die
+       flex:1-Bühne aufs min-height, und der 34%-Dock-Cap löst sich in
+       Luft auf (Prozent einer auto-Höhe) — feste, ruhige Werte statt Flex. */
+    .de-preview { flex: none; height: 280px; }
+    .de-ask-col { max-height: none; }
+    .de-stage .de-preview-chips { position: static; }
 }
 
 /* §3.1 — Hero-Foto + Live-Recolor (Duotone) in der Vorschau + Material/Muster-Chips */

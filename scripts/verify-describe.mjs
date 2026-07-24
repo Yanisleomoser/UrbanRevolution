@@ -98,6 +98,85 @@ for (const vp of [{ name: "desktop", width: 1440, height: 900 }, { name: "mobile
   await page.close();
 }
 
+// ── 3) Cockpit v4 (Atelier-Wow B1+B5): Bühne ≥ 60 % auf jedem Standard-
+// Frage-Screen, Karten-Sets als Dock-Rail, hohe Inhalte heben das Dock
+// („Dock hebt sich") statt unter dem sticky Confirm zu scrollen. Der Walk
+// seedet NUR die Kategorie („eine Jacke") und überspringt dann jede Frage —
+// so zeigt sich jeder Screen des Jacken-Branches einmal, ohne dass Antworten
+// weitere Fragen wegschneiden.
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: "de-DE" });
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  console.log("  — cockpit v4 contract @ mobile (390px) —");
+  await page.waitForSelector(".de-describe-input", { timeout: 20000 });
+  const glass = await page.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector(".de-ask-col"));
+    return { blur: cs.backdropFilter || cs.webkitBackdropFilter || "none", bg: cs.backgroundColor };
+  });
+  check(glass.blur !== "none", `the dock carries the instrument-glass blur (${glass.blur})`);
+  check(/rgba\(/.test(glass.bg), `the dock surface is the translucent glass token (${glass.bg})`);
+  await page.fill(".de-describe-input", "eine Jacke");
+  await page.click(".de-describe-read");
+  await page.waitForSelector(".de-understood-row", { timeout: 5000 });
+  await page.click(".de-understood-apply");
+  await page.waitForTimeout(1100);
+  const SPECIAL = new Set(["describe", "regions", "refine"]);
+  let seen = 0;
+  let sawRail = false;
+  let sawLift = false;
+  for (let i = 0; i < 14; i++) {
+    const s = await page.evaluate(() => {
+      const host = document.querySelector(".de-stage");
+      const pv = document.getElementById("de-preview");
+      const body = document.getElementById("de-body");
+      const controls = document.querySelector(".de-controls").getBoundingClientRect();
+      const cards = body.querySelector(".de-cards");
+      const cs = cards ? getComputedStyle(cards) : null;
+      return {
+        mod: host.dataset.deMod || "",
+        lifted: host.classList.contains("is-dock-lift"),
+        ratio: pv && pv.offsetParent ? pv.getBoundingClientRect().height / host.getBoundingClientRect().height : null,
+        bodyGap: body.scrollHeight - body.clientHeight,
+        controlsIn: controls.top >= 0 && controls.bottom <= window.innerHeight + 1,
+        rail: cs ? cs.display === "flex" && cs.overflowX === "auto" : null,
+        overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    if (s.mod === "refine") break;
+    seen++;
+    const tag = `${s.mod}${s.lifted ? "+lift" : ""}`;
+    if (!SPECIAL.has(s.mod)) {
+      if (s.lifted) {
+        sawLift = true;
+        check(s.bodyGap <= 4 && s.ratio >= 0.3,
+          `screen ${seen} (${tag}): lifted dock fits its content (gap ${s.bodyGap}px), stage keeps presence (${Math.round(s.ratio * 100)}%)`);
+      } else {
+        check(s.ratio >= 0.6, `screen ${seen} (${tag}): the stage carries ≥60% of the frame (${Math.round(s.ratio * 100)}%)`);
+        check(s.bodyGap <= 4, `screen ${seen} (${tag}): nothing scrolls under the sticky confirm (gap ${s.bodyGap}px)`);
+      }
+      if (s.rail !== null) { sawRail = true; check(s.rail, `screen ${seen} (${tag}): the card set runs as a swipeable dock rail`); }
+    } else if (s.mod === "regions") {
+      check(s.ratio === null, `screen ${seen} (regions): the board carries the flat itself (stage off)`);
+    } else {
+      check(s.ratio !== null && s.ratio < 0.5, `screen ${seen} (${tag}): special layout keeps its compact stage (${Math.round((s.ratio || 0) * 100)}%)`);
+    }
+    check(s.controlsIn, `screen ${seen} (${tag}): the action row stays in the thumb zone`);
+    check(s.overflowX <= 1, `screen ${seen} (${tag}): no horizontal page overflow (${s.overflowX}px)`);
+    await page.click("#de-skip");
+    await page.waitForTimeout(750);
+  }
+  check(seen >= 6, `the walk saw a real breadth of question screens (${seen})`);
+  check(sawRail, "at least one card set rendered as a rail");
+  check(sawLift, "at least one tall set lifted the dock (Farb-Atelier/Ranking)");
+  const refined = await page.evaluate(() => (document.querySelector(".de-stage").dataset.deMod || "") === "refine");
+  check(refined, "the skip-walk lands on the refine screen (journey stays viable)");
+  check(errors.length === 0, `no page errors across the cockpit walk (${errors.join(" | ") || "clean"})`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 console.log(failed ? `\n✗ ${failed} check(s) failed` : "\n✓ describe opener verified");

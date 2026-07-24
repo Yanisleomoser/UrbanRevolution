@@ -155,3 +155,25 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
 
 - 2026-07-24: Dokument angelegt (nach Merge von #448/Runde 3). Noch kein
   Baustein begonnen. Owner-Priorisierung offen — Empfehlung: B1+B5.
+- 2026-07-24 (später): **B1 + B5 umgesetzt** (ein PR, Branch
+  `claude/wow-roadmap-implementation-o7w15g`) — wie in §4 empfohlen als
+  gekoppelter erster Schnitt:
+  - **B1:** Cockpit v4 — die Bühne trägt ~63–68 % des Rahmens auf jedem
+    Standard-Frage-Screen (flex-Inversion; Dock-Cap 36 %), Frage als stille
+    Zeile im Dock-Kopf, Chips als Bühnen-Overlay, Kapitel-Stempel auf der
+    Bühne. Sonderlayouts (describe/regions/refine) unverändert. Für hohe
+    Inhalte (Farb-Atelier, Ranking) wurde die im B1-Risiko benannte
+    Alternative **„Dock hebt sich"** gebaut (flow.js `syncDockLift`,
+    Bottom-Sheet-Cap 58 %, Bühne dimmt auf 0.6) — zusätzlich zu den
+    B5-Rails, nicht statt ihnen.
+  - **B5:** Token-Set `--glass-bg`/`--glass-edge`/`--glass-blur` (+ Korn via
+    `--grain`); Glas auf Dock, Region-Picker, Verstanden-Block,
+    Refine-Aktionsleiste; backdrop-filter NUR Dock + Picker (Budget),
+    Feature-Query-Fallback auf `--bg-elevated`. Karten-Sets und
+    Farb-Swatches laufen im Dock als scroll-snap-Rail (Peek, Fokus zieht
+    die Rail nach, Tab-Folge = DOM-Folge).
+  - Vertrag ausgebaut: `scripts/verify-describe.mjs` Abschnitt 3 walkt den
+    Jacken-Branch und prüft pro Screen Bühne ≥ 60 % (bzw. Lift-Regel),
+    Rail, Daumenzone, Overflow, Glas-Material.
+  - Offen: B2 (Studio-Licht), B3 (Material-Realität), B4
+    (Startpunkt-Galerie) — Reihenfolge per §4: B2 als nächstes.
