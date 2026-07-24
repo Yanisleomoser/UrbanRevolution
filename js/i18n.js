@@ -195,8 +195,8 @@ const I18N = (() => {
 
       // ── Design Engine (Reise) ──
       "engine.opening_frame": "Dein Stück beginnt mit deinen Worten — oder mit einem Gefühl",
-      "engine.dsc_ph": "z. B. eine kastige, kurze Jacke in tiefem Rot, matt, viele Taschen …",
-      "engine.dsc_hint": "ENTER = LESEN · LEER = SCHRITT FÜR SCHRITT",
+      "engine.dsc_ph": "z. B. kastige, kurze Jacke in Tiefrot, matt, viele Taschen",
+      "engine.dsc_hint": "Ein Satz reicht — die Maschine liest Form, Farbe, Stoff und Details.",
       "engine.dsc_read": "Lesen",
       "engine.dsc_skip": "Lieber Schritt für Schritt →",
       "engine.dsc_last": "Wie mein letztes Stück: {type}",
@@ -866,8 +866,8 @@ const I18N = (() => {
 
       // ── Design Engine (journey) ──
       "engine.opening_frame": "Your piece begins with your words — or with a feeling",
-      "engine.dsc_ph": "e.g. a boxy, cropped jacket in deep red, matte, lots of pockets …",
-      "engine.dsc_hint": "ENTER = READ · EMPTY = STEP BY STEP",
+      "engine.dsc_ph": "e.g. boxy cropped jacket in deep red, matte, lots of pockets",
+      "engine.dsc_hint": "One sentence is enough — the machine reads shape, colour, fabric and details.",
       "engine.dsc_read": "Read",
       "engine.dsc_skip": "Step by step instead →",
       "engine.dsc_last": "Like my last piece: {type}",

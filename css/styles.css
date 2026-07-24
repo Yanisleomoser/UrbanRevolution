@@ -3359,7 +3359,11 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-tot-panel { position: relative; min-height: 280px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; color: var(--text); cursor: pointer; display: flex; align-items: flex-end; padding: var(--space-5); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .de-tot-panel .de-visual { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
 .de-tot-panel:hover, .de-tot-panel:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-glow); outline: none; }
-.de-tot-label { position: relative; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+.de-tot-label { position: relative; z-index: 1; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; background: rgba(11, 11, 13, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 4px var(--space-4); border-radius: 999px; }
+/* Lesbarkeits-Scrim hinter dem Panel-Label: auf hellen Mood-Fotos (Dunst,
+   Himmel) war der weisse Schriftzug real unsichtbar — der Verlauf garantiert
+   Kontrast auf jedem Bild, ohne das Foto zu verdecken. */
+.de-tot-panel::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: linear-gradient(180deg, rgba(11, 11, 13, 0), rgba(11, 11, 13, 0.88)); pointer-events: none; }
 
 /* Slider → Couture (roadmap §6): Haarlinien-Spur mit Live-Füllung (--val vom
    Input), Ring-Daumen, und der Pol, dem sich der Regler nähert, hellt auf —
@@ -3718,7 +3722,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-describe:focus-within { border-color: var(--accent); }
 .de-describe-input::placeholder { color: var(--text-muted); }
 .de-describe-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4); border-top: 1px solid var(--border); flex-wrap: wrap; }
-.de-describe-hint { font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); }
+.de-describe-hint { font-size: 11px; letter-spacing: 0.02em; color: var(--text-muted); }
 .de-describe-read[disabled] { opacity: 0.45; cursor: default; }
 .de-describe-alts { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
 .de-describe-skip { appearance: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; padding: 8px 16px; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out); }
@@ -3852,8 +3856,42 @@ html.is-touch .de-region-opt { min-height: 48px; }
         align-items: center;
         gap: var(--space-4);
     }
-    .de-question { font-size: clamp(19px, 5.4vw, 26px); margin-top: 0; margin-bottom: var(--space-3); }
+    .de-question { font-size: clamp(17px, 4.9vw, 20px); line-height: 1.3; margin-top: 0; margin-bottom: var(--space-3); }
     .de-opening-frame { font-size: 10.5px; margin-bottom: var(--space-2); }
+
+    /* Cockpit v2 — Verdichtung (Owner-iPhone-Runde 2): kleinere, ruhigere
+       Frage-Typo + kompakte Reihen/Karten/Panels, damit die HÄUFIGEN Screens
+       (4er-Ranking, Foto-Duell, Slider, 3–4 Karten, Describe) komplett OHNE
+       Blatt-Scroll im Rahmen stehen. Scroll bleibt nur für die grossen Sets
+       (6 Karten, Detail-Brett) — die Auswahlvielfalt selbst bleibt unberührt. */
+    .de-cards { gap: var(--space-2); grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
+    .de-card { padding: var(--space-2); gap: var(--space-2); }
+    .de-card-label { font-size: var(--text-sm); }
+    .de-tot { gap: var(--space-2); }
+    .de-tot-panel { min-height: 128px; padding: var(--space-3) var(--space-4); }
+    .de-tot-label { font-size: var(--text-lg); }
+    .de-rank { gap: var(--space-2); }
+    .de-rank-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+    .de-rank-label { font-size: var(--text-sm); }
+    .de-rank-num { width: 22px; height: 22px; font-size: 11px; }
+    .de-body .de-confirm,
+    .de-body #de-generate { margin-top: var(--space-3); padding-top: var(--space-3); padding-bottom: var(--space-3); font-size: var(--text-sm); }
+    .de-controls { gap: var(--space-3); }
+    .de-nav { font-size: 13px; }
+    .de-describe-input { min-height: 88px; font-size: var(--text-sm); padding: var(--space-3) var(--space-4); }
+    /* Refine im Cockpit: der Höhepunkt-Screen war kopflastig (Bühne + Satz
+       füllten den Rahmen, die vier Richtungen kamen erst nach Scroll).
+       Kompakterer Mono-Satz + 2-spaltige Richtungs-Kacheln bringen den
+       VERGLEICH in den ersten Blick — die Vielfalt bleibt, sie steht nur da. */
+    .de-summary { font-size: var(--text-md); }
+    /* .de-stage-Präfix: die Basisregeln (.de-summary-type, .de-concept-grid)
+       stehen SPÄTER in der Datei — ohne höhere Spezifität verliert der
+       Cockpit-Block die Kaskade (gleiche Falle wie bei den Chips). */
+    .de-stage .de-summary-type { font-size: 12.5px; line-height: 1.5; min-height: 0; }
+    .de-inferred-h { font-size: 10.5px; margin-bottom: var(--space-2); }
+    /* 136px: das Blatt misst real 304px (340er-Host minus Padding) — 148er
+       Tracks verfehlten die zweite Spalte um 2px; 136 trägt bis iPhone SE. */
+    .de-stage .de-concept-grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 10px; }
 
     /* Modalitäts-Regie über data-de-mod am Host: */
     /* Regions — das Detail-Atelier TRÄGT das Flat selbst: Bühne aus, das
