@@ -3343,6 +3343,13 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-question { font-family: var(--font-display); font-weight: var(--display-weight-mid); font-size: var(--text-2xl); letter-spacing: 0; line-height: var(--leading-snug); margin: 0 0 var(--space-6); color: var(--text); }
 
 .de-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); }
+/* Grosssets (≥5 Wahlen, cards.js setzt die Klasse): dichteres Raster mit
+   HOCHFORMAT-Kacheln — das 240×340-Flat füllt sie, statt in einer 4:3-Kachel
+   seitlich Luft zu lassen. Gleiche Vielfalt, weniger Blatt. */
+.de-cards-many { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: var(--space-2); }
+.de-cards-many .de-card { padding: var(--space-2); gap: var(--space-2); }
+.de-cards-many .de-card-label { font-size: var(--text-sm); }
+.de-cards-many .de-visual { aspect-ratio: 3 / 4; }
 .de-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); cursor: pointer; transition: transform .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .de-card:hover, .de-card:focus-visible { transform: translateY(-3px); border-color: var(--accent); box-shadow: var(--shadow-soft); outline: none; }
 .de-card-label { font-size: var(--text-md); font-weight: 600; }
@@ -3359,11 +3366,17 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-tot-panel { position: relative; min-height: 280px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; color: var(--text); cursor: pointer; display: flex; align-items: flex-end; padding: var(--space-5); transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .de-tot-panel .de-visual { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
 .de-tot-panel:hover, .de-tot-panel:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-glow); outline: none; }
-.de-tot-label { position: relative; z-index: 1; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; background: rgba(11, 11, 13, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 4px var(--space-4); border-radius: 999px; }
+.de-tot-label { position: relative; z-index: 1; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 500; background: rgba(11, 11, 13, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: var(--space-1) var(--space-4); border-radius: 999px; }
 /* Lesbarkeits-Scrim hinter dem Panel-Label: auf hellen Mood-Fotos (Dunst,
    Himmel) war der weisse Schriftzug real unsichtbar — der Verlauf garantiert
    Kontrast auf jedem Bild, ohne das Foto zu verdecken. */
 .de-tot-panel::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: linear-gradient(180deg, rgba(11, 11, 13, 0), rgba(11, 11, 13, 0.88)); pointer-events: none; }
+/* Label + abgeleitete „zieht zu …"-Zeile als Spalte über dem Scrim. */
+.de-tot-copy { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
+/* --text auf dichterer Pill (nicht --text-dim auf 0.55): die Zeile liegt über
+   unbekannten Mood-Fotos — auf dem hellen Dunst-Bild fiel dim real unter die
+   Lesbarkeit. Die Leisheit kommt aus 10px-Mono-Tracking, nicht aus Grau. */
+.de-tot-hint { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); background: rgba(11, 11, 13, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 2px var(--space-2); border-radius: 999px; }
 
 /* Slider → Couture (roadmap §6): Haarlinien-Spur mit Live-Füllung (--val vom
    Input), Ring-Daumen, und der Pol, dem sich der Regler nähert, hellt auf —
@@ -3385,18 +3398,25 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-elevated); border: 2px solid var(--accent-3);
     box-shadow: 0 0 0 4px rgba(126, 220, 46, 0.14), 0 2px 10px rgba(0, 0, 0, 0.5); }
 .de-range:focus-visible { outline: 2px solid var(--accent-3, #7edc2e); outline-offset: 4px; border-radius: 4px; }
+/* Live-Readout unter der Spur: die Maschinenstimme beziffert die Position
+   (Wert + Tendenz-Wort) — der Raum unter dem Regler antwortet mit. */
+.de-slider-read { display: flex; align-items: baseline; justify-content: center; gap: var(--space-2); margin: var(--space-4) 0 0; font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); font-size: 11px; }
+.de-slider-read-val { font-size: var(--text-xl); font-weight: 400; letter-spacing: 0.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+.de-slider-read-word { min-width: 9ch; }
+.de-slider[data-side="lo"] .de-slider-read-word,
+.de-slider[data-side="hi"] .de-slider-read-word { color: var(--accent-3); }
 
 /* Farb-Atelier (roadmap §6): das Kleidungsstück auf der Bühne IST die
    Vorschau (das tote Farb-Rechteck ist weg) — benannte Stoff-Chips statt
    roher Punkte. Chip = Stoff-Feld (mit feiner Web-Struktur) + Farbname in
    Mono-Micro; Auswahl trägt die Karten-Selektionssprache (Accent-Ring). */
-.de-scheme-tabs { display: inline-flex; gap: var(--space-1); background: var(--surface); border-radius: 999px; padding: 4px; margin-bottom: var(--space-2); }
+.de-scheme-tabs { display: inline-flex; gap: var(--space-1); background: var(--surface); border-radius: 999px; padding: var(--space-1); margin-bottom: var(--space-2); }
 .de-scheme-tab { border: 0; background: none; color: var(--text-dim); padding: var(--space-2) var(--space-5); border-radius: 999px; cursor: pointer; font-size: var(--text-sm); transition: all .2s var(--ease-out); }
 .de-scheme-tab.is-active { background: var(--gradient); color: #fff; }
 /* Fest reservierte Hinweiszeile (kein Layout-Sprung beim Moduswechsel). */
 .de-scheme-hint { min-height: 18px; margin: 0 0 var(--space-3); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-dim); }
 .de-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--space-3); }
-.de-palette-swatch { display: flex; flex-direction: column; gap: 8px; padding: 8px 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: transform .15s var(--ease-out), border-color .15s var(--ease-out); }
+.de-palette-swatch { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: transform .15s var(--ease-out), border-color .15s var(--ease-out); }
 .de-fabric-field { position: relative; display: block; height: 60px; border-radius: calc(var(--radius) - 4px); overflow: hidden; }
 /* Feine Web-Struktur + Lichtkante: die Fläche liest sich als Stoff. */
 .de-fabric-field::after { content: ""; position: absolute; inset: 0;
@@ -3439,7 +3459,7 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-nav:disabled { opacity: 0.4; cursor: default; }
 /* "Fertig" ist DIE Zusage "du kannst jederzeit abschliessen" — sobald sie
    erscheint, verdient sie Confirm-Gewicht statt eines leisen Textlinks. */
-.de-finish { margin-left: auto; background: var(--gradient); color: var(--on-accent); font-weight: 700; border-radius: 999px; padding: 8px 18px; }
+.de-finish { margin-left: auto; background: var(--gradient); color: var(--on-accent); font-weight: 700; border-radius: 999px; padding: var(--space-2) var(--space-4); }
 .de-finish:hover:not(:disabled) { color: var(--on-accent); filter: brightness(1.1); }
 
 @media (max-width: 560px) {
@@ -3562,7 +3582,7 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 .de-region-picker-h { margin: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); }
 .de-region-close { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: 1px solid var(--border); border-radius: 50%; color: var(--text-dim); font-size: 12px; cursor: pointer; transition: border-color .2s var(--ease-out); }
 .de-region-close:hover { border-color: var(--accent); color: var(--text); }
-.de-region-opt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 46px; text-align: left; padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out); }
+.de-region-opt { display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: 46px; text-align: left; padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out); }
 .de-region-opt:hover { border-color: var(--accent); }
 .de-region-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 /* Atelier-Lupe: jede Option ist eine echte Nahaufnahme GENAU dieses Details
@@ -3731,7 +3751,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-understood { margin-top: var(--space-5); border-top: 1px dashed var(--border); padding-top: var(--space-4); }
 .de-understood[hidden] { display: none; }
 .de-understood-h { display: block; font-size: 11px; letter-spacing: 0.18em; color: var(--accent); margin: 0 0 var(--space-3); text-transform: uppercase; }
-.de-understood-row { display: inline-flex; align-items: center; gap: 6px; margin: 0 var(--space-2) var(--space-2) 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; font-size: var(--text-sm); color: var(--text); background: var(--bg-elevated); }
+.de-understood-row { display: inline-flex; align-items: center; gap: var(--space-1); margin: 0 var(--space-2) var(--space-2) 0; padding: var(--space-1) var(--space-3); border: 1px solid var(--border); border-radius: 999px; font-size: var(--text-sm); color: var(--text); background: var(--bg-elevated); }
 .de-understood-row b { font-weight: 400; font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); }
 .de-understood-x { appearance: none; background: none; border: 0; color: var(--text-muted); font-size: 15px; line-height: 1; cursor: pointer; padding: 0 2px; }
 .de-understood-x:hover, .de-understood-x:focus-visible { color: var(--accent); }
@@ -3748,14 +3768,18 @@ html.is-touch .de-region-opt { min-height: 48px; }
    Die Seite selbst bewegt sich während der Reise nicht.
    ============================================================ */
 @media (max-width: 899px) {
+    /* Runde 3 — konsequenter 8px-Raster: alle Rahmen-Abstände sind Vielfache
+       von 8 (24px Viewport-Slack, 8er-Padding/Gaps, 8px-Passermarken). Nur
+       funktionale Sub-Grid-Werte (2px Fokusring-Bleed, 2px Scrollbar-Raum)
+       bleiben bewusst darunter. */
     .de-stage {
-        height: calc(var(--svh, 1svh) * 100 - 20px);
+        height: calc(var(--svh, 1svh) * 100 - 24px);
         min-height: 480px;
-        padding: var(--space-3) var(--space-4);
-        padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
-        gap: var(--space-3);
+        padding: var(--space-2) var(--space-4);
+        padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
+        gap: var(--space-2);
         overflow: hidden;
-        scroll-margin-top: 10px;
+        scroll-margin-top: var(--space-3);
     }
     /* min-width:0 auf der ganzen Flex-Kette: die nowrap-Chipzeile trug sonst
        ihre min-content-Breite (Summe aller Chips ≈ 500px) den Baum hinauf und
@@ -3765,7 +3789,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
        in der Flex-SPALTE ist align-items die Breitenachse; „start" ließe
        die Bühne auf ihren 2px-Rahmen kollabieren, sobald nur absolute
        Kinder (Weave-Beat) drinstehen. */
-    .de-stage-grid { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; gap: var(--space-3); align-items: stretch; }
+    .de-stage-grid { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; gap: var(--space-2); align-items: stretch; }
     .de-preview-col { position: relative; flex: none; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; max-width: 100%; }
     .de-preview {
         height: calc(var(--svh, 1svh) * 30);
@@ -3777,7 +3801,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-preview-stage::after {
         content: "";
         position: absolute;
-        inset: 7px;
+        inset: var(--space-2);
         pointer-events: none;
         opacity: 0.4;
         background:
@@ -3811,8 +3835,8 @@ html.is-touch .de-region-opt { min-height: 48px; }
     /* Masse-Zeile wird Bühnen-Overlay (oben rechts, unter niemandem). */
     .de-stage .de-body-caption {
         position: absolute;
-        top: 10px;
-        right: 12px;
+        top: var(--space-2);
+        right: var(--space-3);
         margin: 0;
         z-index: 2;
         font-size: 9px;
@@ -3834,8 +3858,13 @@ html.is-touch .de-region-opt { min-height: 48px; }
     /* Volle Blattbreite statt links klebender Pill: nichts lugt seitlich
        unter dem Knopf hervor, größeres Daumenziel — eine App-Aktionsleiste.
        (Kein ::before-Scrim: negative z-index-Pseudos malen ÜBER den eigenen
-       Button-Hintergrund und verdunkeln die Pill.) */
-    .de-body .de-confirm,
+       Button-Hintergrund und verdunkeln die Pill.)
+       KIND-Kombinator, nicht Nachfahre: die Regel meint die EINE Aktionsleiste
+       am Blatt-Ende (jede Modalität hängt ihren Confirm direkt an de-body) —
+       Describes verschachtelte Lesen/Übernehmen-Buttons im Karten-Inneren
+       dürfen nicht zu Sticky-Leisten werden. #de-generate bleibt Nachfahre
+       (liegt bewusst in .de-refine-actions). */
+    .de-body > .de-confirm,
     .de-body #de-generate {
         position: sticky;
         bottom: 0;
@@ -3856,7 +3885,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
         align-items: center;
         gap: var(--space-4);
     }
-    .de-question { font-size: clamp(17px, 4.9vw, 20px); line-height: 1.3; margin-top: 0; margin-bottom: var(--space-3); }
+    .de-question { font-size: clamp(17px, 4.9vw, 20px); line-height: 1.3; margin-top: 0; margin-bottom: var(--space-2); }
     .de-opening-frame { font-size: 10.5px; margin-bottom: var(--space-2); }
 
     /* Cockpit v2 — Verdichtung (Owner-iPhone-Runde 2): kleinere, ruhigere
@@ -3867,16 +3896,27 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-cards { gap: var(--space-2); grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
     .de-card { padding: var(--space-2); gap: var(--space-2); }
     .de-card-label { font-size: var(--text-sm); }
+    /* Grosssets: drei Hochformat-Spalten — sechs Stile in zwei Reihen statt
+       drei Scroll-Reihen; das Flat steht grösser als in der alten 4:3-Kachel. */
+    .de-cards-many { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .de-cards-many .de-card { padding: var(--space-1); gap: var(--space-1); }
+    .de-cards-many .de-card-label { font-size: var(--text-xs); }
     .de-tot { gap: var(--space-2); }
     .de-tot-panel { min-height: 128px; padding: var(--space-3) var(--space-4); }
     .de-tot-label { font-size: var(--text-lg); }
+    /* Foto-Duell: die zwei Panels TEILEN sich das freie Blatt (kein toter
+       Raum unter dem Duell) — das Blatt wird zur Bühne der beiden Bilder. */
+    .de-stage[data-de-mod="thisOrThat"] .de-body { display: flex; flex-direction: column; }
+    .de-stage[data-de-mod="thisOrThat"] .de-question { flex: none; }
+    .de-stage[data-de-mod="thisOrThat"] .de-tot { flex: 1; min-height: 0; grid-auto-rows: 1fr; }
     .de-rank { gap: var(--space-2); }
     .de-rank-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
     .de-rank-label { font-size: var(--text-sm); }
     .de-rank-num { width: 22px; height: 22px; font-size: 11px; }
-    .de-body .de-confirm,
-    .de-body #de-generate { margin-top: var(--space-3); padding-top: var(--space-3); padding-bottom: var(--space-3); font-size: var(--text-sm); }
-    .de-controls { gap: var(--space-3); }
+    /* padding 12px vertikal bleibt: Daumenziel-Höhe der Aktionsleiste geht vor
+       Raster-Purismus (Touch-Target ≥ 44px mit Text). */
+    .de-body > .de-confirm,
+    .de-body #de-generate { margin-top: var(--space-2); padding-top: var(--space-3); padding-bottom: var(--space-3); font-size: var(--text-sm); }
     .de-nav { font-size: 13px; }
     .de-describe-input { min-height: 88px; font-size: var(--text-sm); padding: var(--space-3) var(--space-4); }
     /* Refine im Cockpit: der Höhepunkt-Screen war kopflastig (Bühne + Satz
@@ -3891,7 +3931,7 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-inferred-h { font-size: 10.5px; margin-bottom: var(--space-2); }
     /* 136px: das Blatt misst real 304px (340er-Host minus Padding) — 148er
        Tracks verfehlten die zweite Spalte um 2px; 136 trägt bis iPhone SE. */
-    .de-stage .de-concept-grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 10px; }
+    .de-stage .de-concept-grid { grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: var(--space-2); }
 
     /* Modalitäts-Regie über data-de-mod am Host: */
     /* Regions — das Detail-Atelier TRÄGT das Flat selbst: Bühne aus, das
@@ -4869,6 +4909,8 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 .de-concept-name { display: block; margin-top: 8px; font-size: 0.84rem; line-height: 1.3; color: var(--text); text-align: left; min-height: 2.2em; }
 .de-concept-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .de-concept-v { color: var(--accent-3, #7edc2e); font-size: 0.7rem; letter-spacing: 0.12em; }
+/* Archetyp-Heimat der Richtung (Runde 3): stilles Mono-Tag rechts der Version. */
+.de-concept-arch { color: var(--text-dim); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; text-align: right; }
 .de-concept-actions { display: flex; gap: 6px; }
 .de-concept-evolve { flex: 1; padding: 0.5rem 0.4rem; border-radius: 10px; border: 1px solid var(--accent); background: linear-gradient(180deg, rgba(143, 150, 232,0.16), transparent); color: var(--text); font: inherit; font-size: 0.78rem; letter-spacing: 0.04em; cursor: pointer; transition: background .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 .de-concept-evolve:hover { background: rgba(143, 150, 232,0.28); }

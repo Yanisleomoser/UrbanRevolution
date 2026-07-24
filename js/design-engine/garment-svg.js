@@ -1357,6 +1357,14 @@ const GarmentSVG = (() => {
       a.collar = cl(CX, g.neckY - 6);
       a.waist = cl(CX, g.waistY);
       a.hem = cl(CX, g.hemY - 8);
+      // Sleeve marker on the right limb (same formula as the tops branch);
+      // on a sleeveless bodice it sits on the strap/armhole edge instead.
+      if (g.sleeveless) {
+        a.sleeve = cl(CX + g.chestHalf, (g.shoulderY + g.armpitY) / 2);
+      } else {
+        const dLimbX = (lerp(g.shoulderHalf, g.coX, 0.32) + lerp(g.chestHalf, g.ciX, 0.32)) / 2;
+        a.sleeve = cl(CX + dLimbX, lerp(g.shoulderY, g.wristY, 0.32));
+      }
       return a;
     }
     a.collar = cl(CX, g.neckY - 6);

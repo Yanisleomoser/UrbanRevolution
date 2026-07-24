@@ -158,61 +158,6 @@
       ]
     },
     {
-      "id": "dress_neck",
-      "phase": "B",
-      "modality": "cards",
-      "when": "category == 'dress' && _confidence.construction.collar < 0.6",
-      "priority": 0.66,
-      "question": {
-        "de": "Ausschnitt?",
-        "en": "Neckline?"
-      },
-      "choices": [
-        {
-          "id": "vneck",
-          "label": {
-            "de": "V-Ausschnitt",
-            "en": "V-neck"
-          },
-          "effects": {
-            "set": {
-              "construction.collar": "vneck"
-            },
-            "weight": {
-              "softCouture": 0.1
-            }
-          }
-        },
-        {
-          "id": "crew",
-          "label": {
-            "de": "Rund",
-            "en": "Round"
-          },
-          "effects": {
-            "set": {
-              "construction.collar": "crew"
-            }
-          }
-        },
-        {
-          "id": "stand",
-          "label": {
-            "de": "Hoch",
-            "en": "High"
-          },
-          "effects": {
-            "set": {
-              "construction.collar": "stand"
-            },
-            "weight": {
-              "techAvant": 0.1
-            }
-          }
-        }
-      ]
-    },
-    {
       "id": "dress_material",
       "phase": "C",
       "modality": "cards",
@@ -268,34 +213,81 @@
             }
           },
           "image": "/js/design-engine/content/img/material/linen.jpg"
+        },
+        {
+          "id": "wool",
+          "label": {
+            "de": "Feinstrick",
+            "en": "Fine knit"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "wool"
+            },
+            "weight": {
+              "quietMinimal": 0.1,
+              "softCouture": 0.1
+            }
+          },
+          "image": "/js/design-engine/content/img/material/wool.jpg"
+        },
+        {
+          "id": "denim",
+          "label": {
+            "de": "Denim",
+            "en": "Denim"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "denim"
+            },
+            "weight": {
+              "y2kStreet": 0.15,
+              "utility": 0.05
+            }
+          },
+          "image": "/js/design-engine/content/img/material/denim.jpg"
         }
       ]
     },
     {
-      "id": "dress_sleeve",
-      "phase": "B",
-      "modality": "cards",
-      "when": "category == 'dress' && _confidence.construction.sleeveLength < 0.5",
+      "id": "dress_details",
+      "_comment": "Detail-Atelier fürs Kleid (Slice-8-Muster): Ausschnitt/Ärmel/Taille wortgleich aus den früheren Karten-Nodes — Hotspots direkt am Stück, Unberührtes bleibt für die Inferenz offen. Slip/Wrap-Vorentscheide erscheinen als „aktuell“ im Picker.",
+      "phase": "E",
+      "modality": "regions",
+      "when": "category == 'dress'",
       "priority": 0.6,
-      "question": { "de": "Ärmel?", "en": "Sleeves?" },
-      "choices": [
-        { "id": "sleeveless", "label": { "de": "Ärmellos", "en": "Sleeveless" }, "effects": { "set": { "construction.sleeveLength": "sleeveless" }, "weight": { "softCouture": 0.1 } } },
-        { "id": "cap", "label": { "de": "Cap", "en": "Cap" }, "effects": { "set": { "construction.sleeveLength": "cap" } } },
-        { "id": "short", "label": { "de": "Kurz", "en": "Short" }, "effects": { "set": { "construction.sleeveLength": "short" } } },
-        { "id": "long", "label": { "de": "Lang", "en": "Long" }, "effects": { "set": { "construction.sleeveLength": "long" }, "weight": { "quietMinimal": 0.1 } } }
-      ]
-    },
-    {
-      "id": "dress_waist",
-      "phase": "B",
-      "modality": "cards",
-      "when": "category == 'dress' && _confidence.construction.waist < 0.5",
-      "priority": 0.56,
-      "question": { "de": "Taille?", "en": "Waist?" },
-      "choices": [
-        { "id": "fitted", "label": { "de": "Betont", "en": "Fitted" }, "effects": { "set": { "construction.waist": "fitted" }, "weight": { "softCouture": 0.15 } } },
-        { "id": "natural", "label": { "de": "Natürlich", "en": "Natural" }, "effects": { "set": { "construction.waist": "natural" } } },
-        { "id": "relaxed", "label": { "de": "Fliessend", "en": "Relaxed" }, "effects": { "set": { "construction.waist": "relaxed" }, "weight": { "quietMinimal": 0.1 } } }
+      "question": { "de": "Die Details — direkt am Stück", "en": "The details — right on the piece" },
+      "regions": [
+        {
+          "id": "collar",
+          "label": { "de": "Ausschnitt", "en": "Neckline" },
+          "choices": [
+            { "id": "vneck", "label": { "de": "V-Ausschnitt", "en": "V-neck" }, "effects": { "set": { "construction.collar": "vneck" }, "weight": { "softCouture": 0.1 } } },
+            { "id": "crew", "label": { "de": "Rund", "en": "Round" }, "effects": { "set": { "construction.collar": "crew" } } },
+            { "id": "stand", "label": { "de": "Hoch", "en": "High" }, "effects": { "set": { "construction.collar": "stand" }, "weight": { "techAvant": 0.1 } } }
+          ]
+        },
+        {
+          "id": "sleeve",
+          "label": { "de": "Ärmel", "en": "Sleeves" },
+          "crop": { "w": 158, "h": 122 },
+          "choices": [
+            { "id": "sleeveless", "label": { "de": "Ärmellos", "en": "Sleeveless" }, "effects": { "set": { "construction.sleeveLength": "sleeveless" }, "weight": { "softCouture": 0.1 } } },
+            { "id": "cap", "label": { "de": "Cap", "en": "Cap" }, "effects": { "set": { "construction.sleeveLength": "cap" } } },
+            { "id": "short", "label": { "de": "Kurz", "en": "Short" }, "effects": { "set": { "construction.sleeveLength": "short" } } },
+            { "id": "long", "label": { "de": "Lang", "en": "Long" }, "effects": { "set": { "construction.sleeveLength": "long" }, "weight": { "quietMinimal": 0.1 } } }
+          ]
+        },
+        {
+          "id": "waist",
+          "label": { "de": "Taille", "en": "Waist" },
+          "choices": [
+            { "id": "fitted", "label": { "de": "Betont", "en": "Fitted" }, "effects": { "set": { "construction.waist": "fitted" }, "weight": { "softCouture": 0.15 } } },
+            { "id": "natural", "label": { "de": "Natürlich", "en": "Natural" }, "effects": { "set": { "construction.waist": "natural" } } },
+            { "id": "relaxed", "label": { "de": "Fliessend", "en": "Relaxed" }, "effects": { "set": { "construction.waist": "relaxed" }, "weight": { "quietMinimal": 0.1 } } }
+          ]
+        }
       ]
     },
     {
@@ -391,9 +383,10 @@
       "modality": "cards",
       "when": "category == 'dress' && intent.energy > 0.5 && _confidence.signature < 0.4",
       "priority": 0.3,
-      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "multi": true,
+      "question": { "de": "Signature-Details? Stapelbar.", "en": "Signature details? Stackable." },
       "choices": [
-        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "none", "exclusive": true, "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
         { "id": "side-slit", "label": { "de": "Seitenschlitz", "en": "Side slit" }, "effects": { "set": { "signature": ["side-slit"] }, "weight": { "softCouture": 0.15 } } },
         { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "techAvant": 0.1 } } }
       ]

@@ -10,6 +10,8 @@
  *
  * Answers deterministically (always the first option, slider at 0.78,
  * duo-gradient with two swatches), so runs are comparable across sessions.
+ * ?dseed=7 pins the session's question-order seed — the engine varies the
+ * in-branch order per session (flow.js orderRand), the bot must not.
  * Pages boot with locale de-DE — the deterministic walk clicks GERMAN
  * aria-labels ("Jacke"), and a container whose navigator.language is en-US
  * would otherwise resolve the EN UI and hang on the first category click.
@@ -48,7 +50,7 @@ async function walk(vp) {
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.goto(base + "/#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
   await page.waitForTimeout(1200);
 

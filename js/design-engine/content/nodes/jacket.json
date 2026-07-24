@@ -13,7 +13,8 @@
         { "id": "bomber", "label": { "de": "Bomber", "en": "Bomber" }, "effects": { "set": { "subArchetype": "bomber", "length": "cropped", "construction.closure": "zip" }, "weight": { "y2kStreet": 0.15, "utility": 0.1 } } },
         { "id": "trench", "label": { "de": "Trench", "en": "Trench" }, "effects": { "set": { "subArchetype": "trench", "length": "long", "construction.closure": "button" }, "weight": { "quietMinimal": 0.2, "softCouture": 0.15 } } },
         { "id": "blazer", "label": { "de": "Blazer", "en": "Blazer" }, "effects": { "set": { "subArchetype": "blazer", "construction.closure": "button", "silhouette.structure": 0.85 }, "weight": { "softCouture": 0.2, "quietMinimal": 0.15 } } },
-        { "id": "work", "label": { "de": "Workwear", "en": "Work" }, "effects": { "set": { "subArchetype": "work", "silhouette.structure": 0.7, "construction.pockets": "cargo" }, "weight": { "utility": 0.3 } } }
+        { "id": "work", "label": { "de": "Workwear", "en": "Work" }, "effects": { "set": { "subArchetype": "work", "silhouette.structure": 0.7, "construction.pockets": "cargo" }, "weight": { "utility": 0.3 } } },
+        { "id": "trucker", "label": { "de": "Trucker", "en": "Trucker" }, "effects": { "set": { "subArchetype": "trucker", "fabric.material": "denim", "length": "cropped", "construction.closure": "button" }, "weight": { "y2kStreet": 0.2, "utility": 0.1 } } }
       ]
     },
     {
@@ -51,7 +52,9 @@
         { "id": "polyester", "image": "/js/design-engine/content/img/material/polyester.jpg", "label": { "de": "Recycled Tech", "en": "Recycled tech" }, "effects": { "set": { "fabric.material": "polyester", "fabric.finish": "matte" }, "weight": { "techAvant": 0.2, "sport": 0.1 } } },
         { "id": "denim", "image": "/js/design-engine/content/img/material/denim.jpg", "label": { "de": "Denim", "en": "Denim" }, "effects": { "set": { "fabric.material": "denim" }, "weight": { "y2kStreet": 0.2, "utility": 0.1 } } },
         { "id": "wool", "image": "/js/design-engine/content/img/material/wool.jpg", "label": { "de": "Wolle", "en": "Wool" }, "effects": { "set": { "fabric.material": "wool" }, "weight": { "quietMinimal": 0.2, "softCouture": 0.1 } } },
-        { "id": "cotton", "image": "/js/design-engine/content/img/material/cotton.jpg", "label": { "de": "Canvas", "en": "Canvas" }, "effects": { "set": { "fabric.material": "cotton" }, "weight": { "utility": 0.2 } } }
+        { "id": "cotton", "image": "/js/design-engine/content/img/material/cotton.jpg", "label": { "de": "Canvas", "en": "Canvas" }, "effects": { "set": { "fabric.material": "cotton" }, "weight": { "utility": 0.2 } } },
+        { "id": "linen", "image": "/js/design-engine/content/img/material/linen.jpg", "label": { "de": "Leinen", "en": "Linen" }, "effects": { "set": { "fabric.material": "linen" }, "weight": { "quietMinimal": 0.1, "softCouture": 0.1 } } },
+        { "id": "fleece", "image": "/js/design-engine/content/img/material/fleece.jpg", "label": { "de": "Fleece", "en": "Fleece" }, "effects": { "set": { "fabric.material": "fleece" }, "weight": { "sport": 0.2 } } }
       ]
     },
     {
@@ -184,9 +187,10 @@
       "modality": "cards",
       "when": "category == 'jacket' && intent.energy > 0.5 && _confidence.signature < 0.4",
       "priority": 0.3,
-      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "multi": true,
+      "question": { "de": "Signature-Details? Stapelbar.", "en": "Signature details? Stackable." },
       "choices": [
-        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "none", "exclusive": true, "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
         { "id": "asym-zip", "label": { "de": "Asymmetrischer Zip", "en": "Asymmetric zip" }, "effects": { "set": { "signature": ["asymmetric-zip"] }, "weight": { "techAvant": 0.15 } } },
         { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "utility": 0.1 } } },
         { "id": "branding", "label": { "de": "Branding-Patch", "en": "Branding patch" }, "effects": { "set": { "signature": ["branding-patch"] }, "weight": { "y2kStreet": 0.15, "sport": 0.1 } } }

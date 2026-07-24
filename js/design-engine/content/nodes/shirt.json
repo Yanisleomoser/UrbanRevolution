@@ -261,6 +261,40 @@
             }
           },
           "image": "/js/design-engine/content/img/material/denim.jpg"
+        },
+        {
+          "id": "silk",
+          "label": {
+            "de": "Seide",
+            "en": "Silk"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "silk",
+              "fabric.finish": "sheen"
+            },
+            "weight": {
+              "softCouture": 0.2
+            }
+          },
+          "image": "/js/design-engine/content/img/material/silk.jpg"
+        },
+        {
+          "id": "wool",
+          "label": {
+            "de": "Flanell",
+            "en": "Flannel"
+          },
+          "effects": {
+            "set": {
+              "fabric.material": "wool"
+            },
+            "weight": {
+              "utility": 0.1,
+              "quietMinimal": 0.1
+            }
+          },
+          "image": "/js/design-engine/content/img/material/wool.jpg"
         }
       ]
     },
@@ -405,9 +439,10 @@
       "modality": "cards",
       "when": "category == 'shirt' && intent.energy > 0.5 && _confidence.signature < 0.4",
       "priority": 0.3,
-      "question": { "de": "Ein Signature-Detail?", "en": "A signature detail?" },
+      "multi": true,
+      "question": { "de": "Signature-Details? Stapelbar.", "en": "Signature details? Stackable." },
       "choices": [
-        { "id": "none", "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
+        { "id": "none", "exclusive": true, "label": { "de": "Keins", "en": "None" }, "effects": { "set": { "signature": [] }, "weight": { "quietMinimal": 0.1 } } },
         { "id": "contrast-stitch", "label": { "de": "Kontrastnaht", "en": "Contrast stitch" }, "effects": { "set": { "signature": ["contrast-stitch"] }, "weight": { "utility": 0.1 } } },
         { "id": "branding", "label": { "de": "Branding-Patch", "en": "Branding patch" }, "effects": { "set": { "signature": ["branding-patch"] }, "weight": { "y2kStreet": 0.1 } } }
       ]

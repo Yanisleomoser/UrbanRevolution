@@ -318,7 +318,8 @@ types); `dna.js` holds the growing, confidence-weighted design DNA;
 nodes/regions; `flow.js` renders the journey into `#engine-host` and owns the
 experience choreography; `garment-svg.js` + `render-preview.js` draw the live
 parametric flat. Question surfaces are **modalities** (`modalities/`): cards,
-thisOrThat, slider, ranking, colorGradient, visuals, and `regions` — the
+thisOrThat, slider, ranking, colorGradient, visuals, `describe` (the free-text
+opener — its parser also powers the refine free-text), and `regions` — the
 "Detail-Atelier" hotspot board (anchors from `GarmentSVG.regionAnchors()`,
 per-option close-up thumbnails via `GarmentSVG.detailCrop()`, the value the
 piece already carries marked "aktuell"; ONE confirm commits the merged picks,

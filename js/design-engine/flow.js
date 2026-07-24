@@ -199,7 +199,14 @@ const DesignFlow = (() => {
       const eff = { set: {}, weight: {} };
       payload.forEach((id) => {
         const e = DesignEngine.choiceEffects(node, id);
-        if (e && e.set) Object.assign(eff.set, e.set);
+        if (e && e.set) {
+          Object.entries(e.set).forEach(([p, v]) => {
+            const prev = eff.set[p];
+            // Stapelbare Werte (Signaturen): zwei Array-Effekte auf demselben
+            // Pfad VEREINIGEN sich — sonst gewinnt still der letzte Tap.
+            eff.set[p] = Array.isArray(prev) && Array.isArray(v) ? [...new Set([...prev, ...v])] : v;
+          });
+        }
         if (e && e.weight) Object.entries(e.weight).forEach(([k, v]) => { eff.weight[k] = (eff.weight[k] || 0) + v; });
       });
       if (node.bind) eff.set[node.bind] = payload.join("+");
@@ -213,6 +220,32 @@ const DesignFlow = (() => {
   // echte, weiterentwickelbare Richtung (Farbe/Fit/Muster/Finish-Deltas), keine
   // Zufalls-Lotterie: hash(seed) ist stabil pro (Konzept, Version).
   const hash01 = (a, b, c) => { const s = Math.sin(a * 127.1 + b * 311.7 + (c || 0) * 74.7 + 13.37) * 43758.5453; return s - Math.floor(s); };
+
+  // ── Echte Fragen-Reihenfolge-Variation (Session-Seed) ─────────────────────
+  // orderRand(seed) → (nodeId → 0..1), stabil pro (Seed, Node): Zurück/Resume
+  // halten die Reihenfolge, erst ein Neustart oder eine neue Session würfelt
+  // neu. Der Jitter selbst lebt in engine.nextNode (greift erst nach dem
+  // Kategorie-Entscheid); ?dseed= pinnt den Seed für Bots/Verify-Skripte.
+  function orderRand(seed) {
+    const s = Number.isFinite(seed) ? seed : 0;
+    return (id) => {
+      const str = String(id == null ? "" : id);
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) % 9973;
+      return hash01((s % 9973) + 1, h + 1, 7);
+    };
+  }
+  function urlOrderSeed() {
+    try {
+      if (typeof window === "undefined" || !window.location) return null;
+      const v = parseInt(new URLSearchParams(window.location.search).get("dseed"), 10);
+      return Number.isFinite(v) ? v : null;
+    } catch (_e) { return null; }
+  }
+  function freshOrderSeed() {
+    const pinned = urlOrderSeed();
+    return pinned == null ? Math.floor(Math.random() * 1e9) : pinned;
+  }
   function shiftHex(hex, dh, dl) {
     const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
     if (!m) return hex;
@@ -230,7 +263,7 @@ const DesignFlow = (() => {
     return "#" + to(rr) + to(gg) + to(bb);
   }
   const PATTERN_POOL = ["none", "stripe", "graphic", "check", "camo", "abstract"];
-  function mutateDna(base, idx, version) {
+  function mutateDna(base, idx, version, arch) {
     const d = JSON.parse(JSON.stringify(base));
     const set = (p, v) => DesignDNA.set(d, p, v, 1);
     const g = (p) => DesignDNA.get(d, p);
@@ -261,6 +294,52 @@ const DesignFlow = (() => {
     if (idx === 3 && r2 > 0.5) {
       const L = ["cropped", "regular", "long"]; const cur = Math.max(0, L.indexOf(g("length")));
       set("length", L[(cur + 1 + Math.floor(r3 * 2)) % 3]);
+    }
+    // ── Archetyp-Zug (Runde 3) ──────────────────────────────────────────────
+    // Mit `arch` (ein archetypes.json-Eintrag) zieht die Richtung zusätzlich
+    // zur Heimat dieses Archetyps: numerische Achsen nähern sich seinen
+    // Defaults, der Farbton seinem Grundton, das Muster seiner Haltung.
+    // Deterministisch (arch ist Daten, kein Zufall); ohne arch bleibt das
+    // Verhalten byte-identisch (bestehende Tests, alte EVOLVE-Ketten).
+    if (arch && arch.defaults) {
+      const D = arch.defaults;
+      const pull = (path, k) => {
+        const target = D[path];
+        const cur = g(path);
+        if (typeof target === "number" && typeof cur === "number") {
+          set(path, Math.min(1, Math.max(0, cur + (target - cur) * k)));
+        }
+      };
+      pull("silhouette.fit", 0.5);
+      pull("silhouette.structure", 0.4);
+      if (D["fabric.finish"] === "sheen" || D["fabric.finish"] === "matte") {
+        const target = D["fabric.finish"] === "sheen" ? 0.8 : 0.2;
+        const cur = typeof g("fabric.finishWeight") === "number" ? g("fabric.finishWeight") : 0.4;
+        set("fabric.finishWeight", Math.min(1, Math.max(0, cur + (target - cur) * 0.45)));
+      }
+      // Farbton: jeder Stop wandert ein Stück den kürzesten Bogen zum
+      // Archetyp-Grundton (graue Grundtöne — quietMinimal/techAvant — tragen
+      // keinen Hue und lassen die Farbe in Ruhe).
+      const hueA = hexHue(Array.isArray(D["color.stops"]) ? D["color.stops"][0] : null);
+      const stops3 = g("color.stops") || [];
+      if (hueA != null && stops3.length) {
+        set("color.stops", stops3.map((sHex) => {
+          const h = hexHue(sHex);
+          if (h == null) return sHex;
+          const delta = ((hueA - h + 540) % 360) - 180;
+          return shiftHex(sHex, delta * 0.35, 0);
+        }));
+      }
+      // Muster: die Richtung übernimmt die Haltung ihres Archetyps — ein vom
+      // User ENTSCHIEDENES „kein Muster" bleibt respektiert (keepClean oben).
+      if (!keepClean && D["pattern.type"] && D["pattern.type"] !== g("pattern.type")) {
+        if (D["pattern.type"] === "none") {
+          set("pattern.type", "none");
+        } else if (idx % 2 === 1) {
+          set("pattern.type", D["pattern.type"]);
+          set("pattern.scale", typeof D["pattern.scale"] === "number" ? D["pattern.scale"] : 0.5);
+        }
+      }
     }
     return d;
   }
@@ -434,12 +513,20 @@ const DesignFlow = (() => {
       const top = (node.options || []).find((o) => o.id === (payload || [])[0]);
       return top && top.label ? top.label[l] : "";
     }
-    if (node.modality === "cards" && Array.isArray(payload)) return payload.length + "×";
     if (node.modality === "regions") {
       const n = payload && typeof payload === "object" ? Object.keys(payload).length : 0;
       return n ? n + "×" : t("engine.changed_details");
     }
     if (node.modality === "cards") {
+      // Multi-select (stapelbare Signaturen): die getippten Worte, max. zwei
+      // ausgeschrieben, der Rest gezählt — „Kontrastnaht · Patch +1".
+      if (Array.isArray(payload)) {
+        const words = payload
+          .map((id) => { const c = (node.choices || []).find((x) => x.id === id); return c && c.label ? c.label[l] : null; })
+          .filter(Boolean);
+        if (!words.length) return t("engine.changed_details");
+        return words.slice(0, 2).join(" · ") + (words.length > 2 ? " +" + (words.length - 2) : "");
+      }
       const c = (node.choices || []).find((x) => x.id === payload);
       return c && c.label ? c.label[l] : "";
     }
@@ -461,6 +548,9 @@ const DesignFlow = (() => {
     const base = options.contentBase || DEFAULT_BASE;
     let dna = seedDefaults(DesignDNA.create());
     let answered = new Set();
+    // Reihenfolge-Seed der Session (persistiert im Resume-Blob, ?dseed= pinnt).
+    let orderSeed = freshOrderSeed();
+    let orderRandFn = orderRand(orderSeed);
     const history = [];
     let content = null;
     let currentNode = null;
@@ -814,7 +904,7 @@ const DesignFlow = (() => {
 
     function persist() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ dna, answered: [...answered] }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ dna, answered: [...answered], seed: orderSeed }));
       } catch (_e) { /* private mode / quota */ }
     }
     function loadSaved() {
@@ -839,6 +929,10 @@ const DesignFlow = (() => {
       get lang() { return lang(); },
       get dna() { return dna; },
       t,
+      // Read-only Blick auf die Archetypen (id + bilinguale Labels): die
+      // Duell-Panels leiten daraus ihre ehrliche „zieht zu …"-Zeile ab —
+      // direkt aus den effects.weight der Wahl, nie aus Hand-Kopie.
+      archetypes() { return (content && content.archetypes) || []; },
       live(payload) {
         const { eff } = resolveEffects(currentNode, payload);
         if (eff && eff.set) {
@@ -867,6 +961,12 @@ const DesignFlow = (() => {
         const answeredId = currentNode && currentNode.id;
         DesignEngine.answer(dna, currentNode, eff, answered, conf);
         syncDerivedFinish(dna);
+        // Describe/Freitext säen bei conf 0.62 — ÜBER der Finalize-Scrub-
+        // Schwelle (0.5). Ein vor der Kategorie gesäter, für sie unbaubarer
+        // Verschluss (z. B. „Reissverschluss" → später T-Shirt) muss beim
+        // nächsten Commit raus, sonst widersprechen Satz/Prompt/Share dem
+        // Flat (U1-Klasse). Explizite Antworten (conf ≥ 0.75) bleiben.
+        scrubImpossibleFills(dna, 0.62, window.GarmentSVG && window.GarmentSVG.closureAllowed);
         const afterIds = new Set(DesignEngine.eligible(content.nodes, dna, answered).map((n) => n.id));
         let saved = 0;
         beforeIds.forEach((nid) => { if (nid !== answeredId && !afterIds.has(nid)) saved++; });
@@ -966,7 +1066,7 @@ const DesignFlow = (() => {
       // Kein refreshChrome hier: renderModality/renderRefine rendern selbst.
       // Ein doppelter Render würde u. a. die einmalige Weave-In-Animation
       // (Genesis → Silhouette) sofort wieder überschreiben.
-      const node = DesignEngine.nextNode(content.nodes, dna, answered);
+      const node = DesignEngine.nextNode(content.nodes, dna, answered, undefined, orderRandFn);
       if (!node) return renderRefine();
       renderModality(node);
     }
@@ -1048,9 +1148,19 @@ const DesignFlow = (() => {
       // aktiven DNA (Vorschau, Satz, Share, Generieren). Die Original-Richtung
       // bleibt als Konzept 0 erhalten — nichts geht verloren.
       const baseDna = JSON.parse(JSON.stringify(dna));
+      // Archetyp-gespeiste Richtungen (Runde 3): die Varianten 1–3 ziehen zu
+      // den nächststärksten NACHBAR-Archetypen des Users (Rang 2–4 seines
+      // Stilvektors) — jede Richtung hat eine benannte Heimat statt reiner
+      // Hash-Deltas, und EVOLVE bleibt in derselben Heimat. Unbekannte/
+      // gecraftete Weight-Keys fallen durch den find() aufs klassische Delta.
+      const neighbours = (window.DesignInference ? DesignInference.topArchetypes(baseDna, 4) : [])
+        .slice(1)
+        .map((a) => ((content.archetypes || []).find((x) => x && x.id === a.id) || null));
+      const archFor = (i) => (i > 0 ? neighbours[i - 1] || null : null);
       const concepts = [0, 1, 2, 3].map((i) => ({
-        history: [i === 0 ? baseDna : mutateDna(baseDna, i, 1)],
+        history: [i === 0 ? baseDna : mutateDna(baseDna, i, 1, archFor(i))],
         version: 1,
+        arch: archFor(i),
       }));
       let selected = 0;
       const grid = body.querySelector("#de-concept-grid");
@@ -1080,11 +1190,17 @@ const DesignFlow = (() => {
           const name = (i === 0 && c.version === 1)
             ? t("engine.concept_original")
             : labelSets[i].map((k) => t(k)).join(" · ");
+          // Die Archetyp-Heimat der Richtung steht als Mono-Tag neben der
+          // Version — Labels kommen aus archetypes.json (vertrauenswürdige
+          // Daten, kein User-Input), sicher im Template wie die i18n-Namen.
+          const archTag = c.arch && c.arch.label
+            ? `<span class="de-concept-arch mono-label">${c.arch.label[lang()] || c.arch.label.de}</span>`
+            : "";
           return `<figure class="de-concept${i === selected ? " is-selected" : ""}" data-i="${i}">
             <button type="button" class="de-concept-pick" data-pick="${i}" aria-pressed="${i === selected}" aria-label="${t("engine.concept_pick_aria", { n: i + 1 })}: ${name}">
               <span class="de-concept-stage">${tileSvg(cur)}</span>
               <span class="de-concept-name">${name}</span>
-              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span></span>
+              <span class="de-concept-meta"><span class="de-concept-v mono-label">V${c.version}</span>${archTag}</span>
             </button>
             ${i === selected ? `<div class="de-concept-actions">
               <button type="button" class="de-concept-evolve" data-evolve="${i}">${t("engine.evolve")}</button>
@@ -1100,7 +1216,7 @@ const DesignFlow = (() => {
           const i = parseInt(b.dataset.evolve, 10);
           const c = concepts[i];
           c.version += 1;
-          c.history.push(mutateDna(c.history[c.history.length - 1], i, c.version));
+          c.history.push(mutateDna(c.history[c.history.length - 1], i, c.version, c.arch));
           // Drop the oldest *mutation*, never index 0 — that's baseDna, which
           // must survive per the "nichts geht verloren" guarantee above.
           if (c.history.length > 8) c.history.splice(1, 1);
@@ -1125,7 +1241,7 @@ const DesignFlow = (() => {
         if (r) flash("✓ " + r.label);
       }));
       const deeper = body.querySelector("#de-deeper");
-      const moreNode = DesignEngine.nextNode(content.nodes, dna, answered);
+      const moreNode = DesignEngine.nextNode(content.nodes, dna, answered, undefined, orderRandFn);
       if (!moreNode) deeper.hidden = true;
       else deeper.addEventListener("click", () => { snapshot(); renderModality(moreNode); });
 
@@ -1153,6 +1269,11 @@ const DesignFlow = (() => {
             if (DesignDNA.confidence(dna, p) < 0.75) DesignDNA.set(dna, p, v, 0.62);
           });
           syncDerivedFinish(dna);
+          // Der Parser kennt die committete Kategorie nicht („mit Reissverschluss"
+          // ohne Garment-Wort passiert sein Gate) — ein fürs Stück unbaubarer
+          // Verschluss bei 0.62 stünde sonst in Satz/Prompt/Share, während das
+          // Flat offen zeichnet (U1-Klasse). Sofort ausräumen.
+          scrubImpossibleFills(dna, 0.62, window.GarmentSVG && window.GarmentSVG.closureAllowed);
           mirror(dna, content.attributes);
           persist(); updatePreview(); reSummary();
           flash("✓ " + t("engine.dsc_read_label"));
@@ -1309,6 +1430,10 @@ const DesignFlow = (() => {
       clearNameplate();
       dna = seedDefaults(DesignDNA.create());
       answered = new Set();
+      // Neustart = neue Session: die Branch-Reihenfolge darf neu fallen
+      // (?dseed= bleibt gepinnt, damit Bots reproduzierbar laufen).
+      orderSeed = freshOrderSeed();
+      orderRandFn = orderRand(orderSeed);
       history.length = 0;
       maxPhaseIdx = -1; // fresh journey → the stepper starts at Phase A again
       currentNode = null;
@@ -1379,11 +1504,17 @@ const DesignFlow = (() => {
         // echte Wahl zu überschreiben (nur wenn wirklich ungesetzt).
         if (DesignDNA.get(dna, "intent.energy") == null) seedDefaults(dna);
         answered = new Set(saved.answered);
+        // Der gespeicherte Reihenfolge-Seed läuft weiter (Resume ändert die
+        // Reihenfolge nicht) — ein ?dseed=-Pin gewinnt für reproduzierbare Läufe.
+        if (urlOrderSeed() == null && Number.isFinite(saved.seed)) {
+          orderSeed = saved.seed;
+          orderRandFn = orderRand(orderSeed);
+        }
         // Resume-Falle: Ein BEREITS KONVERGIERTER Durchlauf (keine offenen
         // Fragen mehr) würde jeden Wiederbesuch direkt aufs Ergebnis werfen —
         // „die Reise ist weg". Fertige Sessions gelten als abgeschlossen: das
         // Design lebt in StateManager/Library weiter, die Reise startet frisch.
-        if (DesignEngine.nextNode(content.nodes, dna, answered)) return renderNext();
+        if (DesignEngine.nextNode(content.nodes, dna, answered, undefined, orderRandFn)) return renderNext();
         clearSaved();
         dna = seedDefaults(DesignDNA.create());
         answered = new Set();
@@ -1405,7 +1536,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand, changeLabel };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

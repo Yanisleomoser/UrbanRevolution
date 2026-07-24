@@ -27,7 +27,7 @@ const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${ms
 
 // Deterministic mini-walk (mirrors shoot-journey.mjs) until the board shows.
 async function walkToBoard(page) {
-  await page.goto(base + "/#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
   await page.waitForTimeout(1200);
   for (let i = 0; i < 20; i++) {

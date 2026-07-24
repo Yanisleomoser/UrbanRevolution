@@ -141,8 +141,10 @@
     box.appendChild(foot);
     host.appendChild(box);
 
-    // Verstanden-Playback (leer bis zum ersten Lesen).
-    const back = V.el("div", { class: "de-understood", hidden: "" });
+    // Verstanden-Playback (leer bis zum ersten Lesen). role=status: das
+    // Lesen-Ergebnis wird Screenreadern angesagt (vorher blieb der primäre
+    // Aktionsknopf für SR komplett stumm); atomic liest die Liste als Ganzes.
+    const back = V.el("div", { class: "de-understood", hidden: "", role: "status", "aria-atomic": "true" });
     host.appendChild(back);
 
     const alt = V.el("div", { class: "de-describe-alts" });
@@ -160,24 +162,31 @@
     host.appendChild(alt);
 
     let entries = [];
-    const renderBack = () => {
+    // focusIdx (optional): nach dem Entfernen einer Zeile landet der Fokus auf
+    // dem ×-Knopf der nachrückenden Zeile (sonst Übernehmen, sonst Lesen) —
+    // der Re-Render zerstört den fokussierten Knopf, ohne dies fiele der
+    // Tastatur-Fokus auf <body> und die Reise wäre blind neu zu ertasten.
+    const renderBack = (focusIdx) => {
       back.innerHTML = "";
       back.hidden = false;
       const h = V.el("p", { class: "de-understood-h mono-label" });
       h.textContent = entries.length ? t("engine.dsc_understood") : t("engine.dsc_none");
       back.appendChild(h);
-      entries.forEach((e) => {
+      const xs = [];
+      entries.forEach((e, i) => {
         const row = V.el("span", { class: "de-understood-row" });
         const k = V.el("b", { class: "mono-label" }); k.textContent = t(e.labelKey);
         const v = document.createTextNode(" " + e.value + " ");
         const x = V.el("button", { type: "button", class: "de-understood-x", "aria-label": t("engine.dsc_remove", { what: t(e.labelKey) }) });
         x.textContent = "×";
-        x.addEventListener("click", () => { entries = entries.filter((o) => o !== e); renderBack(); });
+        x.addEventListener("click", () => { entries = entries.filter((o) => o !== e); renderBack(i); });
+        xs.push(x);
         row.appendChild(k); row.appendChild(v); row.appendChild(x);
         back.appendChild(row);
       });
+      let apply = null;
       if (entries.length) {
-        const apply = V.el("button", { type: "button", class: "de-confirm de-understood-apply" });
+        apply = V.el("button", { type: "button", class: "de-confirm de-understood-apply" });
         apply.textContent = t("engine.dsc_apply");
         apply.addEventListener("click", () => {
           const set = {};
@@ -185,6 +194,10 @@
           ctx.commit({ set });
         });
         back.appendChild(apply);
+      }
+      if (focusIdx !== undefined) {
+        const target = xs[Math.min(focusIdx, xs.length - 1)] || apply || read;
+        if (target) target.focus();
       }
     };
 

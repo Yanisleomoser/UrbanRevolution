@@ -224,6 +224,42 @@ console.log("\n— category lands on Q3 DETERMINISTICALLY, not by array order (r
   assert(normal[2] === "mood_soft_sharp", "the second mood pair reliably wins Q3 over the category node");
 }
 
+console.log("\n— Session-Jitter (Runde 3): Branch-Reihenfolge variiert pro Seed, Spine bleibt —");
+{
+  const Flow = require(path.join(ROOT, "flow.js"));
+  const walk = (rand) => {
+    const dna = DNA.create();
+    const answered = new Set();
+    const order = [];
+    let guard = 0;
+    while (guard++ < 100) {
+      const node = Engine.nextNode(nodes, dna, answered, undefined, rand);
+      if (!node) break;
+      order.push(node.id);
+      const choice = bold[node.id] !== undefined ? bold[node.id] : bold._default(node);
+      const { eff, conf } = resolveEffects(node, choice);
+      Engine.answer(dna, node, eff, answered, conf);
+    }
+    return order;
+  };
+  const plain = walk(undefined);
+  assert(JSON.stringify(plain) === JSON.stringify(B.order),
+    "without a rand fn nextNode is byte-identical to the classic order (all old callers untouched)");
+  // Zwei Seeds, deren Branch-Reihenfolge nachweislich auseinanderfällt —
+  // deterministisch (orderRand ist ein purer Hash), also stabil im CI.
+  const seedOrders = [1, 2, 3, 4, 5, 6, 7, 8].map((s) => walk(Flow.orderRand(s)));
+  const catAt = (o) => o.indexOf("category_select");
+  assert(seedOrders.every((o) => o.slice(0, catAt(o) + 1).join("|") === plain.slice(0, catAt(plain) + 1).join("|")),
+    "the opening spine (describe → moods → category) is IDENTICAL under every seed (jitter starts after the category)");
+  assert(seedOrders.every((o) => new Set(o).size === o.length && o.length === plain.length),
+    "every seeded walk asks the same questions exactly once (variation reorders, never drops/duplicates)");
+  const distinct = new Set(seedOrders.map((o) => o.join("|")));
+  assert(distinct.size >= 2,
+    `different seeds produce genuinely different branch orders (${distinct.size}/8 distinct)`);
+  assert(JSON.stringify(walk(Flow.orderRand(7))) === JSON.stringify(walk(Flow.orderRand(7))),
+    "the same seed always replays the same order (Zurück/Resume-Stabilität)");
+}
+
 console.log("\n— Bug 1: pure express (only category) → 100% —");
 const pe = DNA.create();
 DNA.set(pe, "category", "jacket", 1);
@@ -402,8 +438,11 @@ const dressNodes = [...readJSON("content/nodes/intent.json").nodes, ...fileNodes
 const couture = {
   mood_calm_bold: "bold", mood_soft_sharp: "soft", mood_clean_expressive: "expressive",
   category_select: "dress",
-  dress_subarch: "slip", dress_fit: 0.75, dress_length: "long", dress_neck: "vneck",
-  dress_sleeve: "sleeveless", dress_waist: "fitted", dress_material: "silk", dress_finish: 0.9,
+  dress_subarch: "slip", dress_fit: 0.75, dress_length: "long",
+  // Detail-Atelier (Runde 3): Ausschnitt/Ärmel/Taille leben jetzt als
+  // Regions-Board — ein Payload landet alle drei, wie beim Jacket-Board.
+  dress_details: { collar: "vneck", sleeve: "sleeveless", waist: "fitted" },
+  dress_material: "silk", dress_finish: 0.9,
   dress_color: { set: { "color.scheme": "mono", "color.stops": ["#0a1622"] } },
   dress_pattern: "none", dress_signature: "side-slit",
   _default: (n) => (n.modality === "slider" ? 0.5 : (n.choices && n.choices[0] ? n.choices[0].id : "regular")),
