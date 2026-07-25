@@ -244,3 +244,53 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     lesen.** Und: der zugehörige Test stubte `closureAllowed` von Hand und
     konnte das Auseinanderlaufen prinzipiell nicht sehen; Gates immer gegen
     das ECHTE Modul testen.
+- 2026-07-25 (Owner-Runde 2, iPhone-Foto): **„Drei Kästen, zu viele Linien"**
+  — der Owner wollte ZWEI saubere Flächen, die den ganzen Rahmen füllen: oben
+  das Stück, unten die Bedienung. Umgesetzt in zwei Schritten, beide im selben
+  Branch:
+  - **Ein Rahmen, zwei Flächen.** Der Rahmen trug real vier verschachtelte
+    Kantensätze (`.design-journey` + `#de-preview` + `.de-ask-col` + vier
+    Passermarken). Jetzt clippt der Rahmen, Bühne und Dock sind randlos und
+    füllen ihn ganz; die Passermarken sind ersatzlos entfallen. Gemessen:
+    innere Konturen 0 px, Bühne am Oberrand, Dock am Unterrand.
+  - **Kanten-Diät im Wahl-Vokabular.** Jede Option war doppelt gerahmt (Karte
+    mit Fläche + Rand, darin ein gerahmtes Bild) — bei sechs Kacheln zwölf
+    Kanten. Jetzt IST das Bild die Karte, das Label steht frei darunter, der
+    Zustand ist ein Ring auf dem Bild. Dasselbe für Farb-Swatches,
+    Picker-Zeilen, Rangliste (Haarlinien statt Kartenstapel) und den
+    Describe-Nebenweg. Bewusst in den BASISREGELN, nicht im Cockpit-Block:
+    das ist Designsprache, keine Platzsparmassnahme — Desktop und Cockpit
+    dürfen nicht verschieden sprechen.
+  - **Farbe bekommt je EINE Bedeutung.** Der Marken-Verlauf lag gleichzeitig
+    auf Bestätigung, Fertig-Pille, Segment-Tab und vier Rang-Scheiben — vier
+    „Hauptaktionen" heissen keine. Jetzt: Verlauf = die eine Bestätigung,
+    Grün = deine Wahl (Auswahl-Ring, Rang-Ziffer, „Fertig"), Periwinkle =
+    Zeiger/Fokus. Der Guard zählt das nach.
+  - **Saum-Reserve statt Kollision.** Die Chip-Zeile lag zwangsläufig auf dem
+    Rock: das Flat endete ~20 px über der Bühnenkante. Jetzt hat die
+    Registratur-Zeile ihren eigenen Boden (`padding-bottom` auf der Bühne,
+    Bodenpool wandert mit), gemessen 6 px unter dem Flat und 16 px über dem
+    Dock. Auf der KURZEN Bühne (describe/refine) treten Chips und Masse-Zeile
+    ganz ab — dort füllt das Stück den Rahmen und jede Beschriftung läge
+    darauf.
+  - **Nebeneffekt, quantifiziert:** weniger Kästen = weniger Höhe. Auf einem
+    kurzen iPhone (375×553) sank der Überhang unter der klebenden Bestätigung
+    auf jedem Screen: Rangliste 236 → 0 px, Farb-Atelier 118 → 12 px, vier
+    Karten-Screens 31–46 → 0 px, Describe 176 → 83 px.
+  - **Zwei Fallen, beide nur auf TOUCH sichtbar** (headless ohne
+    `hasTouch` zeigt sie nicht — der Guard läuft deshalb jetzt in einem
+    Touch-Kontext):
+    1. `:hover` KLEBT nach dem Tippen am zuletzt berührten Element. Der
+       Periwinkle-Zeiger-Ring stand dadurch neben dem grünen Auswahl-Ring.
+       Alle Hover-Zustände hängen jetzt an `@media (hover: hover)`.
+    2. `html.is-touch .de-nav { display: inline-flex }` überstieg das
+       UA-`[hidden] { display: none }` — die „Fertig"-Pille wurde auf dem
+       ersten Screen gemalt, obwohl sie `hidden` trug. Globaler Riegel
+       `[hidden] { display: none !important }` (dieselbe Falle hatte vorher
+       schon den Region-Picker erwischt).
+  - Guard erweitert (`verify-stage-light.mjs`, jetzt 5 Abschnitte): ein
+    Rahmen/zwei Flächen im Touch-Kontext, `[hidden]`-Regression, Saum-Reserve,
+    „die Karte zeichnet selbst nichts", und die Verlaufs-Zählung auf einem
+    Screen, der wirklich eine Bestätigung trägt (die erste Fassung war mit
+    „0 von höchstens 1" vakuum grün). Alle neuen Checks negativ getestet:
+    Defekt wieder eingebaut → Guard schlägt an.
