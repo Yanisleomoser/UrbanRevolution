@@ -220,6 +220,14 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
       Hohlkehle, die B2 gerade aufgebaut hat — glänzender Boden + Cyclorama
       ist genau der billige Look. Wer sie doch will, braucht eine Box, die
       den Saum umschliesst.
+    - Permanenter Guard: `scripts/verify-stage-light.mjs` (21 Checks, beide
+      Viewports) — Kegel/Hohlkehle/Vignette liegen auf JEDER Breite, das
+      Cockpit hebt den Pool an (sonst verliert das Glas-Dock still das, was
+      es brechen soll), kein filter/backdrop-filter auf der Bühne (Budget),
+      der Bühnen-Stop ist vertikal + materialabhängig + untergeordnet, der
+      Kontaktschatten ist zweistufig und wandert mit dem Saum, Schwarz trägt
+      sein Rim-Light. Gegengeprüft: bricht man die Token-Kaskade, schlägt der
+      Guard an (kein vakuumer Lauf).
     - Gelernt: der Bodenpool darf NICHT stark auf fixer Höhe stehen — bei
       kurzen Stücken liest er als ZWEITER Boden, über dem das Teil schwebt.
       Das Stück steht auf seinem eigenen, mitwandernden Kontaktschatten; die
