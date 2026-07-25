@@ -518,6 +518,33 @@ console.log("\n— dress · Knopfleiste wird wirklich GEZEICHNET (nicht nur erla
     });
 }
 
+console.log("\n— Bühnen-Licht: der Flat antwortet dem Studio-Licht (Roadmap B2) —");
+{
+  const tee = (extra) => GarmentSVG.build("tshirt", { fit: 0.5, length: "regular", color: "#40506a", material: "cotton", ...extra });
+  // Der Bühnen-Stop ist ein VERTIKALER Verlauf (Überkopf-Fang oben, Boden-
+  // Bounce unten) — die Key-Light-Diagonale bleibt davon unberührt.
+  const svg = tee({});
+  const stage = /<linearGradient id="[^"]*sl" x1="0" y1="0" x2="0" y2="1">/.test(svg);
+  assert(stage, "the stage-light gradient is vertical (the direction the stage actually lights from)");
+  // Glanz und Matt antworten UNTERSCHIEDLICH — sonst wäre es Dekoration
+  // statt Optik. Silk (spec .86) muss einen stärkeren Fang zeigen als
+  // Fleece (spec .05).
+  const topStop = (s) => {
+    const m = /<linearGradient id="[^"]*sl"[^>]*>\s*<stop offset="0"[^>]*stop-opacity="([\d.]+)"/.exec(s);
+    return m ? parseFloat(m[1]) : null;
+  };
+  const silk = topStop(tee({ material: "silk" }));
+  const fleece = topStop(tee({ material: "fleece" }));
+  assert(silk != null && fleece != null, "both materials emit a stage-light stop");
+  assert(silk > fleece, `silk catches the stage light harder than fleece (${silk} > ${fleece})`);
+  // Es darf nie dominieren — Bühnenlicht modelliert, es überstrahlt nicht.
+  assert(silk <= 0.24, `the stage catch stays subordinate to key/sheen (${silk} ≤ 0.24)`);
+  ["silk", "fleece", "denim", "wool", "linen", "polyester", "cotton"].forEach((m) => {
+    const s = tee({ material: m });
+    assert(s.startsWith("<svg") && !/NaN|undefined/.test(s), `stage light is clean SVG for ${m}`);
+  });
+}
+
 console.log("\n— dress · der Rock ist gerundet, kein Polygon (Owner-Report: rendert falsch) —");
 {
   const dress = (extra) => GarmentSVG.build("dress", { fit: 0.5, length: "regular", color: "#7a2436", material: "cotton", ...extra });

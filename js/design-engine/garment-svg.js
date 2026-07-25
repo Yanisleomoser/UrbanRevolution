@@ -254,6 +254,29 @@ const GarmentSVG = (() => {
       `<stop offset="${keyMid}" stop-color="#fff" stop-opacity="0"/>` +
       `<stop offset="${r(keyMid + 0.14)}" stop-color="#000" stop-opacity="0"/>` +
       `<stop offset="1" stop-color="#000" stop-opacity="${keyLo}"/></linearGradient>`;
+    // BÜHNEN-LICHT (Roadmap B2 „Studio-Licht für den Blueprint"). Die Bühne hat
+    // seit B1/B2 eine Lichtquelle: ein Podest-Kegel von oben und ein
+    // Lichtpool auf dem Boden. Das Stück muss darauf ANTWORTEN, sonst bleibt es
+    // ein Flat, das zufällig vor einem beleuchteten Hintergrund hängt.
+    // Zwei schwache, VERTIKALE Stops — die Richtung, aus der die Bühne wirklich
+    // leuchtet (die Key-Light-Diagonale oben bleibt unangetastet):
+    //   • oben  = das Überkopflicht fängt sich auf Schulter/Kragen,
+    //   • unten = der Bodenpool wirft einen matten Bounce auf den Saum.
+    // Beide lesen dieselbe (spec, rough)-Optik wie alles andere: Seide fängt
+    // eine schmale, helle Kante, Fleece so gut wie nichts. Bewusst schwächer
+    // als Key/Sheen — Bühnenlicht MODELLIERT, es dominiert nicht.
+    const stageTop = r(clamp(0.05 + spec * 0.15, 0.035, 0.22));   // Überkopf-Fang
+    const stageBounce = r(clamp(0.03 + spec * 0.09, 0.02, 0.14)); // Boden-Bounce
+    // Glanzstoffe fangen das Licht auf einem KÜRZEREN Stück Kante (enge Lobe),
+    // matte verlaufen breit aus — dieselbe Logik wie die Sheen-Bandbreite.
+    const topEnd = r(lerp(0.14, 0.30, rough));
+    const botStart = r(1 - lerp(0.12, 0.26, rough));
+    defs += `<linearGradient id="${id}sl" x1="0" y1="0" x2="0" y2="1">` +
+      `<stop offset="0" stop-color="#eaf2ff" stop-opacity="${stageTop}"/>` +
+      `<stop offset="${topEnd}" stop-color="#eaf2ff" stop-opacity="0"/>` +
+      `<stop offset="${botStart}" stop-color="#dfe8ff" stop-opacity="0"/>` +
+      `<stop offset="1" stop-color="#dfe8ff" stop-opacity="${stageBounce}"/></linearGradient>`;
+
     let pat = "";
     if (p.pattern && p.pattern !== "none") { defs += patternDef(id + "p", p.pattern, clamp(num(p.patternScale, 0.5), 0.12, 1)); pat = `url(#${id}p)`; }
 
@@ -286,7 +309,7 @@ const GarmentSVG = (() => {
         `<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
       streak = `url(#${id}k)`;
     }
-    return { defs, fill, opacity, pat, grain, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)`, key: `url(#${id}kl)` };
+    return { defs, fill, opacity, pat, grain, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)`, key: `url(#${id}kl)`, stage: `url(#${id}sl)` };
   }
 
   // Per-material fabric grain tile (distinct from the decorative p.pattern).
@@ -1188,9 +1211,25 @@ const GarmentSVG = (() => {
     if (ground && reveal > 0.01) {
       const gy = Y(num(ground.y, VH - 18) + 8);
       const grx = r(clamp(num(ground.half, 60) * 1.28, 22, CX - 4));
-      const gop = r(0.4 * reveal);
-      groundDefs = `<radialGradient id="${id}gs" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#03070c" stop-opacity="${gop}"/><stop offset="0.55" stop-color="#03070c" stop-opacity="${r(gop * 0.46)}"/><stop offset="1" stop-color="#03070c" stop-opacity="0"/></radialGradient>`;
-      groundShadow = `<ellipse class="gs-ground" cx="${CX}" cy="${gy}" rx="${grx}" ry="9" fill="url(#${id}gs)"/>`;
+      // B2: Der Schatten steht jetzt gegen einen BELEUCHTETEN Bühnenboden
+      // (--stage-pool). Vorher war er dunkel auf dunkel und praktisch
+      // unsichtbar — das Stück schwebte. Zwei Lagen wie in einer echten
+      // Aufnahme: ein enger, dichter KONTAKT-Kern direkt unter dem Saum
+      // (dort berührt das Tuch den Boden) und ein weiter, schwacher
+      // Halbschatten, der den Lichtpool abdunkelt. Rein additiv, keine
+      // zusätzliche Ebene im Morph-Loop (dieselbe eine <ellipse>-Familie).
+      const gop = r(0.52 * reveal);
+      groundDefs =
+        `<radialGradient id="${id}gs" cx="0.5" cy="0.5" r="0.5">` +
+        `<stop offset="0" stop-color="#03070c" stop-opacity="${gop}"/>` +
+        `<stop offset="0.55" stop-color="#03070c" stop-opacity="${r(gop * 0.46)}"/>` +
+        `<stop offset="1" stop-color="#03070c" stop-opacity="0"/></radialGradient>` +
+        `<radialGradient id="${id}gp" cx="0.5" cy="0.5" r="0.5">` +
+        `<stop offset="0" stop-color="#03070c" stop-opacity="${r(0.3 * reveal)}"/>` +
+        `<stop offset="1" stop-color="#03070c" stop-opacity="0"/></radialGradient>`;
+      groundShadow =
+        `<ellipse class="gs-ground" cx="${CX}" cy="${gy}" rx="${r(grx * 1.5)}" ry="17" fill="url(#${id}gp)"/>` +
+        `<ellipse class="gs-ground" cx="${CX}" cy="${gy}" rx="${grx}" ry="8" fill="url(#${id}gs)"/>`;
     }
     // Clip every soft layer to the silhouette so shading, drape and AO never
     // bleed past the cloth edge.
@@ -1200,12 +1239,15 @@ const GarmentSVG = (() => {
     // path animation. They carry no styling of their own.
     const clip = `<clipPath id="${clipId}">${paths.map((d) => `<path d="${d}"/>`).join("")}</clipPath>`;
     // Interior shading stack (back→front): flat colour → body volume → the
-    // directional key light (form) → weave grain → decorative pattern → drape
-    // folds → broad sheen → satin streak.
+    // directional key light (form) → the STAGE light (overhead catch + floor
+    // bounce, B2) → weave grain → decorative pattern → drape folds → broad
+    // sheen → satin streak. Das Bühnenlicht sitzt direkt hinter Korn/Muster,
+    // damit es die Form modelliert, aber Webung und Print nicht überstrahlt.
     const inner = paths.map((d) =>
       `<path d="${d}" fill="${f.fill}" fill-opacity="${fillOp}" stroke="none"/>` +
       (f.vol ? `<path d="${d}" fill="${f.vol}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.key ? `<path d="${d}" fill="${f.key}" stroke="none" opacity="${layerOp}"/>` : "") +
+      (f.stage ? `<path d="${d}" fill="${f.stage}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.grain ? `<path d="${d}" fill="${f.grain}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "") +

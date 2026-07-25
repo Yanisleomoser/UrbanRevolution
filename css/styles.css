@@ -157,6 +157,26 @@
        kein Passepartout. */
     --glass-hairline: rgba(176, 181, 240, 0.13);
     --glass-blur: blur(18px) saturate(1.25);
+
+    /* Studio-Licht der Bühne (B2) als Token-Satz, damit Basis und Cockpit
+       EINE Definition teilen: das Cockpit hebt nur den Bodenpool an (dort
+       liegt das Glas-Dock darauf und braucht mehr zu brechen), statt den
+       ganzen Stapel zu wiederholen. */
+    --stage-cone: radial-gradient(44% 62% at 50% -10%, rgba(186, 192, 255, 0.2), rgba(186, 192, 255, 0) 74%);
+    /* Bewusst zurückhaltend: das Stück steht auf SEINEM eigenen
+       Kontaktschatten (in-SVG, wandert mit dem Saum). Ein starker Pool auf
+       fixer Höhe wäre ein ZWEITER Boden — bei kurzen Stücken schwebte das
+       Teil dann sichtbar über der beleuchteten Fläche. Hier also nur
+       Umgebungslicht der Hohlkehle; das Cockpit hebt ihn separat an, weil
+       dort das Glas-Dock direkt darauf liegt und etwas zu brechen braucht. */
+    --stage-pool: radial-gradient(46% 13% at 50% 91%, rgba(160, 168, 245, 0.12), rgba(160, 168, 245, 0) 76%);
+    /* Der Hohlkehlen-Übergang (Cyclorama): eine sehr weiche Aufhellung ab
+       ~64 % Höhe. DAS ist der Unterschied zwischen „Objekt vor einer
+       Farbfläche" und „Objekt in einem Studio" — ohne Bodenebene steht das
+       Stück auf nichts, egal wie stark der Lichtpool ist. */
+    --stage-floor: linear-gradient(180deg, rgba(176, 181, 240, 0) 62%, rgba(176, 181, 240, 0.045) 76%, rgba(176, 181, 240, 0.075) 100%);
+    --stage-vignette: radial-gradient(118% 86% at 50% 44%, rgba(4, 4, 7, 0) 50%, rgba(4, 4, 7, 0.52) 100%);
+    --stage-depth: radial-gradient(132% 104% at 50% 36%, #171a2e, var(--bg) 70%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3690,10 +3710,29 @@ html.is-touch .de-region-opt { min-height: 48px; }
 
 /* Vorschau dominant. Höhen in svh + JS-gepinntem --svh (wie Hero/Story), damit
    nichts springt, wenn die iOS-Adressleiste ein-/ausfährt. */
-/* Cinematic studio stage: a soft key light from the top, a darkened floor that
-   seats the garment's contact shadow, and a depth gradient — the flat reads as
-   a garment lit in a studio, not an icon on a panel. */
-.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(68% 48% at 50% 6%, rgba(176, 181, 240,0.13), rgba(176, 181, 240,0) 62%), radial-gradient(120% 78% at 50% 122%, rgba(4, 4, 7,0.62), rgba(4, 4, 7,0) 56%), radial-gradient(132% 104% at 50% 36%, #171a2e, var(--bg)70%); display: flex; align-items: center; justify-content: center; }
+/* STUDIO-LICHT (Roadmap B2). Die Bühne ist jetzt eine ausgeleuchtete
+   Aufnahme statt einer dunklen Fläche mit Radial-Glow. Vier Lagen, alles
+   reine Verläufe (KEIN filter/backdrop-filter — die Bühne repaintet pro
+   Morph-Frame, ein Filter würde jeden Frame kosten):
+     1. Podest-Kegel — eine Quelle knapp ÜBER dem oberen Rand, die sich nach
+        unten öffnet: das ist der Unterschied zwischen „Hintergrund leuchtet
+        irgendwo" und „von dort oben scheint ein Licht".
+     2. Lichtpool auf dem Boden — die Fläche, auf der das Stück steht. Erst
+        gegen dieses Licht liest der SVG-Kontaktschatten als Auflage
+        (vorher war er unsichtbar: dunkel auf dunkel).
+     3. Vignette — zieht den Blick auf die Mitte, nimmt den Ecken das
+        Panel-Gefühl.
+     4. Tiefen-Verlauf (unverändert, die alte Bühne).
+   Der Flat ANTWORTET darauf über den Bühnen-Stop in garment-svg (fillSpec
+   `sl`): Überkopf-Fang auf der Schulter, matter Bounce am Saum. */
+.de-preview {
+    position: relative; width: 100%;
+    height: 56svh; height: calc(var(--svh, 1svh) * 56);
+    min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70);
+    border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;
+    background: var(--stage-cone), var(--stage-pool), var(--stage-floor), var(--stage-vignette), var(--stage-depth);
+    display: flex; align-items: center; justify-content: center;
+}
 .de-preview svg { width: 100%; height: 100%; object-fit: contain; }
 .de-preview.is-fade { animation: deCross .24s var(--ease-out); }
 @keyframes deCross { from { opacity: .4; } to { opacity: 1; } }
@@ -3887,20 +3926,15 @@ html.is-touch .de-region-opt { min-height: 48px; }
         min-height: 168px;
         max-height: none;
     }
-    /* Lichtpool auf dem Bühnenboden — das Podest, auf dem das Stück steht.
-       Zwei Aufgaben: (1) es setzt den Flat auf eine Fläche statt ihn im
-       Nichts schweben zu lassen (Vorarbeit B2 „Studio-Licht"), (2) es ist
-       das Material, das das Glas-Dock darüber überhaupt erst brechen kann —
-       ein Blur über gleichförmigem Schwarz ergibt sichtbar nichts.
-       Als zusätzliche background-Lage VOR den bestehenden Verläufen, damit
-       die Bühnen-Tiefe darunter unverändert bleibt. */
-    .de-stage .de-preview {
-        background-image:
+    /* Cockpit: NUR der Bodenpool wird angehoben — hier liegt das Glas-Dock
+       24px darauf und braucht etwas Leuchtendes zum Brechen (ein Blur über
+       gleichförmigem Schwarz ergibt sichtbar nichts). Kegel, Vignette und
+       Tiefe kommen unverändert aus den :root-Tokens; früher wiederholte
+       diese Regel den ganzen Stapel wortgleich. */
+    .de-stage {
+        --stage-pool:
             radial-gradient(64% 26% at 50% 92%, rgba(143, 150, 232, 0.34), rgba(143, 150, 232, 0) 70%),
-            radial-gradient(36% 14% at 50% 95%, rgba(126, 220, 46, 0.18), rgba(126, 220, 46, 0) 72%),
-            radial-gradient(68% 48% at 50% 6%, rgba(176, 181, 240, 0.13), rgba(176, 181, 240, 0) 62%),
-            radial-gradient(120% 78% at 50% 122%, rgba(4, 4, 7, 0.62), rgba(4, 4, 7, 0) 56%),
-            radial-gradient(132% 104% at 50% 36%, #171a2e, var(--bg) 70%);
+            radial-gradient(36% 14% at 50% 95%, rgba(126, 220, 46, 0.18), rgba(126, 220, 46, 0) 72%);
     }
     /* Instrumenten-Rahmen: Mono-Eckwinkel auf der Bühne (die Registratur-
        Sprache der Maschine — vier stille Passermarken). */

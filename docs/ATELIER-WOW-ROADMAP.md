@@ -202,6 +202,29 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     lagen real 5–7 Blur-Ebenen auf einem Screen. Unterschriften-Band statt
     Pillen. **Regel:** Lesbarkeit über Fotos kommt aus einem Verlaufs-Band,
     nicht aus Blur-Pillen (Budget UND Premium-Anmutung).
+  - **B2 geliefert** (2026-07-25, eigener PR): Podest-Kegel + Bodenpool +
+    **Hohlkehle** (der Cyclorama-Übergang — der entscheidende Griff: ohne
+    Bodenebene steht das Stück auf nichts, egal wie stark der Pool ist) +
+    Vignette, alles als `--stage-*`-Token, damit Basis und Cockpit EINE
+    Definition teilen. Kontaktschatten zweistufig (enger Kern + weiter
+    Halbschatten) — er war vorher dunkel auf dunkel und praktisch unsichtbar.
+    Der Flat ANTWORTET über einen vertikalen Bühnen-Stop (`sl`) aus derselben
+    `(spec, rough)`-Optik: Überkopf-Fang auf der Schulter, matter Bounce am
+    Saum, Seide stärker als Fleece. Kein neuer rAF, kein Filter — reine
+    Verläufe, der Morph-Loop bleibt unberührt.
+    - **B2c (Spiegelung) bewusst NICHT umgesetzt.** Am Render getestet, nicht
+      wegargumentiert: `-webkit-box-reflect` spiegelt die SVG-BOX, nicht das
+      Stück — die Box reicht weit unter den Saum, die Spiegelung landete
+      ausserhalb der sichtbaren Bühne (Repaint-Messung identisch im Rauschen,
+      weil gar nichts gezeichnet wurde). Zudem widerspräche sie der matten
+      Hohlkehle, die B2 gerade aufgebaut hat — glänzender Boden + Cyclorama
+      ist genau der billige Look. Wer sie doch will, braucht eine Box, die
+      den Saum umschliesst.
+    - Gelernt: der Bodenpool darf NICHT stark auf fixer Höhe stehen — bei
+      kurzen Stücken liest er als ZWEITER Boden, über dem das Teil schwebt.
+      Das Stück steht auf seinem eigenen, mitwandernden Kontaktschatten; die
+      CSS-Lage ist nur Umgebungslicht (Ausnahme Cockpit, wo das Glas-Dock
+      etwas zum Brechen braucht).
   - **Fallstrick für B4 (Startpunkt-Galerie), teuer gelernt:**
     `ALLOWED_CLOSURES` in `garment-svg.js` ist NICHT nur die Zeichen-Liste —
     sie ist auch das Gate, mit dem `flow.js scrubImpossibleFills`
