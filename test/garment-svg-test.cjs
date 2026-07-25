@@ -471,8 +471,68 @@ console.log("\n— closureAllowed · per-category closure whitelist (Atelier-Ana
     "a jacket may zip or button");
   assert(!GarmentSVG.closureAllowed("tshirt", "button"), "a tshirt never gets a button placket");
   assert(GarmentSVG.closureAllowed("tshirt", "none"), "a tshirt's only closure is 'none'");
-  assert(!GarmentSVG.closureAllowed("dress", "button") && !GarmentSVG.closureAllowed("dress", "zip"),
-    "the dress flat draws no front closure at all");
+  // Das Kleid darf jetzt knöpfen (Hemdblusenkleid) — vorher war "Knöpfe" die
+  // einzige Kategorie-Lücke, die eine echte Nutzerantwort still verschluckte.
+  // Der Reissverschluss bleibt draussen: er sitzt hinten und wäre auf dem
+  // Vorder-Flat eine Behauptung ohne Bild.
+  assert(GarmentSVG.closureAllowed("dress", "button"), "a dress may button through (shirt dress)");
+  assert(!GarmentSVG.closureAllowed("dress", "zip"), "a dress never claims a front zip (its zip is at the back)");
+}
+
+console.log("\n— dress · Knopfleiste wird wirklich GEZEICHNET (nicht nur erlaubt) —");
+{
+  const dress = (extra) => GarmentSVG.build("dress", { fit: 0.4, length: "regular", color: "#7a2436", material: "cotton", ...extra });
+  const buttoned = dress({ closure: "button" });
+  const plain = dress({ closure: "none" });
+  // Die Whitelist allein hätte den Bug nicht behoben: ohne Zeichen-Code wäre
+  // „Durchgeknöpft" weiterhin eine Wahl ohne sichtbare Folge.
+  assert(buttoned !== plain, "REGRESSION GUARD: the button choice visibly changes the dress flat");
+  const circles = (s) => (s.match(/<circle/g) || []).length;
+  assert(circles(buttoned) > circles(plain), `a button ladder is drawn (${circles(buttoned)} vs ${circles(plain)} circles)`);
+  assert(buttoned.startsWith("<svg") && !/NaN|undefined/.test(buttoned), "the buttoned dress is clean SVG");
+  // Auch auf dem ärmellosen Bodice darf die Leiste nicht in Müll kippen.
+  const sleevelessButtoned = dress({ closure: "button", sleeveLength: "sleeveless" });
+  assert(sleevelessButtoned.startsWith("<svg") && !/NaN|undefined/.test(sleevelessButtoned), "a sleeveless buttoned dress stays clean SVG");
+
+  // Wickel und Slip tragen keine Mittelfront: die symmetrische Knopfreihe
+  // widerspräche dort der Konstruktion (der Übertritt kreuzte real alle acht
+  // Knöpfe). Der Riegel hält auch von Hand gesetzte #dna=-Paare ab.
+  ["wrap", "slip"].forEach((sa) => {
+    const svg = dress({ closure: "button", subArchetype: sa });
+    assert(circles(svg) === circles(dress({ closure: "none", subArchetype: sa })),
+      `a ${sa} dress draws no centre placket (its front construction excludes one)`);
+  });
+
+  // Der Leisten-Kopf muss AUF dem Stoff sitzen: beim ärmellosen Bodice reicht
+  // der Ausschnitt bis neckY+24 hinunter — die frühere Zwei-Fall-Konstante
+  // setzte Kopf und ersten Knopf bei „Hoch" darüber, frei im Ausschnitt-Loch.
+  const firstButtonY = (svg) => {
+    const ys = [...svg.matchAll(/<circle[^>]*cy="([\d.]+)"/g)].map((m) => parseFloat(m[1]));
+    return ys.length ? Math.min(...ys) : null;
+  };
+  [["stand", "sleeveless", 84], ["vneck", "sleeveless", 93], ["crew", "sleeveless", 84], ["stand", "long", 67]]
+    .forEach(([collar, sleeveLength, minY]) => {
+      const y = firstButtonY(dress({ closure: "button", collar, sleeveLength }));
+      assert(y != null && y >= minY,
+        `first button clears the ${collar}/${sleeveLength} neckline (cy ${y} ≥ ${minY})`);
+    });
+}
+
+console.log("\n— dress · der Rock ist gerundet, kein Polygon (Owner-Report: rendert falsch) —");
+{
+  const dress = (extra) => GarmentSVG.build("dress", { fit: 0.5, length: "regular", color: "#7a2436", material: "cotton", ...extra });
+  // Der Rock war die EINZIGE Silhouette ohne eine einzige Kurve: harte
+  // Taillenecke, gerade Seiten, schnurgerader Saum — auf der grossen
+  // Cockpit-v4-Bühne las sich das Kleid dadurch als Papiertüte.
+  const column = dress({ waist: "relaxed", sleeveLength: "long", collar: "stand" });
+  const outline = (column.match(/<path[^>]*class="gs-outline"[^>]*d="([^"]+)"/) || [])[1] || column;
+  assert(/C /.test(outline), "the skirt's side seam is a curve, not a straight polygon edge");
+  assert(/Q /.test(outline), "the hem carries a sweep (cloth hangs), not a ruler line");
+  [{}, { waist: "fitted" }, { waist: "relaxed" }, { length: "cropped" }, { length: "long" }, { fit: 0.05 }, { fit: 0.98 }, { sleeveLength: "sleeveless" }]
+    .forEach((v, i) => {
+      const svg = dress(v);
+      assert(svg.startsWith("<svg") && !/NaN|undefined/.test(svg), `dress variant ${i} stays clean SVG`);
+    });
   assert(!GarmentSVG.closureAllowed("hoodie", "button"), "a hoodie zips or stays closed — no buttons");
   assert(GarmentSVG.closureAllowed("unknown-cat", "button"), "unknown categories are permissive (graceful for future JSON)");
 }

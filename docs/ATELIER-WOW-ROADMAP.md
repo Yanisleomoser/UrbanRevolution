@@ -155,3 +155,61 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
 
 - 2026-07-24: Dokument angelegt (nach Merge von #448/Runde 3). Noch kein
   Baustein begonnen. Owner-Priorisierung offen — Empfehlung: B1+B5.
+- 2026-07-24 (später): **B1 + B5 umgesetzt** (ein PR, Branch
+  `claude/wow-roadmap-implementation-o7w15g`) — wie in §4 empfohlen als
+  gekoppelter erster Schnitt:
+  - **B1:** Cockpit v4 — die Bühne trägt ~63–68 % des Rahmens auf jedem
+    Standard-Frage-Screen (flex-Inversion; Dock-Cap 36 %), Frage als stille
+    Zeile im Dock-Kopf, Chips als Bühnen-Overlay, Kapitel-Stempel auf der
+    Bühne. Sonderlayouts (describe/regions/refine) unverändert. Für hohe
+    Inhalte (Farb-Atelier, Ranking) wurde die im B1-Risiko benannte
+    Alternative **„Dock hebt sich"** gebaut (flow.js `syncDockLift`,
+    Bottom-Sheet-Cap 58 %, Bühne dimmt auf 0.6) — zusätzlich zu den
+    B5-Rails, nicht statt ihnen.
+  - **B5:** Token-Set `--glass-bg`/`--glass-edge`/`--glass-blur` (+ Korn via
+    `--grain`); Glas auf Dock, Region-Picker, Verstanden-Block,
+    Refine-Aktionsleiste; backdrop-filter NUR Dock + Picker (Budget),
+    Feature-Query-Fallback auf `--bg-elevated`. Karten-Sets und
+    Farb-Swatches laufen im Dock als scroll-snap-Rail (Peek, Fokus zieht
+    die Rail nach, Tab-Folge = DOM-Folge).
+  - Vertrag ausgebaut: `scripts/verify-describe.mjs` Abschnitt 3 walkt den
+    Jacken-Branch und prüft pro Screen Bühne ≥ 60 % (bzw. Lift-Regel),
+    Rail, Daumenzone, Overflow, Glas-Material.
+  - Offen: B2 (Studio-Licht), B3 (Material-Realität), B4
+    (Startpunkt-Galerie) — Reihenfolge per §4: B2 als nächstes.
+- 2026-07-25: **Owner-Runde am Preview** (fünf Befunde) + adversarielle
+  Gegenprüfung. Was dabei gelernt wurde, gehört in dieses Dokument, weil es
+  die Annahmen von B1/B2/B5 korrigiert:
+  - **„Das Glas ist kaum Glas" war exakt richtig — und der Grund war
+    strukturell:** gemessen 0 px Überlappung zwischen Dock und Bühne. Ein
+    `backdrop-filter` auf einem Flex-GESCHWISTER hat nichts hinter sich als
+    flachen Seitenhintergrund; die Brechung war ein No-Op. **Regel für jede
+    weitere Glasfläche:** Glas braucht (a) echtes Überlappen und (b) etwas
+    Leuchtendes dahinter. Die Maschine in Akt II macht es vor — ihre
+    „gläserne" Remake-Zelle liest sich als Glas wegen `mCellGlow` (grüner
+    Radial hinter der Zelle), nicht wegen Blur. Umgesetzt: Dock liegt 24 px
+    auf der Bühne, deren Boden einen Lichtpool trägt.
+  - **Der Lichtpool ist faktisch B2-Vorarbeit** (Podest/Bodenlicht aus §3
+    B2) — B2 kann darauf aufbauen statt bei null anzufangen.
+  - **„Die Bühne ist der Held" erhöht den Anspruch an den Helden.** Der
+    Kleid-Rock war seit je das einzige Polygon im Flat-Vokabular (harte
+    Taillenecke, gerader Saum, keine Saumkante). Bei 30 % Bühnenhöhe fiel
+    das nicht auf, bei ~65 % las es sich als Papiertüte. Erwartung für
+    B2–B4: **weitere solche Altlasten werden durch die grössere Bühne
+    sichtbar** — sie sind Teil der Kosten von B1, nicht Zufall.
+  - **Kachel-Vielfalt kostet Blur-Budget.** Das Foto-Duell trug pro Panel
+    zwei gefüllte `backdrop-filter`-Pillen; zusammen mit Dock und Navbar
+    lagen real 5–7 Blur-Ebenen auf einem Screen. Unterschriften-Band statt
+    Pillen. **Regel:** Lesbarkeit über Fotos kommt aus einem Verlaufs-Band,
+    nicht aus Blur-Pillen (Budget UND Premium-Anmutung).
+  - **Fallstrick für B4 (Startpunkt-Galerie), teuer gelernt:**
+    `ALLOWED_CLOSURES` in `garment-svg.js` ist NICHT nur die Zeichen-Liste —
+    sie ist auch das Gate, mit dem `flow.js scrubImpossibleFills`
+    Archetyp-Füllungen verwirft. Eine Kategorie etwas Neues zeichnen zu
+    lehren macht denselben Wert automatisch ERRATBAR: das Kleid trug prompt
+    eine Knopfleiste, die niemand gewählt hatte. Seither getrennt
+    (`INFERABLE_CLOSURES`). **B4 fasst genau diese Inferenz-Maschinerie an
+    (`completeFrom` auf die aktuelle DNA) — vor dem Bauen diesen Absatz
+    lesen.** Und: der zugehörige Test stubte `closureAllowed` von Hand und
+    konnte das Auseinanderlaufen prinzipiell nicht sehen; Gates immer gegen
+    das ECHTE Modul testen.
