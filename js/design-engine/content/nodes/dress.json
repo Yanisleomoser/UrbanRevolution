@@ -287,6 +287,15 @@
             { "id": "natural", "label": { "de": "Natürlich", "en": "Natural" }, "effects": { "set": { "construction.waist": "natural" } } },
             { "id": "relaxed", "label": { "de": "Fliessend", "en": "Relaxed" }, "effects": { "set": { "construction.waist": "relaxed" }, "weight": { "quietMinimal": 0.1 } } }
           ]
+        },
+        {
+          "id": "closure",
+          "label": { "de": "Verschluss", "en": "Closure" },
+          "when": "subArchetype != 'wrap' && subArchetype != 'slip'",
+          "choices": [
+            { "id": "none", "label": { "de": "Ohne Leiste", "en": "No placket" }, "effects": { "set": { "construction.closure": "none" } } },
+            { "id": "button", "label": { "de": "Durchgeknöpft", "en": "Button-through" }, "effects": { "set": { "construction.closure": "button" }, "weight": { "quietMinimal": 0.1, "softCouture": 0.1 } } }
+          ]
         }
       ]
     },

@@ -480,6 +480,48 @@ console.log("\n— scrubImpossibleFills · inferred closures must be buildable p
   assert(D.get(g, "construction.closure") === "button", "without an allowedFn the scrub is a graceful no-op");
 }
 
+console.log("\n— scrubImpossibleFills mit dem ECHTEN Renderer-Gate (zeichenbar ≠ erratbar) —");
+{
+  // Der Stub oben (`allowed`) kann per Konstruktion nie melden, dass die
+  // echten Listen auseinanderlaufen: als das Kleid „button" ZEICHNEN lernte,
+  // überlebte damit prompt auch der Archetyp-Default (quietMinimal setzt
+  // construction.closure: "button") — jedes Kleid trug ab dem Kategorie-Tap
+  // eine Knopfleiste, die niemand gewählt hatte, und kein Test schlug an.
+  // Diese Suite fragt deshalb die echten GarmentSVG-Gates.
+  const D = global.DesignDNA;
+  const G = require("../js/design-engine/garment-svg.js");
+
+  assert(G.closureAllowed("dress", "button"), "zeichenbar: das Kleid kann eine Knopfleiste darstellen");
+  assert(!G.closureInferable("dress", "button"), "erratbar: die Maschine setzt sie NICHT von sich aus");
+  assert(G.closureInferable("jacket", "zip"), "andere Kategorien erben ihre Zeichenliste (Jacke: Zip erratbar)");
+  assert(!G.closureInferable("tshirt", "button"), "das T-Shirt bleibt in beiden Listen knopflos");
+
+  // Der Archetyp-Fill (conf = Schwelle) fliegt beim Kleid raus …
+  const inferred = D.create();
+  D.set(inferred, "category", "dress", 1);
+  D.set(inferred, "construction.closure", "button", 0.5);
+  Flow.scrubImpossibleFills(inferred, 0.5, G.closureInferable);
+  assert(D.get(inferred, "construction.closure") === "none",
+    "REGRESSION GUARD: eine GERATENE Knopfleiste am Kleid wird ausgeräumt");
+
+  // … die selbst getroffene Wahl (Regions-Confirm, conf 1) bleibt.
+  const chosen = D.create();
+  D.set(chosen, "category", "dress", 1);
+  D.set(chosen, "construction.closure", "button", 1);
+  Flow.scrubImpossibleFills(chosen, 0.5, G.closureInferable);
+  assert(D.get(chosen, "construction.closure") === "button",
+    "die selbst gewählte Knopfleiste am Kleid überlebt");
+
+  // … und das GELESENE Wort (Describe, conf 0.62) läuft gegen das
+  // Zeichen-Gate, nicht gegen das strengere Inferenz-Gate.
+  const described = D.create();
+  D.set(described, "category", "dress", 1);
+  D.set(described, "construction.closure", "button", 0.62);
+  Flow.scrubImpossibleFills(described, 0.62, G.closureAllowed);
+  assert(D.get(described, "construction.closure") === "button",
+    "„ein Kleid mit Knöpfen\" überlebt den Describe-Scrub");
+}
+
 console.log("\n— resolveEffects · cards multi UNION-merges array values (stapelbare Signaturen) —");
 {
   const node = { modality: "cards", choices: [

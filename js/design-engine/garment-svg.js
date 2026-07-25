@@ -79,11 +79,34 @@ const GarmentSVG = (() => {
     shirt: ["button", "half", "none"],
     tshirt: ["none"],
     pants: ["zip", "button", "none"],
+    // Das Kleid kann jetzt eine Knopfleiste ZEICHNEN (paintDress) — das
+    // Hemdblusenkleid ist damit baubar, und ein getipptes „Kleid mit Knöpfen"
+    // wird nicht länger stumm verschluckt. "zip" bleibt draussen: der
+    // Kleid-Reissverschluss sitzt hinten und wäre auf dem Vorder-Flat eine
+    // Behauptung, die das Bild nicht einlöst.
+    dress: ["button", "none"],
+  };
+  // ZEICHENBAR ≠ ERRATBAR. Die Liste oben beantwortet „kann die Kategorie das
+  // darstellen?" — sie darf NICHT auch entscheiden, was die Inferenz von sich
+  // aus einsetzen darf. Als das Kleid „button" zeichnen lernte, überlebte
+  // damit prompt auch der Archetyp-Default (quietMinimal setzt
+  // construction.closure: "button"): das Kleid trug ab dem Kategorie-Tap eine
+  // Knopfleiste, die niemand gewählt hatte — genau die Klasse Fehler, gegen
+  // die die Whitelist ursprünglich geschrieben wurde. Der Scrub in flow.js
+  // fragt deshalb diese STRENGERE Liste: nur was der User selbst entschieden
+  // hat (conf > Schwelle) darf beim Kleid knöpfen; geraten wird nie.
+  // Kategorien ohne Eintrag erben ihre Zeichen-Liste (bisheriges Verhalten).
+  const INFERABLE_CLOSURES = {
     dress: ["none"],
   };
   function closureAllowed(category, value) {
     if (!hasOwn(ALLOWED_CLOSURES, category)) return true;
     return ALLOWED_CLOSURES[category].includes(value);
+  }
+  // Darf die INFERENZ diesen Verschluss für diese Kategorie einsetzen?
+  function closureInferable(category, value) {
+    if (hasOwn(INFERABLE_CLOSURES, category)) return INFERABLE_CLOSURES[category].includes(value);
+    return closureAllowed(category, value);
   }
 
   // Sleeve-length attribute → the limb's own length (per category, so a "long"
@@ -1032,7 +1055,32 @@ const GarmentSVG = (() => {
     return out.join("");
   }
   function paintDress(p, g) {
-    const skirt = `L ${L(g.waistHalf)} ${Y(g.waistY)} L ${L(g.hemHalf)} ${Y(g.hemY)} L ${R(g.hemHalf)} ${Y(g.hemY)} L ${R(g.waistHalf)} ${Y(g.waistY)} `;
+    // Der Rock war das EINZIGE Polygon im ganzen Flat-Vokabular: harte
+    // Taillen-Ecke, kerzengerade Seiten, schnurgerader Saum ohne Stärke — als
+    // die Bühne (Cockpit v4) auf ~⅔ des Rahmens wuchs, las sich das Kleid
+    // dadurch als Papiertüte. Jetzt spricht es dieselbe Sprache wie die Tops
+    // (vgl. topFlat: C-Seitennaht + 8er-Saumkante): die Naht verlässt die
+    // Taille senkrecht und öffnet sich in die Weite, der Saum bekommt eine
+    // Kante (Stoffdicke) und einen flachen Schwung — Tuch hängt, es steht nicht.
+    // Column-Kleider (hemHalf ≈ waistHalf) bleiben dabei automatisch gerade:
+    // die Kurve ist dann fast senkrecht, kein Artefakt.
+    const drop = g.hemY - g.waistY;
+    const face = Math.min(9, drop * 0.05);          // Saumkante
+    const sweep = Math.min(7, g.hemHalf * 0.05);    // Saumschwung (Mitte tiefer)
+    // Kontrollpunkte DICHT an den Enden (0.12), nicht auf 0.3/0.68: weiter
+    // innen liegende Punkte flachen den Rockansatz ab und drücken die Weite
+    // in die Mitte — daraus wurde eine Glocken-/Tulpenlinie, während Karte
+    // und Satz weiter „A-Linie" sagen. Die Tops setzen ihre Kontrollpunkte
+    // ebenfalls direkt an die Taille (topFlat): eine im Kern GERADE Kante mit
+    // gerundetem Ansatz und weicher Saumecke. Das ist die Vokabel, die dieser
+    // Kommentar behauptet — jetzt auch die, die hier gezeichnet wird.
+    const skirt =
+      `L ${L(g.waistHalf)} ${Y(g.waistY)} ` +
+      `C ${L(g.waistHalf)} ${Y(g.waistY + drop * 0.12)} ${L(g.hemHalf)} ${Y(g.hemY - drop * 0.12)} ${L(g.hemHalf)} ${Y(g.hemY - face)} ` +
+      `L ${L(g.hemHalf)} ${Y(g.hemY)} ` +
+      `Q ${CX} ${Y(g.hemY + sweep)} ${R(g.hemHalf)} ${Y(g.hemY)} ` +
+      `L ${R(g.hemHalf)} ${Y(g.hemY - face)} ` +
+      `C ${R(g.hemHalf)} ${Y(g.hemY - drop * 0.12)} ${R(g.waistHalf)} ${Y(g.waistY + drop * 0.12)} ${R(g.waistHalf)} ${Y(g.waistY)} `;
     let d;
     if (g.sleeveless) {
       // Slip / tank bodice: two real straps (a band with width) over the
@@ -1066,6 +1114,40 @@ const GarmentSVG = (() => {
     const seam = [];
     if (!g.sleeveless) seam.push(`<path d="M ${L(g.shoulderHalf)} ${Y(g.shoulderY)} L ${L(g.chestHalf)} ${Y(g.armpitY)} M ${R(g.shoulderHalf)} ${Y(g.shoulderY)} L ${R(g.chestHalf)} ${Y(g.armpitY)}" fill="none" stroke="${SEAM}" stroke-width="2"/>`);
     seam.push(`<path d="M ${L(g.waistHalf)} ${Y(g.waistY)} L ${R(g.waistHalf)} ${Y(g.waistY)}" fill="none" stroke="${SEAM}" stroke-width="${p.waist === "fitted" ? 1.9 : 1.4}" opacity="${p.waist === "fitted" ? 0.85 : 0.6}"/>`);
+    // Knopfleiste (Hemdblusenkleid). Bis hierher konnte das Kleid als EINZIGE
+    // Kategorie gar keinen Verschluss tragen (ALLOWED_CLOSURES.dress war
+    // ["none"]) — ein getipptes „Kleid mit Knöpfen" wurde deshalb still
+    // verworfen, obwohl das Hemdblusenkleid eines der verbreitetsten Kleider
+    // überhaupt ist. Das war eine Zeichen-LÜCKE, keine Ehrlichkeits-Haltung.
+    // Dieselbe Vokabel wie bei Hemd/Jacke (Mittellinie + Knopfreihe, Hardware
+    // tönt sie), nur über die volle Kleidlänge geführt.
+    // Wickel- und Slip-Kleider tragen KEINE Mittelfront: der Wickel liest sich
+    // über die asymmetrische Übertritt-Kante (unten), der Slip ist ein
+    // Schrägschnitt-Fall. Eine symmetrische Knopfreihe darüber wäre eine
+    // Konstruktion, der das Bild widerspricht — dieselbe Unehrlichkeit wie
+    // eine Knopfleiste auf dem T-Shirt. Das Detail-Atelier blendet die
+    // Verschluss-Region dort per `when` aus; dieser Riegel hält zusätzlich
+    // geteilte #dna=-Links ab, die das Paar von Hand setzen.
+    if (p.closure === "button" && p.subArchetype !== "wrap" && p.subArchetype !== "slip") {
+      const hw = hwStroke(p.hardware);
+      // Der Leisten-Kopf folgt dem Ausschnitt, den die Silhouette WIRKLICH
+      // zeichnet — die frühere Zwei-Fall-Konstante kannte den ärmellosen
+      // Bodice nicht, dessen Scoop bis neckY+24 hinunterreicht: bei „Hoch"
+      // (stand) sassen Kopf und erster Knopf real ÜBER dem Stoff, frei im
+      // Ausschnitt-Loch. Werte = die Neckline-Tiefen aus paintDress oben,
+      // plus etwas Luft, damit der erste Knopf nicht auf der Kante klebt.
+      const neckDepth = g.sleeveless
+        ? (g.collar === "vneck" ? 33 : 24)   // Slip-Scoop bzw. gespitztes V
+        : (g.collar === "vneck" ? 30 : g.collar === "crew" ? 15 : 7);
+      const top = g.neckY + neckDepth + 7;
+      const bot = g.hemY - Math.max(10, (g.hemY - g.waistY) * 0.12);
+      seam.push(`<path d="M ${CX} ${Y(top)} L ${CX} ${Y(bot)}" fill="none" stroke="${SEAM}" stroke-width="1.4" opacity="0.5"/>`);
+      const n = 8;
+      for (let i = 0; i < n; i++) {
+        const y = top + 8 + (i * (bot - top - 16)) / (n - 1);
+        seam.push(`<circle cx="${CX}" cy="${Y(y)}" r="2.3" fill="${p.hardware === "metal" ? INK : "none"}" stroke="${hw}" stroke-width="1.8"/>`);
+      }
+    }
     // Wrap dress: the ASYMMETRIC overlapping front — one bold top-panel edge
     // draping from a shoulder across to the opposite waist and down the skirt
     // front, a faint under-panel hint from the other shoulder, and the waist tie.
@@ -1357,6 +1439,13 @@ const GarmentSVG = (() => {
       a.collar = cl(CX, g.neckY - 6);
       a.waist = cl(CX, g.waistY);
       a.hem = cl(CX, g.hemY - 8);
+      // Knopfleisten-Marke: die Leiste selbst läuft auf CX, aber Ausschnitt
+      // UND Taille liegen dort ebenfalls — drei Marken auf einer Achse hätten
+      // sich die Wertzeilen gestapelt. Der Punkt rückt deshalb bewusst nach
+      // links AUS der Leiste heraus, weit genug, dass sein Label wie das des
+      // Ärmels neben der Silhouette steht statt auf ihr. Er zeigt damit auf
+      // die Leiste, sitzt aber nicht auf ihr — bewusst, nicht versehentlich.
+      a.closure = cl(CX - g.chestHalf * 0.72, lerp(g.neckY, g.waistY, 0.58));
       // Sleeve marker on the right limb (same formula as the tops branch);
       // on a sleeveless bodice it sits on the strap/armhole edge instead.
       if (g.sleeveless) {
@@ -1408,7 +1497,7 @@ const GarmentSVG = (() => {
     return build(category, params).replace(`viewBox="0 0 ${VB} ${VH}"`, `viewBox="${x} ${y} ${r(cw)} ${r(ch)}"`);
   }
 
-  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, closureAllowed, jacketSvg: (p) => topFlat("jacket", p || {}) };
+  return { build, model, paint, lerpModel, nebula, nebulaModel, nebulaPaint, lerpNebulaModel, regionAnchors, detailCrop, closureAllowed, closureInferable, jacketSvg: (p) => topFlat("jacket", p || {}) };
 })();
 
 if (typeof window !== "undefined") window.GarmentSVG = GarmentSVG;

@@ -32,3 +32,11 @@ coverage/
 
 # Transient agent worktrees (auto-created/cleaned by the agent harness)
 .claude/worktrees/
+
+# Wegwerf-Messsonden neben den permanenten scripts/verify-*.mjs: ad-hoc
+# Playwright-Skripte, mit denen eine Änderung EINMAL am echten Render
+# nachgemessen wird (Overlap, Kontrast, Hotspot-Geometrie …). Konvention:
+# `*.tmp.mjs` in scripts/, nach Gebrauch löschen. Ins Repo gehören nur die
+# dauerhaften Guards — die Sonden würden sonst als Karteileichen liegen
+# bleiben und bei Parallel-Läufen den Arbeitsbaum verschmutzen.
+scripts/*.tmp.mjs

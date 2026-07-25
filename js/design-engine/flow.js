@@ -102,9 +102,15 @@ const DesignFlow = (() => {
 
   // (3) Inferenz-Füllungen (conf ≤ threshold) müssen baubar sein: ein T-Shirt
   // bekommt keine Knopfleiste, nur weil der Archetyp-Default „button" sagt.
-  // allowedFn kommt vom Renderer (GarmentSVG.closureAllowed — der weiss, was
-  // seine Kategorie zeichnen kann); ohne ihn passiert nichts (graceful, z. B.
-  // im Test-Harness ohne GarmentSVG).
+  // allowedFn kommt vom Renderer; ohne ihn passiert nichts (graceful, z. B.
+  // im Test-Harness ohne GarmentSVG). WELCHE Liste der Aufrufer mitgibt, ist
+  // bedeutungstragend:
+  //   • Schwellen-Aufrufe (Archetyp-Füllungen aus completeFrom, conf =
+  //     threshold) → GarmentSVG.closureInferable: was die Maschine von sich
+  //     aus einsetzen darf. Strenger — ein Kleid knöpft nur auf Ansage.
+  //   • 0.62-Aufrufe (der Describe-/Freitext-Parser hat ein Wort GELESEN) →
+  //     GarmentSVG.closureAllowed: der User hat es ausgesprochen, hier zählt
+  //     nur noch, ob die Kategorie es überhaupt zeichnen kann.
   function scrubImpossibleFills(d, threshold, allowedFn) {
     if (typeof allowedFn !== "function") return d;
     const cat = DesignDNA.get(d, "category");
@@ -718,6 +724,25 @@ const DesignFlow = (() => {
       }, 150);
     }
 
+    // ── B1 · „Dock hebt sich" (Atelier-Wow-Roadmap) ─────────────────────────
+    // Im Cockpit (≤899px) ist das Blatt ein kompaktes Glas-Dock unter der
+    // dominanten Bühne. Hohe Frage-Inhalte (Farb-Atelier, Ranking) würden
+    // darin intern scrollen — der sticky Confirm läge sichtbar ÜBER den
+    // Optionen. Stattdessen hebt sich das Dock wie ein Bottom-Sheet über die
+    // gedimmte Bühne (der CSS-Cap steigt, das Dock bleibt content-sized).
+    // Sonderlayouts führen ihre eigene Regie; Desktop ignoriert die Klasse
+    // (die Regeln sind ≤899px-gescoped). Pro Render neu gemessen: erst Klasse
+    // runter (unlifted messen), sonst hielte der gehobene Zustand sich selbst.
+    const LIFT_EXEMPT = new Set(["describe", "regions", "refine"]);
+    function syncDockLift() {
+      hostEl.classList.remove("is-dock-lift");
+      if (LIFT_EXEMPT.has(hostEl.dataset.deMod || "")) return;
+      if (body.scrollHeight - body.clientHeight > 4) hostEl.classList.add("is-dock-lift");
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", () => requestAnimationFrame(syncDockLift));
+    }
+
     // ── Ankunfts-Beat (roadmap §8.1): der Satz tippt sich in Mono auf ──────
     // Die Maschinenstimme spricht das Design aus, EINEN Atemzug bevor die
     // Optionen erscheinen (deren Eintritt verzögert .is-refine im CSS).
@@ -779,7 +804,7 @@ const DesignFlow = (() => {
       // Knopfleiste, die der Refine-Scrub später entfernt).
       syncDerivedFinish(previewDna);
       scrubImpossibleFills(previewDna, content.attributes.confidenceThreshold,
-        window.GarmentSVG && window.GarmentSVG.closureAllowed);
+        window.GarmentSVG && window.GarmentSVG.closureInferable);
       // The user's own choices ALWAYS win over the archetype inference — incl.
       // live slider drags (set at confidence 0), which finalize would otherwise
       // overwrite, making the Passform/Finish sliders feel dead. Overlay them.
@@ -1027,6 +1052,7 @@ const DesignFlow = (() => {
           body.insertBefore(frame, body.firstChild);
         }
         if (crossed) phaseFlash(node.phase);
+        syncDockLift();
         // A11y: each render replaces the question DOM, so the control the user
         // just activated is gone and focus falls to <body> — leaving keyboard/SR
         // users with no announcement of the new question and a blind re-Tab from
@@ -1091,7 +1117,7 @@ const DesignFlow = (() => {
       // Nach dem Füllen: unbaubare Inferenz-Werte raus, BEVOR Chips/Satz/
       // Spec/Share sie je sehen (Ursache 1 der Atelier-Analyse).
       scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
-        window.GarmentSVG && window.GarmentSVG.closureAllowed);
+        window.GarmentSVG && window.GarmentSVG.closureInferable);
       mirror(dna, content.attributes);
       persist();
       currentNode = null;
@@ -1174,7 +1200,7 @@ const DesignFlow = (() => {
         dna = JSON.parse(JSON.stringify(c.history[c.history.length - 1]));
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
         scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
-          window.GarmentSVG && window.GarmentSVG.closureAllowed);
+          window.GarmentSVG && window.GarmentSVG.closureInferable);
         mirror(dna, content.attributes); persist(); updatePreview(); reSummary();
       };
       const renderConcepts = () => {
@@ -1232,11 +1258,12 @@ const DesignFlow = (() => {
         }));
       };
       renderConcepts();
+      syncDockLift(); // Refine ist exempt — der Aufruf räumt die Klasse des Vor-Screens.
       body.querySelectorAll(".de-nudge").forEach((btn) => btn.addEventListener("click", () => {
         const r = DesignInference.adjust(dna, btn.dataset.ax, parseInt(btn.dataset.dir, 10), lang());
         DesignEngine.finalize(dna, content.archetypes, content.attributes.required, content.attributes.confidenceThreshold);
         scrubImpossibleFills(dna, content.attributes.confidenceThreshold,
-          window.GarmentSVG && window.GarmentSVG.closureAllowed);
+          window.GarmentSVG && window.GarmentSVG.closureInferable);
         mirror(dna, content.attributes); persist(); updatePreview(); reSummary(); refreshChrome();
         if (r) flash("✓ " + r.label);
       }));
