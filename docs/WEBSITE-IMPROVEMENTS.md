@@ -480,6 +480,31 @@
 > - **Recommendation unchanged:** the rescoped `#01` remains the single
 >   largest open item and the recommended next PR.
 
+**Status update (2026-07-25, later same-day follow-up):** triggered by the
+`pull_request.closed` webhook for **#454** — it merged (real-iPhone-checked
+per its own description: "iPhone-Gate: vom Owner am Preview geprüft und
+freigegeben"), correcting the "not yet mergeable" note two paragraphs above.
+Re-checked directly against `main` @ `00d8b2b`:
+- **#454 shipped B1+B5** of `docs/ATELIER-WOW-ROADMAP.md` (Cockpit v4
+  stage-first layout, ~63–68% stage share on standard question screens, plus
+  instrument-glass tokens/rails), an owner-preview round (five findings —
+  including a real, newly-introduced closure-inference bug caught by
+  adversarial review before merge), and construction fixes to the dress
+  skirt/closure vocabulary in `garment-svg.js`. Full accounting already
+  lives in `ATELIER-WOW-ROADMAP.md` §6 (updated in the same PR) and
+  `STUDIO-UX-ROADMAP.md`'s matching 07-25 entry — not duplicated here.
+- **Does not touch `#01`.** `js/design-engine/flow.js`'s
+  `isGuardedTap`/`COMMIT_GUARD_MS` (lines 41-42) is still byte-identical.
+  The two broken regression guards (`verify-atelier.mjs`,
+  `verify-a11y-studio.mjs`) are unchanged — #454 only extended
+  `scripts/verify-describe.mjs` with a new Cockpit-v4-contract section, it
+  didn't touch either broken script.
+- **Recommendation unchanged:** the rescoped `#01` remains the top pick,
+  still unaddressed across eleven consecutive reviews (07-12 → 07-25) —
+  the "later same-day" check above doesn't add a twelfth, per this doc's
+  existing same-day-doesn't-recount convention (see the three 07-24
+  entries above).
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -712,8 +737,8 @@ both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
 EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
 re-skin, the `#measure` trust seal, the orphaned `preview-design.js`
 endpoint removal, the atelier/Cockpit PR (#444), Cockpit-Runde 3's
-atelier/materials/signature expansion (#448), and now the in-progress
-Atelier-Wow B1+B5 draft (#454, unmerged, orthogonal to the studio journey).
+atelier/materials/signature expansion (#448), and now the merged
+Atelier-Wow B1+B5 slice (#454, orthogonal to the studio journey).
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
 rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
@@ -733,6 +758,7 @@ same-day without displacing this recommendation.
   inside the current two-commit-model split; this item should still land
   before any further journey-surface work inherits the same inconsistency.
 - **Explicitly not this PR:** C2 Variant 2 is still a live product-decision
-  flag, not an engineering task. Also not this PR: the in-progress
-  Atelier-Wow B1+B5 draft (#454), a separate, orthogonal studio-layout track
-  awaiting its own real-iPhone check before merge.
+  flag, not an engineering task. Also not this PR: the merged Atelier-Wow
+  B1+B5 slice (#454), a separate, orthogonal studio-layout track — B2-B4
+  remain open per `ATELIER-WOW-ROADMAP.md` but are their own, unprioritised
+  future work, not implied by this recommendation.
