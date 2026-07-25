@@ -238,7 +238,8 @@ docs/
                         # (status + hard-won pitfalls) is REQUIRED reading before studio work
   WEBSITE-IMPROVEMENTS.md # Website-review handoff note — high-impact upgrades ranked by user impact (read with CLAUDE.md)
   ATELIER-WOW-ROADMAP.md # Post-Runde-3 atelier handoff (Owner-Brief 2026-07-24) — five PR-sized
-                        # building blocks (B1-B5) for stage-dominance/materiality; unstarted, owner-prioritised
+                        # building blocks (B1-B5) for stage-dominance/materiality; B1+B5 shipped
+                        # (#454, Cockpit v4 stage-first layout + instrument-glass), B2-B4 open
 README.md               # Bilingual (DE-lead) project overview — vision, features, stack, setup
 SECURITY.md             # GitHub starter template, never filled in (placeholder versions/text)
 scripts/                # CI: validate-css.mjs · e2e.mjs (headless-browser smoke) ·

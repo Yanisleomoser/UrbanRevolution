@@ -482,6 +482,50 @@ Detail-Atelier work above:
   starting-point gallery, instrument-glass + carousels). Pure docs, no
   code touched; it doesn't resolve or supersede any item tracked here.
 
+**Status update (2026-07-25, triggered by #454's merge):** **PR #454**
+("Atelier-Wow B1+B5," real-iPhone-checked before merge per its own
+description) shipped the first two of `ATELIER-WOW-ROADMAP.md`'s five
+building blocks, orthogonal to this roadmap's own ten slices but built on
+top of #444/#448's Cockpit:
+- **B1 — stage-first Cockpit v4:** inverts the Cockpit's flex split so the
+  stage carries ~63–68% of the frame on every standard question screen
+  (was ~30svh) — the question sheet becomes a compact glass dock. Special
+  layouts (describe/regions/refine) keep their own choreography untouched;
+  desktop is unaffected. For tall sets (colour atelier, ranking) a new
+  "dock lifts" mode (`flow.js` `syncDockLift`) caps the sheet at 58% instead
+  of overflowing the stage.
+- **B5 — instrument-glass tokens:** `--glass-bg`/`--glass-edge`/
+  `--glass-blur` (+ existing `--grain`) applied to the dock, region picker,
+  the "understood" block, and the refine action bar; `backdrop-filter`
+  scoped to just dock + picker (perf budget) with an `@supports` fallback
+  to `--bg-elevated`. Card sets and colour swatches now run as scroll-snap
+  rails inside the dock.
+- **A real bug caught by this PR's own adversarial-review round, not by an
+  external audit:** `ALLOWED_CLOSURES` in `garment-svg.js` doubles as the
+  gate `flow.js`'s `scrubImpossibleFills` uses to discard un-buildable
+  archetype fills. Teaching the dress silhouette to draw a button placket
+  made that value archetype-*guessable* too — a dress carried an unchosen
+  button placket from the moment the category was tapped. Fixed by
+  splitting a separate `INFERABLE_CLOSURES` set. **Relevant if B4
+  (starting-point gallery) is ever built** — it touches the same inference
+  path (`completeFrom` against the live DNA) — see `ATELIER-WOW-ROADMAP.md`
+  §6 for the full write-up (glass-needs-real-overlap rule, the dress-skirt
+  polygon fix, and four other findings that were investigated and NOT
+  adopted, with reasons).
+- **What #454 does NOT touch, reconfirmed directly against code this
+  pass:** `isGuardedTap`/`COMMIT_GUARD_MS` (`js/design-engine/flow.js:41-42`)
+  is still byte-identical — the commit-model unification remains the
+  single largest open item in `WEBSITE-IMPROVEMENTS.md`. The two
+  already-broken regression guards (`verify-atelier.mjs`,
+  `verify-a11y-studio.mjs`) are unchanged — #454 only extended
+  `scripts/verify-describe.mjs` with a new §3 (walks the jacket branch,
+  asserts stage ≥ 60% or the lift rule, rail presence, thumb-zone reach,
+  overflow, glass material per screen); it didn't touch either broken
+  script.
+- **B2 (studio light), B3 (material-reality macro backdrops), and B4
+  (starting-point gallery)** remain open, unstarted — `ATELIER-WOW-ROADMAP.md`
+  §4 still recommends B2 next.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

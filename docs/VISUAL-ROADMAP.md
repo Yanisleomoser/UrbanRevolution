@@ -189,6 +189,14 @@ update below). Kept for history.
 > against the post-#430 hero — unchanged, see `WEBSITE-IMPROVEMENTS.md` for
 > the recommended disposition.
 
+> **Status update (2026-07-25 review):** re-checked against `main` @
+> `577c589` — no change to this doc's own tracking (§4 still has no open
+> rows). **PR #428 is closed** (repo hygiene, this review) — its diff
+> targeted `initHeroParallax()`/`initWeave`'s `drawField()`, both removed by
+> #430's hero rebuild; see `WEBSITE-IMPROVEMENTS.md`'s matching 07-25 entry.
+> If the "Reclaimed Light" glow-up is still wanted, it needs a from-scratch
+> re-scope against `js/thermal-waves.js`.
+
 ---
 
 ## 5. Hard guardrails (from the adversarial review — violating any kills a change)

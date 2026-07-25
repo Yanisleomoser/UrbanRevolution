@@ -446,6 +446,65 @@
 >   #448 — each adding a new question surface to the very two-commit-model
 >   split this item would retire.
 
+> **Status update (2026-07-25 review, read before acting):** re-checked
+> against `main` @ `577c589` — no new commits landed since the 07-24 sync
+> above, and #453 (the last docs commit) had already reconfirmed both this
+> doc and `STUDIO-UX-ROADMAP.md` current, so **nothing on the ranked table
+> moved**. `isGuardedTap`/`COMMIT_GUARD_MS` remains byte-identical in
+> `flow.js` — the rescoped `#01` is now unaddressed across **eleven
+> consecutive reviews (07-12 → 07-25)**.
+> - **Repo hygiene: three stale PRs closed.** **#450** and **#452** were
+>   superseded duplicate docs-review PRs — both proposed status updates for
+>   #448/#449 that had already landed, in fuller form, via the merged
+>   #451/#453; diffed each branch against current `main` and found no
+>   unique content in either. **#428** ("Reclaimed Light" hero glow-up,
+>   successor to #418) was closed per this doc's own recommendation,
+>   independently reconfirmed across six prior reviews (07-18 → 07-24): its
+>   diff targets `initHeroParallax()`/`initWeave`'s `drawField()`, both
+>   removed by #430's hero rebuild back on 07-17 — not a rebase conflict,
+>   the architecture it patches is gone. If the glow-up concept is still
+>   wanted, it needs a from-scratch re-scope against `js/thermal-waves.js`.
+> - **One new, active, unrelated PR observed, not yet mergeable:** **#454**
+>   ("Atelier-Wow B1+B5 — Bühne zuerst + Instrumenten-Glas"), opened
+>   2026-07-24 evening, implements the first slice of
+>   `docs/ATELIER-WOW-ROADMAP.md` (Cockpit v4 stage-first layout + glass
+>   instrument tokens/rails). Still in **draft**, flagged high-risk-visual
+>   by its own description (studio layout, `svh`, `backdrop-filter`/scroll-
+>   snap on iOS) pending a real-iPhone check — same gate `#01` itself will
+>   need. Unmerged, so no doc content to reconcile yet; noted here only so
+>   the next review isn't surprised by it. Doesn't touch `#01` or any item
+>   on this doc's ranked table.
+> - **Aside:** `claude/website-review-2026-07-10.md`, named in this
+>   review's task scope, still does not exist in the repository and never
+>   has — unchanged since the 2026-07-12 note, permanently lost.
+> - **Recommendation unchanged:** the rescoped `#01` remains the single
+>   largest open item and the recommended next PR.
+
+**Status update (2026-07-25, later same-day follow-up):** triggered by the
+`pull_request.closed` webhook for **#454** — it merged (real-iPhone-checked
+per its own description: "iPhone-Gate: vom Owner am Preview geprüft und
+freigegeben"), correcting the "not yet mergeable" note two paragraphs above.
+Re-checked directly against `main` @ `00d8b2b`:
+- **#454 shipped B1+B5** of `docs/ATELIER-WOW-ROADMAP.md` (Cockpit v4
+  stage-first layout, ~63–68% stage share on standard question screens, plus
+  instrument-glass tokens/rails), an owner-preview round (five findings —
+  including a real, newly-introduced closure-inference bug caught by
+  adversarial review before merge), and construction fixes to the dress
+  skirt/closure vocabulary in `garment-svg.js`. Full accounting already
+  lives in `ATELIER-WOW-ROADMAP.md` §6 (updated in the same PR) and
+  `STUDIO-UX-ROADMAP.md`'s matching 07-25 entry — not duplicated here.
+- **Does not touch `#01`.** `js/design-engine/flow.js`'s
+  `isGuardedTap`/`COMMIT_GUARD_MS` (lines 41-42) is still byte-identical.
+  The two broken regression guards (`verify-atelier.mjs`,
+  `verify-a11y-studio.mjs`) are unchanged — #454 only extended
+  `scripts/verify-describe.mjs` with a new Cockpit-v4-contract section, it
+  didn't touch either broken script.
+- **Recommendation unchanged:** the rescoped `#01` remains the top pick,
+  still unaddressed across eleven consecutive reviews (07-12 → 07-25) —
+  the "later same-day" check above doesn't add a twelfth, per this doc's
+  existing same-day-doesn't-recount convention (see the three 07-24
+  entries above).
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -661,7 +720,6 @@ status update above for the full accounting.
 | 1 | #01, re-scoped: one commit model + phase-E reweighting | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 30+ unrelated PRs landed around it since first flagged — including #444 and now #448, each adding a *new* modality/content surface inside the very two-commit-model split this item would unify — the largest remaining product gap by a wide margin |
 | 2 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
 | 3 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23, 07-24, and again after #448 (which only added a `?dseed=7` pin to two of them, not a fix) — ran both this pass: `verify-atelier.mjs` still fails to reach the board, `verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`; safe autonomous-merge candidate once fixed |
-| — | PR #428 ("Reclaimed Light" hero glow-up, successor to closed #418) | unknown until rebuilt | **not** "pending review" — `mergeable_state` still unresolved/`dirty`; its `initHeroParallax`/`initWeave` targets were removed by #430's hero rebuild | high (scroll/parallax, and now a from-scratch rebuild against `thermal-waves.js`) | Recommend closing; if the glow-up is still wanted, re-scope against the current WebGL hero rather than patching the old diff |
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Product-decision flag, not an engineering task — raise it, don't build it speculatively |
 | — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision"; no new comment since 07-21 |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
@@ -670,7 +728,7 @@ status update above for the full accounting.
 reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
 re-scoped recommendation under §01 above. Reasoning unchanged since the
 2026-07-12 review — it has now been the top-ranked recommendation across
-**ten consecutive reviews (07-12 → 07-24)** without a single unit of
+**eleven consecutive reviews (07-12 → 07-25)** without a single unit of
 engineering effort spent on it, while 30+ unrelated PRs landed around it
 (hero conversion, contrast, mobile machine, studio-reveal scroll, DNA/render
 bugs, the R4/R10 landing polish, the Instagram credibility signal, the GSAP
@@ -678,8 +736,9 @@ dedupe, the colour-atelier confirm bug (and its 07-21 duo-gradient follow-up),
 both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
 EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
 re-skin, the `#measure` trust seal, the orphaned `preview-design.js`
-endpoint removal, the atelier/Cockpit PR (#444), and now Cockpit-Runde 3's
-atelier/materials/signature expansion (#448) itself).
+endpoint removal, the atelier/Cockpit PR (#444), Cockpit-Runde 3's
+atelier/materials/signature expansion (#448), and now the merged
+Atelier-Wow B1+B5 slice (#454, orthogonal to the studio journey).
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
 rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
@@ -699,6 +758,7 @@ same-day without displacing this recommendation.
   inside the current two-commit-model split; this item should still land
   before any further journey-surface work inherits the same inconsistency.
 - **Explicitly not this PR:** C2 Variant 2 is still a live product-decision
-  flag, not an engineering task. Also not this PR: #428, a separate,
-  now-stale hero PR orthogonal to the studio journey that needs its own
-  triage (close-or-rebuild) independent of this recommendation.
+  flag, not an engineering task. Also not this PR: the merged Atelier-Wow
+  B1+B5 slice (#454), a separate, orthogonal studio-layout track — B2-B4
+  remain open per `ATELIER-WOW-ROADMAP.md` but are their own, unprioritised
+  future work, not implied by this recommendation.
