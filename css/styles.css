@@ -3967,9 +3967,12 @@ html.is-touch .de-region-opt { min-height: 48px; }
         position: absolute;
         left: var(--space-2);
         right: var(--space-2);
-        /* Über der Dock-Überlappung (-24px) + Luft: die Chips gehören dem
-           Stück und dürfen nicht halb unters Glas rutschen. */
-        bottom: var(--space-7);
+        /* Über der Dock-Überlappung (-24px) UND über den unteren
+           Passermarken: bei bottom:32px lag die Chip-Zeile genau auf den
+           Marken (Rahmen-Inset 40px), die Ecke kreuzte die Pille sichtbar
+           (Owner-iPhone 2026-07-25). 56px setzt die Chips sauber INNERHALB
+           des Rahmens ab. */
+        bottom: var(--space-9);
         /* (Das Namensschild nach dem Generieren wird weiter unten aus
            demselben Grund angehoben.) */
         z-index: 2;
@@ -3985,13 +3988,26 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-stage .de-preview-chips::-webkit-scrollbar { display: none; }
     .de-stage .de-preview-chip { flex: none; white-space: nowrap; }
     /* Masse-Zeile wird Bühnen-Overlay (oben rechts, unter niemandem). */
+    /* Die Masse-Zeile lag exakt auf der oberen Passermarke und lief bis an
+       den Bühnenrand — zwei Mono-Elemente auf derselben Zeile, die sich
+       kreuzten (Owner-iPhone 2026-07-25: „oben rechts wirkt zerstückelt").
+       Jetzt UNTER dem Markenband und mit echtem Rand: sie steht INNERHALB
+       des Registratur-Rahmens, nicht darauf. Breite begrenzt, damit die
+       lange Zeile nicht die halbe Bühne quert. */
     .de-stage .de-body-caption {
         position: absolute;
-        top: var(--space-2);
-        right: var(--space-3);
+        /* UNTER die STILVORSCHAU-Marke, nicht neben sie: gemessen überlappten
+           die beiden Mono-Blöcke real 17px (Marke 58–183, Zeile 166–329) und
+           standen auf derselben Höhe — genau das „zerstückelt" aus dem
+           Owner-Screenshot. 48px setzt die Zeile 6px unter die Marke; beide
+           lesen jetzt als gestaffelte Bühnen-Metadaten statt als Kollision. */
+        top: calc(var(--space-8) + var(--space-2));
+        right: var(--space-5);
+        max-width: 62%;
         margin: 0;
         z-index: 2;
         font-size: 9px;
+        line-height: 1.35;
         text-align: right;
         pointer-events: none;
     }
@@ -4130,8 +4146,21 @@ html.is-touch .de-region-opt { min-height: 48px; }
         background-repeat: no-repeat;
         display: flex;
         align-items: center;
-        gap: var(--space-4);
+        /* Der Gap muss mitschrumpfen dürfen: mit festen 16px passten die drei
+           deutschen Mono-Labels + die Fertig-Pille auf 390px nicht mehr in
+           eine Zeile — „NEU STARTEN" brach um und schob die Pille über den
+           Dock-Rand hinaus, wo sie abgeschnitten und halb untippbar war
+           (Owner-iPhone 2026-07-25). clamp gibt bis 8px nach. */
+        gap: clamp(var(--space-2), 2.4vw, var(--space-4));
+        /* Letzte Verteidigung: sollte es je wieder zu eng werden, wandert die
+           Pille in eine zweite Zeile statt aus dem Panel zu laufen. */
+        flex-wrap: wrap;
+        row-gap: var(--space-2);
     }
+    /* Die Fertig-Pille darf nie schrumpfen oder überlaufen — sie ist die
+       Zusage „du kannst jederzeit abschliessen" und muss ganz sichtbar und
+       ganz tippbar sein. */
+    .de-controls .de-finish { flex: 0 0 auto; }
     /* Die Navigation spricht Mono — dieselbe Maschinenstimme wie der Stepper
        darüber. Vorher waren es drei graue Fliesstext-Links, die wie
        Browser-Chrome aussahen; als Versal-Mono werden sie zur Instrumenten-
@@ -4139,19 +4168,28 @@ html.is-touch .de-region-opt { min-height: 48px; }
        ohne an Lesbarkeit zu verlieren). */
     .de-nav {
         font-family: var(--font-mono);
-        font-size: 10.5px;
-        letter-spacing: var(--tracking-wide);
+        /* 9.5px/0.04em statt 10.5px/0.08em: die drei deutschen Labels plus
+           die Fertig-Pille passen damit auf 360px+ in EINE Zeile. Vorher
+           brach „NEU STARTEN" mitten im Wort um und drückte die Pille aus
+           dem Dock. Nebeneffekt und erwünscht: engeres Tracking als der
+           Stepper darüber = klare Hierarchie (Phase laut, Aktionen leise). */
+        font-size: 9.5px;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
+        /* Nicht IM Wort umbrechen — die Zeile darf als Ganzes umbrechen. */
+        white-space: nowrap;
+        min-width: 0;
     }
     /* „Fertig" bleibt die einzige farbige Nebenaktion — als kompakte Pille im
        Mono-Register, damit sie neben der Gradient-Confirm nicht konkurriert. */
     .de-finish {
         font-family: var(--font-mono);
         font-size: 10.5px;
-        letter-spacing: var(--tracking-wide);
+        letter-spacing: 0.05em;
         text-transform: uppercase;
         font-weight: 500;
-        padding: 7px var(--space-4);
+        white-space: nowrap;
+        padding: 7px var(--space-3);
     }
     /* Dock-Kopf (B1): die Frage wird zur stillen Zeile im Panel — das laute
        Display-Register gehört der Bühne. ABER leise heisst nicht grau: mit

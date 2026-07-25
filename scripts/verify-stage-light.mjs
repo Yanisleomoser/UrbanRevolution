@@ -110,6 +110,75 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
   await page.close();
 }
 
+// ── 3) Bühnen-Overlays kollidieren nicht (Owner-iPhone 2026-07-25) ────────
+// Drei Elemente teilen sich die Bühnenränder: die STILVORSCHAU-Marke, die
+// Masse-Zeile und die Chip-Reihe — dazu der Registratur-Rahmen und, im Dock,
+// die Fertig-Pille. Alle fünf sind absolut positioniert und kannten
+// einander nicht: real überlappten Marke und Masse-Zeile um 17px, die
+// Chip-Reihe lag auf den unteren Passermarken, und die Fertig-Pille lief aus
+// dem Dock (abgeschnitten und halb untippbar).
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: "de-DE" });
+  await routeCdnThroughNode(page);
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForSelector(".de-describe-input", { timeout: 20000 });
+  console.log("  — Bühnen-Overlays @ 390px —");
+  // Masse setzen, damit die Masse-Zeile überhaupt erscheint.
+  await page.evaluate(() => window.StateManager && window.StateManager.set("measurements",
+    { height: 178, weight: 74, chest: 100, waist: 84, hips: 99, shoulder: 46, arm: 62, inseam: 82, neck: 38 }));
+  await page.fill(".de-describe-input", "eine kastige kurze Jacke in Tiefrot, viele Taschen");
+  await page.click(".de-describe-read");
+  await page.waitForSelector(".de-understood-row", { timeout: 5000 });
+  await page.click(".de-understood-apply");
+  await page.waitForTimeout(1300);
+  for (let i = 0; i < 10; i++) {
+    const vis = await page.evaluate(() => { const f = document.getElementById("de-finish"); return f && !f.hidden; });
+    if (vis) break;
+    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-confirm:not([disabled])");
+    if (c) { await c.click(); await page.waitForTimeout(750); } else break;
+  }
+  const g = await page.evaluate(() => {
+    const rect = (s) => { const e = document.querySelector(s); if (!e || e.hidden) return null; const r = e.getBoundingClientRect(); return r.width ? r : null; };
+    const stage = rect(".de-preview-stage");
+    const dock = rect(".de-ask-col");
+    const fin = rect("#de-finish");
+    const cap = rect("#de-body-caption");
+    const badge = rect(".de-preview-badge");
+    const chips = rect("#de-preview-chips");
+    const over = (a, b) => (a && b)
+      ? Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) > 0 &&
+        Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)) > 0
+      : false;
+    return {
+      finishSeen: !!fin,
+      finishInside: fin && dock ? (fin.right <= dock.right + 0.5 && fin.left >= dock.left - 0.5) : null,
+      capSeen: !!cap,
+      capHitsBadge: over(cap, badge),
+      // Die unteren Passermarken sitzen 40px über dem Bühnenboden (::after-inset).
+      chipsAboveMarks: chips && stage ? Math.round(stage.bottom - chips.bottom) > 40 : null,
+      navOneLine: (() => {
+        const navs = [...document.querySelectorAll(".de-controls .de-nav")].filter((n) => !n.hidden);
+        // Eine Zeile: jedes Label passt in die Zeilenhöhe des höchsten Elements.
+        const tops = navs.map((n) => n.getBoundingClientRect().top);
+        return Math.max(...tops) - Math.min(...tops) < 14;
+      })(),
+      // NUR die Textlinks: .de-finish ist ebenfalls .de-nav, aber als Pille
+      // mit Innenabstand naturgemäss höher — sie hier mitzumessen prüfte die
+      // Polsterung, nicht den Umbruch.
+      noWordWrap: [...document.querySelectorAll(".de-controls .de-nav:not(.de-finish)")]
+        .every((n) => n.getBoundingClientRect().height < 22),
+    };
+  });
+  check(g.finishSeen, "die Fertig-Pille ist auf einem reifen Screen sichtbar");
+  check(g.finishInside === true, "die Fertig-Pille liegt VOLLSTÄNDIG im Dock (nicht abgeschnitten)");
+  check(g.capSeen, "die Masse-Zeile erscheint, sobald Masse vorliegen");
+  check(g.capHitsBadge === false, "Masse-Zeile und STILVORSCHAU-Marke überlappen nicht");
+  check(g.chipsAboveMarks === true, "die Chip-Reihe liegt über den unteren Passermarken");
+  check(g.navOneLine === true, "die Navigation steht auf EINER Zeile");
+  check(g.noWordWrap === true, "kein Label bricht innerhalb des Wortes um");
+  await page.close();
+}
+
 await browser.close();
 server.close();
 console.log(failed ? `\n✗ ${failed} check(s) failed` : "\n✓ studio light verified");
