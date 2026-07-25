@@ -3495,8 +3495,10 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 
 @media (max-width: 560px) {
     .de-question { font-size: var(--text-xl); }
-    .de-tot { grid-template-columns: 1fr; }
-    .de-tot-panel { min-height: 180px; }
+    /* (Die früheren .de-tot-Regeln hier waren tot: .de-tot existiert nur, wenn
+       data-de-mod="thisOrThat" gesetzt ist, und der ≤899px-Cockpit-Block
+       weiter unten überschreibt Spalten wie Mindesthöhe — 560px liegt
+       vollständig in dessen Bereich.) */
 }
 @media (prefers-reduced-motion: reduce) {
     .de-card, .de-tot-panel, .de-confirm, .de-palette-swatch, .de-visual-img { transition: none !important; }
@@ -3741,9 +3743,9 @@ html.is-touch .de-region-opt { min-height: 48px; }
         -webkit-backdrop-filter: none;
     }
 
-    /* 5 — This-or-That + Cards kompakter, damit beides ohne Riesen-Scroll passt */
-    .de-tot { gap: var(--space-3); }
-    .de-tot-panel { min-height: 150px; }
+    /* 5 — Cards kompakter, damit alles ohne Riesen-Scroll passt.
+       (Die .de-tot-Regeln von hier sind entfallen — der ≤899px-Cockpit-Block
+       steht später in der Datei und gewann bei gleicher Spezifität ohnehin.) */
     .de-cards { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .de-card { padding: var(--space-2); }
 
@@ -3922,6 +3924,8 @@ html.is-touch .de-region-opt { min-height: 48px; }
         /* Über der Dock-Überlappung (-24px) + Luft: die Chips gehören dem
            Stück und dürfen nicht halb unters Glas rutschen. */
         bottom: var(--space-7);
+        /* (Das Namensschild nach dem Generieren wird weiter unten aus
+           demselben Grund angehoben.) */
         z-index: 2;
         flex-wrap: nowrap;
         justify-content: flex-start;
@@ -4241,7 +4245,12 @@ html.is-touch .de-region-opt { min-height: 48px; }
     /* Regions — das Detail-Atelier TRÄGT das Flat selbst: Bühne aus, das
        Board bekommt das ganze Blatt (löst zugleich das Doppel-Flat, U8). */
     .de-stage[data-de-mod="regions"] .de-preview-col { display: none; }
-    .de-stage[data-de-mod="regions"] .de-ask-col { flex: 1 1 auto; max-height: none; }
+    /* margin-top zurück auf 0: die Überlappung existiert, um auf der BÜHNE zu
+       liegen — hier ist die Bühne ausgeblendet, also zog der negative Rand
+       das ganze Blatt 32px nach oben und schob die Überschrift unter die
+       fixe Navbar. Ohne Bühne kein Glas-Aufliegen, also auch kein Zug. */
+    .de-stage[data-de-mod="regions"] .de-ask-col { flex: 1 1 auto; max-height: none; margin-top: 0; }
+    .de-stage[data-de-mod="regions"] .de-ask-col::before { display: none; }
     /* Der Mikro-Picker wird im Cockpit eine volle Blatt-Karte: die Anker-
        Klemmen (min-width 208px in einem 340px-Board) ragten links real aus
        dem Rahmen. Vertikal bleibt er am getippten Punkt (Inline-top/bottom). */
@@ -4259,6 +4268,16 @@ html.is-touch .de-region-opt { min-height: 48px; }
     /* Foto-Duell im Dock: die zwei Panels stehen nebeneinander (das Duell
        liest sich als Gegenüber), kompakt — die Bühne bleibt dominant. */
     .de-stage[data-de-mod="thisOrThat"] .de-tot { grid-template-columns: 1fr 1fr; }
+    /* Das Namensschild (nach dem Generieren) sass auf bottom:14px der Bühne
+       und lag damit halb unter der 24px-Dock-Überlappung — der Beat, in dem
+       das Stück seinen Namen bekommt, darf nicht hinterm Glas verschwinden.
+       Gleiche Anhebung wie bei den Chips. */
+    .de-stage .de-nameplate { bottom: calc(var(--space-7) + 6px); }
+    /* Blur-Budget (max. 1–2 gleichzeitig, :root-Vertrag): Navbar + Dock sind
+       die zwei sanktionierten Ebenen. Das Bühnen-Badge sass als dritte
+       darüber — es liegt aber auf dem eigenen dunklen Bühnenverlauf und hat
+       nichts zu brechen. Fläche bleibt, Blur entfällt. */
+    .de-stage .de-preview-badge { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 /* Flache Querformate (Landscape-Phones): Cockpit-Höhe freigeben, klassischer
    Fluss — ein 100svh-Rahmen unter 500px Höhe würde alles zerquetschen. */

@@ -490,9 +490,32 @@ console.log("\n— dress · Knopfleiste wird wirklich GEZEICHNET (nicht nur erla
   const circles = (s) => (s.match(/<circle/g) || []).length;
   assert(circles(buttoned) > circles(plain), `a button ladder is drawn (${circles(buttoned)} vs ${circles(plain)} circles)`);
   assert(buttoned.startsWith("<svg") && !/NaN|undefined/.test(buttoned), "the buttoned dress is clean SVG");
-  // Auch auf dem ärmellosen Bodice (Slip) darf die Leiste nicht in Müll kippen.
-  const slipButtoned = dress({ closure: "button", sleeveLength: "sleeveless", subArchetype: "slip" });
-  assert(slipButtoned.startsWith("<svg") && !/NaN|undefined/.test(slipButtoned), "a sleeveless buttoned dress stays clean SVG");
+  // Auch auf dem ärmellosen Bodice darf die Leiste nicht in Müll kippen.
+  const sleevelessButtoned = dress({ closure: "button", sleeveLength: "sleeveless" });
+  assert(sleevelessButtoned.startsWith("<svg") && !/NaN|undefined/.test(sleevelessButtoned), "a sleeveless buttoned dress stays clean SVG");
+
+  // Wickel und Slip tragen keine Mittelfront: die symmetrische Knopfreihe
+  // widerspräche dort der Konstruktion (der Übertritt kreuzte real alle acht
+  // Knöpfe). Der Riegel hält auch von Hand gesetzte #dna=-Paare ab.
+  ["wrap", "slip"].forEach((sa) => {
+    const svg = dress({ closure: "button", subArchetype: sa });
+    assert(circles(svg) === circles(dress({ closure: "none", subArchetype: sa })),
+      `a ${sa} dress draws no centre placket (its front construction excludes one)`);
+  });
+
+  // Der Leisten-Kopf muss AUF dem Stoff sitzen: beim ärmellosen Bodice reicht
+  // der Ausschnitt bis neckY+24 hinunter — die frühere Zwei-Fall-Konstante
+  // setzte Kopf und ersten Knopf bei „Hoch" darüber, frei im Ausschnitt-Loch.
+  const firstButtonY = (svg) => {
+    const ys = [...svg.matchAll(/<circle[^>]*cy="([\d.]+)"/g)].map((m) => parseFloat(m[1]));
+    return ys.length ? Math.min(...ys) : null;
+  };
+  [["stand", "sleeveless", 84], ["vneck", "sleeveless", 93], ["crew", "sleeveless", 84], ["stand", "long", 67]]
+    .forEach(([collar, sleeveLength, minY]) => {
+      const y = firstButtonY(dress({ closure: "button", collar, sleeveLength }));
+      assert(y != null && y >= minY,
+        `first button clears the ${collar}/${sleeveLength} neckline (cy ${y} ≥ ${minY})`);
+    });
 }
 
 console.log("\n— dress · der Rock ist gerundet, kein Polygon (Owner-Report: rendert falsch) —");
