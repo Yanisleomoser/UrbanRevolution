@@ -182,10 +182,22 @@
    continues there and SR users hear the region. These are NOT Tab stops, so a
    container-sized ring around a viewport-tall section is inappropriate — the
    scroll + heading announcement is the cue. Real controls keep their ring. */
+/* Dieselbe Klasse: die Frage-Überschrift im Studio bekommt nach jedem Render
+   `tabindex="-1"` + .focus(), damit Screenreader die NEUE Frage ansagen
+   (flow.js focusQuestion). Sie ist kein Tab-Stop — trotzdem matchte sie den
+   globalen Ring oben über `[tabindex]`. Ob der Ring dann WIRKLICH erscheint,
+   entscheidet die :focus-visible-Heuristik der Engine: Headless-Chromium sagt
+   nach einem Tap „nein" (deshalb war es in keinem Screenshot zu sehen),
+   iOS-Safari sagt „ja" — auf dem echten iPhone lag ein 2px-Leuchtgrün-Kasten
+   mit 3px Offset um die Frage (Owner-Screenshot 2026-07-25). Vorbestehend
+   auf main, im kompakten Glas-Dock nur endlich auffällig.
+   :focus UND :focus-visible ausgenommen, damit es engine-unabhängig ist;
+   Tastatur-Nutzer verlieren nichts (die Überschrift ist per tabindex=-1 gar
+   nicht anspringbar), die SR-Ansage bleibt unberührt. */
 #design:focus-visible, #ownership:focus-visible, #measure:focus-visible,
-#production:focus-visible, #faq:focus-visible,
+#production:focus-visible, #faq:focus-visible, .de-question:focus-visible,
 #design:focus, #ownership:focus, #measure:focus,
-#production:focus, #faq:focus { outline: none; }
+#production:focus, #faq:focus, .de-question:focus { outline: none; }
 
 /* Sharper text rendering across the app */
 html {
