@@ -54,7 +54,12 @@ const SpecView = (() => {
   function renderNotes(list, notes) {
     if (!list) return;
     clear(list);
-    (notes || []).forEach((note) => {
+    // Array.isArray, not `notes || []`: a truthy non-array (e.g. a malformed
+    // AI response returning a bare string instead of the requested array)
+    // would still reach .forEach and throw, wedging the spec sheet since this
+    // renders on every state change (see js/ai.js's CONFIG.validateStringArray
+    // boundary guard, which is the primary fix — this is defense-in-depth).
+    (Array.isArray(notes) ? notes : []).forEach((note) => {
       const li = document.createElement("li");
       li.textContent = note;
       list.appendChild(li);

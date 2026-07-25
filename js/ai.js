@@ -356,9 +356,16 @@ Antworte NUR mit JSON:
         (await generateWithServer(prompt, type)) ||
         (await generateWithClaude(prompt, type));
 
-      if (claudeResult) {
+      // generateWithServer already checks `name` before returning non-null,
+      // but generateWithClaude (the demo browser-direct path) does not, so
+      // re-check it here for both. tags/constructionNotes are AI free text
+      // with no enforced schema on either path — sanitise to arrays so a
+      // malformed response can't crash the spec-sheet renderer downstream.
+      if (claudeResult && typeof claudeResult.name === "string" && claudeResult.name.trim()) {
         return {
           ...claudeResult,
+          tags: CONFIG.validateStringArray(claudeResult.tags, 8),
+          constructionNotes: CONFIG.validateStringArray(claudeResult.constructionNotes, 6),
           type,
           originalPrompt: prompt,
           generatedAt: new Date().toISOString(),

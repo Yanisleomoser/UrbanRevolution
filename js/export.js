@@ -130,15 +130,17 @@ const Export = (() => {
       )
       .join("");
 
-    // Guard the arrays: a design assembled from a malformed AI response or a
-    // hand-edited/legacy library entry can be missing tags/constructionNotes,
-    // and .map() on null/undefined would throw mid-export and silently abort
-    // the download. (spec-view.js guards the same fields the same way.)
-    const notesHTML = (spec.production.constructionNotes || [])
+    // Guard the arrays: a design assembled from a malformed AI response (a
+    // truthy non-array, not just null/undefined — see js/ai.js's
+    // CONFIG.validateStringArray boundary guard) or a hand-edited/legacy
+    // library entry can have missing or wrongly-typed tags/constructionNotes,
+    // and .map() on anything but an array would throw mid-export and silently
+    // abort the download. (spec-view.js guards the same fields the same way.)
+    const notesHTML = (Array.isArray(spec.production.constructionNotes) ? spec.production.constructionNotes : [])
       .map((n) => `<li>${esc(n)}</li>`)
       .join("");
 
-    const tagsHTML = (spec.design.tags || [])
+    const tagsHTML = (Array.isArray(spec.design.tags) ? spec.design.tags : [])
       .map((t) => `<span class="tag">${esc(t)}</span>`)
       .join(" ");
 
