@@ -157,6 +157,26 @@
        kein Passepartout. */
     --glass-hairline: rgba(176, 181, 240, 0.13);
     --glass-blur: blur(18px) saturate(1.25);
+
+    /* Studio-Licht der Bühne (B2) als Token-Satz, damit Basis und Cockpit
+       EINE Definition teilen: das Cockpit hebt nur den Bodenpool an (dort
+       liegt das Glas-Dock darauf und braucht mehr zu brechen), statt den
+       ganzen Stapel zu wiederholen. */
+    --stage-cone: radial-gradient(44% 62% at 50% -10%, rgba(186, 192, 255, 0.2), rgba(186, 192, 255, 0) 74%);
+    /* Bewusst zurückhaltend: das Stück steht auf SEINEM eigenen
+       Kontaktschatten (in-SVG, wandert mit dem Saum). Ein starker Pool auf
+       fixer Höhe wäre ein ZWEITER Boden — bei kurzen Stücken schwebte das
+       Teil dann sichtbar über der beleuchteten Fläche. Hier also nur
+       Umgebungslicht der Hohlkehle; das Cockpit hebt ihn separat an, weil
+       dort das Glas-Dock direkt darauf liegt und etwas zu brechen braucht. */
+    --stage-pool: radial-gradient(46% 13% at 50% 91%, rgba(160, 168, 245, 0.12), rgba(160, 168, 245, 0) 76%);
+    /* Der Hohlkehlen-Übergang (Cyclorama): eine sehr weiche Aufhellung ab
+       ~64 % Höhe. DAS ist der Unterschied zwischen „Objekt vor einer
+       Farbfläche" und „Objekt in einem Studio" — ohne Bodenebene steht das
+       Stück auf nichts, egal wie stark der Lichtpool ist. */
+    --stage-floor: linear-gradient(180deg, rgba(176, 181, 240, 0) 62%, rgba(176, 181, 240, 0.045) 76%, rgba(176, 181, 240, 0.075) 100%);
+    --stage-vignette: radial-gradient(118% 86% at 50% 44%, rgba(4, 4, 7, 0) 50%, rgba(4, 4, 7, 0.52) 100%);
+    --stage-depth: radial-gradient(132% 104% at 50% 36%, #171a2e, var(--bg) 70%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -167,6 +187,21 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* [hidden] MUSS versteckt bleiben — projektweiter Riegel.
+   Das UA-Stylesheet setzt `[hidden] { display: none }` mit der schwächsten
+   denkbaren Spezifität; JEDE Klassenregel mit einem display-Wert übersteuert
+   sie. In diesem Projekt ist das schon zweimal passiert:
+     • `.de-region-picker` (display:flex) — der „geschlossene" Detail-Picker
+       blieb sichtbar und fing real Taps ab (per Element gepatcht, s. u.),
+     • `html.is-touch .de-nav` (display:inline-flex) — die noch verborgene
+       „Fertig"-Pille erschien AUF TOUCH-GERÄTEN ab dem ersten Screen und war
+       tippbar: ein Sprung zum Ergebnis, bevor überhaupt etwas entworfen war.
+       Genau deshalb fiel es headless (fine pointer) nie auf, wohl aber dem
+       Owner auf dem iPhone (Screenshot 2026-07-25).
+   Ein dritter Einzelfall-Patch wäre die falsche Antwort: hier die Regel für
+   alle. `!important` ist bewusst — `hidden` ist eine Zusage, kein Vorschlag. */
+[hidden] { display: none !important; }
 
 /* Global focus-visible ring — consistent across all interactive
    elements. Hidden for pointer-driven focus (mouse clicks),
@@ -3376,14 +3411,31 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    HOCHFORMAT-Kacheln — das 240×340-Flat füllt sie, statt in einer 4:3-Kachel
    seitlich Luft zu lassen. Gleiche Vielfalt, weniger Blatt. */
 .de-cards-many { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: var(--space-2); }
-.de-cards-many .de-card { padding: var(--space-2); gap: var(--space-2); }
+.de-cards-many .de-card { gap: var(--space-1); }
 .de-cards-many .de-card-label { font-size: var(--text-sm); }
 .de-cards-many .de-visual { aspect-ratio: 3 / 4; }
-.de-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); cursor: pointer; transition: transform .2s var(--ease-out), border-color .2s var(--ease-out), box-shadow .2s var(--ease-out); }
-.de-card:hover, .de-card:focus-visible { transform: translateY(-3px); border-color: var(--accent); box-shadow: var(--shadow-soft); outline: none; }
-.de-card-label { font-size: var(--text-md); font-weight: 600; }
+/* ── Die Wahl-Fläche: EINE Kante, nicht zwei ──────────────────────────────
+   Jede Option war doppelt gerahmt — eine Karte mit Rand und Fläche, darin
+   nochmal ein gerahmtes Bild. Mit sechs Optionen nebeneinander ergab das die
+   „vielen Linien", die das Atelier unruhig machten (Owner-Brief 2026-07-25).
+   Jetzt IST das Bild die Karte: ein Radius, eine Kante, das Label steht frei
+   darunter. Der Zustand wandert auf das Bild (Ring statt zweitem Rahmen), und
+   Farbe bekommt genau eine Bedeutung: Grün = deine Wahl, Periwinkle = wo
+   Zeiger/Fokus gerade sind, Marken-Verlauf = die eine Bestätigung. */
+.de-card { display: flex; flex-direction: column; gap: 6px; padding: 0; background: none; border: 1px solid transparent; border-radius: var(--radius); color: var(--text); cursor: pointer; transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.de-card:focus-visible { outline: none; }
+.de-card:focus-visible .de-visual { box-shadow: 0 0 0 1.5px var(--accent), 0 10px 24px rgba(143, 150, 232, 0.22); }
+/* Der Periwinkle-Ring heisst „hier ist der Zeiger". Auf Touch gibt es keinen
+   — dort bleibt :hover nach dem Tippen am zuletzt berührten Element kleben
+   und stünde neben dem grünen Auswahl-Ring (real gemessen). */
+@media (hover: hover) {
+    .de-card:hover { transform: translateY(-3px); }
+    .de-card:hover .de-visual { box-shadow: 0 0 0 1.5px var(--accent), 0 10px 24px rgba(143, 150, 232, 0.22); }
+}
+.de-card-label { font-size: var(--text-md); font-weight: 600; color: var(--text-dim); transition: color .2s var(--ease-out); }
+.de-card.is-selected .de-card-label { color: var(--text); }
 
-.de-visual { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+.de-visual { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--text-dim); transition: box-shadow .2s var(--ease-out); }
 .de-visual-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .4s var(--ease-out); }
 .de-visual-img.is-loaded { opacity: 1; }
 .de-glyph { width: 64%; height: 64%; }
@@ -3453,14 +3505,20 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
    Vorschau (das tote Farb-Rechteck ist weg) — benannte Stoff-Chips statt
    roher Punkte. Chip = Stoff-Feld (mit feiner Web-Struktur) + Farbname in
    Mono-Micro; Auswahl trägt die Karten-Selektionssprache (Accent-Ring). */
-.de-scheme-tabs { display: inline-flex; gap: var(--space-1); background: var(--surface); border-radius: 999px; padding: var(--space-1); margin-bottom: var(--space-2); }
-.de-scheme-tab { border: 0; background: none; color: var(--text-dim); padding: var(--space-2) var(--space-5); border-radius: 999px; cursor: pointer; font-size: var(--text-sm); transition: all .2s var(--ease-out); }
-.de-scheme-tab.is-active { background: var(--gradient); color: #fff; }
+/* Zwei Wörter brauchen keine Kapsel und keine Verlaufsfüllung: die aktive
+   Wahl ist grün unterstrichen — dieselbe Aussage, drei Kanten weniger, und
+   der Marken-Verlauf bleibt der Bestätigung vorbehalten. */
+.de-scheme-tabs { display: inline-flex; gap: var(--space-5); background: none; border-radius: 0; padding: 0; margin-bottom: var(--space-2); }
+.de-scheme-tab { border: 0; background: none; color: var(--text-dim); padding: 3px 0; border-radius: 0; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; transition: color .2s var(--ease-out), box-shadow .2s var(--ease-out); }
+.de-scheme-tab.is-active { background: none; color: var(--text); box-shadow: inset 0 -1.5px 0 var(--accent-3); }
 /* Fest reservierte Hinweiszeile (kein Layout-Sprung beim Moduswechsel). */
 .de-scheme-hint { min-height: 18px; margin: 0 0 var(--space-3); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-dim); }
 .de-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--space-3); }
-.de-palette-swatch { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: transform .15s var(--ease-out), border-color .15s var(--ease-out); }
-.de-fabric-field { position: relative; display: block; height: 60px; border-radius: calc(var(--radius) - 4px); overflow: hidden; }
+.de-palette-swatch { display: flex; flex-direction: column; gap: 6px; padding: 0; background: none; border: 1px solid transparent; border-radius: var(--radius); cursor: pointer; transition: transform .15s var(--ease-out), box-shadow .15s var(--ease-out); }
+/* Die Stoffprobe IST die Karte. Der Licht-von-oben-Abfall macht aus hellen
+   Feldern (WEISS war das hellste Element im ganzen Rahmen und zog alles auf
+   sich) eine Materialprobe unter Bühnenlicht — der Farbton bleibt exakt. */
+.de-fabric-field { position: relative; display: block; height: 60px; border-radius: var(--radius); overflow: hidden; box-shadow: inset 0 -16px 24px -14px rgba(4, 4, 7, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.06); transition: box-shadow .15s var(--ease-out); }
 /* Feine Web-Struktur + Lichtkante: die Fläche liest sich als Stoff. */
 .de-fabric-field::after { content: ""; position: absolute; inset: 0;
     background:
@@ -3469,16 +3527,20 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
         linear-gradient(160deg, rgba(255, 255, 255, 0.10), transparent 45%);
 }
 .de-fabric-name { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); text-align: center; }
-.de-palette-swatch:hover { transform: translateY(-2px); border-color: var(--text-muted); }
+@media (hover: hover) {
+    .de-palette-swatch:hover { transform: translateY(-2px); }
+    .de-palette-swatch:hover .de-fabric-field { box-shadow: 0 0 0 1.5px var(--accent), 0 10px 24px rgba(143, 150, 232, 0.22); }
+}
 .de-palette-swatch:focus-visible { outline: 2px solid var(--accent-3, #7edc2e); outline-offset: 2px; }
-/* Selected stop(s): accent ring + brightened name; the order badge shows the
-   gradient direction (1 → 2) in duo mode. */
-.de-palette-swatch.is-selected { border-color: transparent; box-shadow: 0 0 0 2px var(--accent), 0 8px 24px rgba(143, 150, 232, 0.25); }
+/* Selected stop(s): grüner Ring auf der Probe + heller Name; das Ordnungs-
+   Abzeichen zeigt die Verlaufsrichtung (1 → 2) im Duo-Modus. */
+.de-palette-swatch.is-selected { border-color: transparent; box-shadow: none; }
+.de-palette-swatch.is-selected .de-fabric-field { box-shadow: 0 0 0 1.5px var(--accent-3), 0 10px 26px rgba(126, 220, 46, 0.2); }
 .de-palette-swatch.is-selected .de-fabric-name { color: var(--text); }
 .de-palette-order {
     position: absolute; top: 6px; right: 6px; min-width: 16px; height: 16px;
     padding: 0 4px; display: none; place-items: center; box-sizing: border-box;
-    border-radius: 999px; background: var(--gradient); color: #fff;
+    border-radius: 999px; background: var(--accent-3); color: var(--on-accent);
     font-size: 10px; font-weight: 700; line-height: 1;
 }
 .de-palette-swatch.is-selected .de-palette-order:not(:empty) { display: grid; }
@@ -3502,8 +3564,13 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .de-nav:disabled { opacity: 0.4; cursor: default; }
 /* "Fertig" ist DIE Zusage "du kannst jederzeit abschliessen" — sobald sie
    erscheint, verdient sie Confirm-Gewicht statt eines leisen Textlinks. */
-.de-finish { margin-left: auto; background: var(--gradient); color: var(--on-accent); font-weight: 700; border-radius: 999px; padding: var(--space-2) var(--space-4); }
-.de-finish:hover:not(:disabled) { color: var(--on-accent); filter: brightness(1.1); }
+/* „Fertig" spricht durch FARBE, nicht durch eine zweite Pille: als
+   Verlaufs-Pille stand sie gleichrangig neben der Bestätigung — zwei
+   Marken-Verläufe auf einem Screen, und der Verlauf hörte auf, „das ist DIE
+   Aktion" zu bedeuten. Jetzt trägt sie die Form ihrer Nachbarn in der Zeile
+   und unterscheidet sich nur im Ton: Grün = das schliesst ab. */
+.de-finish { margin-left: auto; background: none; color: var(--accent-3); font-weight: 600; border-radius: 0; padding: var(--space-2) var(--space-2); }
+.de-finish:hover:not(:disabled) { color: var(--accent-3); filter: brightness(1.15); }
 
 @media (max-width: 560px) {
     .de-question { font-size: var(--text-xl); }
@@ -3530,7 +3597,11 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 .prompt-fallback .prompt-panel { padding: 0 var(--space-5) var(--space-5); }
 
 /* Design Engine — Mikro-Feedback (Flash) am Rand der Vorschau, Phase F */
-.de-flash { position: absolute; top: var(--space-4); right: var(--space-4); z-index: 2; font-size: var(--text-sm); color: var(--accent-3); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 4px var(--space-3); opacity: 0; transform: translateY(-4px); transition: opacity .25s var(--ease-out), transform .25s var(--ease-out); pointer-events: none; }
+/* Die Quittung spricht dieselbe Sucher-Sprache wie Marke und Masse-Zeile:
+   Mono, grün, ohne Pille. Als gerahmte Kapsel war sie der letzte Kasten auf
+   der Bühne und stand zudem exakt dort, wo die Masse-Zeile steht — im
+   Cockpit rückt sie darum eine Zeile tiefer (siehe Cockpit-Block). */
+.de-flash { position: absolute; top: var(--space-4); right: var(--space-4); z-index: 2; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.35; color: var(--accent-3); text-shadow: 0 1px 8px rgba(4, 4, 7, 0.92); background: none; border: 0; border-radius: 0; padding: 0; opacity: 0; transform: translateY(-4px); transition: opacity .25s var(--ease-out), transform .25s var(--ease-out); pointer-events: none; }
 .de-flash.is-on { opacity: 1; transform: translateY(0); }
 
 .de-inferred { margin: var(--space-5) 0; }
@@ -3555,16 +3626,27 @@ html.is-touch .gallery-tile-actions button { min-height: 44px; }
 }
 
 /* Design Engine — optionale Modalitäten: Ranking, Tap-auf-Vorschau, Mehrfachauswahl */
-.de-card.is-selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), var(--shadow-soft); }
-.de-card.is-selected::after { content: "✓"; position: absolute; top: var(--space-3); right: var(--space-3); width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--gradient); color: #fff; font-size: 13px; }
+/* Gewählt = grüner Ring auf dem BILD (nicht um die Karte) + helleres Label.
+   Das Häkchen bleibt, damit die Auswahl nicht nur farbig codiert ist — aber
+   ohne Marken-Verlauf: der gehört der Bestätigung allein. */
+.de-card.is-selected { border-color: transparent; box-shadow: none; }
+.de-card.is-selected .de-visual { box-shadow: 0 0 0 1.5px var(--accent-3), 0 10px 26px rgba(126, 220, 46, 0.2); }
+.de-card.is-selected::after { content: "✓"; position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: var(--accent-3); color: var(--on-accent); font-size: 11px; font-weight: 700; }
 .de-card { position: relative; }
 
 .de-rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.de-rank-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
-.de-rank-num { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--gradient); color: #fff; font-weight: 700; font-size: var(--text-sm); }
+/* Rangliste als LISTE, nicht als Kartenstapel: pro Zeile standen zuvor drei
+   gezeichnete Kästen (Karte + zwei Pfeil-Knöpfe) plus eine Verlaufs-Scheibe
+   — bei vier Zeilen zwölf Kanten und vier Marken-Verläufe auf einem Screen.
+   Jetzt trennt eine Haarlinie, die Position spricht als Mono-Ziffer. */
+.de-rank-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; background: none; border: 0; border-radius: 0; box-shadow: inset 0 -1px 0 var(--glass-hairline); }
+.de-rank-item:last-child { box-shadow: none; }
+.de-rank-num { flex: none; width: 20px; display: grid; place-items: center; background: none; color: var(--accent-3); font-family: var(--font-mono); font-weight: 600; font-size: var(--text-sm); }
 .de-rank-label { flex: 1; color: var(--text); font-size: var(--text-md); }
-.de-rank-btn { flex: none; width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: var(--radius-sm); cursor: pointer; font-size: 16px; transition: border-color .2s var(--ease-out); }
-.de-rank-btn:hover:not(:disabled) { border-color: var(--accent); }
+.de-rank-btn { flex: none; width: 36px; height: 36px; border: 1px solid transparent; background: none; color: var(--text-dim); border-radius: var(--radius-sm); cursor: pointer; font-size: 16px; transition: color .2s var(--ease-out), border-color .2s var(--ease-out); }
+@media (hover: hover) {
+    .de-rank-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+}
 .de-rank-btn:disabled { opacity: 0.3; cursor: default; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3610,8 +3692,12 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 @keyframes deSpotBreath { 0%, 100% { box-shadow: 0 0 0 3px rgba(126, 220, 46, 0.14); } 50% { box-shadow: 0 0 0 7px rgba(126, 220, 46, 0.05); } }
 .de-hotspot:hover .de-hotspot-dot, .de-hotspot:focus-visible .de-hotspot-dot, .de-hotspot[aria-expanded="true"] .de-hotspot-dot { background: rgba(143, 150, 232, 0.55); box-shadow: 0 0 0 6px rgba(126, 220, 46, 0.12); }
 .de-hotspot.is-set .de-hotspot-dot { background: var(--accent); }
-.de-hotspot-tag { position: absolute; top: calc(50% + 12px); left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); white-space: nowrap; pointer-events: none; }
-.de-hotspot-val { position: absolute; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); font-size: 10.5px; color: var(--accent-3); white-space: nowrap; pointer-events: none; }
+/* Die Beschriftungen liegen zwangsläufig teils auf dem Stück (die Anker sind
+   Punkte AM Kleidungsstück). Lesbar macht sie ein Schlagschatten — ein
+   Kästchen dahinter wäre der nächste Rahmen auf einem Brett, das schon
+   Rahmen genug hat. */
+.de-hotspot-tag { position: absolute; top: calc(50% + 12px); left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); text-shadow: 0 1px 6px rgba(4, 4, 7, 0.92); white-space: nowrap; pointer-events: none; }
+.de-hotspot-val { position: absolute; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); font-size: 10.5px; color: var(--accent-3); text-shadow: 0 1px 6px rgba(4, 4, 7, 0.92); white-space: nowrap; pointer-events: none; }
 /* Seitenbewusste Labels (data-side, gesetzt aus der Anker-Geometrie): links
    liegende Hotspots beschriften nach links, rechte nach rechts — Labels
    benachbarter Regionen stapeln sich nie mehr in der Körpermitte. */
@@ -3628,9 +3714,14 @@ html.fx .de-hotspot:not(.is-set) .de-hotspot-dot { animation: deSpotBreath 2.6s 
 .de-region-picker-h { margin: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); }
 .de-region-close { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: 1px solid var(--border); border-radius: 50%; color: var(--text-dim); font-size: 12px; cursor: pointer; transition: border-color .2s var(--ease-out); }
 .de-region-close:hover { border-color: var(--accent); color: var(--text); }
-.de-region-opt { display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: 46px; text-align: left; padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: border-color .2s var(--ease-out); }
-.de-region-opt:hover { border-color: var(--accent); }
-.de-region-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+/* Liste, nicht Kartenstapel: die Nahaufnahme ist das Bild, die Zeile trennt
+   eine Haarlinie. Vorher war jede Zeile ein Kasten mit einem Kasten darin. */
+.de-region-opt { display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: 46px; text-align: left; padding: var(--space-1) 0; background: none; border: 1px solid transparent; border-radius: 0; box-shadow: inset 0 -1px 0 var(--glass-hairline); color: var(--text); font-size: var(--text-sm); cursor: pointer; transition: box-shadow .2s var(--ease-out); }
+.de-region-opt:last-child { box-shadow: none; }
+@media (hover: hover) {
+    .de-region-opt:hover .de-region-opt-thumb { border-color: var(--accent); }
+}
+.de-region-opt[aria-pressed="true"] .de-region-opt-thumb { border-color: var(--accent-3); box-shadow: 0 0 0 1px var(--accent-3); }
 /* Atelier-Lupe: jede Option ist eine echte Nahaufnahme GENAU dieses Details
    (zugeschnittene viewBox am Anker) — Touch sieht, was es wählt, ohne Hover. */
 .de-region-opt-thumb { flex: none; width: 54px; height: 40px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(40, 40, 54, 0.8); background: radial-gradient(120% 100% at 50% 20%, #1b1e33, #0f0f16 85%); }
@@ -3690,10 +3781,29 @@ html.is-touch .de-region-opt { min-height: 48px; }
 
 /* Vorschau dominant. Höhen in svh + JS-gepinntem --svh (wie Hero/Story), damit
    nichts springt, wenn die iOS-Adressleiste ein-/ausfährt. */
-/* Cinematic studio stage: a soft key light from the top, a darkened floor that
-   seats the garment's contact shadow, and a depth gradient — the flat reads as
-   a garment lit in a studio, not an icon on a panel. */
-.de-preview { position: relative; width: 100%; height: 56svh; height: calc(var(--svh, 1svh) * 56); min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: radial-gradient(68% 48% at 50% 6%, rgba(176, 181, 240,0.13), rgba(176, 181, 240,0) 62%), radial-gradient(120% 78% at 50% 122%, rgba(4, 4, 7,0.62), rgba(4, 4, 7,0) 56%), radial-gradient(132% 104% at 50% 36%, #171a2e, var(--bg)70%); display: flex; align-items: center; justify-content: center; }
+/* STUDIO-LICHT (Roadmap B2). Die Bühne ist jetzt eine ausgeleuchtete
+   Aufnahme statt einer dunklen Fläche mit Radial-Glow. Vier Lagen, alles
+   reine Verläufe (KEIN filter/backdrop-filter — die Bühne repaintet pro
+   Morph-Frame, ein Filter würde jeden Frame kosten):
+     1. Podest-Kegel — eine Quelle knapp ÜBER dem oberen Rand, die sich nach
+        unten öffnet: das ist der Unterschied zwischen „Hintergrund leuchtet
+        irgendwo" und „von dort oben scheint ein Licht".
+     2. Lichtpool auf dem Boden — die Fläche, auf der das Stück steht. Erst
+        gegen dieses Licht liest der SVG-Kontaktschatten als Auflage
+        (vorher war er unsichtbar: dunkel auf dunkel).
+     3. Vignette — zieht den Blick auf die Mitte, nimmt den Ecken das
+        Panel-Gefühl.
+     4. Tiefen-Verlauf (unverändert, die alte Bühne).
+   Der Flat ANTWORTET darauf über den Bühnen-Stop in garment-svg (fillSpec
+   `sl`): Überkopf-Fang auf der Schulter, matter Bounce am Saum. */
+.de-preview {
+    position: relative; width: 100%;
+    height: 56svh; height: calc(var(--svh, 1svh) * 56);
+    min-height: 300px; max-height: 70svh; max-height: calc(var(--svh, 1svh) * 70);
+    border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden;
+    background: var(--stage-cone), var(--stage-pool), var(--stage-floor), var(--stage-vignette), var(--stage-depth);
+    display: flex; align-items: center; justify-content: center;
+}
 .de-preview svg { width: 100%; height: 100%; object-fit: contain; }
 .de-preview.is-fade { animation: deCross .24s var(--ease-out); }
 @keyframes deCross { from { opacity: .4; } to { opacity: 1; } }
@@ -3782,7 +3892,11 @@ html.is-touch .de-region-opt { min-height: 48px; }
 
 /* U4 · Modalität „describe" — der Auftakt in den eigenen Worten. Baut auf der
    Freitext-Sprache auf; das Verstanden-Playback spricht Mono (Maschinenstimme). */
-.de-describe { display: flex; flex-direction: column; gap: 0; border: 1px solid rgba(143, 150, 232, 0.4); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; }
+/* Periwinkle heisst „hier ist der Fokus" — im Ruhezustand trägt das Feld
+   darum die neutrale Haarlinie und färbt erst beim Hineintippen um
+   (:focus-within weiter unten). Vorher leuchtete es dauerhaft, als wäre es
+   bereits aktiv. */
+.de-describe { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); overflow: hidden; transition: border-color .2s var(--ease-out); }
 .de-describe-input { width: 100%; box-sizing: border-box; background: transparent; border: 0; color: var(--text); padding: var(--space-4) var(--space-5); font-family: inherit; font-size: var(--text-md); font-weight: 300; resize: vertical; min-height: 64px; }
 .de-describe-input:focus { outline: none; }
 .de-describe:focus-within { border-color: var(--accent); }
@@ -3791,8 +3905,11 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-describe-hint { font-size: 11px; letter-spacing: 0.02em; color: var(--text-muted); }
 .de-describe-read[disabled] { opacity: 0.45; cursor: default; }
 .de-describe-alts { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
-.de-describe-skip { appearance: none; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; padding: 8px 16px; cursor: pointer; transition: border-color .2s var(--ease-out), color .2s var(--ease-out); }
-.de-describe-skip:hover, .de-describe-skip:focus-visible { border-color: var(--accent); color: var(--text); }
+/* Der Nebenweg ist ein Link, keine zweite Pille: er steht direkt unter einem
+   gerahmten Eingabefeld und war als eigener Kasten die dritte Kante auf dem
+   ruhigsten Screen der Reise. Mono wie die Navigation darunter. */
+.de-describe-skip { appearance: none; background: none; border: 0; border-radius: 0; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; padding: 8px 0; cursor: pointer; transition: color .2s var(--ease-out); }
+.de-describe-skip:hover, .de-describe-skip:focus-visible { color: var(--text); }
 .de-describe-last { border-color: rgba(126, 220, 46, 0.4); color: var(--accent-3); }
 /* Fläche/Kante/Korn + Padding aus dem Instrumenten-Glas-Block (B5, unten). */
 .de-understood { margin-top: var(--space-5); }
@@ -3855,15 +3972,33 @@ html.is-touch .de-region-opt { min-height: 48px; }
        von 8 (24px Viewport-Slack, 8er-Padding/Gaps, 8px-Passermarken). Nur
        funktionale Sub-Grid-Werte (2px Fokusring-Bleed, 2px Scrollbar-Raum)
        bleiben bewusst darunter. */
+    /* ── EIN RAHMEN, ZWEI FLÄCHEN (Owner-Brief 2026-07-25) ────────────────
+       Vorher stapelten sich VIER Kantensätze ineinander: der Rahmen
+       (.design-journey, 1px + 14px Radius), die Bühne (#de-preview, nochmal
+       1px + 14px), das Dock (nochmal 1px + 14px) und obendrauf die vier
+       Passermarken — dazu 8/16px Innenabstand am #engine-host, sodass die
+       inneren Flächen den Rahmen nie ausfüllten. Das las sich als drei
+       verschachtelte Kästen mit sich kreuzenden Linien.
+       Jetzt: EIN äusserer Rahmen, der zwei Flächen randlos füllt —
+       oben das Stück, unten die Optionen. Getrennt werden sie NICHT von
+       einer Linie, sondern von Material: die Lichtkante des Glas-Docks.
+       Der Radius lebt nur noch aussen und klippt beide Flächen. */
+    .design-journey { overflow: hidden; }
+    #engine-host { padding: 0; }
     .de-stage {
         height: calc(var(--svh, 1svh) * 100 - 24px);
         min-height: 480px;
-        padding: var(--space-2) var(--space-4);
-        padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
-        gap: var(--space-2);
+        /* randlos: die zwei Flächen sind der Rahmen-Inhalt */
+        padding: 0;
+        gap: 0;
         overflow: hidden;
         scroll-margin-top: var(--space-3);
     }
+    .de-stage-grid { gap: 0; }
+    /* Die Bühne hört auf, eine eigene Karte zu sein — sie IST die obere
+       Fläche. Kein Rahmen, kein Radius, keine Passermarken. */
+    .de-preview { border: 0; border-radius: 0; }
+    .de-preview-stage::after { content: none; }
     /* min-width:0 auf der ganzen Flex-Kette: die nowrap-Chipzeile trug sonst
        ihre min-content-Breite (Summe aller Chips ≈ 500px) den Baum hinauf und
        der GANZE Rahmen wurde breiter als der Viewport (real: 502px @ 390). */
@@ -3886,44 +4021,33 @@ html.is-touch .de-region-opt { min-height: 48px; }
         height: auto;
         min-height: 168px;
         max-height: none;
+        /* Saum-Reserve: die Registratur-Zeile bekommt einen EIGENEN Boden,
+           statt dem Stück in den Saum zu schneiden. Vorher endete das Flat
+           ~20px über der Bühnenkante und die Chips lagen zwangsläufig darauf
+           (Owner-iPhone 2026-07-25: Pillen quer über dem Rock). Das SVG
+           trägt object-fit:contain — Polster verkleinert es sauber, statt es
+           zu beschneiden. Der Bodenpool wandert unten mit (siehe .de-stage). */
+        padding-bottom: var(--space-9);
     }
-    /* Lichtpool auf dem Bühnenboden — das Podest, auf dem das Stück steht.
-       Zwei Aufgaben: (1) es setzt den Flat auf eine Fläche statt ihn im
-       Nichts schweben zu lassen (Vorarbeit B2 „Studio-Licht"), (2) es ist
-       das Material, das das Glas-Dock darüber überhaupt erst brechen kann —
-       ein Blur über gleichförmigem Schwarz ergibt sichtbar nichts.
-       Als zusätzliche background-Lage VOR den bestehenden Verläufen, damit
-       die Bühnen-Tiefe darunter unverändert bleibt. */
-    .de-stage .de-preview {
-        background-image:
-            radial-gradient(64% 26% at 50% 92%, rgba(143, 150, 232, 0.34), rgba(143, 150, 232, 0) 70%),
-            radial-gradient(36% 14% at 50% 95%, rgba(126, 220, 46, 0.18), rgba(126, 220, 46, 0) 72%),
-            radial-gradient(68% 48% at 50% 6%, rgba(176, 181, 240, 0.13), rgba(176, 181, 240, 0) 62%),
-            radial-gradient(120% 78% at 50% 122%, rgba(4, 4, 7, 0.62), rgba(4, 4, 7, 0) 56%),
-            radial-gradient(132% 104% at 50% 36%, #171a2e, var(--bg) 70%);
+    /* Cockpit: NUR der Bodenpool wird angehoben — hier liegt das Glas-Dock
+       24px darauf und braucht etwas Leuchtendes zum Brechen (ein Blur über
+       gleichförmigem Schwarz ergibt sichtbar nichts). Kegel, Vignette und
+       Tiefe kommen unverändert aus den :root-Tokens; früher wiederholte
+       diese Regel den ganzen Stapel wortgleich. */
+    .de-stage {
+        /* Der Pool sitzt dort, wo das Stück steht — durch die Saum-Reserve
+           (padding-bottom oben) ist das rund 13 % höher als die Bühnenkante.
+           Ohne diese Verschiebung läge das Licht unter der Registratur-Zeile
+           und der Boden zerfiele in zwei Ebenen. */
+        --stage-pool:
+            radial-gradient(64% 26% at 50% 80%, rgba(143, 150, 232, 0.34), rgba(143, 150, 232, 0) 70%),
+            radial-gradient(36% 14% at 50% 83%, rgba(126, 220, 46, 0.18), rgba(126, 220, 46, 0) 72%);
     }
-    /* Instrumenten-Rahmen: Mono-Eckwinkel auf der Bühne (die Registratur-
-       Sprache der Maschine — vier stille Passermarken). */
-    .de-preview-stage::after {
-        content: "";
-        position: absolute;
-        /* Unten grösser eingerückt: seit das Glas-Dock 24px über den
-           Bühnenboden greift, wurden die beiden unteren Passermarken auf
-           halber Höhe vom Panel abgeschnitten — der Rahmen umfasst jetzt die
-           SICHTBARE Bühne (24px Überlappung + 8px Luft). */
-        inset: var(--space-2) var(--space-2) calc(var(--space-7) + var(--space-2));
-        pointer-events: none;
-        opacity: 0.4;
-        background:
-            linear-gradient(var(--accent), var(--accent)) left top / 12px 1.5px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) left top / 1.5px 12px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) right top / 12px 1.5px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) right top / 1.5px 12px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) left bottom / 12px 1.5px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) left bottom / 1.5px 12px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) right bottom / 12px 1.5px no-repeat,
-            linear-gradient(var(--accent), var(--accent)) right bottom / 1.5px 12px no-repeat;
-    }
+    /* (Die vier Passermarken sind entfallen — Owner-Brief 2026-07-25: „zu
+       viele Linien". Sie waren ein vierter Kantensatz auf einer Bühne, die
+       schon Rahmen, eigenen Rand und Dock-Rand trug, und kreuzten real die
+       Chip-Reihe. Die Registratur-Sprache lebt weiter in der Mono-Typo des
+       Steppers und der Chips — sie braucht keine gezeichnete Ecke.) */
     /* Chips: EINE ruhige Zeile, seitlich wischbar, rechts ausfadend — als
        BÜHNEN-OVERLAY am unteren Rand (B1): die Spalte gehört ganz der Bühne,
        die Chips lesen sich als Registratur-Zeile ÜBER dem Bühnen-Boden.
@@ -3933,8 +4057,9 @@ html.is-touch .de-region-opt { min-height: 48px; }
         position: absolute;
         left: var(--space-2);
         right: var(--space-2);
-        /* Über der Dock-Überlappung (-24px) + Luft: die Chips gehören dem
-           Stück und dürfen nicht halb unters Glas rutschen. */
+        /* In der Saum-Reserve: 8px über der Dock-Überlappung (-24px), rund
+           24px unter dem Saum. Die Zeile hat jetzt eigenen Boden statt auf
+           dem Stück zu liegen. */
         bottom: var(--space-7);
         /* (Das Namensschild nach dem Generieren wird weiter unten aus
            demselben Grund angehoben.) */
@@ -3951,16 +4076,42 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-stage .de-preview-chips::-webkit-scrollbar { display: none; }
     .de-stage .de-preview-chip { flex: none; white-space: nowrap; }
     /* Masse-Zeile wird Bühnen-Overlay (oben rechts, unter niemandem). */
+    /* Die Masse-Zeile lag exakt auf der oberen Passermarke und lief bis an
+       den Bühnenrand — zwei Mono-Elemente auf derselben Zeile, die sich
+       kreuzten (Owner-iPhone 2026-07-25: „oben rechts wirkt zerstückelt").
+       Jetzt UNTER dem Markenband und mit echtem Rand: sie steht INNERHALB
+       des Registratur-Rahmens, nicht darauf. Breite begrenzt, damit die
+       lange Zeile nicht die halbe Bühne quert. */
+    /* Kopfzeile der Bühne: EIN Register, zwei Enden — links, was das ist
+       (STILVORSCHAU), rechts, was gerade gilt (auf deine Masse gezeichnet).
+       Die beiden standen vorher gestaffelt untereinander, jede mit eigener
+       Grösse und eigenem Tracking — das las sich als zwei zerstückelte
+       Ecken statt als eine Beschriftung. Ohne die Pillen (siehe Basisregel)
+       passen sie nebeneinander auf eine Grundlinie: 9.5px Mono links wie
+       rechts, gleiche Höhe, gleicher Rand. */
     .de-stage .de-body-caption {
         position: absolute;
-        top: var(--space-2);
-        right: var(--space-3);
+        top: var(--space-4);
+        right: var(--space-4);
+        max-width: 62%;
         margin: 0;
         z-index: 2;
+        /* 9px/0.06em: die Zeile MUSS in beiden Sprachen einzeilig neben die
+           Marke passen („Auf deine Masse gezeichnet" / „Drawn to your
+           measurements", je 26 Zeichen). Mit 9.5px/0.14em brauchte sie 183px
+           bei 184px Platz und brach real um — zwei Zeilen oben rechts sind
+           genau das „zerstückelt", das hier verschwinden soll. */
         font-size: 9px;
+        letter-spacing: 0.06em;
+        line-height: 1.35;
         text-align: right;
         pointer-events: none;
+        text-shadow: 0 1px 8px rgba(4, 4, 7, 0.92);
     }
+    /* Zweite Zeile derselben rechten Spalte: Status oben, Quittung darunter.
+       Beide teilten sich vorher top:16 und lagen bei jeder Bestätigung
+       übereinander. */
+    .de-stage .de-flash { top: calc(var(--space-4) + 15px); }
     /* Das GLAS-DOCK (B1+B5): Frage + Optionen + Aktionen als kompaktes
        Instrumenten-Panel am unteren Rand. flex:none + Cap bei 36% des
        Rahmens — die Bühne (flex:1) nimmt den Rest und steht damit bei
@@ -3985,19 +4136,23 @@ html.is-touch .de-region-opt { min-height: 48px; }
            damit die Ecke-Passermarken nicht durchstossen. */
         position: relative;
         z-index: 2;
-        /* -32px minus dem 8px-Flex-Gap = 24px echte Überlappung: genug, dass
-           der Lichtpool sichtbar UNTER dem Panel weiterläuft (16px lasen sich
-           nur als Kante, nicht als Glas). */
-        margin-top: calc(var(--space-7) * -1);
-        padding: var(--space-3) var(--space-3) var(--space-2);
+        /* Kein Flex-Gap mehr → -24px sind exakt die Überlappung, mit der der
+           Lichtpool unter dem Glas weiterläuft. */
+        margin-top: calc(var(--space-6) * -1);
+        /* Randlos bis an den Rahmen; unten trägt das Dock die Safe-Area
+           (früher sass sie am .de-stage-Padding, das jetzt 0 ist). */
+        padding: var(--space-4) var(--space-4) max(var(--space-3), env(safe-area-inset-bottom));
         background-color: var(--glass-bg);
         background-image: var(--grain);
-        border: 1px solid var(--glass-hairline);
-        border-radius: var(--radius);
+        /* KEIN Rahmen, KEIN Radius: die Fläche endet am Rahmen, und die
+           einzige Trennung zur Bühne ist die Lichtkante (::before). Eine
+           zweite Kontur hier war eine der Linien, die das Atelier
+           unaufgeräumt wirken liessen. */
+        border: 0;
+        border-radius: 0;
         box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.05),
             inset 0 -20px 30px -24px rgba(4, 4, 7, 0.9),
-            0 -18px 40px rgba(4, 4, 7, 0.55);
+            0 -20px 44px rgba(4, 4, 7, 0.5);
         backdrop-filter: var(--glass-blur);
         -webkit-backdrop-filter: var(--glass-blur);
     }
@@ -4008,12 +4163,14 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-ask-col::before {
         content: "";
         position: absolute;
-        left: 12%;
-        right: 12%;
+        /* Randlose Fläche → die Kante läuft bis an den Rahmen und fadet dort
+           aus: SIE ist jetzt die einzige Trennung zwischen den zwei Flächen
+           (statt drei konkurrierender Konturen). */
+        left: 0;
+        right: 0;
         top: -1px;
         height: 1px;
-        border-radius: 1px;
-        background: linear-gradient(90deg, transparent, var(--glass-edge) 22%, var(--glass-spec) 50%, var(--glass-edge) 78%, transparent);
+        background: linear-gradient(90deg, transparent, var(--glass-edge) 18%, var(--glass-spec) 50%, var(--glass-edge) 82%, transparent);
         pointer-events: none;
     }
     @supports not (backdrop-filter: blur(1px)) {
@@ -4029,7 +4186,10 @@ html.is-touch .de-region-opt { min-height: 48px; }
        Bewusst ohne Transition: der Wechsel geschieht unter dem
        Fragen-Swap, und reduced-motion bliebe ohnehin statisch. */
     .de-stage.is-dock-lift .de-ask-col { max-height: 58%; }
-    .de-stage.is-dock-lift .de-preview { opacity: 0.6; }
+    /* Die GANZE Bühnenspalte tritt zurück, nicht nur das Flat: sonst stünden
+       Marke, Masse-Zeile und Chips in voller Helligkeit über einem gedimmten
+       Stück — drei laute Beschriftungen ohne Motiv. */
+    .de-stage.is-dock-lift .de-preview-col { opacity: 0.6; }
     /* Der Kapitel-Stempel (dekorativ, aria-hidden) wandert als Overlay auf
        die Bühne: seine permanent reservierte Dock-Zeile war Blatt-Gold, und
        der Kino-Screen ist der natürliche Ort eines Kapitel-Titels. Unten
@@ -4096,8 +4256,29 @@ html.is-touch .de-region-opt { min-height: 48px; }
         background-repeat: no-repeat;
         display: flex;
         align-items: center;
-        gap: var(--space-4);
+        /* Der Gap muss mitschrumpfen dürfen: mit festen 16px passten die drei
+           deutschen Mono-Labels + die Fertig-Pille auf 390px nicht mehr in
+           eine Zeile — „NEU STARTEN" brach um und schob die Pille über den
+           Dock-Rand hinaus, wo sie abgeschnitten und halb untippbar war
+           (Owner-iPhone 2026-07-25). clamp gibt bis 8px nach. */
+        gap: clamp(var(--space-1), 2vw, var(--space-3));
+        /* Letzte Verteidigung: sollte es je wieder zu eng werden, wandert die
+           Pille in eine zweite Zeile statt aus dem Panel zu laufen. */
+        flex-wrap: wrap;
+        row-gap: var(--space-2);
     }
+    /* Die Fertig-Pille darf nie schrumpfen oder überlaufen — sie ist die
+       Zusage „du kannst jederzeit abschliessen" und muss ganz sichtbar und
+       ganz tippbar sein. */
+    .de-controls .de-finish { flex: 0 0 auto; }
+    /* Touch-Geräte gaben jedem Nav-Label 10px Seitenpolster (aus der
+       44px-Tap-Target-Regel). Real brauchte die Zeile damit 336px in einem
+       308px-Dock — DAS war der eigentliche Grund, warum „Fertig" auf dem
+       iPhone abgeschnitten war, während Headless (kein is-touch) sie
+       bequem unterbrachte. Seitenpolster runter auf 4px: die Ziele bleiben
+       ≥44px hoch (min-height unangetastet) und mit 46–85px Textbreite auch
+       horizontal weit über der 44px-Empfehlung. */
+    html.is-touch .de-controls .de-nav { padding-left: 4px; padding-right: 4px; }
     /* Die Navigation spricht Mono — dieselbe Maschinenstimme wie der Stepper
        darüber. Vorher waren es drei graue Fliesstext-Links, die wie
        Browser-Chrome aussahen; als Versal-Mono werden sie zur Instrumenten-
@@ -4105,19 +4286,28 @@ html.is-touch .de-region-opt { min-height: 48px; }
        ohne an Lesbarkeit zu verlieren). */
     .de-nav {
         font-family: var(--font-mono);
-        font-size: 10.5px;
-        letter-spacing: var(--tracking-wide);
+        /* 9.5px/0.04em statt 10.5px/0.08em: die drei deutschen Labels plus
+           die Fertig-Pille passen damit auf 360px+ in EINE Zeile. Vorher
+           brach „NEU STARTEN" mitten im Wort um und drückte die Pille aus
+           dem Dock. Nebeneffekt und erwünscht: engeres Tracking als der
+           Stepper darüber = klare Hierarchie (Phase laut, Aktionen leise). */
+        font-size: 9.5px;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
+        /* Nicht IM Wort umbrechen — die Zeile darf als Ganzes umbrechen. */
+        white-space: nowrap;
+        min-width: 0;
     }
-    /* „Fertig" bleibt die einzige farbige Nebenaktion — als kompakte Pille im
-       Mono-Register, damit sie neben der Gradient-Confirm nicht konkurriert. */
+    /* „Fertig" trägt im Cockpit die Mono-Stimme ihrer Nachbarn in der Zeile
+       (Ton und Form kommen aus der Basisregel: grün, ohne Pille). Tap-Ziel
+       bleibt über die min-height der .de-nav erhalten. */
     .de-finish {
         font-family: var(--font-mono);
         font-size: 10.5px;
-        letter-spacing: var(--tracking-wide);
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        font-weight: 500;
-        padding: 7px var(--space-4);
+        white-space: nowrap;
+        padding: 7px var(--space-2);
     }
     /* Dock-Kopf (B1): die Frage wird zur stillen Zeile im Panel — das laute
        Display-Register gehört der Bühne. ABER leise heisst nicht grau: mit
@@ -4205,6 +4395,10 @@ html.is-touch .de-region-opt { min-height: 48px; }
         scroll-snap-align: start;
         scroll-margin-inline: var(--space-2);
     }
+    /* (Die Kanten-Diät der Wahl-Flächen — Bild IST die Karte, Ring statt
+       zweitem Rahmen, Grün = deine Wahl — steht bewusst in den BASISREGELN
+       weiter oben: sie ist Designsprache, keine Platzsparmassnahme, und darf
+       auf dem Desktop nicht anders sprechen als im Cockpit.) */
     /* Farb-Atelier kompakt: die Hinweiszeile spricht nur, wenn sie etwas
        sagt (min-height 0), flachere Stoff-Felder — die Rail + das live
        gefärbte Flat auf der Bühne tragen den Colorway-Moment. */
@@ -4226,10 +4420,15 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-stage[data-de-mod="thisOrThat"] .de-body { display: flex; flex-direction: column; }
     .de-stage[data-de-mod="thisOrThat"] .de-question { flex: none; }
     .de-stage[data-de-mod="thisOrThat"] .de-tot { flex: 1; min-height: 0; grid-auto-rows: 1fr; }
-    .de-rank { gap: var(--space-2); }
-    .de-rank-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+    /* Die Zeilenhöhe trägt der 36px-Pfeilknopf; das zusätzliche Polster kostete
+       real 32px und war genau der Betrag, um den die Rangliste auf Touch unter
+       die Bestätigung lief (gemessen: 28px Überhang, headless ohne Touch nur
+       12px — deshalb fiel es vorher nicht auf). Die Haarlinie trennt jetzt,
+       nicht der Abstand. */
+    .de-rank { gap: 0; }
+    .de-rank-item { padding: 0; gap: var(--space-2); }
     .de-rank-label { font-size: var(--text-sm); }
-    .de-rank-num { width: 22px; height: 22px; font-size: 11px; }
+    .de-rank-num { width: 18px; height: auto; font-size: 11px; }
     /* padding 12px vertikal bleibt: Daumenziel-Höhe der Aktionsleiste geht vor
        Raster-Purismus (Touch-Target ≥ 44px mit Text). */
     .de-body > .de-confirm,
@@ -4263,10 +4462,16 @@ html.is-touch .de-region-opt { min-height: 48px; }
        fixe Navbar. Ohne Bühne kein Glas-Aufliegen, also auch kein Zug. */
     .de-stage[data-de-mod="regions"] .de-ask-col { flex: 1 1 auto; max-height: none; margin-top: 0; }
     .de-stage[data-de-mod="regions"] .de-ask-col::before { display: none; }
+    /* Im Cockpit IST das Brett die Bühne (die Bühnenspalte ist ausgeblendet)
+       — also trägt es auch deren Sprache: Fläche und Licht, kein gezeichneter
+       Rand. Mit Rand war es die dritte Kastenebene im Blatt. */
+    .de-stage .de-regions-stage { border-color: transparent; }
     /* Der Mikro-Picker wird im Cockpit eine volle Blatt-Karte: die Anker-
        Klemmen (min-width 208px in einem 340px-Board) ragten links real aus
        dem Rahmen. Vertikal bleibt er am getippten Punkt (Inline-top/bottom). */
     .de-region-picker { left: 0 !important; right: 0 !important; min-width: 0; max-width: none; }
+    /* (Die Haarlinien-Zeilen des Mikro-Pickers stehen ebenfalls in den
+       Basisregeln — gleiche Sprache auf jeder Breite.) */
     /* Describe/Refine — kompakte, FESTE Bühne (kein flex-Wachsen), das Dock
        öffnet sich auf den Rest: Eingabe bzw. Richtungs-Kacheln brauchen Raum. */
     .de-stage[data-de-mod="describe"] .de-preview-col,
@@ -4275,6 +4480,18 @@ html.is-touch .de-region-opt { min-height: 48px; }
     .de-stage[data-de-mod="refine"] .de-preview-stage { flex: none; display: block; }
     .de-stage[data-de-mod="describe"] .de-preview { flex: none; height: calc(var(--svh, 1svh) * 22); min-height: 140px; }
     .de-stage[data-de-mod="refine"] .de-preview { flex: none; height: calc(var(--svh, 1svh) * 24); min-height: 150px; }
+    /* Auf der KURZEN Bühne treten die Metadaten ab. Bei ~150px Höhe füllt das
+       Stück den Rahmen vollständig — Masse-Zeile und Chips lagen dann
+       zwangsläufig quer darüber (Owner-iPhone 2026-07-25, Refine-Screen).
+       Inhaltlich verlieren wir nichts: im Refine spricht der getippte Satz
+       dieselben Werte aus, im Describe existieren sie noch gar nicht.
+       Die Saum-Reserve entfällt mit ihnen — ohne Zeile kein Boden nötig. */
+    .de-stage[data-de-mod="describe"] .de-preview-chips,
+    .de-stage[data-de-mod="refine"] .de-preview-chips,
+    .de-stage[data-de-mod="describe"] .de-body-caption,
+    .de-stage[data-de-mod="refine"] .de-body-caption { display: none; }
+    .de-stage[data-de-mod="describe"] .de-preview,
+    .de-stage[data-de-mod="refine"] .de-preview { padding-bottom: 0; }
     .de-stage[data-de-mod="describe"] .de-ask-col,
     .de-stage[data-de-mod="refine"] .de-ask-col { flex: 1 1 auto; max-height: none; }
     /* Foto-Duell im Dock: die zwei Panels stehen nebeneinander (das Duell
@@ -4312,8 +4529,34 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-preview-photo { isolation: isolate; }
 .de-preview-photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1) contrast(1.08) brightness(0.96); }
 .de-preview-duo { position: absolute; inset: 0; mix-blend-mode: color; opacity: 0.9; transition: background .24s var(--ease-out); }
-.de-preview-badge { position: absolute; top: var(--space-4); left: var(--space-4); z-index: 2; font-size: var(--text-xs); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); background: rgba(11, 11, 13,0.55); backdrop-filter: blur(8px); padding: 4px var(--space-3); border-radius: 999px; }
-.de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
+/* Bühnen-Metadaten sprechen, ohne zu kästeln (Owner-Brief 2026-07-25: „zu
+   viele Linien, zu viele Kästen"). Marke und Chips waren Pillen mit Rand,
+   Fläche und Blur — vier bis sechs zusätzliche Kanten auf einer Bühne, deren
+   einzige Aufgabe das Stück ist. Jetzt reine Mono-Beschriftung wie auf einem
+   Sucher/Messgerät: die Lesbarkeit über hellem Grund trägt ein harter
+   Schlagschatten statt einer Fläche — das kostet keine Kante. */
+.de-preview-badge {
+    position: absolute;
+    top: var(--space-4);
+    left: var(--space-4);
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    /* gleiche Zeilenhöhe wie die Masse-Zeile: im Cockpit stehen beide auf
+       EINER Grundlinie (siehe Cockpit-Block) und dürfen dort nicht um zwei
+       Pixel versetzt sitzen. */
+    line-height: 1.35;
+    text-shadow: 0 1px 8px rgba(4, 4, 7, 0.92);
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+    border-radius: 0;
+}
+.de-preview-chips { display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: center; margin-top: var(--space-3); }
 /* U2 „Auf deine Masse gezeichnet" — leise Mono-Zeile unter den Chips, sobald
    bodyFactors das Flat personalisiert. */
 .de-body-caption {
@@ -4326,10 +4569,26 @@ html.is-touch .de-region-opt { min-height: 48px; }
     color: var(--accent-2);
 }
 .de-body-caption[hidden] { display: none; }
-.de-preview-chip { font-size: var(--text-xs); color: var(--text-dim); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 3px var(--space-3); }
+/* Chips = Registratur-Zeile, keine Pillen: „LABEL Wert", zwei Tonstufen, vom
+   Nachbarn durch Raum getrennt statt durch einen Rand. Der Wert trägt die
+   volle Textfarbe, das Label die gedimmte — die Hierarchie kommt aus Farbe
+   und Grösse, nicht aus einer gezeichneten Kapsel. */
+.de-preview-chip {
+    display: inline-flex;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    text-shadow: 0 1px 8px rgba(4, 4, 7, 0.92);
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+}
 /* Dimensions-Mikrolabel im Chip (Maschinen-Stimme): unterscheidet gleichlautende
    Werte ("FIT Regular · LÄNGE Regular") statt zwei identischer Pillen. */
-.de-chip-dim { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; margin-right: 6px; } /* 0.8: bleibt über 4.5:1 AA-Kontrast auf --bg-elevated */
+.de-chip-dim { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-right: 6px; }
 
 /* Fragen-Choreografie (Roadmap §6): die alte Frage sinkt weg (150ms, JS-getaktet),
    die neue staffelt ihre Kinder herein (≤250ms). Nur html.fx; reduced-motion und
@@ -5243,11 +5502,14 @@ html.sphere-lock, html.sphere-lock body { overflow: hidden; }
 .de-concept-pick:hover { border-color: var(--accent); transform: translateY(-2px); }
 /* f05 · Gewählte Karte = Teal-Glas (Reel-Motiv Glas-Gradient-Karte): satte
    Gradient-Fläche + Top-Highlight wie eine beleuchtete Glaskante. */
-.de-concept.is-selected .de-concept-pick { border-color: var(--accent-3, #7edc2e);
+/* EINE Kante, nicht zwei: Rand + Ring ergaben zusammen einen 2px-Balken, der
+   auf 136px-Karten im Cockpit als grüner Kasten las statt als Markierung.
+   Die gewählte Karte erkennt man am Glas und am Ring — der Rand tritt ab. */
+.de-concept.is-selected .de-concept-pick { border-color: transparent;
   background:
     linear-gradient(165deg, rgba(143, 150, 232,.30), rgba(20, 184, 133,.16) 52%, rgba(11, 11, 13,.55)),
     radial-gradient(120% 90% at 50% 22%, #1b1e33, var(--bg, #0b0b0d) 82%);
-  box-shadow: inset 0 1px 0 rgba(241, 242, 248,.22), 0 0 0 1px var(--accent-3, #7edc2e), 0 10px 28px rgba(0,0,0,.4); }
+  box-shadow: inset 0 1px 0 rgba(241, 242, 248,.22), 0 0 0 1.5px var(--accent-3, #7edc2e), 0 10px 28px rgba(0,0,0,.4); }
 /* f05 · Chromatischer KI-Sparkle am Eck der gewählten Karte (vierzackiger Stern
    per clip-path). Bewusst NICHT im Evolve-Button: das DE-Label
    „Weiterentwickeln" lässt auf 120px-Karten keinen Platz für ein Icon. */
