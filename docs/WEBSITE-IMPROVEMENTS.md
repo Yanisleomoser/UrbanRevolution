@@ -617,6 +617,24 @@ Re-checked directly against `main` @ `00d8b2b`:
 > exactly as #383 already tracks — nothing new to add there. No `fix/*` PR
 > was needed since nothing was actually broken.
 
+> **Status update (2026-07-26, triggered by #469's `pull_request.closed`
+> webhook):** re-checked against `main` @ `82dcc3e` (#469's merge commit).
+> - **Two concurrent scheduled-review sessions had raced off the same base**
+>   (`3a7a12a`) — #468 ("close stale-duplicate #456") and #469 ("#457
+>   merged, #456 closed, live-site audit") both opened from the same commit
+>   with overlapping content. #469 landed first (it's the merge above), so
+>   **closed #468 as a stale duplicate** (explanatory comment posted
+>   linking to #469) rather than merging a diff that re-did the #456
+>   closure and was already stale on the #457 point — #468 still listed
+>   "merge #457" as an open recommendation, no longer accurate once #457
+>   landed via #469.
+> - **#461 and #464 unchanged** — both still gated on a human call
+>   (real-iPhone check for #461's scroll-snap/smooth-scroll; the
+>   17-vs-16-screen product decision for #464), no new commits on either
+>   since the last sync.
+> - **Same-day-doesn't-recount convention applies** — thirteen consecutive
+>   reviews (07-12 → 07-26) stands unchanged.
+
 > **Status update (2026-07-26, triggered by the `pull_request.closed`
 > webhook for #465):** re-checked against `main` @ `1fc4dd8`. One commit
 > landed since the sync above — **#466** ("patch brace-expansion
