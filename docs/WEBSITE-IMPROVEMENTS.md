@@ -681,6 +681,99 @@ Re-checked directly against `main` @ `00d8b2b`:
 > - **#461 and #464 unchanged** — both still gated on a human call this
 >   session can't make for them.
 
+> **Status update (2026-07-26, triggered by #461's `pull_request.closed`
+> webhook):** re-checked against `main` @ `415ad05` (#461's merge commit).
+> - **#461 merged** ("#machine mobile — card-snap rail under the drawing"),
+>   squash-merged by the repo owner directly, not from inside a docs-review
+>   session — the real-iPhone check this doc's merge-gate policy called for
+>   was exactly the human call no engineering session could make for it, and
+>   the owner made it. Drops off the "gated on a human call" line repeated
+>   across the last several entries.
+> - **#464 unchanged** — now the only open PR, still gated on the
+>   17-vs-16-screen product decision flagged in its own body; no new commits
+>   since the last sync.
+> - **No other open-PR or ranked-table action items.** Same-day-doesn't-
+>   recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
+>   stands unchanged.
+
+> **Status update (2026-07-26, scheduled live-site audit, re-run same day):**
+> re-verified `revolveurban.com` against production `main` @ `4dbd38e`
+> (confirmed live via Vercel: `dpl_4J3E1BJXqhB9zmeaGzE9Pk6VsFwz`, target
+> `production`, `state: READY`) — the only diff since the prior same-day
+> audit above is a CSS `?v=` cache-bust bump, no new links/assets/markup.
+> Independently re-crawled with a real headless-Chromium session (not just
+> `curl`) and per-section screenshots at 1440×900:
+> - **All internal anchors** (`#main-content`, `#top`, `#community`,
+>   `#design`, `#machine`, `#facts`, `#measure`, `#production`) resolve to an
+>   existing element. **Footer/legal links** (`impressum.html`,
+>   `datenschutz.html`, GitHub repo, GitHub `CREDITS.md`) all return HTTP 200,
+>   no redirect chains.
+> - **UNEP source link**: a bare `fetch`/`curl` gets 403, but a real browser
+>   (realistic UA, full page load) gets a clean 200 with the correct page
+>   title ("Putting the brakes on fast fashion") — confirmed Cloudflare
+>   bot-challenge on the non-browser request path, not a dead link. No change
+>   needed.
+> - **Instagram link** (`instagram.com/revolveeurban`, both the footer icon
+>   and JSON-LD `sameAs`): even a full headless-Chromium session with a
+>   realistic UA gets HTTP 429 → redirected to `/accounts/login/`. This is
+>   Instagram's own anti-scraping gate on unauthenticated/datacenter-IP
+>   traffic, reproduces identically outside any site code path, and is not
+>   something `revolveurban.com` can fix — noted for the record, not a repo
+>   action item.
+> - **Images**: hero (`tblob-cool.webp` / `tblob-thermal.webp`, both 200),
+>   `#facts` (canvas-driven, no `<img>` — visually confirmed rendering via
+>   screenshot), community-sphere gallery cards (visually confirmed
+>   rendering — real photos on stage cards inside the WebGL globe), and
+>   preset photos (`assets/presets/{f,m}-{1,2,3}.jpg`, all 200) all load
+>   clean. Zero `>=400` responses and zero `requestfailed` events across the
+>   full scroll (hero → facts → machine → community). Zero `pageerror`/
+>   console errors.
+> - **Story AVIF files** (`assets/story/act{1-4}[-sm].avif`): **not
+>   referenced anywhere** in current `index.html`/`css/styles.css`/`js/**` —
+>   confirmed via repo-wide search, zero hits. These are orphaned assets kept
+>   only because `footer.credits` still links to `CREDITS.md` (which itself
+>   returns 200); the actual Act I–IV photos were intentionally removed from
+>   the hero per this doc's own architecture notes (the former photo-pair +
+>   `initWeave` beat). Nothing to check because nothing on the live page
+>   renders them — not a broken-asset finding, just worth flagging in case
+>   the AVIF files are expected to still be live somewhere.
+> - **Instagram loop** (`sameAs` + footer icon): confirmed live and rendering
+>   in the footer screenshot — unchanged from #414, still not an open item.
+> - **Credibility block**: confirmed still absent (searched for any
+>   "who's behind this" / about / team surface — none exists). Exactly the
+>   open half of **#383**, unchanged — a product/copy decision, not
+>   something to build speculatively (needs a real handle for what's
+>   actually true pre-launch: no team bios, no company history yet). Not
+>   implemented, per standing instruction to flag rather than build
+>   undecided product surfaces.
+> - No `fix/*` PR opened — nothing was actually broken.
+
+> **Correction (2026-07-26, third scheduled live-site audit, same day as the
+> above):** independently re-ran the same links/assets/open-items audit
+> against `main` @ `6910a69` (curl-based: this session's headless Chromium
+> couldn't complete a browser navigation through the sandbox's egress proxy
+> at all — confirmed via a raw `net`/`tls` socket that the proxy itself works,
+> so it's this session's tooling, not the site). All link/anchor/asset/
+> open-items findings independently matched the audit directly above —
+> **except one: the "Story AVIF files ... not referenced anywhere ... orphaned"
+> claim two entries up is wrong.** `gallery/gallery.js` (the standalone
+> `/gallery/` page, wired in via `<script type="module" src="gallery.js">` in
+> `gallery/index.html:85`) actively references `assets/story/act1.jpg`
+> through `act4.jpg` in its `SOURCES` array, feature-tests AVIF support once
+> per session (`checkAvifSupport`), and serves the AVIF/`-sm` variants via
+> `bestSrc()`/`isStoryPath()`/`toAvif()`/`toSmJpg()` — these 4 sources (of 16)
+> generate 12 of the standalone gallery's 36 cards ("Act I–IV" editorial
+> tiles). The prior entry's repo-wide search evidently covered `index.html`/
+> `css/styles.css`/root `js/**` (where the *hero* photo pair lived before
+> #430 removed it) but missed `gallery/` — a separate ES-module page
+> `CLAUDE.md`'s own architecture section calls out as one of only two ES-module
+> exceptions in the codebase, easy to miss with a root-scoped search. All 16
+> Story AVIF/JPEG variants (confirmed 200, correct `content-type`, real byte
+> sizes via direct fetch) are live, in-use assets on `/gallery/`, not orphans
+> — nothing to clean up, and nothing to flag as "expected to still be live
+> somewhere," per the prior entry's own hedge. No other correction needed;
+> no `fix/*` PR opened — nothing was actually broken.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
