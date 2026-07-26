@@ -594,6 +594,24 @@ Re-checked directly against `main` @ `00d8b2b`:
 > - **Same-day-doesn't-recount convention applies** — the twelve-review
 >   count below is unchanged.
 
+> **Status update (2026-07-26, triggered by the `pull_request.closed`
+> webhook for #467):** re-checked against `main` @ `47f5bd1`. `main` hasn't
+> moved since the sync above — #467 (the previous scheduled-review pass
+> itself) is the tip. **Acted on this doc's own standing recommendation
+> instead of restating it a fourth time: closed #456.** Its diff
+> (`brace-expansion@5.0.7` → `5.0.8`) was independently re-verified as a
+> genuine no-op against current `main` (`git show origin/main:package-lock.json`
+> already shows `5.0.8`, landed via #466) — flagged as a stale duplicate
+> across three consecutive passes (#463, #465, #467) with no engineering
+> reason left to keep it open, so this pass closed it directly with an
+> explanatory comment rather than deferring the action again.
+> - **#457, #461, #464 unchanged** — same `updated_at` as the last sync, no
+>   new commits on any of the three; their standing recommendations (merge
+>   #457 now, real-iPhone check for #461, product decision for #464) still
+>   apply.
+> - **Same-day-doesn't-recount convention applies** — the twelve-review
+>   count below is unchanged.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
