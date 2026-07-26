@@ -294,3 +294,45 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     Screen, der wirklich eine Bestätigung trägt (die erste Fassung war mit
     „0 von höchstens 1" vakuum grün). Alle neuen Checks negativ getestet:
     Defekt wieder eingebaut → Guard schlägt an.
+- 2026-07-26 (Owner-Runde 3): **Der Fortschrittsregler wirkte „gimmicky und
+  unprofessionell"** — und das war richtig gesehen: fünf Punkte + vier
+  Verlaufsbalken + fünf Labels ergaben vierzehn Objekte in einem 20px-Streifen,
+  optisch ein Skill-Tree. Der Owner schlug eine „Power-up-Bar" vor und liess
+  ausdrücklich Alternativen zu.
+  - **Vier Entwürfe wurden IM echten Dock gerendert und verglichen** (nicht am
+    Schreibtisch entschieden): (a) eine Zeile aus aktuellem Kapitel + voller
+    Schiene, (b) Kapitel-Index mit kurzem Unterstrich, (c) reine Typografie
+    („03/05 STOFF"), (d) Kapitel-Index über voller Schiene. Gewonnen hat (d):
+    (a) verliert die Orientierung und die satte Schiene wirkte selbst wie ein
+    Ladebalken, (b) endete die Linie willkürlich mitten im Streifen, (c)
+    gamifiziert über die Bruchzahl und nimmt der Reise den Bogen.
+  - **Umgesetzt:** die fünf Kapitel als Zeile, darunter EINE Haarlinie, die bis
+    zum aktuellen Kapitel leuchtet. Raster mit fünf gleichen Spalten, damit der
+    Füllstand exakt auf einer Kapitel-Kante endet statt irgendwo dazwischen;
+    aussen bündig, innen zentriert.
+  - **Der Füllstand hängt am PHASEN-BUCHSTABEN (`is-at-a` … `is-at-e`), nie an
+    einer Zahl.** Die Reise ist adaptiv — eine Prozentangabe wäre ein
+    Versprechen, das sie nicht halten kann. Der bestehende Test „stepper carries
+    NO number" bleibt damit wörtlich gültig.
+  - **Fortschritt spricht TEAL, nicht Grün.** Am Render standen sonst zwei
+    grüne Unterstriche übereinander — der Fortschritt und der aktive
+    Uni/Verlauf-Tab — und behaupteten dasselbe. Grün heisst im Studio „deine
+    Wahl"; Fortschritt ist keine Wahl, sondern die Lesung der Maschine (der
+    kühle mittlere Arm der Palette). Fünf Tonwerte wurden dafür am echten Dock
+    verglichen.
+  - **Der Kapitelwechsel-Beat wurde gebaut und wieder verworfen.** Ein
+    Lichtstoss (`box-shadow`-Glühen) auf der Schiene sah in der Frame-Serie aus
+    wie grüner Nebel über der Kante, nicht wie Präzision. Der Wechsel spricht
+    jetzt doppelt und ohne Ornament: die Schiene WÄCHST (gemessene Kurve
+    20 → 23.9 → 33.7 → 36.9 → 39.1 → 39.9 → 40 % über ~480 ms) und der
+    Kapitel-Flash sagt das neue Wort auf der Bühne. Damit ist auch die
+    `is-crossed`-Klasse ersatzlos entfallen.
+  - **Damit die Schiene wachsen KANN**, baut `updateStepper` den Streifen nicht
+    mehr bei jeder Frage neu: ein ersetztes `innerHTML` startet jedes Mal auf
+    der Endbreite, die Transition liefe nie. Neu gebaut wird nur, wenn sich die
+    Beschriftungen ändern (Sprachwechsel, erster Aufbau); sonst wandern nur die
+    Zustandsklassen.
+  - **Nebeneffekt:** mit den vier Verlaufsbalken verschwindet der letzte
+    Marken-Verlauf ausserhalb der Bestätigung. Der Guard zählt jetzt ALLE
+    sichtbaren Flächen statt nur Bedienelemente — die frühere Einschränkung war
+    eine Ausrede für genau diese Balken.

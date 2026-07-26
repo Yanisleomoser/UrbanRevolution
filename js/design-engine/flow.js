@@ -456,15 +456,24 @@ const DesignFlow = (() => {
     { p: "D", key: "engine.phase_color" },
     { p: "E", key: "engine.phase_details" },
   ];
+  // Kapitel-Index statt Fortschrittskette (Owner-Brief 2026-07-26: die Punkte
+  // mit den Verlaufs-Segmenten wirkten „gimmicky und unprofessionell"). Die
+  // Beats stehen als Zeile, darunter EINE Haarlinien-Schiene, die bis zum
+  // aktuellen Kapitel mitleuchtet — die Orientierung bleibt, das Ornament
+  // (fünf Punkte + vier Verlaufsbalken) fällt weg.
+  // Der Füllstand hängt am PHASEN-BUCHSTABEN, nicht an einer Zahl: die Reise
+  // ist adaptiv, eine Prozentangabe wäre ein Versprechen, das sie nicht halten
+  // kann. `is-at-c` heisst „wir sind im dritten von fünf Kapiteln" — dieselbe
+  // Aussage, die vorher drei grüne Punkte machten.
   function phaseStepper(currentPhase, label) {
     const ci = Math.max(0, PHASE_ORDER.indexOf(String(currentPhase || "A").toUpperCase()));
-    return PHASE_BEATS.map((b, i) => {
+    const steps = PHASE_BEATS.map((b) => {
       const oi = PHASE_ORDER.indexOf(b.p);
       const state = oi < ci ? "done" : oi === ci ? "cur" : "todo";
-      const bar = i < PHASE_BEATS.length - 1
-        ? `<span class="de-step-bar${oi < ci ? " is-done" : ""}"></span>` : "";
-      return `<span class="de-step is-${state}"><span class="de-step-dot"></span>${label(b.key)}</span>${bar}`;
+      return `<span class="de-step is-${state}">${label(b.key)}</span>`;
     }).join("");
+    const at = PHASE_ORDER[Math.min(ci, PHASE_BEATS.length - 1)].toLowerCase();
+    return `${steps}<span class="de-step-rail"><i class="de-step-fill is-at-${at}"></i></span>`;
   }
 
   // The preview chip shows the WORD THE USER TAPPED, not a second vocabulary:
@@ -785,9 +794,10 @@ const DesignFlow = (() => {
       phaseFlashEl.classList.remove("is-on");
       void phaseFlashEl.offsetWidth;
       phaseFlashEl.classList.add("is-on");
-      stepperEl.classList.remove("is-crossed");
-      void stepperEl.offsetWidth;
-      stepperEl.classList.add("is-crossed");
+      // (Die frühere `is-crossed`-Klasse ist entfallen: der Punkt-Puls, den sie
+      // trieb, existiert nicht mehr, und sein Schienen-Ersatz wurde am Frame
+      // verworfen. Der Wechsel spricht jetzt durch die wachsende Schiene und
+      // diesen Flash — kein drittes Signal.)
       clearTimeout(phaseFlashTimer);
       phaseFlashTimer = setTimeout(() => { phaseFlashEl.classList.remove("is-on"); phaseFlashEl.textContent = ""; }, 950);
     }
@@ -907,7 +917,24 @@ const DesignFlow = (() => {
       // "Details" would announce the wrong word right as the user arrives at
       // the refine screen (same trap phaseFlash's comment calls out above).
       const label = shown === "F" ? t("engine.refine_title") : t(beat.key);
-      stepperEl.innerHTML = phaseStepper(shown, (k) => t(k));
+      // Die Schiene soll WACHSEN, nicht neu erscheinen — ein ersetztes
+      // innerHTML startet jedes Mal auf der Endbreite und die Transition
+      // liefe nie. Nur wenn sich die Beschriftungen wirklich ändern
+      // (Sprachwechsel, erster Aufbau) wird neu gebaut; sonst wandern nur
+      // die Zustandsklassen.
+      const sig = PHASE_BEATS.map((b) => t(b.key)).join("|");
+      if (stepperEl.dataset.beats !== sig) {
+        stepperEl.innerHTML = phaseStepper(shown, (k) => t(k));
+        stepperEl.dataset.beats = sig;
+      } else {
+        const steps = stepperEl.querySelectorAll(".de-step");
+        PHASE_BEATS.forEach((b, i) => {
+          const oi = PHASE_ORDER.indexOf(b.p);
+          if (steps[i]) steps[i].className = "de-step is-" + (oi < ci ? "done" : oi === ci ? "cur" : "todo");
+        });
+        const fill = stepperEl.querySelector(".de-step-fill");
+        if (fill) fill.className = "de-step-fill is-at-" + PHASE_ORDER[Math.min(ci, PHASE_BEATS.length - 1)].toLowerCase();
+      }
       stepperEl.setAttribute("aria-label", t("engine.phase_aria") + ": " + label);
     }
     function refreshChrome() {

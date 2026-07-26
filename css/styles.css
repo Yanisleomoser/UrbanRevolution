@@ -3763,20 +3763,41 @@ html.is-touch .de-region-opt { min-height: 48px; }
    earlier ones marked done. NO 0–100% gauge / closing ring: the journey is
    adaptive and always-viable, so it only shows WHERE you are; readiness lives
    on the "Fertig" button. Mono = the "machine voice" register. */
-.de-stepper { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin: 0; }
-.de-step { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--text-dim); white-space: nowrap; opacity: 0.5; transition: opacity .3s var(--ease-out), color .3s var(--ease-out); }
-.de-step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; transition: box-shadow .3s var(--ease-out); }
-.de-step.is-done { opacity: 0.85; color: var(--accent-3); }
+/* Kapitel-Index (Owner-Brief 2026-07-26). Vorher: fünf Punkte + vier
+   Verlaufsbalken + fünf Labels — vierzehn Objekte in einem 20px-Streifen, die
+   zusammen wie ein Skill-Tree aussahen. Jetzt: die fünf Kapitel als Zeile,
+   darunter EINE Haarlinie, die bis zum aktuellen Kapitel leuchtet.
+   Raster statt flex, weil der Füllstand dann exakt auf einer Spaltenkante
+   endet — die Linie hört genau unter dem Kapitel auf, in dem man steht.
+   Aussen bündig, innen zentriert: der Streifen spannt die volle Dockbreite,
+   ohne dass die Randwörter eingerückt wirken. */
+.de-stepper { display: grid; grid-template-columns: repeat(5, 1fr); align-items: baseline; row-gap: 7px; margin: 0; }
+.de-step { grid-row: 1; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); white-space: nowrap; text-align: center; opacity: 0.38; transition: opacity .3s var(--ease-out), color .3s var(--ease-out); }
+.de-step:first-child { text-align: left; }
+.de-step:last-child { text-align: right; }
+.de-step.is-done { opacity: 0.7; }
 .de-step.is-cur { opacity: 1; color: var(--text); }
-.de-step.is-cur .de-step-dot { background: var(--accent-3); box-shadow: 0 0 0 4px rgba(126, 220, 46, 0.18); }
 .de-step.is-todo { opacity: 0.38; }
-.de-step-bar { flex: 1; min-width: 10px; max-width: 34px; height: 2px; border-radius: 2px; background: var(--border); }
-.de-step-bar.is-done { background: var(--gradient); }
-@media (prefers-reduced-motion: reduce) { .de-step, .de-step-dot { transition: none; } }
+.de-step-rail { grid-row: 2; grid-column: 1 / -1; position: relative; height: 1px; background: var(--glass-hairline); }
+/* Der Füllstand kommt aus dem Phasen-Buchstaben, nicht aus einer Prozentzahl:
+   die Reise ist adaptiv, „60 % geschafft" wäre ein Versprechen, das sie nicht
+   halten kann. Fünf Kapitel, fünf Rasterspalten — die Kante stimmt exakt.
+   TEAL, nicht Grün: Grün heisst im Studio „deine Wahl" (Auswahl-Ring, aktiver
+   Tab, Rang-Ziffer). Am Render standen dann zwei grüne Unterstriche
+   übereinander — der Fortschritt und der aktive Uni/Verlauf-Tab — und beide
+   behaupteten dasselbe. Fortschritt ist keine Wahl, sondern die Lesung der
+   Maschine: der kühle mittlere Arm der Palette. */
+.de-step-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent-2); transition: width .5s var(--ease-out); }
+.de-step-fill.is-at-a { width: 20%; }
+.de-step-fill.is-at-b { width: 40%; }
+.de-step-fill.is-at-c { width: 60%; }
+.de-step-fill.is-at-d { width: 80%; }
+.de-step-fill.is-at-e { width: 100%; }
+@media (prefers-reduced-motion: reduce) { .de-step, .de-step-fill { transition: none; } }
 @media (max-width: 560px) {
-    .de-stepper { gap: 4px; }
-    .de-step { font-size: 9px; gap: 4px; }
-    .de-step-bar { min-width: 6px; max-width: 16px; }
+    /* Auf iPhone-Breite stehen fünf deutsche Kapitel in 340px: engeres
+       Tracking hält sie einzeilig, ohne dass „DETAILS" an den Rand stösst. */
+    .de-step { font-size: 8.5px; letter-spacing: 0.06em; }
 }
 
 /* Vorschau dominant. Höhen in svh + JS-gepinntem --svh (wie Hero/Story), damit
@@ -4666,17 +4687,18 @@ html.fx .de-phase-flash.is-on { animation: dePhaseFlash 0.95s var(--ease-out) bo
   70% { opacity: 1; letter-spacing: 0.24em; }
   100% { opacity: 0; letter-spacing: 0.3em; }
 }
-html.fx .de-stepper.is-crossed .de-step.is-cur .de-step-dot { animation: deDotPulse 0.6s var(--ease-out); }
-@keyframes deDotPulse {
-  0% { box-shadow: 0 0 0 4px rgba(126, 220, 46, 0.18); }
-  45% { box-shadow: 0 0 0 9px rgba(126, 220, 46, 0.28); }
-  100% { box-shadow: 0 0 0 4px rgba(126, 220, 46, 0.18); }
-}
+/* Kapitelwechsel: KEIN eigenes Ornament mehr. Der frühere Punkt-Puls ist mit
+   dem Punkt entfallen; ein Ersatz-Lichtstoss auf der Schiene wurde gebaut,
+   am Frame angeschaut und wieder verworfen — ein box-shadow-Glühen auf einer
+   1px-Linie liest sich als grüner Nebel über der Kante, nicht als Präzision.
+   Der Beat trägt sich doppelt von selbst: die Schiene WÄCHST (width-Transition
+   oben) und der Kapitel-Flash spricht das neue Wort auf der Bühne aus. */
 @media (prefers-reduced-motion: reduce) {
   html.fx .de-body.is-leaving { animation: none; }
   html.fx .de-body.is-entering > * { animation: none; }
   html.fx .de-phase-flash.is-on { animation: none; opacity: 0; }
-  html.fx .de-stepper.is-crossed .de-step.is-cur .de-step-dot { animation: none; }
+  /* (Der Stepper hat keine Kapitelwechsel-Animation mehr — die width-Transition
+     der Schiene ist oben bereits per prefers-reduced-motion abgeschaltet.) */
 }
 
 /* Gedockte Mini-Vorschau (Mobile): hält den "wählen → sehen"-Loop am Leben,
