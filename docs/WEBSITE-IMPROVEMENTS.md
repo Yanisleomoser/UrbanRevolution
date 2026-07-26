@@ -774,6 +774,27 @@ Re-checked directly against `main` @ `00d8b2b`:
 > somewhere," per the prior entry's own hedge. No other correction needed;
 > no `fix/*` PR opened — nothing was actually broken.
 
+> **Status update (2026-07-26, triggered by #474's `pull_request.closed`
+> webhook):** re-checked against `main` @ `526c562f` (#474's own merge
+> commit, confirmed live in production via Vercel:
+> `dpl_592Ai96f3HCnMZV7jFhxWRXtWeEg`, target `production`, `state: READY`).
+> #474 itself already carries this cycle's status — it corrected the
+> immediately-prior entry's "Story AVIF orphaned" claim after an independent
+> third same-day audit reconfirmed the same clean links/assets/open-items
+> result. Nothing has changed since: **#464 remains the only open PR**, still
+> gated on its own self-flagged 17-vs-16-screen product decision, no new
+> commits. **Issues #383 (credibility block) and #384 (Impressum
+> placeholders)** are both unchanged — still waiting on a copy/product
+> decision and real business data respectively, neither actionable by an
+> engineering session. Separately ran a full live-site health pass this
+> session (homepage/legal/insights/404 boot, `/api/gallery` `/api/track`
+> `/api/waitlist`, security headers, OG/Twitter tags, sitemap/robots,
+> deploy-vs-`main` match) — all green except the already-tracked Upstash gap
+> in the ranked table below (`items:null`/`count:null`), unchanged. No other
+> open-PR or ranked-table action items. Same-day-doesn't-recount convention
+> keeps the "thirteen consecutive reviews" count on the ranked table
+> unchanged.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
