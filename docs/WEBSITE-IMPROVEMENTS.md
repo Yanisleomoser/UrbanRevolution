@@ -810,14 +810,55 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
 >   stands unchanged.
 
+> **Status update (2026-07-26, scheduled live-site audit, re-run against the
+> newly-merged #464):** re-verified `revolveurban.com` against production
+> `main` @ `831bfad` (confirmed live via Vercel: `dpl_3ZdzGTUMGK8EGPgHWaTKeE52qjRt`,
+> target `production`, `state: READY`) — **#464 ("Startpunkt-Galerie B4 +
+> Stoffschimmer B3b") has merged since the last sync**, so this pass also
+> confirms the new gallery modality (`js/design-engine/modalities/gallery.js`)
+> shipped clean: the script returns HTTP 200 alongside every other first-party
+> JS/CSS asset. Full audit, `curl`-based (this session's egress proxy resets
+> headless-Chromium navigation to `revolveurban.com`/arbitrary domains outright
+> — only `github.com` traffic gets through; confirmed via repeated tests
+> against several unrelated domains, so it's a session/tooling constraint, not
+> a site issue) plus a **local render of the exact same commit** (static
+> server, headless Chromium, no proxy involved) for visual confirmation:
+> - **Every anchor** (`#main-content`, `#top`, `#community`, `#design`,
+>   `#facts`, `#measure`, `#production`) resolves to an existing element —
+>   zero missing targets.
+> - **All 63 first-party asset/script/stylesheet URLs referenced from the live
+>   `index.html`** (JS modules, `css/styles.css`, `assets/fonts/fonts.css`,
+>   the thermal-blob WebP pair, `og-image.png`, presets, manifest, icon,
+>   robots.txt, sitemap.xml) return HTTP 200, correct `content-type`, real
+>   byte sizes, zero redirects.
+> - **All 16 Story AVIF/JPEG variants** (`assets/story/act{1-4}[-sm].{jpg,avif}`)
+>   confirmed 200 — these back 12 of `/gallery/`'s 36 cards per #474's
+>   correction, unchanged.
+> - **Footer/legal links**: GitHub repo, `CREDITS.md`, `impressum.html`,
+>   `datenschutz.html`, `mailto:` — all 200/valid, no redirect chains.
+> - **External evidence links**: Ellen MacArthur Foundation 200; UNEP still
+>   403s to non-browser requests (Cloudflare JS challenge on that article
+>   path specifically — same as every prior audit, not a dead link);
+>   Instagram still 429s to unauthenticated/datacenter traffic (its own
+>   anti-scraping gate, reproduces outside any site code path) — neither is
+>   a repo action item.
+> - **Local render (matching commit) confirmed visually**: hero thermal-wave
+>   stage, `#facts` CO₂ stat, community sphere garment cards, and the studio
+>   journey opener (now the new gallery-aware flow post-#464) all render
+>   correctly desktop + mobile, no console errors, no layout break.
+> - **Instagram loop** (`sameAs` + footer icon): present, unchanged from
+>   #414. **Credibility block**: still absent — exactly the open half of
+>   #383, still a product/copy decision, not built speculatively.
+> - No `fix/*` PR opened — nothing was actually broken.
+
 > **Status update (2026-07-26, scheduled infra health check, re-run same
 > day):** independently re-verified `revolveurban.com` with a fresh
 > deploy-vs-`main`/API/headers pass (curl-based, plus a headless-Chromium
-> attempt — see below). Confirmed via Vercel: the current production
+> attempt — see below). Confirmed via Vercel: the then-current production
 > deployment (`dpl_4uoTRUBuoxbS9Yt6hhKeUutjp4pL`, `target: production`,
-> `state: READY`) has `githubCommitSha` `5adb534a` — an **exact match** to
-> `main`'s current tip (the #477 docs commit itself), so the live site is
-> not lagging behind `main` at all.
+> `state: READY`) had `githubCommitSha` `5adb534a` — an **exact match** to
+> `main`'s tip at that moment (the #477 docs commit itself), so the live site
+> was not lagging behind `main` at all.
 > - **Page boots** (curl): `/` 200, `/en/` 200, `/impressum.html` 200,
 >   `/datenschutz.html` 200, `/insights.html` 200, `sitemap.xml` 200,
 >   `robots.txt` 200, `assets/og-image.png` 200 (`image/png`, 288 KB). An
@@ -858,6 +899,19 @@ Re-checked directly against `main` @ `00d8b2b`:
 > - **Nothing new found.** Same result as the entry directly above, just
 >   independently re-derived with a header/API-shaped pass instead of a
 >   link/anchor-shaped one — no `fix/*` PR opened.
+
+> **Status update (2026-07-26, triggered by #477's `pull_request.closed`
+> webhook, PR #478's own branch caught behind a newer `main`):** while this
+> entry's own PR (#478) was open, **#476** (the "newly-merged #464" audit two
+> entries above) landed on `main` as `997883f`, moving the tip past the
+> `5adb534` this entry checked — re-confirmed via Vercel that `997883f` is
+> **still an exact match** to the current production deployment
+> (`dpl_CJkdKxzsV8qY3qkcMWtK419fVTD8`, `target: production`, `state: READY`),
+> so the live site remains current. Merged `main` into this branch to resolve
+> the resulting doc conflict (both PRs appended to this same status-update
+> list) rather than dropping either entry. No new findings beyond the two
+> entries above; this note exists only to record the merge and the re-checked
+> deploy match.
 
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
