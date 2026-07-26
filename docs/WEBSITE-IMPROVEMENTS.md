@@ -924,6 +924,45 @@ Re-checked directly against `main` @ `00d8b2b`:
 > recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
 > stands unchanged. Nothing new; no `fix/*` PR needed.
 
+> **Status update (2026-07-26, scheduled infra health check, another re-run
+> same day):** independently re-verified `revolveurban.com`. Deploy-vs-`main`
+> match confirmed via Vercel: current production deployment
+> (`dpl_BBM1rrUvS7KV5XeJ6jcur6HW4j6v`, `target: production`, `state: READY`)
+> has `githubCommitSha` `b6f07e7f` — an **exact match** to `main`'s tip.
+> - **Real headless-Chromium pass now works** (a first for this recurring
+>   check — every prior entry above hit `ERR_CONNECTION_RESET`/cert errors
+>   from this session's sandbox): routed `https://revolveurban.com/*` through
+>   Node's own `fetch` (which respects the session's `HTTPS_PROXY`) via
+>   Playwright's `page.route`, the same technique `scripts/cdn-route.mjs`
+>   already uses for CDN hosts. With that, `/`, `/impressum.html`,
+>   `/datenschutz.html`, `/insights.html`, and `/404.html` all **actually
+>   rendered** in Chromium, desktop (1440×900) + mobile (390×844): `200` on
+>   every navigation, **zero console errors, zero page errors, zero failed
+>   requests** on all ten page×viewport combinations. Screenshots confirm the
+>   hero thermal-wave stage, headline, CTA, and footer render correctly with
+>   no layout break at either width; the 404 page is on-brand and bilingual;
+>   `insights.html` renders its shell and correctly refuses to show data
+>   without a valid `?key=` (no leak).
+> - **Security headers, OG/Twitter tags, canonical, sitemap.xml, robots.txt**:
+>   all present and correct on `/`, matching every prior audit.
+>   `js/ur-create.js?v=…`-style assets confirmed `cache-control: public,
+>   max-age=31536000, immutable` as documented.
+> - **API endpoints:** `/api/gallery` → `200 {"ok":true,"items":null}`,
+>   `/api/waitlist` GET → `200 {"count":null}`, and this time also POSTed to
+>   both to confirm the actual branch taken: `/api/gallery` POST →
+>   `503 {"code":"service_unavailable"}`, `/api/waitlist` POST (even with
+>   `consent:false`) → `503 {"error":"Waitlist store not configured",
+>   "code":"service_unavailable"}` rather than `consent_required` — this
+>   confirms the "no Upstash env" branch is what's actually firing in
+>   production (not just an empty-but-connected store), consistent with the
+>   already-tracked ranked-table row below. `/api/track` POST beacon → `204`;
+>   `GET` without/with a bogus key → `403 {"error":"forbidden"}` both times,
+>   correctly never leaking whether a real key exists.
+> - **Nothing new found** on the open-items front — Upstash gap and issues
+>   #383/#384 unchanged. This entry's only actual addition is the first
+>   real-browser confirmation (previous entries relied on curl/HTML-source
+>   evidence and explicitly flagged that limitation). No `fix/*` PR needed.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
