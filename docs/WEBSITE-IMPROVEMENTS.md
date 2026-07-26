@@ -634,6 +634,35 @@ Re-checked directly against `main` @ `00d8b2b`:
 > - **Same-day-doesn't-recount convention applies** — the twelve-review
 >   count below is unchanged.
 
+> **Status update (2026-07-26, triggered by the `pull_request.closed`
+> webhook for #457 itself):** by the time this session read repo state,
+> #457 was already merged (`3a7a12a`) and #456 already closed — both
+> reconciled by a concurrent session's **#469**, merged minutes earlier.
+> Two things this session's read of live state added:
+> - **Closed #468 as a stale duplicate of #469.** #468 was a second,
+>   concurrently-opened scheduled-review PR proposing the same
+>   #457-merged/#456-closed reconciliation to this doc, opened *after*
+>   #457's merge but written from pre-merge state (its diff still lists
+>   "merge #457" as a pending recommendation). #469 landed first with the
+>   accurate, complete version (including the rank-0 table edit below);
+>   #468 would have re-added a stale, less-accurate entry on top. Closed
+>   with a comment pointing at #469, same pattern as #456→#466.
+> - **New finding, not covered by the same-day live-site audit above** (that
+>   pass checked links/images, not backend config): `/api/gallery` and
+>   `/api/waitlist` both return production JSON that's only possible when
+>   `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` are unset —
+>   `{"items":null}` and `{"count":null}` respectively (confirmed against
+>   `api/gallery.js`/`api/waitlist.js`: a *configured* store returns `[]`/`0`
+>   for zero rows, never `null` — `null` is exclusively the "no Upstash env"
+>   branch). All three Upstash-backed edge functions (gallery, waitlist,
+>   track) degrade gracefully — no crash, no 500 — but community-gallery
+>   publishing, waitlist signups, and the `/insights` telemetry dashboard are
+>   all silently inert in production right now. Added as a tracked row below
+>   (needs the Upstash integration reconnected in Vercel, not an engineering
+>   fix).
+> - **#461 and #464 unchanged** — both still gated on a human call this
+>   session can't make for them.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -852,6 +881,7 @@ status update above for the full accounting.
 | — | C2 Variant 2 (longer mood preamble, PR #401) | unknown until decided | — | medium (changes journey length/copy) | Product-decision flag, not an engineering task — raise it, don't build it speculatively |
 | — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision"; no new comment since 07-21 |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
+| — | Upstash Redis integration not connected in production — `/api/gallery`, `/api/waitlist`, `/api/track` all silently no-op (`items:null`/`count:null`/empty aggregates) | real feature gap — community-gallery publishing, waitlist signups, and the `/insights` telemetry dashboard are all inert (graceful, no crash) | n/a — Vercel dashboard integration, not app code | n/a | Confirmed 2026-07-26: `null` (not `[]`/`0`) is only returned by the "no Upstash env" branch in `api/gallery.js`/`api/waitlist.js`. Reconnect the integration in Vercel → Project Settings → Storage (see `CLAUDE.md`'s Waitlist/Gallery setup notes) |
 
 **Done since the last edit of this table:** rank 0, merging already-open
 **#457**, is complete — squash-merged as `3a7a12a` in the 2026-07-26
