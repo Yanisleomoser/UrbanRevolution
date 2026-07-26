@@ -748,6 +748,32 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   undecided product surfaces.
 > - No `fix/*` PR opened — nothing was actually broken.
 
+> **Correction (2026-07-26, third scheduled live-site audit, same day as the
+> above):** independently re-ran the same links/assets/open-items audit
+> against `main` @ `6910a69` (curl-based: this session's headless Chromium
+> couldn't complete a browser navigation through the sandbox's egress proxy
+> at all — confirmed via a raw `net`/`tls` socket that the proxy itself works,
+> so it's this session's tooling, not the site). All link/anchor/asset/
+> open-items findings independently matched the audit directly above —
+> **except one: the "Story AVIF files ... not referenced anywhere ... orphaned"
+> claim two entries up is wrong.** `gallery/gallery.js` (the standalone
+> `/gallery/` page, wired in via `<script type="module" src="gallery.js">` in
+> `gallery/index.html:85`) actively references `assets/story/act1.jpg`
+> through `act4.jpg` in its `SOURCES` array, feature-tests AVIF support once
+> per session (`checkAvifSupport`), and serves the AVIF/`-sm` variants via
+> `bestSrc()`/`isStoryPath()`/`toAvif()`/`toSmJpg()` — these 4 sources (of 16)
+> generate 12 of the standalone gallery's 36 cards ("Act I–IV" editorial
+> tiles). The prior entry's repo-wide search evidently covered `index.html`/
+> `css/styles.css`/root `js/**` (where the *hero* photo pair lived before
+> #430 removed it) but missed `gallery/` — a separate ES-module page
+> `CLAUDE.md`'s own architecture section calls out as one of only two ES-module
+> exceptions in the codebase, easy to miss with a root-scoped search. All 16
+> Story AVIF/JPEG variants (confirmed 200, correct `content-type`, real byte
+> sizes via direct fetch) are live, in-use assets on `/gallery/`, not orphans
+> — nothing to clean up, and nothing to flag as "expected to still be live
+> somewhere," per the prior entry's own hedge. No other correction needed;
+> no `fix/*` PR opened — nothing was actually broken.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
