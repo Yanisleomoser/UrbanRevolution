@@ -774,6 +774,42 @@ Re-checked directly against `main` @ `00d8b2b`:
 > somewhere," per the prior entry's own hedge. No other correction needed;
 > no `fix/*` PR opened — nothing was actually broken.
 
+> **Status update (2026-07-26, triggered by #464's `pull_request.closed`
+> webhook):** re-checked against `main` @ `831bfad` (#464's merge commit,
+> confirmed live via Vercel: `dpl_3ZdzGTUMGK8EGPgHWaTKeE52qjRt`, target
+> `production`, `state: READY`).
+> - **#464 merged** ("Atelier-Wow B4 — Startpunkt-Galerie + B3b + drei tote
+>   Guards"), squash-merged by the repo owner directly, not from inside a
+>   docs-review session — the owner accepted the PR as built (17 screens,
+>   "Weg 1" of the three options its own body laid out), which is exactly the
+>   product-decision human call this doc's own entries kept flagging as
+>   outside an engineering session's authority. This was the last of the five
+>   Atelier-Wow building blocks (B1–B5); all are now on `main` — see
+>   `ATELIER-WOW-ROADMAP.md` §6 for the closing status note. Drops off the
+>   "#464 gated on a human call" line repeated across the last several
+>   entries.
+> - **No other open PR right now.** #475 (a review PR opened at `526c562f`,
+>   before this merge landed) is now stale — its own text still says "#464
+>   remains the only open PR, still gated on its own self-flagged
+>   17-vs-16-screen product decision," which this merge has overtaken.
+>   Superseding it with this entry rather than editing someone else's open
+>   branch; flagging it for closure as a stale duplicate, per the same
+>   convention used for #456/#468 above.
+> - **Issues #383 (credibility block) and #384 (Impressum placeholders)**
+>   unchanged — both still waiting on a copy/product decision and real
+>   business data respectively, neither actionable by an engineering session.
+> - Also ran a full live-site health pass this session (homepage/legal/
+>   insights/404 boot, `/api/gallery` `/api/track` `/api/waitlist`, security
+>   headers, OG/Twitter tags, sitemap/robots, deploy-vs-`main` match) — all
+>   green except the already-tracked Upstash gap in the ranked table below
+>   (`items:null`/`count:null`), unchanged from prior audits. One process
+>   note: this session's headless Chromium couldn't reach any external host
+>   (proxied or not) inside its sandbox, so console-error/mobile-overflow
+>   evidence for this pass is curl/fetch-based only, not real-browser.
+> - **No other open-PR or ranked-table action items.** Same-day-doesn't-
+>   recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
+>   stands unchanged.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -1015,9 +1051,9 @@ rate-limit/prototype-pollution hardening plus its 07-23 EXPIRE-retry
 follow-up, a widened image/font caching rule, a full visual re-skin, the
 `#measure` trust seal, the orphaned `preview-design.js` endpoint removal,
 the atelier/Cockpit PR (#444), Cockpit-Runde 3's atelier/materials/
-signature expansion (#448), and now the merged Atelier-Wow B1+B5+B2+B3
-slices (#454/#458/#462, orthogonal to the studio journey, with B4 open as
-a product-decision-gated draft, #464).
+signature expansion (#448), and now the complete, merged Atelier-Wow
+B1–B5 set (#454/#458/#462/#464, orthogonal to the studio journey, all
+five building blocks shipped as of 2026-07-26).
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
 rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
@@ -1037,8 +1073,7 @@ same-day without displacing this recommendation.
   inside the current two-commit-model split; this item should still land
   before any further journey-surface work inherits the same inconsistency.
 - **Explicitly not this PR:** C2 Variant 2 is still a live product-decision
-  flag, not an engineering task. Also not this PR: the merged Atelier-Wow
-  B1+B5+B2+B3 slices (#454/#458/#462), a separate, orthogonal studio-layout
-  track — B4 remains open per `ATELIER-WOW-ROADMAP.md` as PR #464, gated on
-  its own product decision (screen-count budget), not implied by this
-  recommendation.
+  flag, not an engineering task. Also not this PR: the now-complete
+  Atelier-Wow B1–B5 slices (#454/#458/#462/#464), a separate, orthogonal
+  studio-layout track — see `ATELIER-WOW-ROADMAP.md` §6 for the closing
+  status, not implied by this recommendation.
