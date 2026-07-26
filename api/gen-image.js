@@ -15,12 +15,22 @@
  *   POST { prompt, aspect?, key }
  *     → { imageUrl }                  on success
  *     → { error, code }               on failure (403 wrong/missing key, etc.)
+ *
+ * Server-side rate limit (see _lib/rate-limit.js): IMAGE_GEN_KEY is meant to
+ * be a build-time-only secret, but scripts/build-image-library.mjs passes it
+ * as a CLI argument, which risks exposure via shell history or CI logs. If
+ * it ever leaked, this route calls the same billed Replicate account as
+ * try-on.js with no other cap — so it gets the same per-IP counter those
+ * routes use, keyed separately so it doesn't share a budget with them.
  */
+
+import { checkRateLimit } from "./_lib/rate-limit.js";
 
 export const config = { runtime: "edge" };
 
 const MODEL_ENDPOINT = "https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions";
 const ASPECTS = new Set(["1:1", "4:5", "3:4", "2:3", "16:9", "9:16"]);
+const RATE_LIMIT = { prefix: "gen-image", limit: 30, windowSeconds: 600 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function jsonError(status, message, code) {
@@ -75,6 +85,13 @@ export default async function handler(request) {
     return jsonError(valid.status, valid.message, valid.code);
   }
   const { prompt, aspect } = valid;
+
+  const { limited } = await checkRateLimit(request, {
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    ...RATE_LIMIT,
+  });
+  if (limited) return jsonError(429, "Too many requests", "rate_limited");
 
   // Edge functions get ~25 s total; unlike try-on.js this
   // route then *also* polls, so a fixed 25 s abort on the initial request

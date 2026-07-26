@@ -154,6 +154,24 @@ const CONFIG = (() => {
         return str;
     }
 
+    // Guard for AI-provided free-text array fields (constructionNotes, tags).
+    // api/generate-design.js forwards whatever JSON shape the model returns
+    // with no schema check, and the demo browser-direct path (generateWithClaude
+    // in ai.js) has none either — an LLM can plausibly answer with a bare
+    // string instead of the requested array. Downstream consumers (spec-view.js,
+    // export.js) then do `.forEach`/`.map` on that value; since spec-view.js
+    // re-renders the spec sheet on every state change, one bad response wedges
+    // the whole studio until reload. Anything that isn't an array collapses to
+    // a safe [], matching the cap library.js already applies when saving.
+    function validateStringArray(value, maxItems) {
+        if (!Array.isArray(value)) return [];
+        const items = value
+            .filter((item) => typeof item === 'string' || typeof item === 'number')
+            .map((item) => String(item).trim())
+            .filter(Boolean);
+        return typeof maxItems === 'number' ? items.slice(0, maxItems) : items;
+    }
+
     // Guard for image URLs returned by the upstream render API (Replicate, via
     // our /api/try-on edge proxy). That URL is the only
     // externally-sourced value that reaches img.src / fetch() / window.open(),
@@ -196,6 +214,7 @@ const CONFIG = (() => {
         validateColor,
         validateLength,
         validatePrint,
+        validateStringArray,
         isSafeImageUrl,
         errorMessageKey
     };
