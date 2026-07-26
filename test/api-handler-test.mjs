@@ -208,7 +208,7 @@ try {
     configure(true);
     // Route by command: rate-limit INCR under the limit, then the LPUSH write.
     let calls = spyFetch((u, body) => {
-      if (body.includes("INCR")) return resp([{ result: 1 }, { result: 1 }]);       // count 1 ≤ 20
+      if (body.includes("INCR")) return resp([{ result: 1 }, { result: 1 }]);       // count 1 ≤ 4
       if (body.includes("LPUSH")) return resp([{ result: 1 }, { result: "OK" }]);
       throw new Error("unexpected fetch: " + body);
     });
@@ -218,7 +218,7 @@ try {
 
     // Over the per-IP rate limit → 429, and the write never happens.
     calls = spyFetch((u, body) => {
-      if (body.includes("INCR")) return resp([{ result: 21 }, { result: 1 }]);      // count 21 > 20
+      if (body.includes("INCR")) return resp([{ result: 5 }, { result: 1 }]);       // count 5 > 4
       if (body.includes("LPUSH")) throw new Error("must not write when rate-limited");
       return resp([]);
     });

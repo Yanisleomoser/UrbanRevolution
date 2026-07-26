@@ -17,13 +17,17 @@
  * POST is per-IP rate-limited (same _lib/rate-limit.js as the AI proxies):
  * the ring buffer only holds MAX_ITEMS entries, so an unthrottled POST loop
  * could flood-evict every real published creation from the public sphere.
+ * validateDna only checks charset/length (not that `d` decodes to a real
+ * design), so the limit is kept tight relative to MAX_ITEMS — even a
+ * sustained single-IP loop at the cap takes hours to cycle the whole
+ * buffer, not minutes.
  */
 import { checkRateLimit } from "./_lib/rate-limit.js";
 
 export const config = { runtime: "edge" };
 
 const KEY = "urev:gallery";
-const RATE_LIMIT = { prefix: "gallery-post", limit: 20, windowSeconds: 600 };
+const RATE_LIMIT = { prefix: "gallery-post", limit: 4, windowSeconds: 600 };
 const MAX_ITEMS = 60;   // Ringpuffer in Redis
 const PAGE = 24;        // pro GET ausgeliefert
 const MAX_DNA = 4000;   // Share-Strings sind ~200–600 Zeichen; Schutzlimit
