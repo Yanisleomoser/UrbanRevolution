@@ -6300,8 +6300,6 @@ html.fx .m-tread { animation: m-tread-run 1.4s linear infinite; }
     gap: clamp(12px, 2vw, 18px);
     margin-top: clamp(24px, 4vw, 40px);
 }
-@media (max-width: 990px) { .lp-machine-stations { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .lp-machine-stations { grid-template-columns: 1fr; } }
 .lp-m-st {
     font-family: inherit;
     color: inherit;
@@ -6382,6 +6380,32 @@ html.fx .m-tread { animation: m-tread-run 1.4s linear infinite; }
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     color: var(--text-muted);
+}
+
+/* ≤990 px scrollt die Zeichnung horizontal — die Karten werden zur Snap-
+   Leiste direkt darunter: EINE Karte pro Blick (die nächste lugt an), die
+   Zeichnung bleibt gleichzeitig im Viewport, und das Swipen der Leiste
+   fährt die Zeichnung zur passenden Stufe (Sync in machine.js). Der
+   Beschreibungssatz + der Zoom-Hinweis entfallen hier — Titel, Tag und
+   Mono-Kette tragen die Karte; das Swipen selbst IST das Stufe-Ansehen.
+   (Nach den Basis-Kartenregeln platziert, damit display:none gewinnt.) */
+@media (max-width: 990px) {
+    .lp-machine-stations {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        gap: 12px;
+        padding: 4px 2px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .lp-machine-stations::-webkit-scrollbar { display: none; }
+    .lp-m-st {
+        flex: 0 0 min(84%, 340px);
+        scroll-snap-align: center;
+    }
+    .lp-m-st-text,
+    .lp-m-st-hint { display: none; }
 }
 
 /* Prüfbare Anker + das Bekenntnis — Ehrlichkeit als Dramaturgie.

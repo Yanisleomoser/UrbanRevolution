@@ -210,6 +210,74 @@ const check = (cond, msg) => {
   await ctx.close();
 }
 
+// ── 3. Mobil: Karten-Snap-Leiste unter der Zeichnung + Scroll-Sync ─────────
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await routeCdnThroughNode(page);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.goto(base + "/#machine", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForTimeout(2500);
+
+  console.log("— mobile: card snap-rail + drawing sync —");
+  const rail = await page.evaluate(() => {
+    const r = document.querySelector(".lp-machine-stations");
+    const band = document.querySelector(".lp-machine-band");
+    const card = document.querySelector("button.lp-m-st");
+    r.scrollIntoView({ block: "end" });
+    // Etwas über die 82%-Reveal-Linie hinaus, wie echtes Scrollen — sonst
+    // bleibt die kurze Leiste exakt an der Grenze unrevealed (opacity 0).
+    window.scrollBy(0, 80);
+    const rr = r.getBoundingClientRect();
+    const br = band.getBoundingClientRect();
+    return {
+      scrollable: r.scrollWidth > r.clientWidth + 20,
+      snap: getComputedStyle(r).scrollSnapType.includes("x"),
+      textHidden: getComputedStyle(card.querySelector(".lp-m-st-text")).display === "none",
+      hintHidden: getComputedStyle(card.querySelector(".lp-m-st-hint")).display === "none",
+      bandVisibleWithRail: br.bottom > 0 && rr.top < window.innerHeight,
+      cardH: Math.round(card.getBoundingClientRect().height),
+    };
+  });
+  check(rail.scrollable, "cards form a horizontal scroll rail (one at a time)");
+  check(rail.snap, "the rail snaps per card (scroll-snap-type: x)");
+  check(rail.textHidden && rail.hintHidden, "body fragment + zoom hint are dropped on mobile");
+  check(rail.bandVisibleWithRail, "drawing and rail share the viewport (band visible while rail on screen)");
+  console.log(`    card height: ${rail.cardH}px`);
+
+  // Swipe zur Karte 3 (Remake-Zelle) simulieren: Leiste scrollen → die
+  // ZEICHNUNG muss nachfahren. Die Bewegung als Kurve samplen (smooth
+  // scroll), nicht nur den Endzustand prüfen.
+  const sync = await page.evaluate(async () => {
+    const r = document.querySelector(".lp-machine-stations");
+    const s = document.querySelector(".lp-machine-scroll");
+    const cards = Array.from(document.querySelectorAll("button.lp-m-st"));
+    const before = s.scrollLeft;
+    const target = cards[2].offsetLeft - r.offsetLeft - (r.clientWidth - cards[2].offsetWidth) / 2;
+    r.scrollTo({ left: target });
+    const samples = [];
+    for (let i = 0; i < 14; i++) {
+      samples.push(Math.round(s.scrollLeft));
+      await new Promise((res) => setTimeout(res, 100));
+    }
+    return {
+      before: before,
+      samples: samples,
+      end: s.scrollLeft,
+      pressed: cards.map((c) => c.getAttribute("aria-pressed")).join(","),
+      distinct: new Set(samples).size,
+    };
+  });
+  console.log("    drawing scrollLeft over time:", JSON.stringify(sync.samples));
+  check(sync.end > sync.before + 100, `drawing follows the rail to the remake cell (${sync.before} → ${Math.round(sync.end)})`);
+  check(sync.distinct >= 3, `drawing glides (sampled ${sync.distinct} distinct positions, not a jump)`);
+  check(sync.pressed === "false,false,true,false", `snapped card is marked active (${sync.pressed})`);
+  await page.screenshot({ path: `${OUT}/machine-rail-mobile.png` });
+
+  check(errors.length === 0, `no page errors (${errors.join("; ") || "none"})`);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 console.log(failed ? `\n✗ ${failed} check(s) FAILED` : "\n✓ machine verification passed");
