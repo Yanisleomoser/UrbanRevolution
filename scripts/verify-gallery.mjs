@@ -6,6 +6,7 @@
  */
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
+import { routeCdnThroughNode } from "./cdn-route.mjs";
 
 const base = process.argv[2] || "http://localhost:8080";
 const out = "screenshots";
@@ -20,6 +21,10 @@ const page = await browser.newPage({ ignoreHTTPSErrors: true, viewport: { width:
 page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
 page.on("pageerror", (e) => consoleErrors.push("pageerror: " + e.message));
 page.on("response", (r) => { if (r.status() >= 400) badResponses.push(`${r.status()} ${r.url()}`); });
+// three.js/GSAP kommen per Import-Map vom CDN; headless erreicht Chromium
+// den Agent-Proxy nicht selbst — ohne diese Route bootet die Seite gar nicht
+// und der Guard stirbt an einem undefined __gallery statt rot zu melden.
+await routeCdnThroughNode(page);
 
 await page.goto(`${base}/gallery/`, { waitUntil: "domcontentloaded", timeout: 30000 });
 
@@ -30,8 +35,13 @@ try {
   failures.push("Intro hat nicht abgeschlossen (state.intro blieb true)");
 }
 await page.waitForTimeout(600);
-const cardCount = await page.evaluate(() => globalThis.__gallery.cards.length);
-if (cardCount !== 54) failures.push(`Erwartet 54 Karten, gefunden: ${cardCount}`);
+// Jede Quelle hängt in drei Ausschnitten an der Wand — die Erwartung wird
+// abgeleitet, nicht notiert (siehe Kommentar am __gallery-Haken).
+const wall = await page.evaluate(() => ({
+  cards: globalThis.__gallery.cards.length,
+  expect: globalThis.__gallery.sources * globalThis.__gallery.variants,
+}));
+if (wall.cards !== wall.expect) failures.push(`Erwartet ${wall.expect} Karten (${wall.expect / 3} Quellen × 3), gefunden: ${wall.cards}`);
 await page.screenshot({ path: `${out}/gal-desktop.png` });
 
 // ---- Drag + Trägheit: Yaw über die Zeit samplen ----
@@ -124,6 +134,7 @@ await page.close();
 // ---- Mobil ----
 const mob = await browser.newPage({ ignoreHTTPSErrors: true, viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
 mob.on("pageerror", (e) => consoleErrors.push("mobile pageerror: " + e.message));
+await routeCdnThroughNode(mob);
 await mob.goto(`${base}/gallery/`, { waitUntil: "domcontentloaded", timeout: 30000 });
 try {
   await mob.waitForFunction(() => globalThis.__gallery && !globalThis.__gallery.state.intro, null, { timeout: 25000 });

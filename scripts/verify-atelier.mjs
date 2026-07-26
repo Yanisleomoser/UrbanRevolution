@@ -34,8 +34,16 @@ async function walkToBoard(page) {
     if (await page.$(".de-regions")) return true;
     if (await page.$("#de-concept-grid")) return false;
     const q = await page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-    if (await page.$(".de-tot")) {
+    if (await page.$(".de-describe")) {
+      // Der Frei-Text-Auftakt ist seit #444 der erste Screen. Dieser Walker
+      // kannte ihn nie — der Guard brach danach still ab und prüfte NICHTS
+      // mehr (er stürzte auf einem null-Hotspot, statt rot zu melden).
+      // Der stille Weg lässt die Reise dahinter unverändert.
+      await page.click(".de-describe-skip");
+    } else if (await page.$(".de-tot")) {
       await page.click(".de-tot .de-tot-panel:first-child");
+    } else if (await page.$(".de-rank")) {
+      await page.click("#de-body .de-confirm");
     } else if (await page.$(".de-cards")) {
       const isCategory = (q || "").includes("entsteht") || /making/i.test(q || "");
       if (isCategory) await page.click('.de-cards .de-card[aria-label="Jacke"]');
@@ -53,6 +61,11 @@ async function walkToBoard(page) {
       await sw[2].click(); await sw[6].click();
       await page.waitForTimeout(200);
       await page.click("#de-body .de-confirm");
+    } else if (await page.$(".de-gallery")) {
+      // Die Startpunkt-Galerie liegt seit B4 auf dem Weg. Der stille Weg
+      // („von vorn") hält die Reise dahinter identisch zu vorher — dieser
+      // Guard prüft das Detail-Atelier, nicht die Galerie.
+      await page.click(".de-gallery-skip");
     } else { return false; }
     await page.waitForTimeout(650);
   }
@@ -67,7 +80,12 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  check(await walkToBoard(page), "the walk reaches the detail atelier (jacket)");
+  const reached = await walkToBoard(page);
+  check(reached, "the walk reaches the detail atelier (jacket)");
+  // Ohne Board prüft der Rest nichts — und stürzte bisher auf einem
+  // null-Hotspot, was den Guard als Absturz statt als roten Check enden
+  // liess. Ein Guard, der crasht, ist schlechter als kein Guard.
+  if (!reached) { await page.close(); await browser.close(); server.close(); console.log("\n✗ Abbruch: das Atelier wurde nicht erreicht"); process.exit(1); }
   await page.waitForTimeout(800);
 
   // Staggered pin entry: every hotspot carries its own animation delay.

@@ -687,5 +687,8 @@ manager.onLoad = () => {
     else gsap.set(cursorEl, { autoAlpha: 0 });
 };
 
-// Mess-Haken für headless-Checks (keine UI-Funktion).
-globalThis.__gallery = { rot, target, state, cards, camera };
+// Mess-Haken für headless-Checks (keine UI-Funktion). `sources` ist dabei,
+// damit der Guard die erwartete Kartenzahl ABLEITEN kann statt sie zu raten:
+// eine hart notierte Zahl rottet, sobald eine Aufnahme dazukommt oder geht
+// (genau das war passiert — der Guard erwartete 54 bei 16 Quellen).
+globalThis.__gallery = { rot, target, state, cards, camera, sources: SOURCES.length, variants: 3 };
