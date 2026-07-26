@@ -577,6 +577,46 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   call (real-device check / product decision) that no engineering session
 >   can make for them.
 
+> **Status update (2026-07-26, triggered by #467's `pull_request.closed`
+> webhook):** acted on the gap the sync above flagged rather than just
+> re-flagging it:
+> - **#457 merged** (squash, `3a7a12a`) — independently re-verified all
+>   seven functional checks green (`test`, `validate`, `validate-css`,
+>   `validate-html`, `validate-assets`, `e2e`, `coverage`, plus CodeQL) and
+>   `mergeable_state: clean` immediately before merging, per this repo's
+>   standing auto-merge policy for non-visual fixes. No review requested
+>   changes (Copilot's review bounced on a quota limit, not a finding).
+> - **#456 closed as a stale duplicate**, not undrafted-and-merged as the
+>   prior sync suggested — re-checked `main`'s `package-lock.json` directly
+>   first and confirmed `brace-expansion` is already at `5.0.8` via #466, so
+>   #456's diff is a no-op against current `main`. Closed with a comment
+>   pointing at #466 instead of merging a no-op.
+> - **#461 and #464 unchanged** — both still gated on a human call (real-
+>   iPhone check for #461's scroll-snap/smooth-scroll on iOS Safari; the
+>   17-vs-16-screen product decision for #464). `main` has now moved twice
+>   since either was opened (`41efbae` → `47f5bd1` → `3a7a12a`), so both
+>   PRs' `mergeable_state` reads `unknown` pending GitHub's recompute —
+>   worth a rebase check before either lands, independent of their human-call
+>   gates.
+> - **`#01` recommendation unchanged** — now unaddressed across **thirteen
+>   consecutive reviews (07-12 → 07-26)**.
+
+> **Status update (2026-07-26, live-site audit, same day as the syncs
+> above):** a separate scheduled session audited `revolveurban.com` itself
+> (not the repo backlog) for broken links, missing asset renders, and the
+> two items this doc already tracks under #383. Findings, for the record:
+> all internal anchors, footer/legal links, and external references return
+> HTTP 200 with no redirect chains (the UNEP source link 403s to
+> non-browser requests — confirmed via response headers this is a
+> Cloudflare JS challenge on that one article path, not a dead link); every
+> image asset checked (hero thermal-wave stage, `#facts`, community-sphere
+> cards, standalone gallery cards, all 16 Story AVIF variants) returned 200
+> and was confirmed rendering via headless-Chromium screenshot, not just a
+> correct `src`. Instagram (`sameAs` + footer icon) is live and confirmed
+> working — no change from #414. The credibility block is still absent,
+> exactly as #383 already tracks — nothing new to add there. No `fix/*` PR
+> was needed since nothing was actually broken.
+
 > **Status update (2026-07-26, triggered by the `pull_request.closed`
 > webhook for #465):** re-checked against `main` @ `1fc4dd8`. One commit
 > landed since the sync above — **#466** ("patch brace-expansion
@@ -806,7 +846,6 @@ status update above for the full accounting.
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
-| 0 | Merge already-open **#457** (spec-sheet-crash fix + rate-limit hardening) | real bug fix, live risk until merged | zero — already built, CI green | none (non-visual, `mergeable_state: clean`) | Not new work — an operational gap. Meets this repo's own auto-merge bar and has sat open since 2026-07-25; see the 2026-07-26 status update above |
 | 1 | #01, re-scoped: one commit model + phase-E reweighting | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 30+ unrelated PRs landed around it since first flagged — including #444 and now #448, each adding a *new* modality/content surface inside the very two-commit-model split this item would unify — the largest remaining product gap by a wide margin |
 | 2 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
 | 3 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23, 07-24, and again after #448 (which only added a `?dseed=7` pin to two of them, not a fix) — ran both this pass: `verify-atelier.mjs` still fails to reach the board, `verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`; safe autonomous-merge candidate once fixed |
@@ -814,16 +853,18 @@ status update above for the full accounting.
 | — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision"; no new comment since 07-21 |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
-**Immediate action before any new PR:** merge **#457** — it's already built,
-already green, and non-visual; the only reason it isn't live is that nobody
-squash-merged it yet. That's a five-minute operational fix, not a
-recommendation for new engineering work.
+**Done since the last edit of this table:** rank 0, merging already-open
+**#457**, is complete — squash-merged as `3a7a12a` in the 2026-07-26
+"triggered by #467's `pull_request.closed` webhook" status update above.
+**#456** was closed as a stale duplicate of the already-merged #466 rather
+than undrafted-and-merged, per the same update. Row removed rather than
+left stale.
 
 **Recommended next PR (new engineering work):** *"Studio journey — one
 commit model + phase-E reweighting"* (branch `engine/unify-commit-model`),
 scoped exactly as the re-scoped recommendation under §01 above. Reasoning
 unchanged since the 2026-07-12 review — it has now been the top-ranked
-recommendation across **twelve consecutive reviews (07-12 → 07-26)**
+recommendation across **thirteen consecutive reviews (07-12 → 07-26)**
 without a single unit of engineering effort spent on it, while 30+
 unrelated PRs landed around it (hero conversion, contrast, mobile machine,
 studio-reveal scroll, DNA/render bugs, the R4/R10 landing polish, the
