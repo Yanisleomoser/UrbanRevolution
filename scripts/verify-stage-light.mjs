@@ -20,6 +20,7 @@
 import { chromium } from "playwright-core";
 import { startServer } from "./static-server.mjs";
 import { routeCdnThroughNode } from "./cdn-route.mjs";
+import { walkJourney } from "./journey-walk.mjs";
 
 const server = await startServer();
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -356,33 +357,12 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
 // Zeigen (Zeiger-Geräte) und Wählen (Touch — dort gibt es keinen Hover, und
 // die Karte committet sofort; ohne diesen Weg wäre der Moment auf dem
 // wichtigsten Gerät gar nicht vorhanden).
-async function fabricScreen(page) {
-  const q = () => page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-  for (let i = 0; i < 24; i++) {
-    if (await page.$("#de-body .de-card .de-visual-img")) return true;
-    const cur = await q();
-    if (await page.$(".de-describe")) await page.click(".de-describe-skip");
-    else if (await page.$(".de-tot")) await page.click(".de-tot .de-tot-panel:first-child");
-    else if (await page.$(".de-cards")) {
-      const isCat = (cur || "").includes("entsteht");
-      if (isCat) await page.click('.de-cards .de-card[aria-label="Jacke"]');
-      else await page.click(".de-cards .de-card");
-      await page.waitForTimeout(isCat ? 2400 : 500);
-      if ((await q()) === cur) { const c = await page.$("#de-body .de-confirm"); if (c) await c.click().catch(() => {}); }
-    } else if (await page.$(".de-range")) {
-      await page.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
-      await page.waitForTimeout(300);
-      await page.click("#de-body .de-confirm");
-    } else if (await page.$(".de-gallery")) {
-      // Startpunkt-Galerie (B4) liegt auf dem Weg — der stille Weg hält die
-      // spätere Reise identisch zu vorher.
-      await page.click(".de-gallery-skip");
-    } else if (await page.$(".de-rank")) await page.click("#de-body .de-confirm");
-    else return false;
-    await page.waitForTimeout(600);
-  }
-  return false;
-}
+// Geteilter Walker (scripts/journey-walk.mjs): dieser Guard braucht keine
+// eigene Geste — er will nur bis zu den Stoffkarten.
+const fabricScreen = (page) => walkJourney(page, {
+  until: (p) => p.$("#de-body .de-card .de-visual-img"),
+});
+
 const WALL = `(() => {
   const p = document.querySelector("#de-preview");
   const w = getComputedStyle(p, "::before");
@@ -425,7 +405,7 @@ const WALL = `(() => {
   await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
   const reached = await fabricScreen(page);
-  check(reached === true, "der Stoff-Moment wurde erreicht (sonst prüft dieser Block nichts)");
+  check(!!reached, "der Stoff-Moment wurde erreicht (sonst prüft dieser Block nichts)");
   await page.mouse.move(4, 4);
   await page.waitForTimeout(450);
   const off = await page.evaluate(WALL);
@@ -470,7 +450,7 @@ const WALL = `(() => {
   await tp.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await tp.waitForSelector("#de-body .de-question", { timeout: 20000 });
   const reached2 = await fabricScreen(tp);
-  check(reached2 === true, "Touch: der Stoff-Moment wurde erreicht");
+  check(!!reached2, "Touch: der Stoff-Moment wurde erreicht");
   const tCards = await tp.$$("#de-body .de-card");
   check(tCards.length > 0, "Touch: Stoff-Karten sind da");
   if (tCards.length) {

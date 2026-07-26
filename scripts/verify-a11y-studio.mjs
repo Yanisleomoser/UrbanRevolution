@@ -15,6 +15,7 @@
 import { chromium } from "playwright-core";
 import { startServer } from "./static-server.mjs";
 import { routeCdnThroughNode } from "./cdn-route.mjs";
+import { walkJourney } from "./journey-walk.mjs";
 
 let fails = 0;
 const ok = (c, m) => { console.log((c ? "  ✓ " : "  ✗ FAIL: ") + m); if (!c) fails++; };
@@ -40,34 +41,23 @@ console.log("\n— regions modality (Detail-Atelier): focus + group labelling �
   await ap.goto(url + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await ap.waitForSelector("#de-body .de-question", { timeout: 20000 });
   await ap.waitForTimeout(1200);
-  let reached = false;
-  for (let i = 0; i < 22; i++) {
-    if (await ap.$(".de-regions")) { reached = true; break; }
-    if (await ap.$("#de-concept-grid")) break;
-    const q = await ap.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-    if (await ap.$(".de-describe")) await ap.click(".de-describe-skip");
-    else if (await ap.$(".de-tot")) await ap.click(".de-tot .de-tot-panel:first-child");
-    else if (await ap.$(".de-gallery")) await ap.click(".de-gallery-skip");
-    else if (await ap.$(".de-rank")) await ap.click("#de-body .de-confirm");
-    else if (await ap.$(".de-cards")) {
-      if ((q || "").includes("entsteht")) await ap.click('.de-cards .de-card[aria-label="Jacke"]');
-      else await ap.click(".de-cards .de-card");
-      await ap.waitForTimeout(500);
-      const q2 = await ap.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-      if (q2 === q) { const c = await ap.$("#de-body .de-confirm"); if (c) await c.click().catch(() => {}); }
-    } else if (await ap.$(".de-range")) {
-      await ap.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
-      await ap.waitForTimeout(250);
-      await ap.click("#de-body .de-confirm");
-    } else if (await ap.$(".de-palette")) {
-      await ap.click(".de-scheme-tabs .de-scheme-tab:nth-child(2)");
-      const sw = await ap.$$(".de-palette .de-palette-swatch");
-      await sw[2].click(); await sw[6].click();
-      await ap.waitForTimeout(200);
-      await ap.click("#de-body .de-confirm");
-    } else break;
-    await ap.waitForTimeout(650);
-  }
+  // Geteilter Walker (scripts/journey-walk.mjs) — eigene Kopien dieser
+  // Schleife sind hier schon einmal still verrottet. Eigen bleibt nur die
+  // Farbwelt-Geste, weil das Atelier danach mehr Regionen anbietet.
+  const reached = await walkJourney(ap, {
+    max: 22,
+    until: (p) => p.$(".de-regions"),
+    stopAt: (p) => p.$("#de-concept-grid"),
+    on: {
+      palette: async (p) => {
+        await p.click(".de-scheme-tabs .de-scheme-tab:nth-child(2)");
+        const sw = await p.$$(".de-palette .de-palette-swatch");
+        await sw[2].click(); await sw[6].click();
+        await p.waitForTimeout(200);
+        await p.click("#de-body .de-confirm");
+      },
+    },
+  });
   ok(reached, "der Walk erreicht das Detail-Atelier (sonst prüft dieser Block nichts)");
   if (reached) {
     await ap.waitForTimeout(700);

@@ -9,6 +9,7 @@
 import { chromium } from "playwright-core";
 import { startServer } from "./static-server.mjs";
 import { routeCdnThroughNode } from "./cdn-route.mjs";
+import { walkJourney } from "./journey-walk.mjs";
 
 const server = await startServer();
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -25,36 +26,18 @@ await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
 await page.waitForTimeout(900);
 
 const qText = () => page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-let sigSeen = false;
-for (let i = 0; i < 24 && !sigSeen; i++) {
-  const q = await qText();
-  if (/stapelbar/i.test(q)) { sigSeen = true; break; }
-  if (await page.$(".de-describe")) { await page.click(".de-describe-skip"); }
-  else if (await page.$(".de-tot")) {
+const sigSeen = await walkJourney(page, {
+  settle: 700,
+  until: async (p) => /stapelbar/i.test(await p.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "")),
+  on: {
     // BOLD wählen (letztes Panel) → energy hoch → Signature-Node bleibt offen.
-    const panels = await page.$$(".de-tot .de-tot-panel");
-    await panels[panels.length - 1].click();
-  } else if (await page.$(".de-regions")) {
-    await page.click("#de-body .de-confirm"); // Board so übernehmen
-  } else if (await page.$(".de-cards")) {
-    const isCat = (q || "").includes("entsteht");
-    if (isCat) await page.click('.de-cards .de-card[aria-label="Jacke"]');
-    else await page.click(".de-cards .de-card");
-    await page.waitForTimeout(500);
-    if ((await qText()) === q) { const c = await page.$("#de-body .de-confirm"); if (c) await c.click().catch(() => {}); }
-  } else if (await page.$(".de-range")) {
-    await page.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
-    await page.click("#de-body .de-confirm");
-  } else if (await page.$(".de-palette")) {
-    const sw = await page.$$(".de-palette .de-palette-swatch");
-    await sw[2].click();
-    await page.waitForTimeout(150);
-    await page.click("#de-body .de-confirm");
-  } else if (await page.$(".de-rank")) {
-    await page.click("#de-body .de-confirm");
-  } else break;
-  await page.waitForTimeout(700);
-}
+    // Das ist der EINZIGE Screen, auf dem dieser Guard etwas Eigenes will.
+    thisOrThat: async (p) => {
+      const panels = await p.$$(".de-tot .de-tot-panel");
+      await panels[panels.length - 1].click();
+    },
+  },
+});
 check(sigSeen, `der Bold-Pfad erreicht den Signature-Screen („${(await qText()).trim()}")`);
 
 if (sigSeen) {
