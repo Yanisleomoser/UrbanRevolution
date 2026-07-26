@@ -681,6 +681,21 @@ Re-checked directly against `main` @ `00d8b2b`:
 > - **#461 and #464 unchanged** — both still gated on a human call this
 >   session can't make for them.
 
+> **Status update (2026-07-26, triggered by #461's `pull_request.closed`
+> webhook):** re-checked against `main` @ `415ad05` (#461's merge commit).
+> - **#461 merged** ("#machine mobile — card-snap rail under the drawing"),
+>   squash-merged by the repo owner directly, not from inside a docs-review
+>   session — the real-iPhone check this doc's merge-gate policy called for
+>   was exactly the human call no engineering session could make for it, and
+>   the owner made it. Drops off the "gated on a human call" line repeated
+>   across the last several entries.
+> - **#464 unchanged** — now the only open PR, still gated on the
+>   17-vs-16-screen product decision flagged in its own body; no new commits
+>   since the last sync.
+> - **No other open-PR or ranked-table action items.** Same-day-doesn't-
+>   recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
+>   stands unchanged.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
