@@ -120,14 +120,24 @@ const DesignDNA = (() => {
   function completeFrom(dna, archetypes, required, threshold) {
     const top = archetypeById(archetypes, topArchetype(dna));
     if (!top) return dna;
+    return completeAs(dna, top, required, threshold);
+  }
+
+  // Dasselbe, aber mit EINEM ausdrücklich genannten Archetyp statt dem
+  // stärksten der DNA. Die Startpunkt-Galerie (Roadmap B4) braucht genau das:
+  // acht Auflösungen DERSELBEN Mood-DNA in acht Richtungen. Über den Umweg
+  // „Gewichte verbiegen, damit topArchetype das Gewünschte liefert" wäre die
+  // DNA der Vorschau nicht mehr die DNA des Nutzers.
+  function completeAs(dna, arch, required, threshold) {
+    if (!arch || !arch.defaults) return dna;
     const th = threshold == null ? 0.5 : threshold;
     (required || []).forEach((path) => {
-      if (confidence(dna, path) < th && top.defaults[path] !== undefined) {
-        set(dna, path, clone(top.defaults[path]), th);
+      if (confidence(dna, path) < th && arch.defaults[path] !== undefined) {
+        set(dna, path, clone(arch.defaults[path]), th);
       }
     });
     // Also pull any other archetype defaults for still-empty attrs (soft fill).
-    for (const [path, value] of Object.entries(top.defaults)) {
+    for (const [path, value] of Object.entries(arch.defaults)) {
       if (get(dna, path) === undefined) set(dna, path, clone(value), 0.4);
     }
     return dna;
@@ -151,7 +161,7 @@ const DesignDNA = (() => {
   return {
     ARCHETYPE_IDS,
     create, get, set, setConfidence, confidence,
-    applyEffects, topArchetype, completeFrom, maturity,
+    applyEffects, topArchetype, completeFrom, completeAs, maturity,
   };
 })();
 

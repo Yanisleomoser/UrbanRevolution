@@ -375,3 +375,39 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     Exporte, e2e- statt unit-gedeckt) — es kam nur später dazu. Mit der
     Korrektur steigt die gemessene Deckung; der Floor wurde entsprechend
     angezogen (78/80/82 → 79.5/82/85), damit die Ratsche nicht locker wird.
+- 2026-07-26: **B4 geliefert — der letzte Baustein.** Nach der Kategorie zeigt
+  die Engine sechs vollständig aufgelöste Startpunkte, je einer pro
+  Archetyp-Richtung, gereiht nach dem Stilvektor. Ein Tipp übernimmt bei
+  conf 0.55; „von null" steht gleichwertig daneben.
+  - **Der Startpunkt ist ein Startpunkt, kein Reset.** Sein Beitrag enthält nur
+    Attribute, die der Nutzer noch NICHT selbst entschieden hat — eine eigene
+    Wahl überlebt jede Richtung. Zwei Unit-Zusagen nageln genau das fest.
+  - **Silhouetten-Vielfalt kam erst durch einen Befund am Render:** die
+    Archetyp-Defaults setzen Farbe, Passform und Stoff, aber NICHT
+    `subArchetype` — die erste Fassung zeigte sechsmal dasselbe Stück in sechs
+    Farben. Die Zuordnung steht bereits in den Daten: jede Silhouetten-Wahl
+    deklariert in `effects.weight`, zu welchen Archetypen sie zieht. `subArchFor`
+    nimmt je Richtung die Wahl mit dem stärksten Zug — keine zweite Tabelle, die
+    neben den Fragen veralten könnte. **Richtungen ohne deklarierte Affinität
+    bekommen bewusst KEINE erfundene Silhouette**; wer dort mehr Vielfalt will,
+    ergänzt `weight`-Einträge in den Fragen — also in JSON, wo die Regie hingehört.
+  - **Ein Engine-Erweiterungspunkt war nötig** (die Roadmap hatte ihn erwartet):
+    `targetPaths` respektiert jetzt ein deklariertes `node.targets`. Ohne das
+    fiel die Galerie auf den 0.3-Pauschalwert für Knoten ohne `choices` zurück
+    und verlor jedes Rennen gegen die erste Silhouetten-Frage — sie erschien
+    schlicht nie.
+  - **`DesignDNA.completeAs`** ist aus `completeFrom` herausgelöst: dieselbe
+    Auflösung, aber mit einem ausdrücklich genannten Archetyp. Der Umweg
+    „Gewichte verbiegen, damit `topArchetype` das Gewünschte liefert" hätte die
+    DNA der Vorschau von der DNA des Nutzers entkoppelt.
+  - **Der Spine-Konflikt ist real und geht in die andere Richtung als gedacht.**
+    §3 B4 sagte „keine Kollision mit dem ≤16-Screens-Spine, weil der Startpunkt
+    nichts hart beantwortet". Genau deshalb spart er auch keine Frage ein — er
+    KOSTET einen Screen. Die Testdecke wandert um exakt diesen einen (17 statt
+    16), mit derselben Buchführung wie beim letzten Mal. **Das ist die eine
+    Produktentscheidung dieses Schnitts, die der Owner kippen kann:** entweder
+    17 Screens, oder die Galerie darf Fragen sparen (dann §7 neu verhandeln),
+    oder sie fällt weg.
+  - Die Walker aller Werkzeuge kennen die neue Frage jetzt (`shoot-journey`,
+    `verify-stage-light` in drei Blöcken) — sonst wäre jeder künftige
+    Journey-Walk still an ihr hängengeblieben.

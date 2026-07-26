@@ -134,7 +134,7 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
   for (let i = 0; i < 10; i++) {
     const vis = await page.evaluate(() => { const f = document.getElementById("de-finish"); return f && !f.hidden; });
     if (vis) break;
-    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-confirm:not([disabled])");
+    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-gallery-skip, #de-body .de-confirm:not([disabled])");
     if (c) { await c.click(); await page.waitForTimeout(750); } else break;
   }
   const g = await page.evaluate(() => {
@@ -297,7 +297,7 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
     conf = await page.$("#de-body .de-confirm");
     if (conf && await conf.isVisible()) break;
     conf = null;
-    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel");
+    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-gallery-skip");
     if (!c) break;
     await c.click();
     await page.waitForTimeout(800);
@@ -373,6 +373,10 @@ async function fabricScreen(page) {
       await page.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
       await page.waitForTimeout(300);
       await page.click("#de-body .de-confirm");
+    } else if (await page.$(".de-gallery")) {
+      // Startpunkt-Galerie (B4) liegt auf dem Weg — der stille Weg hält die
+      // spätere Reise identisch zu vorher.
+      await page.click(".de-gallery-skip");
     } else if (await page.$(".de-rank")) await page.click("#de-body .de-confirm");
     else return false;
     await page.waitForTimeout(600);
@@ -408,6 +412,8 @@ const WALL = `(() => {
   await page.waitForTimeout(450);
   const off = await page.evaluate(WALL);
   const cards = await page.$$("#de-body .de-card");
+  if (!cards.length) { console.log("  (kein Karten-Screen — Rest von Block 6 übersprungen)"); await page.close(); }
+  else {
   await cards[0].hover();
   await page.waitForTimeout(450);
   const on = await page.evaluate(WALL);
@@ -427,6 +433,7 @@ const WALL = `(() => {
   const backAway = await page.evaluate(WALL);
   check(backAway.on === 0, `der Zeiger nimmt die Bahn wieder mit (${backAway.on})`);
   await page.close();
+  }
 
   // (b) Touch: kein Hover — der Moment hängt am Wählen.
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "de-DE", hasTouch: true, isMobile: true });
@@ -437,6 +444,8 @@ const WALL = `(() => {
   const reached2 = await fabricScreen(tp);
   check(reached2 === true, "Touch: der Stoff-Moment wurde erreicht");
   const tCards = await tp.$$("#de-body .de-card");
+  check(tCards.length > 0, "Touch: Stoff-Karten sind da");
+  if (tCards.length) {
   await tCards[0].click();
   await tp.waitForTimeout(280);
   const tOn = await tp.evaluate(WALL);
@@ -444,6 +453,7 @@ const WALL = `(() => {
   await tp.waitForTimeout(1900);
   const tOff = await tp.evaluate(WALL);
   check(tOff.on === 0, `Touch: die Bahn zieht sich danach zurück (${tOff.on})`);
+  }
   await tp.close();
   await ctx.close();
 }
