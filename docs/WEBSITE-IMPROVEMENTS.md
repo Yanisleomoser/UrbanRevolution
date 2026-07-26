@@ -851,6 +851,68 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   #383, still a product/copy decision, not built speculatively.
 > - No `fix/*` PR opened — nothing was actually broken.
 
+> **Status update (2026-07-26, scheduled infra health check, re-run same
+> day):** independently re-verified `revolveurban.com` with a fresh
+> deploy-vs-`main`/API/headers pass (curl-based, plus a headless-Chromium
+> attempt — see below). Confirmed via Vercel: the then-current production
+> deployment (`dpl_4uoTRUBuoxbS9Yt6hhKeUutjp4pL`, `target: production`,
+> `state: READY`) had `githubCommitSha` `5adb534a` — an **exact match** to
+> `main`'s tip at that moment (the #477 docs commit itself), so the live site
+> was not lagging behind `main` at all.
+> - **Page boots** (curl): `/` 200, `/en/` 200, `/impressum.html` 200,
+>   `/datenschutz.html` 200, `/insights.html` 200, `sitemap.xml` 200,
+>   `robots.txt` 200, `assets/og-image.png` 200 (`image/png`, 288 KB). An
+>   unmapped path returns a real HTTP 404 and serves the branded 404 page
+>   (`404.html`'s markup), confirming Vercel's not-found handling. `/impressum`
+>   and `/datenschutz` **without** `.html` 404 — expected: no clean-URL
+>   rewrite is configured, and every internal reference (footer, `sitemap.xml`)
+>   already links the `.html` form, so this isn't a dead link, just noted for
+>   completeness.
+> - **Security headers** present on `/` exactly as `vercel.json` declares:
+>   `x-content-type-options: nosniff`, `referrer-policy:
+>   strict-origin-when-cross-origin`, `permissions-policy` (camera/mic/geo/
+>   browsing-topics locked), `content-security-policy: frame-ancestors 'self'
+>   https://vercel.live`, `strict-transport-security: max-age=63072000`.
+> - **OG/Twitter tags** on `/` all present and correct: `og:title`,
+>   `og:description`, self-referencing `og:url`, `og:image` →
+>   `assets/og-image.png?v=20260717-thermal` (200, 1200×630 declared),
+>   `twitter:card summary_large_image` + matching image/alt; canonical
+>   self-references `https://revolveurban.com/`.
+> - **API endpoints:** `/api/gallery` → `200 {"ok":true,"items":null}`,
+>   `/api/waitlist` → `200 {"count":null}` — both hitting the already-tracked
+>   "no Upstash env" branch (ranked-table row below, unchanged since 07-26).
+>   `/api/track` accepts a `POST` beacon with `204` (best-effort, works
+>   without Upstash by design); `GET /api/track` without a key correctly
+>   403s (`{"error":"forbidden"}`) rather than leaking aggregates — could not
+>   verify the `insights.html`/`?key=<TELEMETRY_KEY>` aggregate view itself,
+>   since this session has no `TELEMETRY_KEY` credential; `insights.html`
+>   does serve its shell (200, correct on-brand markup) ungated.
+> - **Headless Chromium** again could not complete a navigation to
+>   `revolveurban.com` from this session's sandbox — `ERR_CERT_AUTHORITY_
+>   INVALID` / `ERR_CONNECTION_RESET` both with default launch and with an
+>   explicit `--proxy-server=127.0.0.1:41361`; the proxy's own status
+>   endpoint shows no relay failures for this host, so — consistent with
+>   every prior audit's note — it's this session's browser tooling, not the
+>   site. Console-error/OG-asset/security-header evidence above is
+>   curl/HTML-source-based, not real-browser, same as the immediately
+>   preceding entry.
+> - **Nothing new found.** Same result as the entry directly above, just
+>   independently re-derived with a header/API-shaped pass instead of a
+>   link/anchor-shaped one — no `fix/*` PR opened.
+
+> **Status update (2026-07-26, triggered by #477's `pull_request.closed`
+> webhook, PR #478's own branch caught behind a newer `main`):** while this
+> entry's own PR (#478) was open, **#476** (the "newly-merged #464" audit two
+> entries above) landed on `main` as `997883f`, moving the tip past the
+> `5adb534` this entry checked — re-confirmed via Vercel that `997883f` is
+> **still an exact match** to the current production deployment
+> (`dpl_CJkdKxzsV8qY3qkcMWtK419fVTD8`, `target: production`, `state: READY`),
+> so the live site remains current. Merged `main` into this branch to resolve
+> the resulting doc conflict (both PRs appended to this same status-update
+> list) rather than dropping either entry. No new findings beyond the two
+> entries above; this note exists only to record the merge and the re-checked
+> deploy match.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
