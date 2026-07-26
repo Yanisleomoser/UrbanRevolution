@@ -881,6 +881,9 @@ const DesignFlow = (() => {
     // oben (rein und getestet) — hier bleibt nur die Verdrahtung.
     let matTimer = 0;
     let matHolding = false;
+    // Welcher Stoff gerade DURCH die Silhouette scheint (B3b). null =
+    // der Flat ist wieder reine technische Zeichnung.
+    let matCloth = null;
     const canHover = () => typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(hover: hover)").matches : false;
     function cardPhoto(el) {
@@ -889,6 +892,14 @@ const DesignFlow = (() => {
       const img = card.querySelector(".de-visual-img");
       const src = img && (img.currentSrc || img.getAttribute("src"));
       return src || null;
+    }
+    // Die Karte liefert eine absolute URL (img.currentSrc); GarmentSVG lässt
+    // aus gutem Grund nur eigene, relative Bildpfade zu — hier wird sie darauf
+    // zurückgeführt, statt die Whitelist dort aufzuweichen.
+    function clothPath(url) {
+      if (!url) return null;
+      const i = String(url).indexOf("/js/design-engine/content/img/");
+      return i === -1 ? null : String(url).slice(i);
     }
     function gesture(event, el, related) {
       const photo = cardPhoto(el);
@@ -900,11 +911,18 @@ const DesignFlow = (() => {
       if (!patch || !previewEl) return;
       clearTimeout(matTimer);
       Object.entries(patch).forEach(([k, v]) => previewEl.style.setProperty(k, v));
+      // Rückwand UND Stück: das Foto hängt hinter dem Stück und scheint
+      // zugleich durch seine Silhouette. Nur wenn sich der Stoff wirklich
+      // ändert, wird neu gezeichnet — sonst baute jedes pointerover das
+      // ganze SVG neu.
+      const nextCloth = g.show ? clothPath(photo) : null;
+      if (nextCloth !== matCloth) { matCloth = nextCloth; updatePreview(); }
       matHolding = !!(g && g.hold);
       if (matHolding) {
         matTimer = setTimeout(() => {
           matHolding = false;
           previewEl.style.setProperty("--mat-on", "0");
+          if (matCloth !== null) { matCloth = null; updatePreview(); }
         }, g.hold);
       }
     }
@@ -1030,6 +1048,10 @@ const DesignFlow = (() => {
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
           body,
+          // B3b · Der Stoff scheint durch die Silhouette, solange der
+          // Stoff-Moment läuft (dieselbe Geste, die auch die Rückwand
+          // bringt). Danach ist der Flat wieder reine Zeichnung.
+          cloth: matCloth,
         });
         // U2: das personalisierte Zeichnen war komplett stumm — eine leise
         // Mono-Zeile benennt es, sobald echte Masse einfliessen (und ein

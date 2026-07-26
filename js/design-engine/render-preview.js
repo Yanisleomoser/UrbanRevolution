@@ -248,6 +248,10 @@ const DesignPreview = (() => {
     // (flow.js bodyFactors from the user's measurements) — GarmentSVG clamps
     // them, and the morph tween carries them like any other geometry change.
     if (opts && opts.body) p.body = opts.body;
+    // B3b · Der Stoff scheint durch die Silhouette: nur die grosse Bühne
+    // reicht das Bild durch (Kacheln, Galerie und Sphäre nicht) — dort ist
+    // der Flat ein Symbol, hier ein Stück.
+    if (opts && opts.cloth) p.cloth = opts.cloth;
 
     // ── Genesis stage (before the user has chosen a category) ──────────────
     // No garment exists yet, so none is shown: an abstract thread-flow reacts

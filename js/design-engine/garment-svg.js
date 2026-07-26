@@ -46,6 +46,21 @@ const GarmentSVG = (() => {
   const HEX_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
   const safeHex = (v, fallback) =>
     (typeof v === "string" && HEX_RE.test(v.trim())) ? v.trim() : fallback;
+  // Stoff-Bild für die Webschicht (B3b): landet als href IN der SVG-Quelle,
+  // also gilt dieselbe Vorsicht wie bei safeHex — eine geteilte DNA kann
+  // feindliche Werte tragen. Erlaubt ist ausschliesslich ein eigener,
+  // relativer Bildpfad; alles andere (data:, javascript:, //host, ..) fällt
+  // durch und die Schicht bleibt einfach aus.
+  // Jedes Segment muss NICHT-leer sein — sonst wäre „//host/x.jpg" ein
+  // gültiger Treffer, und das ist keine relative Adresse, sondern eine
+  // protokoll-relative: der Browser lädt sie von einem fremden Host. (Genau
+  // dort ist ein `[A-Za-z0-9._/-]+`-Zeichenklassen-Muster still undicht.)
+  const CLOTH_RE = /^(?:\/[A-Za-z0-9._-]+)*\/[A-Za-z0-9._-]+\.(?:jpg|jpeg|png|webp)$/;
+  const safeCloth = (v) =>
+    (typeof v === "string" && !v.includes("..") && CLOTH_RE.test(v.trim())) ? v.trim() : null;
+  // Deckkraft der Stoffschicht — bewusst niedrig gehalten (siehe Kommentar an
+  // der Schicht selbst). Als Konstante, damit der Guard den Wert prüfen kann.
+  const CLOTH_OP = 0.18;
   // Same attacker-controlled-DNA hazard as safeHex above, but for plain object
   // lookups: a key like "constructor"/"toString" resolves to a truthy/non-null
   // Object.prototype member instead of missing, so a `[key] || fallback` guard
@@ -309,7 +324,28 @@ const GarmentSVG = (() => {
         `<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
       streak = `url(#${id}k)`;
     }
-    return { defs, fill, opacity, pat, grain, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)`, key: `url(#${id}kl)`, stage: `url(#${id}sl)` };
+    // ── B3b · Der echte Stoff scheint DURCH die Silhouette ──────────────────
+    // Owner-Wunsch 2026-07-26: „noch besser wäre, wenn das Stoffbild nur durch
+    // die Silhouette durchschimmert." Der Innenraum ist ohnehin schon geclippt
+    // (.gs-int), also genügt eine weitere Schicht in diesem Stapel — die
+    // Maskierung macht der bestehende clipPath.
+    // Zwei Dinge halten den Flat dabei eine technische Zeichnung und keinen
+    // Fotorender (CLAUDE.md: Foto erst bei Konvergenz):
+    //   • Die Schicht ersetzt die synthetische Webung nicht als Bild, sondern
+    //     als LUMINANZ — `mix-blend-mode: luminosity` lässt die gewählte Farbe
+    //     unangetastet und bringt nur Struktur, Faltenwurf und Körnung mit.
+    //   • Sie bleibt schwach (opacity aus der Deckkraft des Farbfelds
+    //     abgeleitet) und ist nur da, wenn der Aufrufer sie ausdrücklich
+    //     anfordert — Refine-Kacheln, Galerie, Sphäre und Ownership übergeben
+    //     `cloth` nicht und sehen sie nie.
+    let cloth = "";
+    const clothSrc = safeCloth(p.cloth);
+    if (clothSrc) {
+      defs += `<pattern id="${id}cl" patternUnits="userSpaceOnUse" width="${VB}" height="${VH}">` +
+        `<image href="${clothSrc}" x="0" y="0" width="${VB}" height="${VH}" preserveAspectRatio="xMidYMid slice"/></pattern>`;
+      cloth = `url(#${id}cl)`;
+    }
+    return { defs, fill, opacity, pat, grain, cloth, streak, sheen: `url(#${id}s)`, vol: `url(#${id}v)`, key: `url(#${id}kl)`, stage: `url(#${id}sl)` };
   }
 
   // Per-material fabric grain tile (distinct from the decorative p.pattern).
@@ -1249,6 +1285,14 @@ const GarmentSVG = (() => {
       (f.key ? `<path d="${d}" fill="${f.key}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.stage ? `<path d="${d}" fill="${f.stage}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.grain ? `<path d="${d}" fill="${f.grain}" stroke="none" opacity="${layerOp}"/>` : "") +
+      // Der echte Stoff (B3b) sitzt GENAU dort, wo die synthetische Webung
+      // sitzt — er ist ja dasselbe Signal, nur belegt. soft-light bei 0.18:
+      // am Render verglichen (luminosity/overlay, 0.18–0.55) — alles darüber
+      // macht aus der Zeichnung einen Foto-Ausschnitt. Hier bleibt der Flat
+      // eine Zeichnung, durch die die Webung schimmert.
+      // (r() rundet auf EINE Stelle — bei 0.18 wäre das 0.2 bzw. bei kleinem
+      // reveal glatt 0. Diese Schicht braucht ihren echten Wert.)
+      (f.cloth ? `<path d="${d}" fill="${f.cloth}" stroke="none" opacity="${(layerOp * CLOTH_OP).toFixed(3)}" style="mix-blend-mode:soft-light"/>` : "") +
       (f.pat ? `<path d="${d}" fill="${f.pat}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.sheen ? `<path d="${d}" fill="${f.sheen}" stroke="none" opacity="${layerOp}"/>` : "") +
       (f.streak ? `<path d="${d}" fill="${f.streak}" stroke="none" opacity="${layerOp}"/>` : "")

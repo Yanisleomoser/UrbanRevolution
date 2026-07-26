@@ -387,10 +387,28 @@ const WALL = `(() => {
   const p = document.querySelector("#de-preview");
   const w = getComputedStyle(p, "::before");
   const s = getComputedStyle(p);
+  // B3b · dieselbe Geste füllt auch die Silhouette. Die Schicht ist ein
+  // <pattern id="…cl"> im Flat; "cl" ist unter allen Suffixen eindeutig.
+  const cl = p.querySelector('svg pattern[id$="cl"]');
+  const clImg = cl && cl.querySelector("image");
+  const clPath = p.querySelector('svg .gs-int path[style*="mix-blend-mode"]');
+  const all = Array.from(document.querySelectorAll('pattern[id$="cl"]'));
   return {
     on: parseFloat(w.opacity) || 0,
     img: w.backgroundImage || "",
     z: w.zIndex,
+    cloth: !!cl,
+    clothHref: (clImg && (clImg.getAttribute("href") || clImg.getAttribute("xlink:href"))) || "",
+    clothBlend: clPath ? getComputedStyle(clPath).mixBlendMode : "",
+    clothOp: clPath ? parseFloat(clPath.getAttribute("opacity")) : NaN,
+    // Vergleichswert: die synthetische Webung an derselben Stelle. Der echte
+    // Stoff muss ihr UNTERGEORDNET bleiben, sonst wird die Zeichnung zum Foto.
+    grainOp: (() => {
+      const g = p.querySelector('svg .gs-int path[fill^="url("]:not([style])');
+      return g ? parseFloat(g.getAttribute("opacity")) : NaN;
+    })(),
+    // Kacheln, Galerie, Sphäre: der Flat ist dort ein Symbol, kein Stück.
+    strayCloth: all.filter((n) => !n.closest("#de-preview") && !n.closest(".de-dock-flat")).length,
     // Die Bahn muss vor dem Boden sterben — sonst löscht sie die Hohlkehle.
     mask: (w.maskImage && w.maskImage !== "none" ? w.maskImage : w.webkitMaskImage) || "",
     // Bühnenlicht malt WEITER (die Bahn ersetzt das Atelier nicht).
@@ -427,11 +445,21 @@ const WALL = `(() => {
     "Kegel und Hohlkehle malen weiter — die Bahn ersetzt das Atelier nicht");
   check(on.filter === "none" && (on.backdrop === "none" || !on.backdrop),
     `kein filter/backdrop-filter für die Bahn (${on.filter} / ${on.backdrop})`);
+  // B3b · und der Stoff schimmert DURCH die Silhouette (Owner 2026-07-26).
+  check(off.cloth === false, "ohne Geste ist der Flat reine Zeichnung (keine Stoffschicht)");
+  check(on.cloth === true, "beim Zeigen füllt der Stoff auch die Silhouette");
+  check(/^\/js\/design-engine\/content\/img\/material\/[a-z0-9-]+\.(?:jpg|webp|png)$/.test(on.clothHref),
+    `die Schicht zieht ein eigenes, relatives Bild (${on.clothHref})`);
+  check(on.clothBlend === "soft-light", `die Schicht mischt weich, sie überklebt nicht (${on.clothBlend})`);
+  check(on.clothOp > 0 && on.clothOp <= 0.25 && on.clothOp < on.grainOp,
+    `der Stoff bleibt der Zeichnung untergeordnet (${on.clothOp} gegen Webung ${on.grainOp})`);
+  check(on.strayCloth === 0, `nur die grosse Bühne trägt den Stoff (${on.strayCloth} fremde Vorkommen)`);
   // Eine Karte OHNE Foto darf nichts auslösen.
   await page.mouse.move(4, 4);
   await page.waitForTimeout(400);
   const backAway = await page.evaluate(WALL);
   check(backAway.on === 0, `der Zeiger nimmt die Bahn wieder mit (${backAway.on})`);
+  check(backAway.cloth === false, "und die Silhouette ist wieder reine Zeichnung");
   await page.close();
   }
 
@@ -450,9 +478,11 @@ const WALL = `(() => {
   await tp.waitForTimeout(280);
   const tOn = await tp.evaluate(WALL);
   check(tOn.on > 0.1, `Touch: das Wählen bringt die Bahn (${tOn.on}) — ohne Hover gäbe es den Moment sonst nicht`);
+  check(tOn.cloth === true, "Touch: und der Stoff schimmert durch die Silhouette");
   await tp.waitForTimeout(1900);
   const tOff = await tp.evaluate(WALL);
   check(tOff.on === 0, `Touch: die Bahn zieht sich danach zurück (${tOff.on})`);
+  check(tOff.cloth === false, "Touch: die Silhouette ist danach wieder reine Zeichnung");
   }
   await tp.close();
   await ctx.close();
