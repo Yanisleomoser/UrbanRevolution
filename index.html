@@ -94,7 +94,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=20260726-kapitel-index">
+    <link rel="stylesheet" href="css/styles.css?v=20260726-condense-kapitel">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -589,7 +589,7 @@
             <p class="lp-label" data-i18n="machine.label">Akt II — Der Kreis</p>
             <h2 class="lp-machine-title" id="machine-title" data-i18n="machine.title">Abfall rein. Einzelstück raus.</h2>
             <p class="lp-machine-status" data-i18n="machine.status">Status: Vision — noch nicht gebaut</p>
-            <p class="lp-machine-sub" data-i18n="machine.sub">Eine Fabrik, deren Fliessband kein Ende hat — vier Stationen, ein Kreis. Das hier ist ihr Bauplan, als laufende Simulation.</p>
+            <p class="lp-machine-sub" data-i18n="machine.sub">Der Bauplan läuft als Simulation. Die Fabrik noch nicht.</p>
         </div>
         <div class="lp-machine-band" data-lp-reveal>
             <span class="lp-machine-swipe" aria-hidden="true" data-i18n="machine.swipe">wischen →</span>
@@ -798,7 +798,7 @@
              KEIN data-i18n: der Text ist zustandsabhängig JS-gesetzt —
              I18N.apply() würde die Datei-Variante beim Sprachwechsel
              überschreiben, machine.js rendert selbst neu. -->
-        <p class="lp-machine-file" id="mFileCap">Ein Bügel bleibt frei — deins. Entwirf dein Stück im Studio, und die Remake-Zelle schneidet deine Vorlage hier.</p>
+        <p class="lp-machine-file" id="mFileCap">EIN BÜGEL BLEIBT FREI — DEINS · ENTWIRF IM STUDIO</p>
         <!-- Die vier Stationen des Kreislaufs (aus #loop), auf echte Maschinen-
              Stufen gelegt — Attributions-Tags [ Alle / KI / Du / KI ] bleiben.
              Klick/Tap zoomt die Kamera der Zeichnung auf die Stufe. -->
@@ -807,32 +807,46 @@
                 <span class="lp-m-st-idx" data-i18n="machine.s1_idx">01 — Eingang</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage1_title">Getragen</span>
                 <span class="lp-m-st-tag" data-i18n="landing.stage1_tag">Alle</span>
-                <span class="lp-m-st-text" data-i18n="machine.s1_text">Jedes Stück beginnt als Kleidung mit Geschichte — gesammelt statt deponiert. Ballen öffnen sich auf ein Pufferband; Greifer heben ein Teil aufs Mal.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s1_text">Kleidung mit Geschichte — gesammelt statt deponiert.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s1_flow">BALLEN → BAND → EIN TEIL AUFS MAL</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">Diese Stufe ansehen →</span>
             </button>
             <button type="button" class="lp-m-st" data-cam="2" aria-pressed="false">
                 <span class="lp-m-st-idx" data-i18n="machine.s2_idx">02 — Sortierung</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage2_title">Zurückgewonnen</span>
                 <span class="lp-m-st-tag" data-i18n="landing.stage2_tag">KI</span>
-                <span class="lp-m-st-text" data-i18n="machine.s2_text">Stoffe, Knöpfe, Nähte: Eine Nahinfrarot-Brücke soll Faser, Farbe und Zustand in Sekunden lesen — und jedes Teil in seinen Strom lenken: Remake, Panel oder Faser.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s2_text">Nahinfrarot soll Faser, Farbe, Zustand lesen.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s2_flow">SCAN → REMAKE · PANEL · FASER</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">Diese Stufe ansehen →</span>
             </button>
             <button type="button" class="lp-m-st" data-cam="3" aria-pressed="false">
                 <span class="lp-m-st-idx" data-i18n="machine.s3_idx">03 — Remake-Zelle</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage3_title">Entworfen</span>
                 <span class="lp-m-st-tag lp-m-st-tag--you" data-i18n="landing.stage3_tag">Du</span>
-                <span class="lp-m-st-text" data-i18n="machine.s3_text">Deine Vorlage aus dem Studio ist die Schnittdatei: Die Zelle soll zurückgewonnene Panels scannen und deinen Entwurf um Verschleiss herum schneiden — dein Stil, deine Masse.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s3_text">Deine Vorlage ist die Schnittdatei — dein Stil, deine Masse.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s3_flow">PANEL → SCHNITT UM VERSCHLEISS</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">Diese Stufe ansehen →</span>
             </button>
             <button type="button" class="lp-m-st" data-cam="4" aria-pressed="false">
                 <span class="lp-m-st-idx" data-i18n="machine.s4_idx">04 — Ausgang</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage4_title">Wiedergeboren</span>
                 <span class="lp-m-st-tag" data-i18n="landing.stage4_tag">KI</span>
-                <span class="lp-m-st-text" data-i18n="machine.s4_text">Autonomes Nähen ist der ungelöste Schritt — gestrichelt gezeichnet, bis es echt ist. Dann hängt am Ausgang genau ein Stück: deins.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s4_text">Autonomes Nähen bleibt ungelöst — gestrichelt, bis es echt ist.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s4_flow">SCHNITT → NAHT ┄ UNGELÖST → DEINS</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">Diese Stufe ansehen →</span>
             </button>
         </div>
-        <p class="lp-machine-honest" data-i18n="machine.honest">Prüfbare Anker statt Hype: Nahinfrarot-Sortierung läuft seit 2020 im Industriemassstab (SIPTex Malmö) · Roboter beschicken heute Faltmaschinen mit weicher Wäsche · Demontage-Nähte öffnen Kleidung auf Knopfdruck (Resortecs) — und nichts davon näht Kleidung im Allgemeinen. Genau diese Lücke ist oben gestrichelt gezeichnet.</p>
+        <!-- Prüfbare Anker als drei Mono-Zeilen; die Marker sprechen die
+             Legende der Zeichnung: durchgezogen = gibt es heute,
+             gestrichelt = die offene Lücke. -->
+        <div class="lp-machine-anchors">
+            <p class="lp-anchors-label" data-i18n="machine.anchors_label">PRÜFBAR</p>
+            <ul class="lp-anchor-list" role="list">
+                <li class="lp-anchor is-solid" data-i18n="machine.anchor1">NIR-SORTIERUNG · INDUSTRIELL SEIT 2020 (SIPTEX MALMÖ)</li>
+                <li class="lp-anchor is-solid" data-i18n="machine.anchor2">DEMONTAGE-NÄHTE ÖFFNEN KLEIDUNG AUF KNOPFDRUCK (RESORTECS)</li>
+                <li class="lp-anchor is-dashed" data-i18n="machine.anchor3">AUTONOMES NÄHEN IM ALLGEMEINEN — UNGELÖST</li>
+            </ul>
+        </div>
         <p class="lp-machine-confess" data-lp-reveal data-i18n-html="machine.confess_html">Nichts davon ist gebaut. <strong>Lieber zeigen wir dir den Bauplan, als so zu tun.</strong></p>
         <!-- KI, richtig eingesetzt (aus #ai-done-right): Linie vs. Kreis —
              die Mensch/Maschine-Grenze direkt unter der Maschine, die sie zeigt. -->
@@ -843,41 +857,48 @@
                 <article class="lp-aidr-card is-dim">
                     <p class="lp-aidr-tag" data-i18n="aidr.dim_tag">Auf der Linie</p>
                     <h4 data-i18n="aidr.dim_h">Vorhersagen, anstossen, wiederholen</h4>
-                    <p data-i18n="aidr.dim_p">Empfehlungssysteme, die dich schneller zum nächsten Kauf bringen. KI, die die Linie füttert — sie erzeugt neue Bedürfnisse.</p>
+                    <p data-i18n="aidr.dim_p">Füttert die Linie — erzeugt neue Bedürfnisse.</p>
                 </article>
                 <article class="lp-aidr-card is-lit">
                     <p class="lp-aidr-tag" data-i18n="aidr.lit_tag">Im Kreis</p>
                     <h4 data-i18n="aidr.lit_h">Sehen, trennen, zurückgewinnen</h4>
-                    <p data-i18n="aidr.lit_p">KI auf den Abfallberg gerichtet: Sie soll entwirren, was weggeworfen wurde, damit es neu leben kann.</p>
+                    <p data-i18n="aidr.lit_p">Dieselbe KI, auf den Abfallberg gerichtet.</p>
                 </article>
             </div>
-            <p class="lp-aidr-body" data-i18n-html="aidr.body_html">Das schwierige Problem im Kreis war nie das Nähen — es ist das Entwirren des Weggeworfenen: Mischfasern, Knöpfe, Nähte, Farben. Ein Berg, den keine menschliche Linie im grossen Massstab sortieren kann. Genau dort soll die Maschine arbeiten: <strong>den Stoff sortieren und das Stück bauen. Mehr nicht.</strong> Das Design bleibt deins — du gibst den Stil vor, du triffst jede Entscheidung. <strong>Die KI entwirft nie.</strong></p>
+            <!-- Rollen-Protokoll statt Absatz: drei Zeilen weisen die Arbeit
+                 zu, die Schlusszeile trägt die eine Botschaft. -->
+            <div class="lp-aidr-roles">
+                <p class="lp-aidr-role" data-i18n="aidr.role1">SORTIEREN → MASCHINE</p>
+                <p class="lp-aidr-role" data-i18n="aidr.role2">FERTIGEN → MASCHINE</p>
+                <p class="lp-aidr-role is-you" data-i18n="aidr.role3">ENTWERFEN → DU</p>
+            </div>
+            <p class="lp-aidr-never" data-i18n="aidr.never">Die KI entwirft nie.</p>
         </div>
         <!-- Deine Seite des Kreises (aus #how): die vier Schritte, die die
              Schnittdatei für die Remake-Zelle erzeugen — kompakter Protokollrand. -->
         <div class="lp-machine-you" data-lp-reveal>
             <p class="lp-label" data-i18n="how.label">So funktioniert's</p>
-            <p class="lp-machine-you-line" data-i18n="how.sub">Das ist deine Seite des Kreises — vom ersten Satz zur dokumentierten Vorlage. Du hältst den Faden, die Maschine hält die Nadel.</p>
+            <p class="lp-machine-you-line" data-i18n="how.sub">Du hältst den Faden, die Maschine die Nadel.</p>
             <ol class="lp-machine-steps">
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">01</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s1_label">Du entwirfst</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s1_line">Ein Satz genügt. Die Idee ist deine — und bleibt es.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s1_line">Ein Satz genügt. Die Idee bleibt deine.</p>
                 </li>
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">02</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s2_label">Du entscheidest</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s2_line">Die Engine fragt, du wählst: Schnitt, Stoff, Farbe. Jede Antwort schärft dein Stück.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s2_line">Die Engine fragt — du wählst Schnitt, Stoff, Farbe.</p>
                 </li>
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">03</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s3_label">Deine Masse</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s3_line">Neun Körpermasse — per Foto direkt im Browser, von Hand oder als Preset. Eine Schätzung, jederzeit anpassbar.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s3_line">Neun Werte — per Foto im Browser, von Hand oder Preset.</p>
                 </li>
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">04</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s4_label">Deine Vorlage</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s4_line">Ein dokumentiertes Einzelstück — bereit für den Tag, an dem sich der Kreis zum ersten Mal schliesst.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s4_line">Dokumentiert — bereit, wenn der Kreis sich zum ersten Mal schliesst.</p>
                 </li>
             </ol>
         </div>

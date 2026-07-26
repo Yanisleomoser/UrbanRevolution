@@ -92,7 +92,7 @@
         } catch (e) { /* no-op — loader stays CSS-hidden, hero shows immediately */ }
       })();
     </script>
-    <link rel="stylesheet" href="/css/styles.css?v=20260726-kapitel-index">
+    <link rel="stylesheet" href="/css/styles.css?v=20260726-condense-kapitel">
 
     <!-- Pre-warm connections to CDNs we know we'll hit -->
     <!-- jsdelivr serves render-critical GSAP at load (+ lazy three.js, on-demand
@@ -605,7 +605,7 @@
             <p class="lp-label" data-i18n="machine.label">Act II — The Circle</p>
             <h2 class="lp-machine-title" id="machine-title" data-i18n="machine.title">Waste in. One-off out.</h2>
             <p class="lp-machine-status" data-i18n="machine.status">Status: vision — not yet built</p>
-            <p class="lp-machine-sub" data-i18n="machine.sub">A factory whose conveyor has no end — four stations, one circle. This is its blueprint, running as a simulation.</p>
+            <p class="lp-machine-sub" data-i18n="machine.sub">The blueprint runs as a simulation. The factory doesn't yet.</p>
         </div>
         <div class="lp-machine-band" data-lp-reveal="">
             <span class="lp-machine-swipe" aria-hidden="true" data-i18n="machine.swipe">swipe →</span>
@@ -814,7 +814,7 @@
              KEIN data-i18n: der Text ist zustandsabhängig JS-gesetzt —
              I18N.apply() würde die Datei-Variante beim Sprachwechsel
              überschreiben, machine.js rendert selbst neu. -->
-        <p class="lp-machine-file" id="mFileCap">Ein Bügel bleibt frei — deins. Entwirf dein Stück im Studio, und die Remake-Zelle schneidet deine Vorlage hier.</p>
+        <p class="lp-machine-file" id="mFileCap">EIN BÜGEL BLEIBT FREI — DEINS · ENTWIRF IM STUDIO</p>
         <!-- Die vier Stationen des Kreislaufs (aus #loop), auf echte Maschinen-
              Stufen gelegt — Attributions-Tags [ Alle / KI / Du / KI ] bleiben.
              Klick/Tap zoomt die Kamera der Zeichnung auf die Stufe. -->
@@ -823,32 +823,46 @@
                 <span class="lp-m-st-idx" data-i18n="machine.s1_idx">01 — Intake</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage1_title">Worn</span>
                 <span class="lp-m-st-tag" data-i18n="landing.stage1_tag">All</span>
-                <span class="lp-m-st-text" data-i18n="machine.s1_text">Every piece begins as clothing with history — collected, not landfilled. Bales open onto a buffer belt; grippers lift one piece at a time.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s1_text">Clothing with a past — collected, not landfilled.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s1_flow">BALE → BELT → ONE PIECE AT A TIME</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">View this stage →</span>
             </button>
             <button type="button" class="lp-m-st" data-cam="2" aria-pressed="false">
                 <span class="lp-m-st-idx" data-i18n="machine.s2_idx">02 — Sorting</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage2_title">Reclaimed</span>
                 <span class="lp-m-st-tag" data-i18n="landing.stage2_tag">AI</span>
-                <span class="lp-m-st-text" data-i18n="machine.s2_text">Fabric, buttons, seams: a near-infrared bridge is meant to read fibre, colour and condition in seconds — and route every piece into its stream: remake, panel or fibre.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s2_text">Near-infrared is meant to read fibre, colour, condition.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s2_flow">SCAN → REMAKE · PANEL · FIBRE</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">View this stage →</span>
             </button>
             <button type="button" class="lp-m-st" data-cam="3" aria-pressed="false">
                 <span class="lp-m-st-idx" data-i18n="machine.s3_idx">03 — Remake cell</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage3_title">Designed</span>
                 <span class="lp-m-st-tag lp-m-st-tag--you" data-i18n="landing.stage3_tag">You</span>
-                <span class="lp-m-st-text" data-i18n="machine.s3_text">Your blueprint from the studio is the cutting file: the cell is meant to scan reclaimed panels and cut your design around wear — your style, your measurements.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s3_text">Your template is the cut file — your style, your measurements.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s3_flow">PANEL → CUT AROUND WEAR</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">View this stage →</span>
             </button>
             <button type="button" class="lp-m-st" data-cam="4" aria-pressed="false">
                 <span class="lp-m-st-idx" data-i18n="machine.s4_idx">04 — Outbound</span>
                 <span class="lp-m-st-title" data-i18n="landing.stage4_title">Reborn</span>
                 <span class="lp-m-st-tag" data-i18n="landing.stage4_tag">AI</span>
-                <span class="lp-m-st-text" data-i18n="machine.s4_text">Autonomous sewing is the unsolved step — drawn dashed until it's real. Then exactly one piece hangs at the outbound rail: yours.</span>
+                <span class="lp-m-st-text" data-i18n="machine.s4_text">Autonomous sewing stays unsolved — dashed until it is real.</span>
+                <span class="lp-m-st-flow" data-i18n="machine.s4_flow">CUT → SEAM ┄ UNSOLVED → YOURS</span>
                 <span class="lp-m-st-hint" aria-hidden="true" data-i18n="machine.zoom_hint">View this stage →</span>
             </button>
         </div>
-        <p class="lp-machine-honest" data-i18n="machine.honest">Verifiable anchors, not hype: near-infrared sorting has run at industrial scale since 2020 (SIPTex Malmö) · robots already feed folding machines with soft laundry · disassembly stitching opens garments on demand (Resortecs) — and none of it sews garments in general. That exact gap is drawn dashed above.</p>
+        <!-- Prüfbare Anker als drei Mono-Zeilen; die Marker sprechen die
+             Legende der Zeichnung: durchgezogen = gibt es heute,
+             gestrichelt = die offene Lücke. -->
+        <div class="lp-machine-anchors">
+            <p class="lp-anchors-label" data-i18n="machine.anchors_label">VERIFIABLE</p>
+            <ul class="lp-anchor-list" role="list">
+                <li class="lp-anchor is-solid" data-i18n="machine.anchor1">NIR SORTING · INDUSTRIAL SINCE 2020 (SIPTEX MALMÖ)</li>
+                <li class="lp-anchor is-solid" data-i18n="machine.anchor2">DISASSEMBLY STITCHES OPEN GARMENTS ON DEMAND (RESORTECS)</li>
+                <li class="lp-anchor is-dashed" data-i18n="machine.anchor3">AUTONOMOUS SEWING IN GENERAL — UNSOLVED</li>
+            </ul>
+        </div>
         <p class="lp-machine-confess" data-lp-reveal="" data-i18n-html="machine.confess_html">None of this is built. <strong>We'd rather show you the blueprint than pretend.</strong></p>
         <!-- KI, richtig eingesetzt (aus #ai-done-right): Linie vs. Kreis —
              die Mensch/Maschine-Grenze direkt unter der Maschine, die sie zeigt. -->
@@ -859,41 +873,48 @@
                 <article class="lp-aidr-card is-dim">
                     <p class="lp-aidr-tag" data-i18n="aidr.dim_tag">On the line</p>
                     <h4 data-i18n="aidr.dim_h">Predict, push, repeat</h4>
-                    <p data-i18n="aidr.dim_p">Recommendation engines tuned to make you buy the next thing, faster. AI that feeds the line — manufacturing new wants.</p>
+                    <p data-i18n="aidr.dim_p">Feeds the line — manufactures new wants.</p>
                 </article>
                 <article class="lp-aidr-card is-lit">
                     <p class="lp-aidr-tag" data-i18n="aidr.lit_tag">In the circle</p>
                     <h4 data-i18n="aidr.lit_h">See, separate, reclaim</h4>
-                    <p data-i18n="aidr.lit_p">AI aimed at the discard pile: it is meant to untangle what was thrown away so it can live again.</p>
+                    <p data-i18n="aidr.lit_p">The same AI, aimed at the waste pile.</p>
                 </article>
             </div>
-            <p class="lp-aidr-body" data-i18n-html="aidr.body_html">The hard problem in the circle was never the sewing — it is untangling the discarded: mixed fibres, fastenings, seams, dyes. A pile no human line can sort at scale. That is exactly where the machine is meant to work: <strong>sort the fabric and build the piece. Nothing more.</strong> The design stays yours — you set the style, you make every decision. <strong>The AI never designs.</strong></p>
+            <!-- Rollen-Protokoll statt Absatz: drei Zeilen weisen die Arbeit
+                 zu, die Schlusszeile trägt die eine Botschaft. -->
+            <div class="lp-aidr-roles">
+                <p class="lp-aidr-role" data-i18n="aidr.role1">SORT → MACHINE</p>
+                <p class="lp-aidr-role" data-i18n="aidr.role2">MAKE → MACHINE</p>
+                <p class="lp-aidr-role is-you" data-i18n="aidr.role3">DESIGN → YOU</p>
+            </div>
+            <p class="lp-aidr-never" data-i18n="aidr.never">The AI never designs.</p>
         </div>
         <!-- Deine Seite des Kreises (aus #how): die vier Schritte, die die
              Schnittdatei für die Remake-Zelle erzeugen — kompakter Protokollrand. -->
         <div class="lp-machine-you" data-lp-reveal="">
             <p class="lp-label" data-i18n="how.label">How it works</p>
-            <p class="lp-machine-you-line" data-i18n="how.sub">This is your side of the circle — from the first sentence to a documented blueprint. You hold the thread, the machine holds the needle.</p>
+            <p class="lp-machine-you-line" data-i18n="how.sub">You hold the thread, the machine the needle.</p>
             <ol class="lp-machine-steps">
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">01</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s1_label">You design</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s1_line">One sentence is enough. The idea is yours — and stays yours.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s1_line">One sentence is enough. The idea stays yours.</p>
                 </li>
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">02</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s2_label">You decide</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s2_line">The engine asks, you choose: cut, fabric, colour. Every answer sharpens your piece.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s2_line">The engine asks — you choose cut, fabric, colour.</p>
                 </li>
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">03</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s3_label">Your measurements</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s3_line">Nine body measurements — by photo right in your browser, by hand, or from a preset. An estimate, adjustable anytime.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s3_line">Nine values — via photo in the browser, by hand, or preset.</p>
                 </li>
                 <li class="lp-machine-step">
                     <span class="lp-machine-step-num" aria-hidden="true">04</span>
                     <h4 class="lp-machine-step-label" data-i18n="how.s4_label">Your blueprint</h4>
-                    <p class="lp-machine-step-line" data-i18n="how.s4_line">A documented one-off — ready for the day the circle closes for the first time.</p>
+                    <p class="lp-machine-step-line" data-i18n="how.s4_line">Documented — ready for the day the circle first closes.</p>
                 </li>
             </ol>
         </div>
