@@ -577,6 +577,23 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   call (real-device check / product decision) that no engineering session
 >   can make for them.
 
+> **Status update (2026-07-26, triggered by the `pull_request.closed`
+> webhook for #465):** re-checked against `main` @ `1fc4dd8`. One commit
+> landed since the sync above — **#466** ("patch brace-expansion
+> high-severity DoS advisory"), lockfile-only, `npm audit` → 0
+> vulnerabilities. It does **not** touch this doc's tracked backlog, but it
+> changes the recommendation two entries up: **#456 is now a stale
+> duplicate.** #456 and #466 fix the identical advisory
+> (`brace-expansion@<=5.0.7` → `5.0.8`, same transitive path via
+> `minimatch`) on the same lockfile entry; #466 landed independently
+> (different session, different branch) while #456 sat open. #456's diff is
+> now a no-op against current `main` — **recommend closing #456**, not
+> undrafting it as the previous entry said. #457, #461, #464 are otherwise
+> unchanged since the sync above (same `updated_at` — no new commits on any
+> of the three) — the previous recommendation for each still stands.
+> - **Same-day-doesn't-recount convention applies** — the twelve-review
+>   count below is unchanged.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
