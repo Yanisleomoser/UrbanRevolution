@@ -3750,6 +3750,46 @@ html.is-touch .de-region-opt { min-height: 48px; }
 .de-swatch::after { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 140px 140px; mix-blend-mode: overlay; opacity: 0.16; pointer-events: none; }
 .de-preview::after { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E"); background-size: 140px 140px; mix-blend-mode: overlay; opacity: 0.1; pointer-events: none; border-radius: inherit; }
 
+/* ── B3 · Material-Realität: die RÜCKWAND des Ateliers ───────────────────
+   Die Roadmap schrieb „das Makro-Foto blutet vollflächig in die Bühne" —
+   das stammt aus der Zeit VOR B2. Vollflächig gedacht löscht das Foto die
+   Hohlkehle, und damit steht das Stück wieder auf nichts (genau die Lektion,
+   die B2 teuer gelernt hat); ausserdem läge eine hochfrequente Textur direkt
+   hinter einer dünnen technischen Zeichnung.
+   Stattdessen hängt der Stoff als Bahn an der Rückwand: er füllt den oberen
+   Bühnenraum und stirbt vor dem Boden, LIEGT UNTER Kegel, Pool, Hohlkehle
+   und Vignette (die kommen aus der Basis-Regel und malen darüber weiter).
+   Das Stück steht davor, die Bühne bleibt Bühne, und das Foto bleibt
+   Material-Beweis statt Produkt-Beweis.
+   Warum ein Pseudo-Element und kein DOM-Knoten: render-preview.js ersetzt
+   das innerHTML von .de-preview bei JEDEM Render — ein eingehängtes Kind
+   wäre nach dem ersten Morph weg. ::after ist bereits das Filmkorn, also
+   trägt ::before die Bahn. z-index:-1 + isolation setzt sie über die
+   eigene Fläche, aber unter das Flat. */
+.de-preview { isolation: isolate; }
+.de-preview::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--mat-img, none);
+    background-size: cover;
+    background-position: center 40%;
+    border-radius: inherit;
+    pointer-events: none;
+    /* Die Bahn verliert sich zum Boden hin — sonst hätte die Hohlkehle
+       nichts mehr, worauf sie liegt. Oben ebenfalls gedämpft: dort stehen
+       Marke und Masse-Zeile, und welche Stelle eines Makro-Fotos gerade hell
+       ist, ist von Material zu Material Zufall. */
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, #000 20%, #000 34%, rgba(0, 0, 0, 0.42) 58%, transparent 76%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, #000 20%, #000 34%, rgba(0, 0, 0, 0.42) 58%, transparent 76%);
+    /* Der Zielwert kommt aus JS (--mat-on): so genügt EINE Schicht, und der
+       Wechsel läuft als Deckkraft-Übergang statt als Bildsprung. */
+    opacity: var(--mat-on, 0);
+    transition: opacity .22s var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) { .de-preview::before { transition: none; } }
+
 /* ============================================================
    §1 — Live-Vorschau wird das Hauptstück (Layout-Umbau).
    Überschreibt die frühere 96px-Thumbnail-Box. 2-spaltig auf Desktop,
