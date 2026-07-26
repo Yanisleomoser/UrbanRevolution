@@ -524,7 +524,7 @@
         if (rail && scroller && cards.length) {
             let railActive = -1;
             let railSettle = null;
-            function railSync() {
+            const railSync = () => {
                 railSettle = null;
                 if (mqDesk.matches) return;
                 const rr = rail.getBoundingClientRect();
@@ -542,7 +542,7 @@
                 railActive = best;
                 cards.forEach((c, k) => c.setAttribute("aria-pressed", k === best ? "true" : "false"));
                 scroller.scrollTo({ left: zoneLeft(best), behavior: RM ? "auto" : "smooth" });
-            }
+            };
             rail.addEventListener("scroll", () => {
                 if (railSettle) clearTimeout(railSettle);
                 railSettle = setTimeout(railSync, 90);
