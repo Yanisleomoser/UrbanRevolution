@@ -259,6 +259,54 @@ console.log("\n— phaseStepper (honest orientation: where you are, never a % ga
   assert(!sC.includes("de-step-dot") && !sC.includes("de-step-bar"), "no dots, no gradient segment bars");
 }
 
+console.log("\n— materialGesture (B3: der Stoff-Moment muss es auf dem TELEFON auch geben) —");
+{
+  const P = "/img/material/wool.jpg";
+  const g = (ev, o) => Flow.materialGesture(ev, o);
+  // Zeiger-Gerät: zeigen bringt die Bahn, weggehen nimmt sie mit.
+  assert(eq(g("point", { photo: P, hasHover: true }), { show: true, hold: 0 }), "Zeiger: zeigen blendet die Bahn ein (ohne Halt)");
+  assert(eq(g("leave", { photo: P, hasHover: true }), { show: false, hold: 0 }), "Zeiger: weggehen blendet sie aus");
+  // Touch: es gibt keinen Hover — der Hover-Weg darf dort NICHTS tun, sonst
+  // hinge der Moment an einem Ereignis, das das Gerät nie sendet.
+  assert(g("point", { photo: P, hasHover: false }) === null, "Touch: 'zeigen' ist kein Weg (kein Zeiger vorhanden)");
+  assert(g("leave", { photo: P, hasHover: false }) === null, "Touch: 'weggehen' ebenso wenig");
+  // …stattdessen hängt er am Wählen — mit Halt, damit man ihn überhaupt sieht.
+  const commit = g("commit", { photo: P, hasHover: false });
+  assert(commit && commit.show === true && commit.hold === Flow.MAT_HOLD_MS, "Touch: das Wählen bringt die Bahn, und sie HÄLT");
+  assert(Flow.MAT_HOLD_MS >= 800, `der Halt ist lang genug, um gesehen zu werden (${Flow.MAT_HOLD_MS}ms)`);
+  // Der Halt gehört sich selbst: der focusout der getippten Karte darf ihn
+  // nicht im selben Atemzug löschen (real gemessener Fehler).
+  assert(g("blur", { photo: P, hasHover: false, holding: true }) === null, "ein laufender Halt wird von blur NICHT abgeräumt");
+  assert(g("leave", { photo: P, hasHover: true, holding: true }) === null, "…und auch nicht vom Zeiger, der weiterwandert");
+  assert(eq(g("blur", { photo: P, hasHover: false, holding: false }), { show: false, hold: 0 }), "ohne Halt räumt blur normal ab");
+  // Tastatur erreicht denselben Moment.
+  assert(eq(g("focus", { photo: P, hasHover: false }), { show: true, hold: 0 }), "Tastatur: der Fokus zeigt die Bahn auch ohne Zeiger");
+  // Karten ohne Makro-Aufnahme (alles ausser Stoff) lösen nie etwas aus.
+  ["point", "focus", "commit", "blur", "leave"].forEach((ev) =>
+    assert(g(ev, { photo: null, hasHover: true }) === null, `ohne Foto passiert bei "${ev}" nichts`));
+  assert(g("weird", { photo: P, hasHover: true }) === null, "unbekannte Geste löst nichts aus");
+
+  // Der Stil-Patch: hier sitzt das Escaping für die CSS-url().
+  const S = Flow.materialStyle;
+  assert(S(null, P) === null, "ohne Geste kein Stil-Patch");
+  assert(eq(S({ show: false, hold: 0 }, P), { "--mat-on": "0" }), "ausblenden setzt nur die Deckkraft zurück");
+  const shown = S({ show: true, hold: 0 }, P);
+  assert(shown["--mat-img"] === 'url("' + P + '")', "einblenden setzt Bild und Deckkraft");
+  assert(parseFloat(shown["--mat-on"]) > 0.1 && parseFloat(shown["--mat-on"]) < 0.45,
+    `die Bahn bleibt dem Stück untergeordnet (${shown["--mat-on"]})`);
+  assert(S({ show: true, hold: 0 }, null) === null, "einblenden ohne Bild ergibt keinen Patch");
+  // Aus einer CSS-url() bricht man mit " ' ( ) aus — der Rumpf darf keins
+  // davon roh enthalten, sonst endet die Deklaration mitten im Pfad und der
+  // Rest wird als eigene Regel gelesen.
+  const payload = (v) => v.slice('url("'.length, -'")'.length);
+  const nasty = S({ show: true, hold: 0 }, '/a".jpg");background:red;x(\'');
+  assert(!/["'()]/.test(payload(nasty["--mat-img"])), "Anführungszeichen und Klammern im Pfad werden entschärft");
+  assert(nasty["--mat-img"].startsWith('url("') && nasty["--mat-img"].endsWith('")'),
+    "…die url() bleibt genau eine, sauber geschlossene Deklaration");
+  assert(!/["'()]/.test(payload(S({ show: true, hold: 0 }, "/a)b('c\".jpg")["--mat-img"])),
+    "auch Klammern und einfache Anführungszeichen — encodeURIComponent liesse genau die durch");
+}
+
 console.log("\n— isGuardedTap (double-tap must not answer the NEXT question / fire generate) —");
 {
   const G = Flow.COMMIT_GUARD_MS;
