@@ -913,6 +913,17 @@ Re-checked directly against `main` @ `00d8b2b`:
 > entries above; this note exists only to record the merge and the re-checked
 > deploy match.
 
+> **Status update (2026-07-26, triggered by #478's own `pull_request.closed`
+> webhook):** #478 (the infra/API-shaped health check two entries above)
+> merged as `f956022` — re-confirmed via Vercel that `f956022` is an exact
+> match to the current production deployment
+> (`dpl_6ZoS33asmxNaXAE9zDypTQGHw7Wn`, `target: production`, `state: READY`),
+> so the live site stays current. No other open PRs. Issues #383/#384
+> unchanged, both still waiting on human input (copy/placement decision,
+> real business data) an engineering session can't supply. Same-day-doesn't-
+> recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
+> stands unchanged. Nothing new; no `fix/*` PR needed.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
