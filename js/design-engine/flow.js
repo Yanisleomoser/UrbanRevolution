@@ -153,6 +153,17 @@ const DesignFlow = (() => {
       const set = payload && payload.set && typeof payload.set === "object" ? payload.set : {};
       return { eff: { set, weight: {} }, conf: 0.62 };
     }
+    if (node.modality === "gallery") {
+      // Startpunkt-Galerie (Roadmap B4): der Tipp übernimmt eine aufgelöste
+      // Richtung — aber NUR als Startpunkt. conf 0.55 liegt knapp über der
+      // Entscheidungs-Schwelle (0.5), damit die Reise danach keine Fragen
+      // wiederholt, die der Startpunkt schon beantwortet hat, und deutlich
+      // unter protectExplicit (0.75), damit JEDE spätere echte Antwort den
+      // Startpunkt überschreibt. „Von null" (Skip) liefert keine Effekte.
+      const set = payload && payload.set && typeof payload.set === "object" ? payload.set : {};
+      const weight = payload && payload.weight && typeof payload.weight === "object" ? payload.weight : {};
+      return { eff: { set, weight }, conf: 0.55 };
+    }
     if (node.modality === "slider") {
       const eff = { set: { [node.bind]: payload }, weight: {} };
       if (node.weightAt) {
@@ -456,6 +467,79 @@ const DesignFlow = (() => {
     { p: "D", key: "engine.phase_color" },
     { p: "E", key: "engine.phase_details" },
   ];
+  // ── B4 · Welche Silhouette gehört zu welcher Richtung ───────────────────
+  // Die Archetyp-Defaults setzen Farbe, Passform und Stoff — aber NICHT
+  // `subArchetype`, und genau der formt das Stück. Ohne ihn zeigte die
+  // Startpunkt-Galerie sechsmal dieselbe Silhouette in sechs Farben, also
+  // gerade nicht die Vielfalt, die ihr Sinn ist (am Render gesehen).
+  // Die Zuordnung steht bereits in den Daten: jede Silhouetten-Wahl deklariert
+  // in `effects.weight`, zu welchen Archetypen sie zieht. Wir nehmen also je
+  // Richtung die Wahl, die am stärksten zu ihr zieht — keine neue Tabelle, die
+  // neben den Fragen veralten könnte. Rein und exportiert, damit die
+  // Offline-Suite die Zuordnung festnageln kann.
+  function subArchFor(nodes, category, archId) {
+    if (!archId) return null;
+    let best = null;
+    let bestW = 0;
+    (nodes || []).forEach((n) => {
+      if (!n || !Array.isArray(n.choices)) return;
+      // Nur Knoten dieser Kategorie, die wirklich die Silhouette setzen.
+      if (typeof n.when === "string" && n.when.indexOf("'" + category + "'") === -1) return;
+      n.choices.forEach((c) => {
+        const eff = c && c.effects;
+        const sets = eff && eff.set && eff.set.subArchetype;
+        if (!sets) return;
+        const w = (eff.weight && eff.weight[archId]) || 0;
+        if (w > bestW) { bestW = w; best = { value: sets, effects: eff }; }
+      });
+    });
+    return best;
+  }
+
+  // Die Bauvorschrift der Startpunkte — rein, damit die Offline-Suite die
+  // beiden Zusagen festnageln kann, auf denen alles steht: (1) was der Nutzer
+  // selbst entschieden hat, bleibt in JEDER Richtung unangetastet, und (2) der
+  // Beitrag eines Startpunkts enthält NUR Offenes, kann also nichts
+  // überschreiben. Ohne (2) wäre die Galerie kein Startpunkt, sondern ein Reset.
+  function buildStartingPoints(dna, opts) {
+    const o = opts || {};
+    const archs = o.archetypes || [];
+    if (!archs.length) return [];
+    const ranked = (typeof window !== "undefined" && window.DesignInference)
+      ? window.DesignInference.topArchetypes(dna, archs.length)
+          .map((a) => archs.find((x) => x && x.id === a.id)).filter(Boolean)
+      : [];
+    const list = ranked.length === archs.length ? ranked : archs;
+    const required = o.required || [];
+    const thv = o.threshold == null ? 0.5 : o.threshold;
+    const cat = DesignDNA.get(dna, "category");
+    return list.slice(0, o.limit || list.length).map((arch) => {
+      const cand = JSON.parse(JSON.stringify(dna));
+      // Erst die Silhouette der Richtung (sonst sechsmal dasselbe Stück in
+      // sechs Farben), dann der Rest aus den Archetyp-Defaults.
+      const sub = DesignDNA.confidence(dna, "subArchetype") < thv
+        ? subArchFor(o.nodes, cat, arch.id) : null;
+      if (sub) DesignDNA.applyEffects(cand, sub.effects, thv);
+      DesignDNA.completeAs(cand, arch, required, thv);
+      if (typeof o.scrub === "function") o.scrub(cand, thv);
+      const set = {};
+      const contributes = Object.keys(arch.defaults || {});
+      if (sub) Object.keys((sub.effects && sub.effects.set) || {}).forEach((p) => contributes.push(p));
+      contributes.forEach((p) => {
+        if (DesignDNA.confidence(dna, p) < thv) {
+          const v = DesignDNA.get(cand, p);
+          if (v !== undefined) set[p] = v;
+        }
+      });
+      return {
+        id: arch.id,
+        label: (arch.label && (arch.label[o.lang] || arch.label.de)) || arch.id,
+        dna: cand,
+        payload: { set, weight: { [arch.id]: 0.5 } },
+      };
+    });
+  }
+
   // ── B3 · Material-Realität: welche Geste bringt die Rückwand ────────────
   // Die Roadmap plante die Stoff-Vorschau als reines Hover-Ereignis. Auf einem
   // Telefon gibt es keinen Hover, und eine Karte committet dort sofort — der
@@ -797,6 +881,9 @@ const DesignFlow = (() => {
     // oben (rein und getestet) — hier bleibt nur die Verdrahtung.
     let matTimer = 0;
     let matHolding = false;
+    // Welcher Stoff gerade DURCH die Silhouette scheint (B3b). null =
+    // der Flat ist wieder reine technische Zeichnung.
+    let matCloth = null;
     const canHover = () => typeof window !== "undefined" && window.matchMedia
       ? window.matchMedia("(hover: hover)").matches : false;
     function cardPhoto(el) {
@@ -805,6 +892,14 @@ const DesignFlow = (() => {
       const img = card.querySelector(".de-visual-img");
       const src = img && (img.currentSrc || img.getAttribute("src"));
       return src || null;
+    }
+    // Die Karte liefert eine absolute URL (img.currentSrc); GarmentSVG lässt
+    // aus gutem Grund nur eigene, relative Bildpfade zu — hier wird sie darauf
+    // zurückgeführt, statt die Whitelist dort aufzuweichen.
+    function clothPath(url) {
+      if (!url) return null;
+      const i = String(url).indexOf("/js/design-engine/content/img/");
+      return i === -1 ? null : String(url).slice(i);
     }
     function gesture(event, el, related) {
       const photo = cardPhoto(el);
@@ -816,11 +911,18 @@ const DesignFlow = (() => {
       if (!patch || !previewEl) return;
       clearTimeout(matTimer);
       Object.entries(patch).forEach(([k, v]) => previewEl.style.setProperty(k, v));
+      // Rückwand UND Stück: das Foto hängt hinter dem Stück und scheint
+      // zugleich durch seine Silhouette. Nur wenn sich der Stoff wirklich
+      // ändert, wird neu gezeichnet — sonst baute jedes pointerover das
+      // ganze SVG neu.
+      const nextCloth = g.show ? clothPath(photo) : null;
+      if (nextCloth !== matCloth) { matCloth = nextCloth; updatePreview(); }
       matHolding = !!(g && g.hold);
       if (matHolding) {
         matTimer = setTimeout(() => {
           matHolding = false;
           previewEl.style.setProperty("--mat-on", "0");
+          if (matCloth !== null) { matCloth = null; updatePreview(); }
         }, g.hold);
       }
     }
@@ -946,6 +1048,10 @@ const DesignFlow = (() => {
           progress: 0.38 + maturity() * 0.62,
           seed: answered.size,
           body,
+          // B3b · Der Stoff scheint durch die Silhouette, solange der
+          // Stoff-Moment läuft (dieselbe Geste, die auch die Rückwand
+          // bringt). Danach ist der Flat wieder reine Zeichnung.
+          cloth: matCloth,
         });
         // U2: das personalisierte Zeichnen war komplett stumm — eine leise
         // Mono-Zeile benennt es, sobald echte Masse einfliessen (und ein
@@ -1086,6 +1192,27 @@ const DesignFlow = (() => {
       // Duell-Panels leiten daraus ihre ehrliche „zieht zu …"-Zeile ab —
       // direkt aus den effects.weight der Wahl, nie aus Hand-Kopie.
       archetypes() { return (content && content.archetypes) || []; },
+      // ── B4 · Startpunkte: dieselbe DNA, in mehrere Richtungen aufgelöst ──
+      // Die Galerie zeigt keine Produkte, sondern Auflösungen DEINER bisherigen
+      // Entscheidungen — je eine pro Archetyp-Richtung, gereiht nach deinem
+      // Stilvektor. Was du schon selbst entschieden hast, bleibt in jeder
+      // Richtung stehen; ergänzt wird nur, was noch offen ist.
+      // Der scrubImpossibleFills-Aufruf ist hier nicht optional: `completeAs`
+      // füllt Archetyp-Defaults ein, die eine Kategorie gar nicht zeichnen kann
+      // (dieselbe Falle, durch die das Kleid einmal eine ungewählte Knopfleiste
+      // trug). Ohne ihn zeigte die Galerie Stücke, die es so nicht gibt.
+      startingPoints(n) {
+        return buildStartingPoints(dna, {
+          archetypes: (content && content.archetypes) || [],
+          nodes: content && content.nodes,
+          required: (content.attributes && content.attributes.required) || [],
+          threshold: content.attributes && content.attributes.confidenceThreshold,
+          lang: lang(),
+          limit: n,
+          scrub: (cand, thv) => scrubImpossibleFills(cand, thv,
+            window.GarmentSVG && window.GarmentSVG.closureInferable),
+        });
+      },
       live(payload) {
         const { eff } = resolveEffects(currentNode, payload);
         if (eff && eff.set) {
@@ -1691,7 +1818,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, materialGesture, materialStyle, MAT_HOLD_MS, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand, changeLabel };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, materialGesture, materialStyle, MAT_HOLD_MS, subArchFor, buildStartingPoints, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand, changeLabel };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

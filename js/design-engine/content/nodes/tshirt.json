@@ -2,6 +2,15 @@
   "_comment": "tshirt branch — full journey at jacket depth (B form · C fabric+finish · D colour+pattern · E details). Every node gated by category=='tshirt' + a confidence check; each maps to a visible GarmentSVG flat parameter. Mirrors jacket.json schema.",
   "nodes": [
     {
+      "id": "tshirt_start",
+      "phase": "B",
+      "modality": "gallery",
+      "when": "category == 'tshirt' && _confidence.subArchetype < 0.6",
+      "targets": ["silhouette.fit", "length", "fabric.material", "color.scheme"],
+      "priority": 0.95,
+      "question": { "de": "Wo fangen wir an?", "en": "Where do we start?" }
+    },
+    {
       "id": "tshirt_subarch",
       "phase": "B",
       "modality": "cards",

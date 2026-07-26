@@ -2,6 +2,15 @@
   "_comment": "Jacket branch — phases B (form), C (fabric), D (colour + pattern), E (details, deeply branched). Every node is gated by `when` on category=='jacket' plus a confidence check on the attribute it resolves; loud pattern/hardware nodes are additionally energy-gated so quiet-minimal paths skip them (emergent depth, brief §11).",
   "nodes": [
     {
+      "id": "jacket_start",
+      "phase": "B",
+      "modality": "gallery",
+      "when": "category == 'jacket' && _confidence.subArchetype < 0.6",
+      "targets": ["silhouette.fit", "length", "fabric.material", "color.scheme"],
+      "priority": 0.95,
+      "question": { "de": "Wo fangen wir an?", "en": "Where do we start?" }
+    },
+    {
       "id": "jacket_subarch",
       "phase": "B",
       "modality": "cards",

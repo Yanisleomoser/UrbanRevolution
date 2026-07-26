@@ -15,6 +15,7 @@ import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
 import { startServer } from "./static-server.mjs";
 import { routeCdnThroughNode } from "./cdn-route.mjs";
+import { walkJourney } from "./journey-walk.mjs";
 
 const OUT = "screenshots/verify-atelier";
 mkdirSync(OUT, { recursive: true });
@@ -25,38 +26,29 @@ const browser = await chromium.launch({ args: ["--no-sandbox"] });
 let failed = 0;
 const check = (cond, msg) => { console.log(`  ${cond ? "✓" : "✗ FAIL:"} ${msg}`); if (!cond) failed++; };
 
-// Deterministic mini-walk (mirrors shoot-journey.mjs) until the board shows.
+// Der Walk zum Board nutzt den geteilten Walker (scripts/journey-walk.mjs) —
+// eigene Kopien dieser Schleife sind in genau diesem Guard schon zweimal
+// still verrottet, als neue Screens dazukamen. Eigen bleibt nur die
+// Farbwelt-Geste (Duo-Tab + zwei Stops), weil das Atelier danach mehr
+// Regionen anbietet.
 async function walkToBoard(page) {
   await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
   await page.waitForTimeout(1200);
-  for (let i = 0; i < 20; i++) {
-    if (await page.$(".de-regions")) return true;
-    if (await page.$("#de-concept-grid")) return false;
-    const q = await page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-    if (await page.$(".de-tot")) {
-      await page.click(".de-tot .de-tot-panel:first-child");
-    } else if (await page.$(".de-cards")) {
-      const isCategory = (q || "").includes("entsteht") || /making/i.test(q || "");
-      if (isCategory) await page.click('.de-cards .de-card[aria-label="Jacke"]');
-      else await page.click(".de-cards .de-card");
-      await page.waitForTimeout(500);
-      const q2 = await page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-      if (q2 === q) { const c = await page.$("#de-body .de-confirm"); if (c) await c.click().catch(() => {}); }
-    } else if (await page.$(".de-range")) {
-      await page.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
-      await page.waitForTimeout(250);
-      await page.click("#de-body .de-confirm");
-    } else if (await page.$(".de-palette")) {
-      await page.click(".de-scheme-tabs .de-scheme-tab:nth-child(2)");
-      const sw = await page.$$(".de-palette .de-palette-swatch");
-      await sw[2].click(); await sw[6].click();
-      await page.waitForTimeout(200);
-      await page.click("#de-body .de-confirm");
-    } else { return false; }
-    await page.waitForTimeout(650);
-  }
-  return !!(await page.$(".de-regions"));
+  return walkJourney(page, {
+    max: 20,
+    until: (p) => p.$(".de-regions"),
+    stopAt: (p) => p.$("#de-concept-grid"),
+    on: {
+      palette: async (p) => {
+        await p.click(".de-scheme-tabs .de-scheme-tab:nth-child(2)");
+        const sw = await p.$$(".de-palette .de-palette-swatch");
+        await sw[2].click(); await sw[6].click();
+        await p.waitForTimeout(200);
+        await p.click("#de-body .de-confirm");
+      },
+    },
+  });
 }
 
 const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.getAttribute("d")).catch(() => null);
@@ -67,7 +59,12 @@ const outlineD = (page) => page.$eval(".de-regions-stage .gs-outline", (n) => n.
   await routeCdnThroughNode(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  check(await walkToBoard(page), "the walk reaches the detail atelier (jacket)");
+  const reached = await walkToBoard(page);
+  check(reached, "the walk reaches the detail atelier (jacket)");
+  // Ohne Board prüft der Rest nichts — und stürzte bisher auf einem
+  // null-Hotspot, was den Guard als Absturz statt als roten Check enden
+  // liess. Ein Guard, der crasht, ist schlechter als kein Guard.
+  if (!reached) { await page.close(); await browser.close(); server.close(); console.log("\n✗ Abbruch: das Atelier wurde nicht erreicht"); process.exit(1); }
   await page.waitForTimeout(800);
 
   // Staggered pin entry: every hotspot carries its own animation delay.

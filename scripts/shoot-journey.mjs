@@ -124,6 +124,13 @@ async function walk(vp) {
       await sw[2].click(); await sw[6].click();
       await page.waitForTimeout(200);
       await page.click("#de-body .de-confirm");
+    } else if (await page.$(".de-gallery")) {
+      // Startpunkt-Galerie (B4): der deterministische Referenz-Walk nimmt den
+      // stillen Weg („von null"), damit die späteren Screens dieselben bleiben
+      // wie vor B4 und der Vergleich über Sessions hinweg trägt. Die
+      // Übernahme selbst prüft scripts/verify-start.mjs.
+      await shoot("gallery-startpunkte");
+      await page.click(".de-gallery-skip");
     } else if (await page.$(".de-rank")) {
       await page.click("#de-body .de-confirm");
     } else {

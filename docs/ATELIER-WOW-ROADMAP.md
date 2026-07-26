@@ -375,6 +375,42 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     Exporte, e2e- statt unit-gedeckt) — es kam nur später dazu. Mit der
     Korrektur steigt die gemessene Deckung; der Floor wurde entsprechend
     angezogen (78/80/82 → 79.5/82/85), damit die Ratsche nicht locker wird.
+- 2026-07-26: **B4 geliefert — der letzte Baustein.** Nach der Kategorie zeigt
+  die Engine sechs vollständig aufgelöste Startpunkte, je einer pro
+  Archetyp-Richtung, gereiht nach dem Stilvektor. Ein Tipp übernimmt bei
+  conf 0.55; „von null" steht gleichwertig daneben.
+  - **Der Startpunkt ist ein Startpunkt, kein Reset.** Sein Beitrag enthält nur
+    Attribute, die der Nutzer noch NICHT selbst entschieden hat — eine eigene
+    Wahl überlebt jede Richtung. Zwei Unit-Zusagen nageln genau das fest.
+  - **Silhouetten-Vielfalt kam erst durch einen Befund am Render:** die
+    Archetyp-Defaults setzen Farbe, Passform und Stoff, aber NICHT
+    `subArchetype` — die erste Fassung zeigte sechsmal dasselbe Stück in sechs
+    Farben. Die Zuordnung steht bereits in den Daten: jede Silhouetten-Wahl
+    deklariert in `effects.weight`, zu welchen Archetypen sie zieht. `subArchFor`
+    nimmt je Richtung die Wahl mit dem stärksten Zug — keine zweite Tabelle, die
+    neben den Fragen veralten könnte. **Richtungen ohne deklarierte Affinität
+    bekommen bewusst KEINE erfundene Silhouette**; wer dort mehr Vielfalt will,
+    ergänzt `weight`-Einträge in den Fragen — also in JSON, wo die Regie hingehört.
+  - **Ein Engine-Erweiterungspunkt war nötig** (die Roadmap hatte ihn erwartet):
+    `targetPaths` respektiert jetzt ein deklariertes `node.targets`. Ohne das
+    fiel die Galerie auf den 0.3-Pauschalwert für Knoten ohne `choices` zurück
+    und verlor jedes Rennen gegen die erste Silhouetten-Frage — sie erschien
+    schlicht nie.
+  - **`DesignDNA.completeAs`** ist aus `completeFrom` herausgelöst: dieselbe
+    Auflösung, aber mit einem ausdrücklich genannten Archetyp. Der Umweg
+    „Gewichte verbiegen, damit `topArchetype` das Gewünschte liefert" hätte die
+    DNA der Vorschau von der DNA des Nutzers entkoppelt.
+  - **Der Spine-Konflikt ist real und geht in die andere Richtung als gedacht.**
+    §3 B4 sagte „keine Kollision mit dem ≤16-Screens-Spine, weil der Startpunkt
+    nichts hart beantwortet". Genau deshalb spart er auch keine Frage ein — er
+    KOSTET einen Screen. Die Testdecke wandert um exakt diesen einen (17 statt
+    16), mit derselben Buchführung wie beim letzten Mal. **Das ist die eine
+    Produktentscheidung dieses Schnitts, die der Owner kippen kann:** entweder
+    17 Screens, oder die Galerie darf Fragen sparen (dann §7 neu verhandeln),
+    oder sie fällt weg.
+  - Die Walker aller Werkzeuge kennen die neue Frage jetzt (`shoot-journey`,
+    `verify-stage-light` in drei Blöcken) — sonst wäre jeder künftige
+    Journey-Walk still an ihr hängengeblieben.
 - 2026-07-26 (später, geplanter Review): **B4 (Startpunkt-Galerie) hat einen
   offenen Draft-PR (#464)** — sechs vollständig aufgelöste Startpunkte je
   Archetyp-Richtung nach `category_select`, `subArchFor` liest die
@@ -388,3 +424,57 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
   Fragen, §7 neu verhandeln / Galerie fällt weg) entschieden ist. Damit sind
   B1, B2, B3, B5 geliefert und nur diese eine Produktentscheidung trennt
   B4 vom Abschluss der ganzen Roadmap.
+- 2026-07-26 (Owner-Feedback am Render): **B3b — der Stoff schimmert DURCH die
+  Silhouette, nicht nur dahinter.** Der Owner hat die Material-Rückwand aus B3
+  ausdrücklich behalten wollen und ergänzt: „was natürlich noch besser wäre
+  wenn das Stoff bild nur durch die shilouette durchschimmert". Dieselbe Geste
+  (Zeigen am Desktop, Tippen auf Touch) füllt jetzt zusätzlich das geclippte
+  Interieur des Flats mit der Makro-Aufnahme — als `<pattern>` + `<image>`
+  genau dort, wo auch die synthetische Webung sitzt, denn es ist dasselbe
+  Signal, nur belegt.
+  - **Die Stärke wurde am Render entschieden, nicht am Schreibtisch.** Der
+    erste Entwurf (`luminosity`, `layerOp × 0.55`) machte aus der Zeichnung
+    einen Foto-Ausschnitt — genau das Gegenteil des Ziels. Verglichen wurden
+    `luminosity`/`soft-light`/`overlay` bei 0.18–0.55 am härtesten Fall (Wolle,
+    die hellste Probe); **`soft-light` bei 0.18** lässt den Flat eine Zeichnung
+    bleiben, durch die die Webung schimmert.
+  - **`r()` ist hier bewusst NICHT im Spiel.** Der Renderer rundet auf eine
+    Stelle — 0.18 wäre als 0.2 ausgegeben worden und im frühen Aufbau
+    (`layerOp` klein) still auf 0. Die Schicht braucht ihren echten Wert.
+  - **Nur die grosse Bühne bekommt `opts.cloth`.** In Kacheln, Galerie und
+    Sphäre ist der Flat ein Symbol, kein Stück. `params()` ist eine Whitelist,
+    der Wert kann also nicht über eine geteilte DNA hineinlecken.
+  - **Sicherheits-Befund aus dem eigenen neuen Test:** der Pfad landet als
+    `href` in der SVG-Quelle (dieselbe Vorsicht wie bei `safeHex`). Die erste
+    Zeichenklasse `^\/[A-Za-z0-9._/-]+\.jpg$` liess `//host/x.jpg` durch —
+    protokoll-relativ, der Browser hätte von einem fremden Host geladen. Das
+    Muster verlangt jetzt nicht-leere Segmente. Lehre: eine Zeichenklasse mit
+    `/` darin prüft NICHT „relativ".
+- 2026-07-26 (Befund beim Nachziehen der Guards): **drei permanente Guards
+  liefen gar nicht mehr — sie meldeten nicht rot, sie STÜRZTEN.** Ein
+  abgestürzter Guard sieht im Log fast aus wie einer, der nichts findet; das
+  ist die gefährlichere Fehlerart. `verify-atelier` kannte den Frei-Text-
+  Auftakt (seit #444 der erste Screen) nicht, `verify-a11y-studio` rief
+  `DEModalities.hotspot` auf (die Modalität heisst `regions` — der Block ist
+  seit seinem ersten Tag nie gelaufen), `verify-gallery` bootete headless nie
+  (three.js kommt per Import-Map vom CDN) und erwartete 54 Karten bei 16
+  Quellen × 3 = 48.
+  - **Der gemeinsame Befund ist wichtiger als die drei Einzelfehler:** jeder
+    Guard trug seine EIGENE Kopie der Journey-Schleife. Als neue Screens
+    dazukamen, rotteten die Kopien einzeln und still — vier von fünf sind
+    inzwischen genau daran gescheitert. `scripts/journey-walk.mjs` kennt jeden
+    Screen-Typ jetzt EINMAL; ein Guard überschreibt über `on` nur den Screen,
+    auf dem er etwas Bestimmtes braucht. **Neue Modalitäten ab hier dort
+    ergänzen, nicht in den Guards.**
+  - `verify-a11y-studio` prüft seinen ersten Block jetzt am ECHTEN
+    Detail-Atelier statt an einem selbst gebauten Knoten — ein synthetischer
+    Knoten bildet die API nur nach und rottet wieder.
+  - `verify-gallery` leitet die erwartete Kartenzahl jetzt aus dem Mess-Haken
+    ab (`sources × variants`); eine notierte Zahl rottet beim nächsten Foto.
+- 2026-07-26 (Stand nach dem Merge): B1–B3, B3b und B5 sind auf `main`. **Die
+  eine offene Produktentscheidung bleibt B4s Screen-Budget** (17 statt der in
+  §7 gesetzten ≤16): so gebaut und gemergt, weil der Owner autonomes Weiter-
+  arbeiten ausdrücklich freigegeben hat und die Decke eine interne Testgrenze
+  ist, keine Zusage nach aussen. Kippt der Owner sie, sind Weg 2 (Galerie darf
+  Fragen sparen, §7 neu verhandeln) und Weg 3 (Galerie fällt weg) beide noch
+  offen — Weg 3 ist ein Revert des Galerie-Schnitts, kein Umbau.

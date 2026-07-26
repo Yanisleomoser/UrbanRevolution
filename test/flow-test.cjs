@@ -259,6 +259,84 @@ console.log("\n— phaseStepper (honest orientation: where you are, never a % ga
   assert(!sC.includes("de-step-dot") && !sC.includes("de-step-bar"), "no dots, no gradient segment bars");
 }
 
+console.log("\n— subArchFor (B4: welche Silhouette gehört zu welcher Richtung) —");
+{
+  // Die Zuordnung darf KEINE zweite Tabelle sein: sie liest die Gewichte, die
+  // die Silhouetten-Fragen ohnehin deklarieren. Sonst veraltet sie neben ihnen.
+  const nodes = [
+    {
+      id: "jacket_subarch", when: "category == 'jacket' && x", choices: [
+        { id: "puffer", effects: { set: { subArchetype: "puffer" }, weight: { techAvant: 0.2, sport: 0.15 } } },
+        { id: "trench", effects: { set: { subArchetype: "trench" }, weight: { quietMinimal: 0.3 } } },
+      ],
+    },
+    // Fremde Kategorie darf NIE gewinnen (sonst trüge die Hose einen Trench).
+    { id: "dress_subarch", when: "category == 'dress'", choices: [
+      { id: "slip", effects: { set: { subArchetype: "slip" }, weight: { techAvant: 0.9 } } },
+    ] },
+    // Ein Knoten ohne subArchetype-Effekt ist kein Silhouetten-Knoten.
+    { id: "jacket_color", when: "category == 'jacket'", choices: [
+      { id: "red", effects: { set: { "color.scheme": "mono" }, weight: { techAvant: 5 } } },
+    ] },
+  ];
+  const f = (arch) => Flow.subArchFor(nodes, "jacket", arch);
+  assert(f("techAvant").value === "puffer", "techAvant zieht am stärksten zum Puffer");
+  assert(f("quietMinimal").value === "trench", "quietMinimal zum Trench");
+  assert(f("sport").value === "puffer", "sport ebenfalls zum Puffer (0.15 ist das einzige Gewicht)");
+  assert(f("utility") === null, "eine Richtung ohne deklarierte Affinität bekommt KEINE erfundene Silhouette");
+  assert(f(null) === null, "ohne Richtung keine Zuordnung");
+  assert(Flow.subArchFor([], "jacket", "techAvant") === null, "ohne Knoten keine Zuordnung");
+  assert(Flow.subArchFor(null, "jacket", "techAvant") === null, "auch null-Knoten werfen nicht");
+  // Der Farb-Knoten hat das mit Abstand höchste techAvant-Gewicht (5) — er
+  // setzt aber keine Silhouette und darf deshalb nicht gewinnen.
+  assert(f("techAvant").value === "puffer", "ein Knoten ohne subArchetype-Effekt gewinnt nie, egal wie schwer");
+  // Die Effekte kommen mit, damit der Startpunkt genau das übernimmt, was er zeigt.
+  assert(f("quietMinimal").effects.set.subArchetype === "trench", "die Effekte der Wahl reisen mit");
+}
+
+console.log("\n— buildStartingPoints (B4: Startpunkt, nicht Reset) —");
+{
+  const archetypes = [
+    { id: "quietMinimal", label: { de: "Quiet Minimal", en: "Quiet Minimal" },
+      defaults: { "fabric.material": "wool", "silhouette.fit": 0.45, length: "regular" } },
+    { id: "y2kStreet", label: { de: "Y2K Street", en: "Y2K Street" },
+      defaults: { "fabric.material": "denim", "silhouette.fit": 0.9, length: "cropped" } },
+  ];
+  const nodes = [{ id: "jacket_subarch", when: "category == 'jacket'", choices: [
+    { id: "trench", effects: { set: { subArchetype: "trench" }, weight: { quietMinimal: 0.3 } } },
+    { id: "puffer", effects: { set: { subArchetype: "puffer" }, weight: { y2kStreet: 0.4 } } },
+  ] }];
+  const required = ["fabric.material", "silhouette.fit", "length"];
+  const base = global.DesignDNA.create();
+  global.DesignDNA.set(base, "category", "jacket", 1);
+  global.DesignDNA.set(base, "fabric.material", "silk", 1); // eine ECHTE eigene Entscheidung
+  const pts = Flow.buildStartingPoints(base, { archetypes, nodes, required, threshold: 0.5, lang: "de" });
+
+  assert(pts.length === 2, "je Richtung ein Startpunkt");
+  assert(pts[0].label === "Quiet Minimal" && pts[1].label === "Y2K Street", "die Richtungen tragen ihre Namen");
+  // (1) Eigene Entscheidungen bleiben in JEDER Richtung stehen …
+  assert(pts.every((p) => global.DesignDNA.get(p.dna, "fabric.material") === "silk"),
+    "die selbst gewählte Seide überlebt jede Richtung");
+  // … und tauchen im Beitrag NICHT auf, können also nichts überschreiben.
+  assert(pts.every((p) => !("fabric.material" in p.payload.set)),
+    "der Startpunkt trägt nichts bei, was schon entschieden ist (Startpunkt, kein Reset)");
+  assert(pts.every((p) => !("category" in p.payload.set)), "…auch die Kategorie nicht");
+  // (2) Offene Attribute kommen je Richtung unterschiedlich.
+  assert(pts[0].payload.set["silhouette.fit"] === 0.45 && pts[1].payload.set["silhouette.fit"] === 0.9,
+    "offene Attribute unterscheiden sich je Richtung");
+  // Die Silhouette macht die Richtungen überhaupt unterscheidbar.
+  assert(pts[0].payload.set.subArchetype === "trench" && pts[1].payload.set.subArchetype === "puffer",
+    "jede Richtung bringt ihre eigene Silhouette mit");
+  assert(pts[0].payload.weight.quietMinimal === 0.5, "die Übernahme zieht den Stilvektor in ihre Richtung");
+  // Robustheit
+  assert(eq(Flow.buildStartingPoints(base, { archetypes: [], nodes, required }), []), "ohne Archetypen keine Startpunkte");
+  assert(Flow.buildStartingPoints(base, { archetypes, nodes, required, limit: 1 }).length === 1, "limit begrenzt die Zahl");
+  // Der scrub-Haken ist die Inferenz-Falle aus Runde 3: er MUSS laufen.
+  let scrubbed = 0;
+  Flow.buildStartingPoints(base, { archetypes, nodes, required, scrub: () => { scrubbed++; } });
+  assert(scrubbed === 2, "jeder Startpunkt läuft durch scrubImpossibleFills (sonst zeigt die Galerie Unmögliches)");
+}
+
 console.log("\n— materialGesture (B3: der Stoff-Moment muss es auf dem TELEFON auch geben) —");
 {
   const P = "/img/material/wool.jpg";

@@ -36,6 +36,13 @@ const DesignEngine = (() => {
   const SOFT_RETRACT_ENTROPY = 0.55;
 
   function targetPaths(node) {
+    // Ausdrücklich deklarierte Ziele haben Vorrang. Nötig geworden für die
+    // Startpunkt-Galerie (Roadmap B4): sie löst mehrere Pflicht-Attribute auf
+    // einmal auf, trägt aber keine `choices`, aus denen sich das ableiten
+    // liesse — ohne Deklaration fiele sie auf den 0.3-Pauschalwert zurück und
+    // verlöre jedes Rennen gegen die erste Silhouetten-Frage. Generisch statt
+    // modalitäts-spezifisch, damit die Regie in JSON bleibt.
+    if (Array.isArray(node.targets) && node.targets.length) return node.targets;
     if (node.bind) return [node.bind];
     if (node.modality === "colorGradient") return ["color.scheme"];
     const set = new Set();

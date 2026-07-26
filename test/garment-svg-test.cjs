@@ -564,5 +564,55 @@ console.log("\n— dress · der Rock ist gerundet, kein Polygon (Owner-Report: r
   assert(GarmentSVG.closureAllowed("unknown-cat", "button"), "unknown categories are permissive (graceful for future JSON)");
 }
 
+console.log("\n— B3b · der Stoff schimmert DURCH die Silhouette (Owner 2026-07-26) —");
+{
+  const jacket = (extra) => GarmentSVG.build("jacket", {
+    fit: 0.5, length: "regular", stops: ["#40506a"], scheme: "solid",
+    material: "wool", finish: 0.5, reveal: 1, ...extra,
+  });
+  const plain = jacket({});
+  assert(!/<pattern id="[^"]*cl"/.test(plain), "ohne cloth-Param bleibt der Flat reine Zeichnung");
+
+  const CLOTH = "/js/design-engine/content/img/material/wool.jpg";
+  const withCloth = jacket({ cloth: CLOTH });
+  assert(/<pattern id="[^"]*cl"/.test(withCloth), "mit cloth-Param trägt der Flat eine Stoffschicht");
+  assert(withCloth.includes(`href="${CLOTH}"`), "die Schicht zieht genau das übergebene Bild");
+  // Die Schicht liegt IM Interieur (also geclippt auf die Silhouette) — läge
+  // sie draussen, wäre es wieder ein Vollflächen-Foto statt ein Durchschimmern.
+  const int = withCloth.slice(withCloth.indexOf('class="gs-int"'));
+  assert(int.includes(`url(#`) && /class="gs-int"[\s\S]*mix-blend-mode:soft-light/.test(withCloth),
+    "die Stoffschicht sitzt im geclippten Interieur und mischt weich");
+  // Untergeordnet: der Flat bleibt eine Zeichnung. Der gemessene Wert (0.18 ×
+  // layerOp) darf nicht still nach oben rutschen.
+  const op = parseFloat((/mix-blend-mode:soft-light[^>]*/.exec(withCloth) ? /opacity="([\d.]+)"[^>]*style="mix-blend-mode:soft-light"/.exec(withCloth)[1] : "1"));
+  assert(op > 0 && op <= 0.25, `die Stoffschicht bleibt untergeordnet (${op} ≤ 0.25)`);
+  // Und sie verschwindet nicht durch Rundung, wenn das Stück noch entsteht.
+  const early = jacket({ cloth: CLOTH, reveal: 0 });
+  const earlyOp = parseFloat(/opacity="([\d.]+)"[^>]*style="mix-blend-mode:soft-light"/.exec(early)[1]);
+  assert(earlyOp > 0, `auch im frühen Aufbau ist die Schicht da, nicht auf 0 gerundet (${earlyOp})`);
+
+  // Sicherheit: der Pfad landet als href IN der SVG-Quelle. Eine geteilte DNA
+  // darf dort nichts Fremdes hineinschreiben — alles, was kein eigener,
+  // relativer Bildpfad ist, fällt durch und die Schicht bleibt einfach aus.
+  [
+    'javascript:alert(1)',
+    'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+    '//evil.example/x.jpg',
+    'https://evil.example/x.jpg',
+    '/js/../../etc/passwd.jpg',
+    '/x.jpg" onload="alert(1)',
+    '/x.svg',
+    '/x.jpg?a=b',
+    'js/design-engine/content/img/material/wool.jpg',
+    '',
+    42,
+    {},
+  ].forEach((bad) => {
+    const svg = jacket({ cloth: bad });
+    assert(!/<pattern id="[^"]*cl"/.test(svg) && !/onload|javascript:|data:|evil\.example/i.test(svg),
+      `feindlicher cloth-Wert fällt durch: ${JSON.stringify(bad)}`);
+  });
+}
+
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

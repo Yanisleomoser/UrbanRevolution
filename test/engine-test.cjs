@@ -183,8 +183,16 @@ assert(DNA.get(B.dna, "construction.pockets") === "cargo" && DNA.get(B.dna, "con
 // 15, not 14: the fixed mood_rank bug (see below) restores one real, previously
 // unreachable question (a ranking node) to this path — the ceiling moves by
 // exactly that +1, not because the board stopped compressing phase E.
-assert(B.order.length <= 16,
-  `the board compresses phase E: even the answer-everything bold path fits in 16 screens incl. the describe opener, was 19 (${B.order.length})`);
+// 17, not 16 (2026-07-26): die Startpunkt-Galerie (Roadmap B4) ist ein
+// zusätzlicher Screen direkt nach der Kategorie. Sie beantwortet bewusst
+// NICHTS hart (conf 0.55 liegt unter allen `< 0.6`-Gates), spart also keine
+// Frage ein — die Roadmap sagte deshalb „keine Kollision mit dem Spine", was
+// nur in die eine Richtung stimmte: sie verkürzt nicht, aber sie verlängert.
+// Die Decke wandert um exakt diesen einen Screen, mit derselben Buchführung
+// wie oben. Wer die Galerie Fragen sparen lassen will, verhandelt §7 neu —
+// das ist bewusst nicht Teil dieses Schnitts.
+assert(B.order.length <= 17,
+  `the board compresses phase E: even the answer-everything bold path fits in 17 screens incl. the describe opener and the B4 starting-point gallery (${B.order.length})`);
 assert(!C.order.includes("jacket_pattern") && !C.order.includes("jacket_signature"), "calm SKIPS loud pattern/signature nodes (energy gate, brief §11)");
 assert(moodSpineOk(B.order), "Reihenfolge: 2 Mood-Paare -> Kategorie frueh (bold)");
 
@@ -507,6 +515,49 @@ console.log("\n— DNA.set guards against prototype pollution —");
 
   DNA.setConfidence(dna, "__proto__.polluted4", 1);
   assert(({}).polluted4 === undefined, "setConfidence rejects __proto__ the same way");
+}
+
+// ─── DNA.completeAs — dieselbe Mood-DNA, in EINE benannte Richtung aufgelöst ──
+// Grundlage der Startpunkt-Galerie (Roadmap B4): acht Auflösungen derselben
+// DNA in acht Richtungen. completeFrom kann nur den stärksten Archetyp und
+// wäre dafür nur über verbogene Gewichte zu überreden — dann wäre die DNA der
+// Vorschau aber nicht mehr die DNA des Nutzers.
+console.log("\n— DNA.completeAs (Startpunkte: eine DNA, viele Richtungen) —");
+{
+  const A = { id: "quietMinimal", defaults: { "fabric.material": "linen", "silhouette.fit": 0.3 } };
+  const B = { id: "y2kStreet", defaults: { "fabric.material": "denim", "silhouette.fit": 0.9, "pattern.type": "none" } };
+  const required = ["fabric.material", "silhouette.fit"];
+
+  const a = DNA.create(); DNA.set(a, "category", "jacket", 1);
+  DNA.completeAs(a, A, required, 0.5);
+  const b = DNA.create(); DNA.set(b, "category", "jacket", 1);
+  DNA.completeAs(b, B, required, 0.5);
+  assert(DNA.get(a, "fabric.material") === "linen" && DNA.get(b, "fabric.material") === "denim",
+    "dieselbe Ausgangs-DNA löst je Archetyp UNTERSCHIEDLICH auf");
+  assert(DNA.get(a, "category") === "jacket" && DNA.get(b, "category") === "jacket",
+    "was der Nutzer schon entschieden hat, bleibt in jeder Richtung stehen");
+  assert(DNA.confidence(a, "fabric.material") === 0.5,
+    "abgeleitete Pflichtwerte landen AUF der Schwelle (bleiben also überschreibbar)");
+  assert(DNA.confidence(a, "category") === 1, "…die echte Entscheidung behält ihre volle Konfidenz");
+  assert(DNA.get(b, "pattern.type") === "none" && DNA.confidence(b, "pattern.type") === 0.4,
+    "Nicht-Pflicht-Defaults kommen weicher (0.4) dazu");
+
+  // Eine bereits SELBST getroffene Entscheidung darf keine Richtung überschreiben.
+  const c = DNA.create(); DNA.set(c, "fabric.material", "silk", 1);
+  DNA.completeAs(c, B, required, 0.5);
+  assert(DNA.get(c, "fabric.material") === "silk", "eine eigene Wahl schlägt den Archetyp-Default");
+
+  // Robustheit: kein Archetyp / keine defaults → unverändert, kein Wurf.
+  const d = DNA.create(); DNA.set(d, "category", "dress", 1);
+  DNA.completeAs(d, null, required, 0.5);
+  DNA.completeAs(d, {}, required, 0.5);
+  assert(DNA.get(d, "category") === "dress", "ohne Archetyp passiert nichts (und nichts wirft)");
+
+  // completeFrom bleibt wortgleich das, was es war: completeAs mit dem stärksten.
+  const e = DNA.create();
+  e.archetypeWeights.y2kStreet = 3; e.archetypeWeights.quietMinimal = 1;
+  DNA.completeFrom(e, [A, B], required, 0.5);
+  assert(DNA.get(e, "fabric.material") === "denim", "completeFrom nimmt weiterhin den stärksten Archetyp");
 }
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));

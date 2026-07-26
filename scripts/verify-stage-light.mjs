@@ -20,6 +20,7 @@
 import { chromium } from "playwright-core";
 import { startServer } from "./static-server.mjs";
 import { routeCdnThroughNode } from "./cdn-route.mjs";
+import { walkJourney } from "./journey-walk.mjs";
 
 const server = await startServer();
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -134,7 +135,7 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
   for (let i = 0; i < 10; i++) {
     const vis = await page.evaluate(() => { const f = document.getElementById("de-finish"); return f && !f.hidden; });
     if (vis) break;
-    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-confirm:not([disabled])");
+    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-gallery-skip, #de-body .de-confirm:not([disabled])");
     if (c) { await c.click(); await page.waitForTimeout(750); } else break;
   }
   const g = await page.evaluate(() => {
@@ -297,7 +298,7 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
     conf = await page.$("#de-body .de-confirm");
     if (conf && await conf.isVisible()) break;
     conf = null;
-    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel");
+    const c = await page.$("#de-body .de-card, #de-body .de-tot-panel, #de-body .de-gallery-skip");
     if (!c) break;
     await c.click();
     await page.waitForTimeout(800);
@@ -356,37 +357,38 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
 // Zeigen (Zeiger-Geräte) und Wählen (Touch — dort gibt es keinen Hover, und
 // die Karte committet sofort; ohne diesen Weg wäre der Moment auf dem
 // wichtigsten Gerät gar nicht vorhanden).
-async function fabricScreen(page) {
-  const q = () => page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
-  for (let i = 0; i < 24; i++) {
-    if (await page.$("#de-body .de-card .de-visual-img")) return true;
-    const cur = await q();
-    if (await page.$(".de-describe")) await page.click(".de-describe-skip");
-    else if (await page.$(".de-tot")) await page.click(".de-tot .de-tot-panel:first-child");
-    else if (await page.$(".de-cards")) {
-      const isCat = (cur || "").includes("entsteht");
-      if (isCat) await page.click('.de-cards .de-card[aria-label="Jacke"]');
-      else await page.click(".de-cards .de-card");
-      await page.waitForTimeout(isCat ? 2400 : 500);
-      if ((await q()) === cur) { const c = await page.$("#de-body .de-confirm"); if (c) await c.click().catch(() => {}); }
-    } else if (await page.$(".de-range")) {
-      await page.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
-      await page.waitForTimeout(300);
-      await page.click("#de-body .de-confirm");
-    } else if (await page.$(".de-rank")) await page.click("#de-body .de-confirm");
-    else return false;
-    await page.waitForTimeout(600);
-  }
-  return false;
-}
+// Geteilter Walker (scripts/journey-walk.mjs): dieser Guard braucht keine
+// eigene Geste — er will nur bis zu den Stoffkarten.
+const fabricScreen = (page) => walkJourney(page, {
+  until: (p) => p.$("#de-body .de-card .de-visual-img"),
+});
+
 const WALL = `(() => {
   const p = document.querySelector("#de-preview");
   const w = getComputedStyle(p, "::before");
   const s = getComputedStyle(p);
+  // B3b · dieselbe Geste füllt auch die Silhouette. Die Schicht ist ein
+  // <pattern id="…cl"> im Flat; "cl" ist unter allen Suffixen eindeutig.
+  const cl = p.querySelector('svg pattern[id$="cl"]');
+  const clImg = cl && cl.querySelector("image");
+  const clPath = p.querySelector('svg .gs-int path[style*="mix-blend-mode"]');
+  const all = Array.from(document.querySelectorAll('pattern[id$="cl"]'));
   return {
     on: parseFloat(w.opacity) || 0,
     img: w.backgroundImage || "",
     z: w.zIndex,
+    cloth: !!cl,
+    clothHref: (clImg && (clImg.getAttribute("href") || clImg.getAttribute("xlink:href"))) || "",
+    clothBlend: clPath ? getComputedStyle(clPath).mixBlendMode : "",
+    clothOp: clPath ? parseFloat(clPath.getAttribute("opacity")) : NaN,
+    // Vergleichswert: die synthetische Webung an derselben Stelle. Der echte
+    // Stoff muss ihr UNTERGEORDNET bleiben, sonst wird die Zeichnung zum Foto.
+    grainOp: (() => {
+      const g = p.querySelector('svg .gs-int path[fill^="url("]:not([style])');
+      return g ? parseFloat(g.getAttribute("opacity")) : NaN;
+    })(),
+    // Kacheln, Galerie, Sphäre: der Flat ist dort ein Symbol, kein Stück.
+    strayCloth: all.filter((n) => !n.closest("#de-preview") && !n.closest(".de-dock-flat")).length,
     // Die Bahn muss vor dem Boden sterben — sonst löscht sie die Hohlkehle.
     mask: (w.maskImage && w.maskImage !== "none" ? w.maskImage : w.webkitMaskImage) || "",
     // Bühnenlicht malt WEITER (die Bahn ersetzt das Atelier nicht).
@@ -403,11 +405,13 @@ const WALL = `(() => {
   await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
   const reached = await fabricScreen(page);
-  check(reached === true, "der Stoff-Moment wurde erreicht (sonst prüft dieser Block nichts)");
+  check(!!reached, "der Stoff-Moment wurde erreicht (sonst prüft dieser Block nichts)");
   await page.mouse.move(4, 4);
   await page.waitForTimeout(450);
   const off = await page.evaluate(WALL);
   const cards = await page.$$("#de-body .de-card");
+  if (!cards.length) { console.log("  (kein Karten-Screen — Rest von Block 6 übersprungen)"); await page.close(); }
+  else {
   await cards[0].hover();
   await page.waitForTimeout(450);
   const on = await page.evaluate(WALL);
@@ -421,12 +425,23 @@ const WALL = `(() => {
     "Kegel und Hohlkehle malen weiter — die Bahn ersetzt das Atelier nicht");
   check(on.filter === "none" && (on.backdrop === "none" || !on.backdrop),
     `kein filter/backdrop-filter für die Bahn (${on.filter} / ${on.backdrop})`);
+  // B3b · und der Stoff schimmert DURCH die Silhouette (Owner 2026-07-26).
+  check(off.cloth === false, "ohne Geste ist der Flat reine Zeichnung (keine Stoffschicht)");
+  check(on.cloth === true, "beim Zeigen füllt der Stoff auch die Silhouette");
+  check(/^\/js\/design-engine\/content\/img\/material\/[a-z0-9-]+\.(?:jpg|webp|png)$/.test(on.clothHref),
+    `die Schicht zieht ein eigenes, relatives Bild (${on.clothHref})`);
+  check(on.clothBlend === "soft-light", `die Schicht mischt weich, sie überklebt nicht (${on.clothBlend})`);
+  check(on.clothOp > 0 && on.clothOp <= 0.25 && on.clothOp < on.grainOp,
+    `der Stoff bleibt der Zeichnung untergeordnet (${on.clothOp} gegen Webung ${on.grainOp})`);
+  check(on.strayCloth === 0, `nur die grosse Bühne trägt den Stoff (${on.strayCloth} fremde Vorkommen)`);
   // Eine Karte OHNE Foto darf nichts auslösen.
   await page.mouse.move(4, 4);
   await page.waitForTimeout(400);
   const backAway = await page.evaluate(WALL);
   check(backAway.on === 0, `der Zeiger nimmt die Bahn wieder mit (${backAway.on})`);
+  check(backAway.cloth === false, "und die Silhouette ist wieder reine Zeichnung");
   await page.close();
+  }
 
   // (b) Touch: kein Hover — der Moment hängt am Wählen.
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "de-DE", hasTouch: true, isMobile: true });
@@ -435,15 +450,20 @@ const WALL = `(() => {
   await tp.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
   await tp.waitForSelector("#de-body .de-question", { timeout: 20000 });
   const reached2 = await fabricScreen(tp);
-  check(reached2 === true, "Touch: der Stoff-Moment wurde erreicht");
+  check(!!reached2, "Touch: der Stoff-Moment wurde erreicht");
   const tCards = await tp.$$("#de-body .de-card");
+  check(tCards.length > 0, "Touch: Stoff-Karten sind da");
+  if (tCards.length) {
   await tCards[0].click();
   await tp.waitForTimeout(280);
   const tOn = await tp.evaluate(WALL);
   check(tOn.on > 0.1, `Touch: das Wählen bringt die Bahn (${tOn.on}) — ohne Hover gäbe es den Moment sonst nicht`);
+  check(tOn.cloth === true, "Touch: und der Stoff schimmert durch die Silhouette");
   await tp.waitForTimeout(1900);
   const tOff = await tp.evaluate(WALL);
   check(tOff.on === 0, `Touch: die Bahn zieht sich danach zurück (${tOff.on})`);
+  check(tOff.cloth === false, "Touch: die Silhouette ist danach wieder reine Zeichnung");
+  }
   await tp.close();
   await ctx.close();
 }
