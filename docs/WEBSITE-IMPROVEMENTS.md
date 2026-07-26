@@ -542,6 +542,41 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   with two more Atelier-Wow slices (B2, B3) landed around it since the
 >   count was last stated.
 
+> **Status update (2026-07-26, scheduled review, same day as the sync
+> above):** `main` hasn't moved (still `41efbae`) — no PR merged or closed
+> since the last sync. **But four open PRs exist that no prior review in
+> this doc has tracked**, because this doc's methodology reconciles merges
+> into `main`, not the open-PR queue. Worth breaking that pattern for once,
+> since one of them is actionable right now:
+> - **#457 ("harden against malformed AI responses + tighten billed-endpoint
+>   rate limits") is a real bug fix — not draft, all seven functional CI
+>   checks green, `mergeable_state: clean`, non-visual.** It fixes a genuine
+>   spec-sheet crash (`renderNotes`/HTML export throw if the AI ever returns
+>   `tags`/`constructionNotes` as a bare string instead of an array) plus
+>   tightens two billed-endpoint rate limits. Per this repo's own standing
+>   auto-merge policy ("the moment a PR Claude opened has all functional CI
+>   green, squash-merge it... do NOT wait"), **this should already be
+>   merged and isn't** — flagging the gap rather than merging it from inside
+>   a docs-review session that didn't author or diff-review it itself.
+> - **#456** ("bump brace-expansion to patch high-severity DoS advisory") —
+>   draft, CI green, `mergeable_state: clean`, lockfile-only. Same
+>   autonomous-merge bar as #457 once undrafted.
+> - **#461** ("#machine mobile — card-snap rail under the drawing") — draft,
+>   CI green but `mergeable_state: dirty` (base is several merges behind
+>   current `main`), self-flagged **Hochrisiko-Visuell** (scroll-snap +
+>   programmatic smooth-scroll on iOS Safari) — needs a real-iPhone check
+>   per the merge-gate policy before it can land, not just a rebase.
+> - **#464** ("Atelier-Wow B4 — die Startpunkt-Galerie") — draft, CI green,
+>   `mergeable_state: clean`, based directly on current `main`. Self-flagged
+>   product-decision gate (adds a 17th journey screen against this doc's own
+>   ≤16-screen budget) — see `ATELIER-WOW-ROADMAP.md`'s 2026-07-26 entry for
+>   the three options the PR lays out. Orthogonal to `#01`, same as B1–B3.
+> - **Recommendation:** merge #457 immediately (zero risk, zero remaining
+>   effort, already-built value sitting idle) before starting any new PR;
+>   undraft-and-merge #456 alongside it; #461 and #464 both need a human
+>   call (real-device check / product decision) that no engineering session
+>   can make for them.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
@@ -754,6 +789,7 @@ status update above for the full accounting.
 
 | Rank | Item | Impact | Effort | Risk | Why this order |
 | ---- | ---- | ------ | ------ | ---- | --------------- |
+| 0 | Merge already-open **#457** (spec-sheet-crash fix + rate-limit hardening) | real bug fix, live risk until merged | zero — already built, CI green | none (non-visual, `mergeable_state: clean`) | Not new work — an operational gap. Meets this repo's own auto-merge bar and has sat open since 2026-07-25; see the 2026-07-26 status update above |
 | 1 | #01, re-scoped: one commit model + phase-E reweighting | high — completion is the site's one load-bearing metric | medium (`flow.js` interaction contract + `engine.js` priorities) | low-mid — no new UI surface, existing `shoot-journey`/`verify-*` harness covers it | Still untouched after 30+ unrelated PRs landed around it since first flagged — including #444 and now #448, each adding a *new* modality/content surface inside the very two-commit-model split this item would unify — the largest remaining product gap by a wide margin |
 | 2 | #03 remainder: script minification only | modest, mobile/slow-connection users | low | none (non-visual) | AVIF (gallery #422 + hero #427) and GSAP dedupe (#389/#417/#422) are both done; one small win left, safe autonomous-merge candidate |
 | 3 | Chore: repair or retire the 4 broken `verify-*.mjs` regression scripts (`verify-atelier`, `verify-a11y-studio`, `verify-community`, `verify-gallery`) | none directly user-facing, but closes a QA blind spot on studio-atelier/a11y/community/gallery surfaces | low-medium (per-script; likely stale selectors/handles after prior refactors) | none (test-only, non-visual) | Flagged in #429's own PR body (07-18), reconfirmed still broken 07-23, 07-24, and again after #448 (which only added a `?dseed=7` pin to two of them, not a fix) — ran both this pass: `verify-atelier.mjs` still fails to reach the board, `verify-a11y-studio.mjs` still calls the removed `DEModalities.hotspot`; safe autonomous-merge candidate once fixed |
@@ -761,21 +797,28 @@ status update above for the full accounting.
 | — | Issue #383 — credibility block (Instagram half shipped in #414) | unknown until decided | medium | needs on-brand copy + placement decision | Explicitly flagged "not implementing, needs a decision"; no new comment since 07-21 |
 | — | Issue #384 — Impressum legal placeholders (name/address) still live | real compliance gap | n/a — needs the site owner's real business data | n/a | Not something an engineering session can resolve; needs human input |
 
-**Recommended next PR:** *"Studio journey — one commit model + phase-E
-reweighting"* (branch `engine/unify-commit-model`), scoped exactly as the
-re-scoped recommendation under §01 above. Reasoning unchanged since the
-2026-07-12 review — it has now been the top-ranked recommendation across
-**eleven consecutive reviews (07-12 → 07-25)** without a single unit of
-engineering effort spent on it, while 30+ unrelated PRs landed around it
-(hero conversion, contrast, mobile machine, studio-reveal scroll, DNA/render
-bugs, the R4/R10 landing polish, the Instagram credibility signal, the GSAP
-dedupe, the colour-atelier confirm bug (and its 07-21 duo-gradient follow-up),
-both AVIF wirings, rate-limit/prototype-pollution hardening plus its 07-23
-EXPIRE-retry follow-up, a widened image/font caching rule, a full visual
-re-skin, the `#measure` trust seal, the orphaned `preview-design.js`
-endpoint removal, the atelier/Cockpit PR (#444), Cockpit-Runde 3's
-atelier/materials/signature expansion (#448), and now the merged
-Atelier-Wow B1+B5 slice (#454, orthogonal to the studio journey).
+**Immediate action before any new PR:** merge **#457** — it's already built,
+already green, and non-visual; the only reason it isn't live is that nobody
+squash-merged it yet. That's a five-minute operational fix, not a
+recommendation for new engineering work.
+
+**Recommended next PR (new engineering work):** *"Studio journey — one
+commit model + phase-E reweighting"* (branch `engine/unify-commit-model`),
+scoped exactly as the re-scoped recommendation under §01 above. Reasoning
+unchanged since the 2026-07-12 review — it has now been the top-ranked
+recommendation across **twelve consecutive reviews (07-12 → 07-26)**
+without a single unit of engineering effort spent on it, while 30+
+unrelated PRs landed around it (hero conversion, contrast, mobile machine,
+studio-reveal scroll, DNA/render bugs, the R4/R10 landing polish, the
+Instagram credibility signal, the GSAP dedupe, the colour-atelier confirm
+bug (and its 07-21 duo-gradient follow-up), both AVIF wirings,
+rate-limit/prototype-pollution hardening plus its 07-23 EXPIRE-retry
+follow-up, a widened image/font caching rule, a full visual re-skin, the
+`#measure` trust seal, the orphaned `preview-design.js` endpoint removal,
+the atelier/Cockpit PR (#444), Cockpit-Runde 3's atelier/materials/
+signature expansion (#448), and now the merged Atelier-Wow B1+B5+B2+B3
+slices (#454/#458/#462, orthogonal to the studio journey, with B4 open as
+a product-decision-gated draft, #464).
 If a quick, low-risk win is wanted *alongside* it rather than instead of it,
 rank 2 (script minification, `#03`'s last sub-item) is small enough to ship
 same-day without displacing this recommendation.
@@ -796,6 +839,7 @@ same-day without displacing this recommendation.
   before any further journey-surface work inherits the same inconsistency.
 - **Explicitly not this PR:** C2 Variant 2 is still a live product-decision
   flag, not an engineering task. Also not this PR: the merged Atelier-Wow
-  B1+B5 slice (#454), a separate, orthogonal studio-layout track — B2-B4
-  remain open per `ATELIER-WOW-ROADMAP.md` but are their own, unprioritised
-  future work, not implied by this recommendation.
+  B1+B5+B2+B3 slices (#454/#458/#462), a separate, orthogonal studio-layout
+  track — B4 remains open per `ATELIER-WOW-ROADMAP.md` as PR #464, gated on
+  its own product decision (screen-count budget), not implied by this
+  recommendation.

@@ -375,3 +375,16 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     Exporte, e2e- statt unit-gedeckt) — es kam nur später dazu. Mit der
     Korrektur steigt die gemessene Deckung; der Floor wurde entsprechend
     angezogen (78/80/82 → 79.5/82/85), damit die Ratsche nicht locker wird.
+- 2026-07-26 (später, geplanter Review): **B4 (Startpunkt-Galerie) hat einen
+  offenen Draft-PR (#464)** — sechs vollständig aufgelöste Startpunkte je
+  Archetyp-Richtung nach `category_select`, `subArchFor` liest die
+  Silhouetten-Zuordnung aus den bestehenden `effects.weight`-Deklarationen
+  (keine zweite Tabelle), Übernahme bei conf 0.55 (unter der
+  Entscheidungs-Schwelle, jede echte Antwort überschreibt). Der Autor
+  flaggt selbst eine offene Entscheidung: die Galerie beantwortet nichts
+  hart, kostet aber einen Screen (17 statt der in §7 gesetzten
+  ≤16-Screens-Decke) — der PR bleibt bewusst Draft, bis eine der drei in
+  seiner Beschreibung genannten Optionen (17 akzeptieren / Galerie spart
+  Fragen, §7 neu verhandeln / Galerie fällt weg) entschieden ist. Damit sind
+  B1, B2, B3, B5 geliefert und nur diese eine Produktentscheidung trennt
+  B4 vom Abschluss der ganzen Roadmap.
