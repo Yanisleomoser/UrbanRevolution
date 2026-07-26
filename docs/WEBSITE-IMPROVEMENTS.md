@@ -505,6 +505,43 @@ Re-checked directly against `main` @ `00d8b2b`:
   existing same-day-doesn't-recount convention (see the three 07-24
   entries above).
 
+> **Status update (2026-07-26, triggered by the `pull_request.closed`
+> webhook for #462):** re-checked against `main` @ `349b085`. Four commits
+> landed since the 07-25 sync above (**#458, #460, #459, #462**), none
+> touching this doc's tracked backlog:
+> - **#458** ("Atelier-Wow B2 + Kanten-Diät") and **#462** ("Atelier-Wow
+>   B3 — die Bühne nimmt den Stoff an") ship the next two slices of
+>   `docs/ATELIER-WOW-ROADMAP.md` (studio-light staging: podium cone, floor
+>   pool, cyclorama, contact shadow; then a material macro-photo backdrop
+>   behind the flat during the fabric moment, pointer-hover + touch-select
+>   gestures, honesty-bounded as material-proof not product-proof). Both are
+>   the same orthogonal studio-layout track as the merged B1+B5 (#454) —
+>   full accounting lives in `ATELIER-WOW-ROADMAP.md` §6, not duplicated
+>   here. Neither touches `flow.js`'s commit-model split.
+> - **#459** ("Fortschrittsregler wird Kapitel-Index") replaced the
+>   14-object progress stepper with a five-chapter row + single growing
+>   hairline (owner-reviewed against four rendered alternatives) — a UI
+>   polish inside the same Cockpit surface, not a change to *when* a screen
+>   commits.
+> - **#460** ("#machine radikal verdichtet") condensed Act II's prose blocks
+>   (station cards, verifiable-anchors paragraph, AI-role paragraph, how-to
+>   steps) into short lines + mono micro-chains — a copy/landing change,
+>   unrelated to the studio journey or this doc's backlog.
+> - **Nothing on the ranked table moved.** Reconfirmed directly against
+>   code this pass: `isGuardedTap`/`COMMIT_GUARD_MS` still byte-identical
+>   in `flow.js` (lines 41-42); no minified build output exists anywhere
+>   under `js/` (`#03`'s last sub-item, script minification, still open);
+>   `verify-a11y-studio.mjs` still calls `window.DEModalities.hotspot`,
+>   which still doesn't exist (`regions.js` only exposes `.de-hotspot`
+>   elements, no such handle on the `DEModalities` global) — still broken,
+>   unchanged since first flagged 07-18. Issues #383 (credibility block)
+>   and #384 (Impressum placeholders) both remain open with no new
+>   engineering movement from this batch.
+> - **Recommendation unchanged:** the rescoped `#01` remains the top pick,
+>   now unaddressed across **twelve consecutive reviews (07-12 → 07-26)**,
+>   with two more Atelier-Wow slices (B2, B3) landed around it since the
+>   count was last stated.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
