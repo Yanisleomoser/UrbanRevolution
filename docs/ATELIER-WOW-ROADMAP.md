@@ -336,3 +336,55 @@ Jeder Baustein ist High-Risk-Visuell → PR + Vercel-Preview + iPhone-Gate.
     Marken-Verlauf ausserhalb der Bestätigung. Der Guard zählt jetzt ALLE
     sichtbaren Flächen statt nur Bedienelemente — die frühere Einschränkung war
     eine Ausrede für genau diese Balken.
+- 2026-07-26: **B3 geliefert — aber anders, als dieses Dokument es geplant
+  hatte.** Zwei Annahmen von §3 B3 hielten der Prüfung nicht stand:
+  - **„Das Makro-Foto blutet VOLLFLÄCHIG in die Bühne" stammt aus der Zeit vor
+    B2.** Vollflächig gedacht löscht das Foto die Hohlkehle — und damit steht
+    das Stück wieder auf nichts, exakt die Lektion, die B2 teuer gelernt hat.
+    Dazu läge eine hochfrequente Textur direkt hinter einer dünnen technischen
+    Zeichnung. Gebaut ist stattdessen die **Rückwand**: der Stoff hängt als
+    Bahn im oberen Bühnenraum und stirbt vor dem Boden; Kegel, Pool, Hohlkehle
+    und Vignette malen unverändert darüber. Das Stück steht davor, die Bühne
+    bleibt Bühne, das Foto bleibt Material-Beweis.
+  - **„Hover/Fokus auf einer Kachel = Backdrop-Wechsel" gibt es auf dem Telefon
+    nicht.** Dort existiert kein Hover, und eine Karte committet sofort — der
+    Moment wäre auf dem wichtigsten Gerät schlicht nicht vorhanden gewesen.
+    Jetzt führen zwei Wege zum selben Bild: Zeiger-Geräte sehen die Bahn beim
+    Zeigen (und sie geht mit dem Zeiger), Touch sieht sie beim Wählen, während
+    der Flat das Material annimmt — danach zieht sie sich zurück. Die
+    Entscheidung darüber steckt in der reinen, getesteten `materialGesture`.
+  - Technisch: **Pseudo-Element statt DOM-Knoten** (`.de-preview::before`),
+    weil `render-preview.js` das innerHTML der Bühne bei JEDEM Render ersetzt —
+    ein eingehängtes Kind wäre nach dem ersten Morph weg. `::after` ist bereits
+    das Filmkorn. Kein `filter`, kein `backdrop-filter`: die Dämpfung kommt aus
+    Deckkraft (0.26) und einer vertikalen Maske, die oben UND unten ausblendet
+    (oben, weil dort Marke und Masse-Zeile stehen und die helle Stelle eines
+    Makro-Fotos von Material zu Material woanders liegt).
+  - Alle sieben Materialien wurden als Rückwand gerendert und im Kontaktbogen
+    verglichen — der Flat bleibt in jedem Fall lesbar, der Boden intakt.
+  - Guard: `verify-stage-light.mjs` Abschnitt 6 (Zeiger-Weg, Touch-Weg,
+    z-index hinter dem Stück, Maske stirbt vor dem Boden, Bühnenlicht malt
+    weiter, kein Filter). Drei Defekte wurden zur Gegenprobe wieder eingebaut —
+    der Guard schlägt bei jedem an.
+  - Nebenbefund, den der eigene Test fand: `encodeURIComponent` lässt
+    ausgerechnet `( ) '` durch — also genau die Zeichen, mit denen man aus einer
+    CSS-`url()` ausbricht. Die Escaping-Tabelle ist jetzt explizit.
+  - **Coverage-Korrektur:** `js/thermal-waves.js` fehlte in der
+    `.c8rc.json`-Ausschlussliste, obwohl es dieselbe Kategorie ist wie
+    `machine.js`/`faden.js`/`facts-mass.js` (Side-Effect-WebGL-Modul ohne
+    Exporte, e2e- statt unit-gedeckt) — es kam nur später dazu. Mit der
+    Korrektur steigt die gemessene Deckung; der Floor wurde entsprechend
+    angezogen (78/80/82 → 79.5/82/85), damit die Ratsche nicht locker wird.
+- 2026-07-26 (später, geplanter Review): **B4 (Startpunkt-Galerie) hat einen
+  offenen Draft-PR (#464)** — sechs vollständig aufgelöste Startpunkte je
+  Archetyp-Richtung nach `category_select`, `subArchFor` liest die
+  Silhouetten-Zuordnung aus den bestehenden `effects.weight`-Deklarationen
+  (keine zweite Tabelle), Übernahme bei conf 0.55 (unter der
+  Entscheidungs-Schwelle, jede echte Antwort überschreibt). Der Autor
+  flaggt selbst eine offene Entscheidung: die Galerie beantwortet nichts
+  hart, kostet aber einen Screen (17 statt der in §7 gesetzten
+  ≤16-Screens-Decke) — der PR bleibt bewusst Draft, bis eine der drei in
+  seiner Beschreibung genannten Optionen (17 akzeptieren / Galerie spart
+  Fragen, §7 neu verhandeln / Galerie fällt weg) entschieden ist. Damit sind
+  B1, B2, B3, B5 geliefert und nur diese eine Produktentscheidung trennt
+  B4 vom Abschluss der ganzen Roadmap.

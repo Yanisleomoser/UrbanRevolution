@@ -143,6 +143,66 @@ const ID = /^UR-[0-9A-Z]+-[0-9A-Z]{6}$/;
     }
   }
 
+  // Regression: an LLM reply isn't schema-enforced (api/generate-design.js
+  // forwards whatever JSON shape Anthropic returns). If tags/constructionNotes
+  // come back as a bare string instead of the requested array, downstream
+  // consumers (spec-view.js, export.js) do `.forEach`/`.map` on them and crash
+  // the whole spec sheet, which re-renders on every state change. generateDesign
+  // must sanitise both to arrays before returning.
+  console.log("\n— malformed AI response: tags/constructionNotes as non-arrays are sanitised —");
+  {
+    const origFetch = global.fetch;
+    try {
+      global.fetch = async () => ({
+        ok: true, status: 200,
+        json: async () => ({
+          name: "Malformed Piece",
+          description: "desc",
+          color: "#111111",
+          material: "cotton",
+          fit: 0.5,
+          tags: "not-an-array",
+          constructionNotes: "also not an array",
+        }),
+      });
+      const dMalformed = await AI.generateDesign("ein shirt", "tshirt");
+      assert(Array.isArray(dMalformed.tags) && dMalformed.tags.length === 0,
+        "non-array tags collapse to an empty array, not a crash");
+      assert(Array.isArray(dMalformed.constructionNotes) && dMalformed.constructionNotes.length === 0,
+        "non-array constructionNotes collapse to an empty array, not a crash");
+      assert(dMalformed.name === "Malformed Piece", "well-typed fields still pass through unchanged");
+    } finally {
+      global.fetch = origFetch;
+    }
+  }
+
+  // Regression: a response missing `name` (or with a non-string/empty name)
+  // must not be accepted as-is — generateDesign falls through to the local
+  // keyword fallback instead of handing the caller a design with no name
+  // (updateProductionPreview does `design.name.toUpperCase()`, which throws).
+  console.log("\n— malformed AI response: missing name falls back to the local generator —");
+  {
+    const origFetch = global.fetch;
+    try {
+      global.fetch = async () => ({
+        ok: true, status: 200,
+        json: async () => ({
+          description: "desc",
+          color: "#111111",
+          material: "cotton",
+          fit: 0.5,
+          tags: ["a"],
+          constructionNotes: ["b"],
+        }),
+      });
+      const dNoName = await AI.generateDesign("ein shirt", "tshirt");
+      assert(typeof dNoName.name === "string" && dNoName.name.trim().length > 0,
+        "falls through to the local generator's own well-formed name");
+    } finally {
+      global.fetch = origFetch;
+    }
+  }
+
   console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
   process.exit(failures ? 1 : 0);
 })();

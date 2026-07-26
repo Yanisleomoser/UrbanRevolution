@@ -526,6 +526,22 @@ top of #444/#448's Cockpit:
   (starting-point gallery)** remain open, unstarted — `ATELIER-WOW-ROADMAP.md`
   §4 still recommends B2 next.
 
+**Status update (2026-07-26, scheduled review):** the line above is now
+stale — **B2 and B3 both shipped** (own PRs, 2026-07-25/26; podium
+cone/floor pool/cyclorama/contact shadow for B2, a material macro-photo
+stage backdrop with pointer-hover + touch-select gestures for B3 — full
+write-up in `ATELIER-WOW-ROADMAP.md` §6). **B4 (starting-point gallery) has
+an open draft PR (#464)** — six fully-resolved per-archetype starting
+points as a colorway grid after category-select, gated in draft on a
+self-flagged product decision (it costs one extra journey screen, 17 vs.
+the ≤16-screen spine this roadmap's §7 sets as the budget — see
+`ATELIER-WOW-ROADMAP.md` for the three options the PR lays out). Once that
+call is made, all five Atelier-Wow building blocks (B1–B5) are shipped and
+the Nike/Apple/Liquid-Glass owner brief is fully delivered. This still does
+**not** touch `isGuardedTap`/`COMMIT_GUARD_MS` — the commit-model
+unification (`WEBSITE-IMPROVEMENTS.md` #01) remains this repo's single
+largest open item, unrelated to and unblocked by the Atelier-Wow track.
+
 ### Hard-won pitfalls (cost real debugging time — read before touching the studio)
 
 1. **This container renders ~13 fps** (software raster; the genesis nebula keeps

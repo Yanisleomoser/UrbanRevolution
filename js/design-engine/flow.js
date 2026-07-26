@@ -456,6 +456,50 @@ const DesignFlow = (() => {
     { p: "D", key: "engine.phase_color" },
     { p: "E", key: "engine.phase_details" },
   ];
+  // ── B3 · Material-Realität: welche Geste bringt die Rückwand ────────────
+  // Die Roadmap plante die Stoff-Vorschau als reines Hover-Ereignis. Auf einem
+  // Telefon gibt es keinen Hover, und eine Karte committet dort sofort — der
+  // Moment wäre auf dem wichtigsten Gerät gar nicht vorhanden. Diese Funktion
+  // hält die Abweichung fest und ist rein, damit die Offline-Suite sie
+  // festnageln kann (Seam-Konvention wie bei den anderen Helfern unten).
+  //   event : "point" | "leave" | "focus" | "blur" | "commit"
+  //   opts  : { photo, hasHover, holding }
+  //   → null (nichts tun) | { show, hold }
+  const MAT_HOLD_MS = 1500;
+  function materialGesture(event, opts) {
+    const o = opts || {};
+    const clearing = event === "leave" || event === "blur";
+    // Karten ohne Makro-Aufnahme (alles ausser Stoff) lösen nie etwas aus.
+    if (!o.photo) return null;
+    // Ein laufender Commit-Halt gehört sich selbst: sonst löschte der
+    // focusout der getippten Karte die Bahn im selben Atemzug wieder.
+    if (clearing && o.holding) return null;
+    // Ohne Zeiger gibt es keinen Zeiger-Weg — Touch hängt am Wählen.
+    if (!o.hasHover && (event === "point" || event === "leave")) return null;
+    if (event === "commit") return { show: true, hold: MAT_HOLD_MS };
+    if (event === "point" || event === "focus") return { show: true, hold: 0 };
+    if (clearing) return { show: false, hold: 0 };
+    return null;
+  }
+  // Der Stil-Patch zur Geste — ebenfalls rein, weil hier das Escaping sitzt:
+  // der Pfad landet in einer CSS-url(), ein Anführungszeichen darin würde die
+  // Deklaration beenden. (Die Pfade kommen heute aus unserem eigenen JSON, aber
+  // eine Bild-URL ist genau die Sorte Wert, die irgendwann von aussen kommt.)
+  const MAT_OPACITY = 0.26;
+  // Explizite Tabelle statt encodeURIComponent: das lässt ausgerechnet
+  // ( ) ' unangetastet — also genau die Zeichen, mit denen man aus einer
+  // url() ausbricht. (Der eigene Test hat das gefunden, bevor es lief.)
+  const CSS_URL_ESC = { '"': "%22", "'": "%27", "(": "%28", ")": "%29", "\\": "%5C", "\n": "%0A", "\r": "%0D" };
+  function materialStyle(gesture, photo) {
+    if (!gesture) return null;
+    if (!gesture.show) return { "--mat-on": "0" };
+    if (!photo) return null;
+    return {
+      "--mat-img": 'url("' + String(photo).replace(/["'()\\\r\n]/g, (c) => CSS_URL_ESC[c]) + '")',
+      "--mat-on": String(MAT_OPACITY),
+    };
+  }
+
   // Kapitel-Index statt Fortschrittskette (Owner-Brief 2026-07-26: die Punkte
   // mit den Verlaufs-Segmenten wirkten „gimmicky und unprofessionell"). Die
   // Beats stehen als Zeile, darunter EINE Haarlinien-Schiene, die bis zum
@@ -732,6 +776,63 @@ const DesignFlow = (() => {
         setTimeout(() => body.classList.remove("is-entering"), 450);
       }, 150);
     }
+
+    // ── B3 · Material-Realität: die Bühne nimmt den Stoff an ────────────────
+    // Beim Stoff-Moment hängt die Makro-Aufnahme des fokussierten Materials
+    // als Bahn an der Rückwand der Bühne (CSS: .de-preview::before). Das Foto
+    // ist MATERIAL-Beweis — der Stoff existiert —, nie Produkt-Beweis: es
+    // bleibt Hintergrund unter Kegel, Hohlkehle und Vignette, das Flat bleibt
+    // das Stück.
+    //
+    // Die Roadmap plante das als reine Hover-Vorschau. Auf dem Telefon gibt es
+    // keinen Hover, und eine Karte committet dort sofort — der Moment wäre auf
+    // dem wichtigsten Gerät schlicht nicht vorhanden. Deshalb zwei Wege zum
+    // selben Bild: Zeiger-Geräte sehen die Bahn beim Zeigen (und sie geht mit
+    // dem Zeiger wieder), Touch sieht sie beim Wählen, während der Flat das
+    // Material annimmt — danach zieht sie sich zurück.
+    //
+    // Rein additiv: kein Modalitäts-Code wird angefasst. Die Karten tragen ihr
+    // Foto bereits als <img class="de-visual-img">; hier wird nur delegiert
+    // zugehört. Welche Geste was auslöst, entscheidet `materialGesture` weiter
+    // oben (rein und getestet) — hier bleibt nur die Verdrahtung.
+    let matTimer = 0;
+    let matHolding = false;
+    const canHover = () => typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(hover: hover)").matches : false;
+    function cardPhoto(el) {
+      const card = el && el.closest ? el.closest(".de-card") : null;
+      if (!card) return null;
+      const img = card.querySelector(".de-visual-img");
+      const src = img && (img.currentSrc || img.getAttribute("src"));
+      return src || null;
+    }
+    function gesture(event, el, related) {
+      const photo = cardPhoto(el);
+      // Beim Verlassen zählt nur der Sprung WEG von den Karten — von Kachel zu
+      // Kachel soll die Bahn wechseln, nicht kurz ausgehen.
+      if (event === "leave" && cardPhoto(related)) return;
+      const g = materialGesture(event, { photo, hasHover: canHover(), holding: matHolding });
+      const patch = materialStyle(g, photo);
+      if (!patch || !previewEl) return;
+      clearTimeout(matTimer);
+      Object.entries(patch).forEach(([k, v]) => previewEl.style.setProperty(k, v));
+      matHolding = !!(g && g.hold);
+      if (matHolding) {
+        matTimer = setTimeout(() => {
+          matHolding = false;
+          previewEl.style.setProperty("--mat-on", "0");
+        }, g.hold);
+      }
+    }
+    body.addEventListener("pointerover", (e) => gesture("point", e.target));
+    body.addEventListener("pointerout", (e) => gesture("leave", e.target, e.relatedTarget));
+    // Tastatur: dieselbe Vorschau am Fokus — sonst wäre der Moment nur mit
+    // Maus erreichbar.
+    body.addEventListener("focusin", (e) => gesture("focus", e.target));
+    body.addEventListener("focusout", (e) => gesture("blur", e.target));
+    // Der Touch-Weg: beim Tippen hält die Bahn, bis der Flat das Material
+    // sichtbar angenommen hat, dann geht sie.
+    body.addEventListener("click", (e) => gesture("commit", e.target));
 
     // ── B1 · „Dock hebt sich" (Atelier-Wow-Roadmap) ─────────────────────────
     // Im Cockpit (≤899px) ist das Blatt ein kompaktes Glas-Dock unter der
@@ -1590,7 +1691,7 @@ const DesignFlow = (() => {
   // `mount` is the only runtime entry point; the rest are pure helpers exposed
   // purely so the offline test suite can exercise them headless (same seam
   // convention as api/try-on.js exporting its error mappers).
-  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand, changeLabel };
+  return { mount, resolveEffects, shiftHex, mutateDna, phaseStepper, materialGesture, materialStyle, MAT_HOLD_MS, isGuardedTap, COMMIT_GUARD_MS, choiceWord, dockShouldShow, conceptDeltas, conceptLabelSets, hexHue, bodyFactors, seedDefaults, syncDerivedFinish, protectExplicit, scrubImpossibleFills, orderRand, changeLabel };
 })();
 
 if (typeof window !== "undefined") window.DesignFlow = DesignFlow;

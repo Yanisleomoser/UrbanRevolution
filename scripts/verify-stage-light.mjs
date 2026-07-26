@@ -348,6 +348,106 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
   await page.close();
 }
 
+// ── 6) B3 · Material-Realität: die Bühne nimmt den Stoff an ───────────────
+// Die Makro-Aufnahme hängt als BAHN an der Rückwand — sie darf die Bühne
+// nicht ersetzen. Konkret: sie liegt hinter dem Flat, stirbt vor dem Boden
+// (sonst steht das Stück wieder auf nichts — B2s teuerste Lektion), und
+// Kegel/Hohlkehle/Vignette malen weiter darüber. Zwei Wege führen hin:
+// Zeigen (Zeiger-Geräte) und Wählen (Touch — dort gibt es keinen Hover, und
+// die Karte committet sofort; ohne diesen Weg wäre der Moment auf dem
+// wichtigsten Gerät gar nicht vorhanden).
+async function fabricScreen(page) {
+  const q = () => page.$eval("#de-body .de-question", (n) => n.textContent).catch(() => "");
+  for (let i = 0; i < 24; i++) {
+    if (await page.$("#de-body .de-card .de-visual-img")) return true;
+    const cur = await q();
+    if (await page.$(".de-describe")) await page.click(".de-describe-skip");
+    else if (await page.$(".de-tot")) await page.click(".de-tot .de-tot-panel:first-child");
+    else if (await page.$(".de-cards")) {
+      const isCat = (cur || "").includes("entsteht");
+      if (isCat) await page.click('.de-cards .de-card[aria-label="Jacke"]');
+      else await page.click(".de-cards .de-card");
+      await page.waitForTimeout(isCat ? 2400 : 500);
+      if ((await q()) === cur) { const c = await page.$("#de-body .de-confirm"); if (c) await c.click().catch(() => {}); }
+    } else if (await page.$(".de-range")) {
+      await page.$eval(".de-range", (n) => { n.value = 78; n.dispatchEvent(new Event("input", { bubbles: true })); });
+      await page.waitForTimeout(300);
+      await page.click("#de-body .de-confirm");
+    } else if (await page.$(".de-rank")) await page.click("#de-body .de-confirm");
+    else return false;
+    await page.waitForTimeout(600);
+  }
+  return false;
+}
+const WALL = `(() => {
+  const p = document.querySelector("#de-preview");
+  const w = getComputedStyle(p, "::before");
+  const s = getComputedStyle(p);
+  return {
+    on: parseFloat(w.opacity) || 0,
+    img: w.backgroundImage || "",
+    z: w.zIndex,
+    // Die Bahn muss vor dem Boden sterben — sonst löscht sie die Hohlkehle.
+    mask: (w.maskImage && w.maskImage !== "none" ? w.maskImage : w.webkitMaskImage) || "",
+    // Bühnenlicht malt WEITER (die Bahn ersetzt das Atelier nicht).
+    stageBg: s.backgroundImage || "",
+    filter: s.filter,
+    backdrop: s.backdropFilter || s.webkitBackdropFilter,
+  };
+})()`;
+{
+  console.log("  — B3 · die Bühne nimmt den Stoff an —");
+  // (a) Zeiger-Gerät: zeigen blendet ein, weggehen blendet aus.
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, locale: "de-DE" });
+  await routeCdnThroughNode(page);
+  await page.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.waitForSelector("#de-body .de-question", { timeout: 20000 });
+  const reached = await fabricScreen(page);
+  check(reached === true, "der Stoff-Moment wurde erreicht (sonst prüft dieser Block nichts)");
+  await page.mouse.move(4, 4);
+  await page.waitForTimeout(450);
+  const off = await page.evaluate(WALL);
+  const cards = await page.$$("#de-body .de-card");
+  await cards[0].hover();
+  await page.waitForTimeout(450);
+  const on = await page.evaluate(WALL);
+  check(off.on === 0, `ohne Zeiger keine Bahn (${off.on})`);
+  check(on.on > 0.1 && on.on < 0.45, `beim Zeigen hängt die Bahn — sichtbar, aber untergeordnet (${on.on})`);
+  check(/material\//.test(on.img), "die Bahn trägt die Makro-Aufnahme des Materials");
+  check(on.z === "-1", `die Bahn liegt HINTER dem Stück (z-index ${on.z})`);
+  check(/transparent|rgba\(0, 0, 0, 0\)/.test(on.mask),
+    "die Bahn stirbt vor dem Boden (die Hohlkehle bleibt bestehen)");
+  check(/radial-gradient/.test(on.stageBg) && /linear-gradient/.test(on.stageBg),
+    "Kegel und Hohlkehle malen weiter — die Bahn ersetzt das Atelier nicht");
+  check(on.filter === "none" && (on.backdrop === "none" || !on.backdrop),
+    `kein filter/backdrop-filter für die Bahn (${on.filter} / ${on.backdrop})`);
+  // Eine Karte OHNE Foto darf nichts auslösen.
+  await page.mouse.move(4, 4);
+  await page.waitForTimeout(400);
+  const backAway = await page.evaluate(WALL);
+  check(backAway.on === 0, `der Zeiger nimmt die Bahn wieder mit (${backAway.on})`);
+  await page.close();
+
+  // (b) Touch: kein Hover — der Moment hängt am Wählen.
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "de-DE", hasTouch: true, isMobile: true });
+  const tp = await ctx.newPage();
+  await routeCdnThroughNode(tp);
+  await tp.goto(base + "/?dseed=7#design", { waitUntil: "domcontentloaded", timeout: 30000 });
+  await tp.waitForSelector("#de-body .de-question", { timeout: 20000 });
+  const reached2 = await fabricScreen(tp);
+  check(reached2 === true, "Touch: der Stoff-Moment wurde erreicht");
+  const tCards = await tp.$$("#de-body .de-card");
+  await tCards[0].click();
+  await tp.waitForTimeout(280);
+  const tOn = await tp.evaluate(WALL);
+  check(tOn.on > 0.1, `Touch: das Wählen bringt die Bahn (${tOn.on}) — ohne Hover gäbe es den Moment sonst nicht`);
+  await tp.waitForTimeout(1900);
+  const tOff = await tp.evaluate(WALL);
+  check(tOff.on === 0, `Touch: die Bahn zieht sich danach zurück (${tOff.on})`);
+  await tp.close();
+  await ctx.close();
+}
+
 await browser.close();
 server.close();
 console.log(failed ? `\n✗ ${failed} check(s) failed` : "\n✓ studio light verified");
