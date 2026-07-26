@@ -963,6 +963,16 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   real-browser confirmation (previous entries relied on curl/HTML-source
 >   evidence and explicitly flagged that limitation). No `fix/*` PR needed.
 
+> **Status update (2026-07-26, triggered by #479's own `pull_request.closed`
+> webhook):** #479 (the "no other action items" review two entries above)
+> merged as `b6f07e7` — re-confirmed via Vercel that the current production
+> deployment (`dpl_DUB5in3ka4c1mAbi5815URuNjGDp`, `target: production`,
+> `state: READY`) now has `githubCommitSha` `9630bdc5` — an exact match to
+> `main`'s tip (this entry's own PR, #480, the real-browser infra health
+> check immediately above). No other open PRs. Issues #383/#384 unchanged,
+> both still waiting on human input. Same-day-doesn't-recount convention
+> applies. Nothing new; no `fix/*` PR needed.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
