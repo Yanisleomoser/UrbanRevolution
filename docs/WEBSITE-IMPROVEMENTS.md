@@ -810,6 +810,47 @@ Re-checked directly against `main` @ `00d8b2b`:
 >   recount convention applies — thirteen consecutive reviews (07-12 → 07-26)
 >   stands unchanged.
 
+> **Status update (2026-07-26, scheduled live-site audit, re-run against the
+> newly-merged #464):** re-verified `revolveurban.com` against production
+> `main` @ `831bfad` (confirmed live via Vercel: `dpl_3ZdzGTUMGK8EGPgHWaTKeE52qjRt`,
+> target `production`, `state: READY`) — **#464 ("Startpunkt-Galerie B4 +
+> Stoffschimmer B3b") has merged since the last sync**, so this pass also
+> confirms the new gallery modality (`js/design-engine/modalities/gallery.js`)
+> shipped clean: the script returns HTTP 200 alongside every other first-party
+> JS/CSS asset. Full audit, `curl`-based (this session's egress proxy resets
+> headless-Chromium navigation to `revolveurban.com`/arbitrary domains outright
+> — only `github.com` traffic gets through; confirmed via repeated tests
+> against several unrelated domains, so it's a session/tooling constraint, not
+> a site issue) plus a **local render of the exact same commit** (static
+> server, headless Chromium, no proxy involved) for visual confirmation:
+> - **Every anchor** (`#main-content`, `#top`, `#community`, `#design`,
+>   `#facts`, `#measure`, `#production`) resolves to an existing element —
+>   zero missing targets.
+> - **All 63 first-party asset/script/stylesheet URLs referenced from the live
+>   `index.html`** (JS modules, `css/styles.css`, `assets/fonts/fonts.css`,
+>   the thermal-blob WebP pair, `og-image.png`, presets, manifest, icon,
+>   robots.txt, sitemap.xml) return HTTP 200, correct `content-type`, real
+>   byte sizes, zero redirects.
+> - **All 16 Story AVIF/JPEG variants** (`assets/story/act{1-4}[-sm].{jpg,avif}`)
+>   confirmed 200 — these back 12 of `/gallery/`'s 36 cards per #474's
+>   correction, unchanged.
+> - **Footer/legal links**: GitHub repo, `CREDITS.md`, `impressum.html`,
+>   `datenschutz.html`, `mailto:` — all 200/valid, no redirect chains.
+> - **External evidence links**: Ellen MacArthur Foundation 200; UNEP still
+>   403s to non-browser requests (Cloudflare JS challenge on that article
+>   path specifically — same as every prior audit, not a dead link);
+>   Instagram still 429s to unauthenticated/datacenter traffic (its own
+>   anti-scraping gate, reproduces outside any site code path) — neither is
+>   a repo action item.
+> - **Local render (matching commit) confirmed visually**: hero thermal-wave
+>   stage, `#facts` CO₂ stat, community sphere garment cards, and the studio
+>   journey opener (now the new gallery-aware flow post-#464) all render
+>   correctly desktop + mobile, no console errors, no layout break.
+> - **Instagram loop** (`sameAs` + footer icon): present, unchanged from
+>   #414. **Credibility block**: still absent — exactly the open half of
+>   #383, still a product/copy decision, not built speculatively.
+> - No `fix/*` PR opened — nothing was actually broken.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
