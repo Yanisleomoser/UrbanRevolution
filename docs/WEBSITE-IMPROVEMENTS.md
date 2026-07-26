@@ -681,6 +681,58 @@ Re-checked directly against `main` @ `00d8b2b`:
 > - **#461 and #464 unchanged** — both still gated on a human call this
 >   session can't make for them.
 
+> **Status update (2026-07-26, scheduled live-site audit, re-run same day):**
+> re-verified `revolveurban.com` against production `main` @ `4dbd38e`
+> (confirmed live via Vercel: `dpl_4J3E1BJXqhB9zmeaGzE9Pk6VsFwz`, target
+> `production`, `state: READY`) — the only diff since the prior same-day
+> audit above is a CSS `?v=` cache-bust bump, no new links/assets/markup.
+> Independently re-crawled with a real headless-Chromium session (not just
+> `curl`) and per-section screenshots at 1440×900:
+> - **All internal anchors** (`#main-content`, `#top`, `#community`,
+>   `#design`, `#machine`, `#facts`, `#measure`, `#production`) resolve to an
+>   existing element. **Footer/legal links** (`impressum.html`,
+>   `datenschutz.html`, GitHub repo, GitHub `CREDITS.md`) all return HTTP 200,
+>   no redirect chains.
+> - **UNEP source link**: a bare `fetch`/`curl` gets 403, but a real browser
+>   (realistic UA, full page load) gets a clean 200 with the correct page
+>   title ("Putting the brakes on fast fashion") — confirmed Cloudflare
+>   bot-challenge on the non-browser request path, not a dead link. No change
+>   needed.
+> - **Instagram link** (`instagram.com/revolveeurban`, both the footer icon
+>   and JSON-LD `sameAs`): even a full headless-Chromium session with a
+>   realistic UA gets HTTP 429 → redirected to `/accounts/login/`. This is
+>   Instagram's own anti-scraping gate on unauthenticated/datacenter-IP
+>   traffic, reproduces identically outside any site code path, and is not
+>   something `revolveurban.com` can fix — noted for the record, not a repo
+>   action item.
+> - **Images**: hero (`tblob-cool.webp` / `tblob-thermal.webp`, both 200),
+>   `#facts` (canvas-driven, no `<img>` — visually confirmed rendering via
+>   screenshot), community-sphere gallery cards (visually confirmed
+>   rendering — real photos on stage cards inside the WebGL globe), and
+>   preset photos (`assets/presets/{f,m}-{1,2,3}.jpg`, all 200) all load
+>   clean. Zero `>=400` responses and zero `requestfailed` events across the
+>   full scroll (hero → facts → machine → community). Zero `pageerror`/
+>   console errors.
+> - **Story AVIF files** (`assets/story/act{1-4}[-sm].avif`): **not
+>   referenced anywhere** in current `index.html`/`css/styles.css`/`js/**` —
+>   confirmed via repo-wide search, zero hits. These are orphaned assets kept
+>   only because `footer.credits` still links to `CREDITS.md` (which itself
+>   returns 200); the actual Act I–IV photos were intentionally removed from
+>   the hero per this doc's own architecture notes (the former photo-pair +
+>   `initWeave` beat). Nothing to check because nothing on the live page
+>   renders them — not a broken-asset finding, just worth flagging in case
+>   the AVIF files are expected to still be live somewhere.
+> - **Instagram loop** (`sameAs` + footer icon): confirmed live and rendering
+>   in the footer screenshot — unchanged from #414, still not an open item.
+> - **Credibility block**: confirmed still absent (searched for any
+>   "who's behind this" / about / team surface — none exists). Exactly the
+>   open half of **#383**, unchanged — a product/copy decision, not
+>   something to build speculatively (needs a real handle for what's
+>   actually true pre-launch: no team bios, no company history yet). Not
+>   implemented, per standing instruction to flag rather than build
+>   undecided product surfaces.
+> - No `fix/*` PR opened — nothing was actually broken.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
