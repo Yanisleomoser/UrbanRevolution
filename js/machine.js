@@ -492,6 +492,15 @@
             if (d < 0.5) { cam.cur = cam.tgt.slice(); cam.live = false; }
             setVB(cam.cur);
         }
+        // Ziel-Scrollposition der Zeichnung für Stufe k (0-basiert), geklemmt
+        // auf den erreichbaren Bereich — von Karten-Klick UND Leisten-Sync genutzt.
+        function zoneLeft(k) {
+            const center = (FR[k + 1][0] + FR[k + 1][2] / 2) / 1200;
+            return Math.max(0, Math.min(
+                scroller.scrollWidth - scroller.clientWidth,
+                center * scroller.scrollWidth - scroller.clientWidth / 2,
+            ));
+        }
         let cardsOn = false;
         cards.forEach((c, k) => {
             c.addEventListener("click", () => {
@@ -499,14 +508,46 @@
                     if (!cardsOn && !RM) return; // erst nach dem Boot der Zeichnung
                     camTo(camActive === (k + 1) ? 0 : (k + 1));
                 } else if (scroller) {
-                    const center = (FR[k + 1][0] + FR[k + 1][2] / 2) / 1200;
-                    scroller.scrollTo({
-                        left: center * scroller.scrollWidth - scroller.clientWidth / 2,
-                        behavior: RM ? "auto" : "smooth",
-                    });
+                    scroller.scrollTo({ left: zoneLeft(k), behavior: RM ? "auto" : "smooth" });
                 }
             });
         });
+
+        /* ── Mobil: die Karten-Snap-Leiste fährt die Zeichnung mit ──
+           ≤990 px liegen die Karten als horizontale Snap-Leiste direkt unter
+           der Zeichnung (CSS). Die Karte, die in der Leisten-Mitte einrastet,
+           gilt als aktiv (aria-pressed) und die Zeichnung scrollt zu ihrer
+           Stufe — Karte und Maschine bleiben gemeinsam im Bild. Nur die
+           Leiste treibt die Zeichnung (keine Rückkopplung); unter Reduced
+           Motion springt die Zeichnung statt zu gleiten. */
+        const rail = document.querySelector(".lp-machine-stations");
+        if (rail && scroller && cards.length) {
+            let railActive = -1;
+            let railSettle = null;
+            function railSync() {
+                railSettle = null;
+                if (mqDesk.matches) return;
+                const rr = rail.getBoundingClientRect();
+                const mid = rr.left + rr.width / 2;
+                let best = 0;
+                let bd = Infinity;
+                cards.forEach((c, k) => {
+                    const cr = c.getBoundingClientRect();
+                    const d = Math.abs(cr.left + cr.width / 2 - mid);
+                    if (d < bd) { bd = d; best = k; }
+                });
+                // kick() setzt aria-pressed global zurück — Zustand mitprüfen,
+                // damit die Leiste nach einem Reset wieder als aktiv markiert.
+                if (best === railActive && cards[best].getAttribute("aria-pressed") === "true") return;
+                railActive = best;
+                cards.forEach((c, k) => c.setAttribute("aria-pressed", k === best ? "true" : "false"));
+                scroller.scrollTo({ left: zoneLeft(best), behavior: RM ? "auto" : "smooth" });
+            }
+            rail.addEventListener("scroll", () => {
+                if (railSettle) clearTimeout(railSettle);
+                railSettle = setTimeout(railSync, 90);
+            }, { passive: true });
+        }
 
         /* ── Sprachwechsel: JS-gesetzte Texte live neu rendern ── */
         window.addEventListener("language:change", () => {
