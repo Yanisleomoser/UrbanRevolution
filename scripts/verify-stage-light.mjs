@@ -254,9 +254,12 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
   const CENSUS = `(() => {
     const BRAND = ["106, 113, 214", "18, 163, 122", "126, 220, 46"];
     const wears = (e) => { const bg = getComputedStyle(e).backgroundImage || ""; return BRAND.every((s) => bg.includes(s)); };
-    // Bedienelemente = alles Klickbare; die 2px-Verbinder des Steppers sind
-    // <span> und zählen bewusst nicht mit (Weg-Anzeige, keine Aktion).
-    return [...document.querySelectorAll("#engine-host button, #engine-host a, #engine-host [role=button]")]
+    // ALLE sichtbaren Elemente, nicht nur Bedienelemente: seit die
+    // Stepper-Segmente entfallen sind (Owner-Brief 2026-07-26) trägt im
+    // ganzen Studio genau EINE Fläche den Marken-Verlauf. Die frühere
+    // Einschränkung auf Klickbares war eine Ausrede für die vier
+    // Verlaufsbalken im Fortschrittsregler.
+    return [...document.querySelectorAll("#engine-host, #engine-host *")]
       .filter((e) => e.getBoundingClientRect().width > 0)
       .filter(wears).map((e) => e.id || e.className);
   })()`;
@@ -308,7 +311,39 @@ for (const vp of [{ name: "mobile", width: 390, height: 844, cockpit: true },
   })()`);
   check(!!conf, "ein Screen mit sichtbarer Bestätigung wurde erreicht (sonst zählt die Zählung nichts)");
   check(census.length === 1,
-    `genau EIN Bedienelement trägt den Marken-Verlauf (${census.length}: ${census.join(", ") || "—"})`);
+    `genau EINE Fläche im ganzen Studio trägt den Marken-Verlauf (${census.length}: ${census.join(", ") || "—"})`);
+  // Der Fortschrittsregler: Kapitel-Index statt Punktekette, und der Füllstand
+  // hängt am Phasen-Buchstaben (adaptive Reise — eine Prozentzahl wäre ein
+  // Versprechen, das sie nicht halten kann).
+  const step = await page.evaluate(`(() => {
+    const st = document.querySelector(".de-stepper");
+    if (!st) return null;
+    const fill = st.querySelector(".de-step-fill");
+    const rail = st.querySelector(".de-step-rail");
+    const steps = [...st.querySelectorAll(".de-step")];
+    const cs = fill ? getComputedStyle(fill) : null;
+    return {
+      steps: steps.length,
+      dots: st.querySelectorAll(".de-step-dot, .de-step-bar").length,
+      hasRail: !!rail && !!fill,
+      atClass: fill ? (fill.className.match(/is-at-([a-e])/) || [])[1] || null : null,
+      // Fortschritt spricht TEAL, damit er nicht mit dem Wahl-Grün kollidiert
+      fillColor: cs ? cs.backgroundColor : null,
+      // Die Schiene endet auf einer Spaltenkante, nicht irgendwo dazwischen
+      pct: (fill && rail) ? Math.round(fill.getBoundingClientRect().width / rail.getBoundingClientRect().width * 100) : null,
+      oneLine: steps.length ? Math.max(...steps.map((s) => s.getBoundingClientRect().top)) - Math.min(...steps.map((s) => s.getBoundingClientRect().top)) < 4 : null,
+      inFrame: steps.length ? steps[steps.length - 1].getBoundingClientRect().right <= st.getBoundingClientRect().right + 0.5 : null,
+    };
+  })()`);
+  check(step && step.steps === 5, `der Index nennt alle fünf Kapitel (${step && step.steps})`);
+  check(step && step.dots === 0, "kein Punkt- und kein Segment-Ornament mehr");
+  check(step && step.hasRail === true, "EINE Schiene trägt den Fortschritt");
+  check(step && step.pct !== null && step.pct % 20 === 0,
+    `die Schiene endet auf einer Kapitel-Kante (${step && step.pct}%)`);
+  check(step && step.fillColor === "rgb(20, 184, 133)",
+    `Fortschritt spricht Teal, nicht das Wahl-Grün (${step && step.fillColor})`);
+  check(step && step.oneLine === true, "die fünf Kapitel stehen auf EINER Zeile");
+  check(step && step.inFrame === true, "das letzte Kapitel bleibt im Rahmen");
   check(finishGreen !== false, "Fertig spricht durch Farbe statt durch eine zweite Verlaufs-Pille");
   await page.close();
 }

@@ -224,7 +224,7 @@ console.log("\n— phaseStepper (honest orientation: where you are, never a % ga
   // depends on regex-escaping its input — correct for any key, and CodeQL-clean.
   const stateOf = (svg, key) => {
     for (const st of ["done", "cur", "todo"]) {
-      if (svg.includes(`de-step is-${st}"><span class="de-step-dot"></span>${key}</span>`)) return st;
+      if (svg.includes(`de-step is-${st}">${key}</span>`)) return st;
     }
     return null;
   };
@@ -246,6 +246,17 @@ console.log("\n— phaseStepper (honest orientation: where you are, never a % ga
   assert(stateOf(Flow.phaseStepper(undefined, L), "engine.phase_feeling") === "cur", "missing phase clamps to the first beat");
   // Lowercase phase letters are accepted (defensive).
   assert(stateOf(Flow.phaseStepper("c", L), "engine.phase_fabric") === "cur", "phase letter is case-insensitive");
+  // Die Fortschritts-Schiene (Kapitel-Index, Owner-Brief 2026-07-26): der
+  // Füllstand hängt am PHASEN-BUCHSTABEN, nie an einer Prozentzahl — genau
+  // deshalb bleibt der Ziffern-Test oben gültig.
+  const railAt = (s) => (s.match(/de-step-fill is-at-([a-e])/) || [])[1] || null;
+  assert(sA.includes("de-step-rail") && sC.includes("de-step-rail"), "the index carries ONE rail, not four segment bars");
+  assert(railAt(sA) === "a", "phase A → the rail lights the first chapter");
+  assert(railAt(sC) === "c", "phase C → the rail lights up to the third chapter");
+  assert(railAt(sF) === "e", "phase F (refine) → the rail is full (clamped to the last chapter)");
+  assert(railAt(Flow.phaseStepper("zzz", L)) === "a", "junk phase → the rail clamps to the first chapter, never empty/NaN");
+  // Kein Punkt- und kein Segment-Ornament mehr (das war das „gimmicky").
+  assert(!sC.includes("de-step-dot") && !sC.includes("de-step-bar"), "no dots, no gradient segment bars");
 }
 
 console.log("\n— isGuardedTap (double-tap must not answer the NEXT question / fire generate) —");
