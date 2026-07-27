@@ -107,6 +107,18 @@ assert(Measurements.estimateSeams(M, "tshirt") === 352, "tshirt seam formula");
 // pants: 4*inseam + 2*waist + 80 = 4*82 + 2*82 + 80 = 572
 assert(Measurements.estimateSeams(M, "pants") === 572, "pants seam formula");
 assert(Measurements.estimateSeams(M, "bogus") === Measurements.estimateSeams(M, "tshirt"), "invalid type falls back to tshirt seams");
+// Regression: estimateSeams didn't guard a null/undefined `measurements` the
+// way estimateFabric already does — every seam formula dereferences m.chest
+// etc. unconditionally, so formula(null) threw TypeError and crashed every
+// export/print/join button for a design generated before #measure was ever
+// visited (measurements defaults to null in StateManager).
+function doesNotThrow(fn, msg) {
+  let threw = false;
+  try { fn(); } catch { threw = true; }
+  assert(!threw, msg);
+}
+doesNotThrow(() => Measurements.estimateSeams(null, "tshirt"), "estimateSeams(null, 'tshirt') does not throw (was: TypeError on m.chest)");
+doesNotThrow(() => Measurements.estimateSeams(undefined, "pants"), "estimateSeams(undefined, 'pants') does not throw");
 
 console.log("\n" + (failures ? `✗ ${failures} failure(s)` : "✓ all assertions passed"));
 process.exit(failures ? 1 : 0);

@@ -108,7 +108,7 @@ const Measurements = (() => {
       garmentType = "tshirt";
     }
 
-    const m = measurements;
+    const m = measurements || {};
     const seamFormulas = CONFIG.PRODUCTION_ESTIMATES.seams;
     const formula = seamFormulas[garmentType];
 
