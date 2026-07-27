@@ -128,6 +128,20 @@ assert(long.production.estimatedFabric === "2.46 m²", "long length scales fabri
 assert(cropped.production.estimatedFabric === "1.65 m²", "cropped length scales fabric down (×0.82), rounded once from the raw area");
 assert(regular.specifications.size === "M", "size derived from chest 96 → M");
 
+// Regression: buildSpecData threw when measurements was null/undefined —
+// Measurements.estimateSeams dereferenced m.chest/m.arm/etc. unconditionally
+// (unlike estimateFabric, which already guarded with `measurements || {}`).
+// This crashed every export/print/join button (js/app.js getCurrentSpecData)
+// for a design generated before #measure was ever visited, since
+// StateManager.measurements defaults to null.
+console.log("\n— buildSpecData tolerates missing measurements (no #measure visit yet) —");
+for (const missing of [null, undefined]) {
+  let out, threw = false;
+  try { out = Export.buildSpecData({ ...design, length: "regular" }, missing, "tshirt"); } catch { threw = true; }
+  assert(!threw, `buildSpecData does not throw when measurements are ${missing}`);
+  assert(out && out.specifications.size === "M", `falls back to size M when measurements are ${missing}`);
+}
+
 // Pre-launch honesty: the exported spec (JSON + printable) must carry NO firm
 // price or lead time — only forward-looking, planned strings. The concrete
 // CONFIG.PRODUCTION_ESTIMATES figures (145–220 CHF / 14 days) stay internal.

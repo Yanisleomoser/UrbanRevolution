@@ -1212,6 +1212,10 @@
       showToast(t("toast.need_design"), "error");
       return null;
     }
+    if (!S.get("measurements")) {
+      showToast(t("toast.need_measurements"), "error");
+      return null;
+    }
     return Export.buildSpecData(
       S.get("currentDesign"),
       S.get("measurements"),
