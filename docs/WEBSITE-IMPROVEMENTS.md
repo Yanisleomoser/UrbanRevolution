@@ -973,6 +973,75 @@ Re-checked directly against `main` @ `00d8b2b`:
 > both still waiting on human input. Same-day-doesn't-recount convention
 > applies. Nothing new; no `fix/*` PR needed.
 
+> **Status update (2026-07-27, scheduled delivery/asset-weight audit):**
+> ran a dedicated pass on real transfer weight, caching discipline, and
+> delivery optimization against `main` @ `bb98362` — different angle from the
+> link/asset-availability audits above, this one measures *how much* loads and
+> *whether cache-busting stays honest*, not just whether URLs 200.
+> - **`scripts/check-asset-budget.mjs`**: clean, `✓ all 34 images within
+>   budget (assets)`.
+> - **Real headless-Chromium weight measurement** (local static server +
+>   Playwright, desktop 1440×900 + mobile 390×844 — identical weight on both
+>   since nothing here is viewport-conditional): **2036 KB raw** transferred
+>   through initial load + scroll (72 requests). Recomputing with gzip on the
+>   text assets (what Vercel actually serves) gives a realistic **~1132 KB
+>   wire estimate**: images 594.9 KB (uncompressed further — already
+>   WebP), fonts 137.9 KB (woff2, already compressed), script 262.6 KB
+>   gzipped (from 762.8 KB raw across 44 files), stylesheet 83.9 KB gzipped
+>   (from 307.4 KB raw), fetch/JSON 20.5 KB gzipped, document 32.2 KB
+>   gzipped. The two `tblob-{cool,thermal}.webp` hero images are the single
+>   biggest line item at 52 % of total weight (300.2 KB + 294.7 KB) — both
+>   within the documented 350 KB/image budget cap (CLAUDE.md's Thermal-Blob
+>   section), not a regression, just the dominant cost worth knowing.
+>   Caveat: this session's sandbox blocks the external CDN hosts
+>   (`cdn.jsdelivr.net` for GSAP/ScrollTrigger, `js-de.sentry-cdn.com` for
+>   Sentry) outright (`ERR_CONNECTION_RESET`), so the measured weight
+>   **excludes** those — real production weight is somewhat higher (GSAP
+>   core + ScrollTrigger, roughly another ~35 KB gzipped; Sentry's loader is
+>   small, the full SDK is lazy). Not fixable from here; noted as a
+>   measurement caveat, not a site defect.
+> - **AVIF/-sm variants**: the homepage itself doesn't use AVIF at all (by
+>   design — hero art is WebP, presets are small lazy JPGs under the 40 KB
+>   preset budget, fonts are self-hosted woff2). The AVIF/`-sm` pipeline
+>   (`assets/story/act{1-4}[-sm].{jpg,avif}`, `bestSrc()`/`checkAvifSupport()`
+>   in `gallery/gallery.js`) lives entirely in the standalone `/gallery/`
+>   page and is unchanged/still wired correctly per #474/#475's prior
+>   correction — no JPG-fallback regression there.
+> - **Lazy-loading of heavy libraries**: confirmed by source, not just
+>   absence-from-network-log (the sandbox's CDN block makes a live capture
+>   inconclusive either way) — `js/community-sphere.js:296` dynamically
+>   `import()`s `"three"` only inside an `IntersectionObserver` callback
+>   (`rootMargin: "900px 0px"`, line 153/158), and `js/pose.js:30` dynamically
+>   imports MediaPipe only on first pose-detection use. Neither loads on
+>   initial page render.
+> - **Single GSAP version**: `gsap@3.15.0` referenced identically in all
+>   three places it appears — `index.html` (`<script>` ×2 + import-map),
+>   `en/index.html` (generated, matches), and `gallery/index.html`
+>   (import-map). No version drift.
+> - **`?v=` cache-bump discipline**: checked every versioned asset's actual
+>   `?v=` tag against its real last-changed commit (shallow clone required
+>   `git fetch --deepen=200` first — the default clone only carried the last
+>   50 commits, which falsely looked like several files had no history
+>   before 2026-07-17). All five came back **consistent, zero stale tags**:
+>   `js/ur-create.js?v=20260713-to-top` ↔ last real change #412 "back-to-top
+>   FAB" (2026-07-13); `js/facts-mass.js?v=20260717-thermal` ↔ #429
+>   (2026-07-17); `css/styles.css?v=20260726-stoffschimmer` ↔ #464
+>   "Stoffschimmer" (2026-07-26); `assets/og-image.png?v=20260717-thermal` ↔
+>   #429 (2026-07-17); `assets/tblob-{cool,thermal}.webp?v=20260717-blob` ↔
+>   #430 (2026-07-17). Nothing to bump.
+> - **Render-blocking `<head>` audit**: exactly **2 blocking stylesheets**
+>   (`css/styles.css`, `/assets/fonts/fonts.css`) — everything else in
+>   `<head>` is inline (negligible, 3 tiny scripts for touch-detect/`--svh`/
+>   `fx`-class + JSON-LD) or non-blocking (Sentry `async`, Vercel Speed
+>   Insights/Web Analytics `defer`). Fonts are correctly **subset**
+>   (`fonts.css` splits every weight into `-latin` + `-latin-ext` via
+>   `unicode-range`, `font-display: swap`) and the 3 LCP-critical weights
+>   (Poppins 100/200/400 latin) are `<link rel="preload">`ed ahead of
+>   `fonts.css` itself, matching what the hero/body actually render in.
+> - **No regressions found anywhere in scope.** Nothing to fix, so per this
+>   task's own instruction (open a `chore/*` PR only for trivial fixes,
+>   otherwise report) — no PR opened, findings recorded here instead.
+
 The landing film is finished — dramaturgy, type, weave, sphere all land. The
 open work is the **product behind the CTA**: helping a first-time visitor
 understand the studio, finish a design, and be captured at the moment they
