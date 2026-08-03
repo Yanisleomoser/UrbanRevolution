@@ -47,6 +47,9 @@
     /* Single danger/error tone (unified from three near-duplicate reds). Light
        enough to read on the dark theme as both border and text (7.1:1 on --bg). */
     --danger: #f87171;
+    /* Distinct from --danger (not an error state): the ambient-ticker's
+       pulsing "LIVE" dot/label — rgb(255, 90, 95). */
+    --live: #ff5a5f;
     --gradient: linear-gradient(135deg, #6a71d6 0%, #12a37a 55%, #7edc2e 100%);
     --gradient-dim: linear-gradient(135deg, rgba(106, 113, 214, 0.15), rgba(18, 163, 122, 0.15));
     /* CTA fill: the teal→green slice of the thermal ramp (drops the violet
@@ -2504,7 +2507,7 @@ html.is-touch { scroll-behavior: auto; }
 
 /* ---------- AI output: typing cursor + pulse on generation ---------- */
 .design-result h3 {
-    background: linear-gradient(120deg, #fff 0%, #8f96e8 50%, #fff 100%);
+    background: linear-gradient(120deg, #fff 0%, var(--accent) 50%, #fff 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -4886,7 +4889,7 @@ footer.footer {
 /* Shared: tabular mono digits + brand-gradient number + pulsing live dot */
 .tnum {
     font-variant-numeric: tabular-nums;
-    font-family: ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-weight: 700; letter-spacing: -0.01em;
 }
 .cost-ticker-kg,
@@ -4897,7 +4900,7 @@ footer.footer {
 }
 .ticker-pulse {
     display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: #ff5a5f; flex: none;
+    background: var(--live); flex: none;
     box-shadow: 0 0 0 0 rgba(255, 90, 95, 0.55);
     animation: ticker-pulse 1.8s var(--ease-out) infinite;
 }
@@ -4920,11 +4923,11 @@ footer.footer {
 .section-live { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .section-live.ticker-badge {
     display: inline-flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px; letter-spacing: 0.04em; color: var(--text-muted);
 }
 .ticker-live-label {
-    color: #ff5a5f; font-weight: 700; letter-spacing: 0.16em;
+    color: var(--live); font-weight: 700; letter-spacing: 0.16em;
     font-size: 10px; text-transform: uppercase;
 }
 .ticker-kg { font-size: 14px; }
