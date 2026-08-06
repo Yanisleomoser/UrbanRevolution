@@ -196,7 +196,7 @@
         const g = b.ctx.createLinearGradient(0, b.h * (1 - maxH) - 40, 0, b.h);
         g.addColorStop(0, "rgba(62,36,16,0.98)");   // warmer Kamm
         g.addColorStop(0.55, "rgba(" + C_MOUND + ",0.97)");
-        g.addColorStop(1, "rgba(11,11,13,1)");      // --bg #0A1622
+        g.addColorStop(1, "rgba(11,11,13,1)");      // --bg #0b0b0d
         return g;
     }
 
