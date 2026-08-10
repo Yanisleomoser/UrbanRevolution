@@ -24,6 +24,7 @@
   // to the raw key if I18N hasn't loaded (defensive — load order guarantees it).
   const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
 
+  let toastTimer = null;
   function showToast(message, type = "info") {
     const toast = document.getElementById("toast");
     if (!toast) return; // toast lives in the studio; may be absent pre-reveal
@@ -34,7 +35,8 @@
     const isError = type === "error";
     toast.setAttribute("role", isError ? "alert" : "status");
     toast.setAttribute("aria-live", isError ? "assertive" : "polite");
-    setTimeout(() => toast.classList.remove("show"), 3500);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
   }
 
   function updateStep(stepNumber) {
