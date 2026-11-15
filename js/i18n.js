@@ -40,7 +40,7 @@ const I18N = (() => {
       "nav.skip": "Zum Inhalt springen",
       "nav.aria": "Hauptnavigation",
       "nav.production": "Produktion",
-      "nav.lang_aria": "Sprache wechseln",
+      "nav.lang_aria": "DE / EN – Sprache wechseln",
       "nav.community": "Community",
       "nav.enter": "UR Create starten",
 
@@ -726,7 +726,7 @@ const I18N = (() => {
       "nav.skip": "Skip to content",
       "nav.aria": "Main navigation",
       "nav.production": "Production",
-      "nav.lang_aria": "Switch language",
+      "nav.lang_aria": "DE / EN – switch language",
       "nav.community": "Community",
       "nav.enter": "Enter UR Create",
 
@@ -1358,7 +1358,7 @@ const I18N = (() => {
       "landing.handoff": "The circle is waiting for its first piece.",
       "landing.firstwave_label": "Be among the first",
       "landing.firstwave_submit": "Join",
-      "landing.orb_aria": "Start UR Create — opens the studio",
+      "landing.orb_aria": "Enter UR Create — opens the studio",
       "landing.portal_opening": "Opening the studio …",
 
       // ── The turn (#pivot) — the line bends into a circle ──

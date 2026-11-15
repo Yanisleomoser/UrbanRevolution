@@ -3871,12 +3871,15 @@ html.is-touch .de-region-opt { min-height: 48px; }
    Aussen bündig, innen zentriert: der Streifen spannt die volle Dockbreite,
    ohne dass die Randwörter eingerückt wirken. */
 .de-stepper { display: grid; grid-template-columns: repeat(5, 1fr); align-items: baseline; row-gap: 7px; margin: 0; }
-.de-step { grid-row: 1; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); white-space: nowrap; text-align: center; opacity: 0.38; transition: opacity .3s var(--ease-out), color .3s var(--ease-out); }
+.de-step { grid-row: 1; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); white-space: nowrap; text-align: center; opacity: 0.7; transition: opacity .3s var(--ease-out), color .3s var(--ease-out); }
 .de-step:first-child { text-align: left; }
 .de-step:last-child { text-align: right; }
-.de-step.is-done { opacity: 0.7; }
+.de-step.is-done { opacity: 0.85; }
 .de-step.is-cur { opacity: 1; color: var(--text); }
-.de-step.is-todo { opacity: 0.38; }
+/* Kontrast: --text-dim auf der Studio-Fläche (#15151d) erreicht 4.5:1 erst ab
+   Deckkraft ~0.68 (0.38 = 2.24:1, von axe-core 4.14 im e2e beanstandet). Offen
+   0.7 (4.68:1) < erledigt 0.85 < aktuell 1 — die Abstufung bleibt. */
+.de-step.is-todo { opacity: 0.7; }
 .de-step-rail { grid-row: 2; grid-column: 1 / -1; position: relative; height: 1px; background: var(--glass-hairline); }
 /* Der Füllstand kommt aus dem Phasen-Buchstaben, nicht aus einer Prozentzahl:
    die Reise ist adaptiv, „60 % geschafft" wäre ein Versprechen, das sie nicht
