@@ -32,5 +32,9 @@
     "cheerio": "^1.2.0",
     "css-tree": "^3.2.1",
     "htmlhint": "^1.9.2"
+  },
+  "overrides": {
+    "glob": "^14.0.6",
+    "minimatch": "^11.0.8"
   }
 }
