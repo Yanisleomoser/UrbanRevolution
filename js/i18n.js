@@ -1481,6 +1481,17 @@ const I18N = (() => {
     return value;
   }
 
+  // Markup value of a dictionary entry, or null if the key is unknown. Unlike
+  // t(), this never falls back to the key itself: the key comes from a DOM
+  // attribute, and echoing it into innerHTML would turn attribute text into
+  // markup (CodeQL js/xss-through-dom).
+  function htmlEntry(key) {
+    const table = dict[current] || dict[DEFAULT_LANG];
+    let value = table[key];
+    if (value === undefined) value = dict[DEFAULT_LANG][key];
+    return typeof value === "string" ? value : null;
+  }
+
   // Convenience helpers for the keyed maps used across modules.
   function material(key) {
     return t("material." + key);
@@ -1511,7 +1522,12 @@ const I18N = (() => {
       // (<br>, <em>, <strong>, <span>, source <a>) is intentional and safe to
       // inject. Do NOT switch this to textContent (renders tags as literal text)
       // or to a sanitizer that isn't loaded — both break every rich-text string.
-      el.innerHTML = t(el.getAttribute("data-i18n-html"));
+      // Only dictionary entries become markup; an unknown key is shown as plain
+      // text (t() would hand the raw attribute back for innerHTML).
+      const key = el.getAttribute("data-i18n-html");
+      const html = htmlEntry(key);
+      if (html !== null) el.innerHTML = html;
+      else el.textContent = key;
     });
     root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       el.setAttribute("placeholder", t(el.getAttribute("data-i18n-placeholder")));
